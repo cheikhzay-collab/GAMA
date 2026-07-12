@@ -28,8 +28,12 @@ const AdminExamEdit = lazy(() => import('./pages/AdminExamEdit'));
 const SuitesNumeriquesPage = lazy(() => import('./pages/SuitesNumeriquesPage'));
 const AdminLessonsImport = lazy(() => import('./pages/AdminLessonsImport'));
 const AdminLessons = lazy(() => import('./pages/AdminLessons'));
+const AdminClasses = lazy(() => import('./pages/AdminClasses'));
+const AdminClassDetail = lazy(() => import('./pages/AdminClassDetail'));
 const LessonViewerPage = lazy(() => import('./pages/LessonViewerPage'));
 const AdminLessonEdit = lazy(() => import('./pages/AdminLessonEdit'));
+const AdminLogbook = lazy(() => import('./pages/AdminLogbook'));
+const LevelsPage = lazy(() => import('./pages/LevelsPage'));
 const OMRScannerPage = lazy(() => import('./pages/OMRScannerPage'));
 const SubscriptionPage = lazy(() => import('./pages/SubscriptionPage'));
 const RankingPage = lazy(() => import('./pages/RankingPage'));
@@ -122,6 +126,8 @@ function AppContent() {
       title = "Admin : Importateur de Sujets IA — L'CONQ";
     } else if (path === '/admin/lessons') {
       title = "Admin : Fiches de Cours — L'CONQ";
+    } else if (path === '/levels') {
+      title = "Niveaux & Cours — L'CONQ";
     } else if (path === '/admin/ai-lessons') {
       title = "Admin : Générateur de Cours IA — L'CONQ";
     } else if (path.startsWith('/admin/lessons/') && path.endsWith('/edit')) {
@@ -132,6 +138,8 @@ function AppContent() {
       title = "Admin : Générateur d'E-Books — L'CONQ";
     } else if (path === '/admin/settings') {
       title = "Admin : Paramètres Système — L'CONQ";
+    } else if (path === '/admin/logbook') {
+      title = "Admin : Cahier de Textes — L'CONQ";
     }
 
     document.title = title;
@@ -162,6 +170,7 @@ function AppContent() {
             <Route path="/study" element={<StudyMode />} />
             <Route path="/study/suites-numeriques" element={<SuitesNumeriquesPage />} />
             <Route path="/exam" element={<MockExamMode />} />
+            <Route path="/levels" element={<LevelsPage />} />
             <Route path="/scanner" element={<OMRScannerPage />} />
             <Route path="/scan" element={<Navigate to="/scanner" replace />} />
             <Route path="/ranking" element={<RankingPage />} />
@@ -171,6 +180,8 @@ function AppContent() {
             <Route path="/admin/exams" element={<AdminExams />} />
             <Route path="/admin/exams/:id/edit" element={<AdminExamEdit />} />
             <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/classes" element={<AdminClasses />} />
+            <Route path="/admin/classes/:id" element={<AdminClassDetail />} />
             <Route path="/admin/users/:id" element={<AdminStudentDetail />} />
             <Route path="/admin/upload" element={<AdminUpload />} />
             <Route path="/admin/ai-import" element={<AdminAIImport />} />
@@ -180,6 +191,7 @@ function AppContent() {
             <Route path="/admin/lessons/:id/edit" element={<AdminLessonEdit />} />
             <Route path="/admin/ebooks" element={<AdminEbooks />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route path="/admin/logbook" element={<AdminLogbook />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -214,12 +226,6 @@ const LoadingFallback = () => (
     <h3 style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 800, margin: 0, fontFamily: 'sans-serif', letterSpacing: '0.05em' }}>
       L'CONQ
     </h3>
-    <style dangerouslySetInnerHTML={{__html: `
-      @keyframes spinApp {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-    `}} />
   </div>
 );
 

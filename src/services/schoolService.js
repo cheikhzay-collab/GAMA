@@ -5,13 +5,13 @@
 import { supabase } from '../lib/supabase';
 
 const DEFAULT_SCHOOLS = [
-  'Médecine / Pharmacie',
-  'ENSA',
-  'ENSAM',
-  'ENCG',
-  'INPT',
-  'INSEA',
-  'Général (Prépa)',
+  '2bac_sm',
+  '2bac_pc_svt',
+  '1bac_sci',
+  'common_core_sci',
+  '2bac_arts',
+  '1bac_arts',
+  'common_core_arts'
 ];
 
 /**

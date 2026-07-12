@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { UploadCloud, Sparkles, Loader2, CheckCircle2, Trash2, Plus, Send, AlertCircle, FileText, StopCircle } from 'lucide-react';
+import { getLevelDisplayName } from './SchoolsPage';
 import * as pdfjsLib from 'pdfjs-dist';
 import { generateSubjectHTML, generateCorrectionHTML, openPrintWindow } from '../utils/generateExamPDF';
 
@@ -41,9 +42,9 @@ const sanitizeLatexJson = (str) => {
         result += '\\\\';
         i += 2;
       } else if (next === 'n') {
-        // Check if it's a LaTeX command starting with \n (like \nu, \neq, \neg, \nearrow, \nabla, \notin, \nexists, \norm, etc.)
-        const rest = str.slice(i + 2, i + 12); // lookahead
-        if (/^(u|eq|eg|earrow|abla|onumber|ewline|otin|exists|orm|mid|cong|sim|parallel|subseteq|supseteq|left|right)([^a-zA-Z]|$)/i.test(rest)) {
+        const afterN = str[i + 2];
+        const isLetterAfterN = afterN && /[a-zA-Z]/.test(afterN);
+        if (isLetterAfterN) {
           result += '\\\\';
           i += 1;
         } else {
@@ -118,6 +119,66 @@ const escapeLiteralNewlinesInJson = (str) => {
   return result;
 };
 
+// Escape unescaped double quotes inside JSON string values
+const escapeUnescapedQuotesInJson = (str) => {
+  if (!str) return str;
+  let inString = false;
+  let escaped = false;
+  let result = '';
+  
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+    
+    if (escaped) {
+      result += char;
+      escaped = false;
+      continue;
+    }
+    
+    if (char === '\\') {
+      result += char;
+      escaped = true;
+      continue;
+    }
+    
+    if (char === '"') {
+      if (!inString) {
+        inString = true;
+        result += char;
+      } else {
+        // We are inside a string. Is this the closing quote?
+        // Check the next non-whitespace characters to see if they match JSON separators
+        let isClosing = false;
+        let j = i + 1;
+        while (j < str.length && /\s/.test(str[j])) {
+          j++;
+        }
+        if (j < str.length) {
+          const nextChar = str[j];
+          if (nextChar === ',' || nextChar === '}' || nextChar === ']' || nextChar === ':') {
+            isClosing = true;
+          }
+        } else {
+          isClosing = true; // End of string is closing
+        }
+        
+        if (isClosing) {
+          inString = false;
+          result += char;
+        } else {
+          // This is an unescaped double quote inside the string! Escape it.
+          result += '\\"';
+        }
+      }
+      continue;
+    }
+    
+    result += char;
+  }
+  return result;
+};
+
+
 // Extract JSON object/array from a string that may contain markdown fences or leading text
 const extractJsonFromText = (str) => {
   if (!str) return str;
@@ -125,8 +186,8 @@ const extractJsonFromText = (str) => {
   s = s.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
   const firstBrace = s.indexOf('{');
   const firstBracket = s.indexOf('[');
-  let start = -1;
   if (firstBrace === -1 && firstBracket === -1) return s;
+  let start;
   if (firstBrace === -1) start = firstBracket;
   else if (firstBracket === -1) start = firstBrace;
   else start = Math.min(firstBrace, firstBracket);
@@ -206,74 +267,60 @@ const parseAiJson = (rawText) => {
   if (cleanText.includes('</think>')) {
     cleanText = cleanText.split('</think>').pop().trim();
   }
+  cleanText = sanitizeLatexJson(cleanText);
 
-  // Strategy 1: Direct JSON parsing
-  try {
-    const parsed = JSON.parse(cleanText);
-    const res = extractQuestionsArray(parsed);
-    if (res) return res;
-  } catch (e) {
-    console.warn("[JSON Parse] Strategy 1 (Direct) failed:", e.message);
+  // Define parsing/repair functions in order of intensity
+  const strategies = [
+    // Strategy 1: Direct JSON parsing
+    (txt) => JSON.parse(txt),
+    
+    // Strategy 2: Extract JSON matching brace structure
+    (txt) => JSON.parse(extractJsonFromText(txt)),
+    
+    // Strategy 3: Extract + Escape literal newlines
+    (txt) => JSON.parse(escapeLiteralNewlinesInJson(extractJsonFromText(txt))),
+    
+    // Strategy 4: Extract + Escape literal newlines + Escape unescaped inner quotes
+    (txt) => JSON.parse(escapeUnescapedQuotesInJson(escapeLiteralNewlinesInJson(extractJsonFromText(txt)))),
+    
+    // Strategy 5: Extract + Escape literal newlines + Escape unescaped inner quotes + sanitize LaTeX
+    (txt) => JSON.parse(escapeUnescapedQuotesInJson(escapeLiteralNewlinesInJson(sanitizeLatexJson(extractJsonFromText(txt))))),
+    
+    // Strategy 6: Extract + Escape literal newlines + Escape unescaped inner quotes + sanitize LaTeX + repair truncation
+    (txt) => JSON.parse(repairTruncatedJson(escapeUnescapedQuotesInJson(escapeLiteralNewlinesInJson(sanitizeLatexJson(extractJsonFromText(txt))))))
+  ];
+
+  let lastError = null;
+
+  for (let i = 0; i < strategies.length; i++) {
+    try {
+      const parsed = strategies[i](cleanText);
+      const res = extractQuestionsArray(parsed);
+      if (res) {
+        console.log(`[JSON Parse] Strategy ${i + 1} succeeded!`);
+        return res;
+      }
+    } catch (e) {
+      console.warn(`[JSON Parse] Strategy ${i + 1} failed:`, e.message);
+      lastError = e;
+    }
   }
 
-  // Strategy 2: Extract JSON matching brace structure
-  let extracted = extractJsonFromText(cleanText);
-
-  // Strategy 3: Direct parse of extracted
+  // Fallback: Brace tracking objects search
   try {
-    const parsed = JSON.parse(extracted);
-    const res = extractQuestionsArray(parsed);
-    if (res) return res;
-  } catch (e) {
-    console.warn("[JSON Parse] Strategy 3 (Extracted) failed:", e.message);
-  }
-
-  // Strategy 4: Try with literal newlines escaped
-  try {
-    const escaped = escapeLiteralNewlinesInJson(extracted);
-    const parsed = JSON.parse(escaped);
-    const res = extractQuestionsArray(parsed);
-    if (res) return res;
-  } catch (e) {
-    console.warn("[JSON Parse] Strategy 4 (Escaped newlines) failed:", e.message);
-  }
-
-  // Strategy 5: Try with LaTeX sanitized + newlines escaped
-  try {
-    const sanitized = sanitizeLatexJson(extracted);
-    const escaped = escapeLiteralNewlinesInJson(sanitized);
-    const parsed = JSON.parse(escaped);
-    const res = extractQuestionsArray(parsed);
-    if (res) return res;
-  } catch (e) {
-    console.warn("[JSON Parse] Strategy 5 (LaTeX sanitized) failed:", e.message);
-  }
-
-  // Strategy 6: Try with truncation repair
-  try {
-    const sanitized = sanitizeLatexJson(extracted);
-    const escaped = escapeLiteralNewlinesInJson(sanitized);
-    const repaired = repairTruncatedJson(escaped);
-    const parsed = JSON.parse(repaired);
-    const res = extractQuestionsArray(parsed);
-    if (res) return res;
-  } catch (e) {
-    console.warn("[JSON Parse] Strategy 6 (Truncation repaired) failed:", e.message);
-  }
-
-  // Strategy 7: Fallback: Brace tracking objects search
-  try {
+    const extracted = extractJsonFromText(cleanText);
     const sanitized = sanitizeLatexJson(extracted);
     const escaped = escapeLiteralNewlinesInJson(sanitized);
     const objects = extractObjectsBraceTracking(escaped);
     if (objects && objects.length > 0) {
+      console.log(`[JSON Parse] Fallback Strategy (Brace tracking) succeeded!`);
       return objects;
     }
   } catch (e) {
-    console.warn("[JSON Parse] Strategy 7 (Brace tracking) failed:", e.message);
+    console.warn("[JSON Parse] Fallback Strategy (Brace tracking) failed:", e.message);
   }
 
-  throw new Error("Erreur de parsing : réponse reçue de l'IA mais JSON invalide ou incomplet. Réessayez.");
+  throw new Error(`Erreur de parsing : ${lastError ? lastError.message : "réponse reçue de l'IA mais JSON invalide ou incomplet"}. Réessayez.`);
 };
 
 
@@ -330,15 +377,17 @@ SVT — Bac SE:
   ✅ Géologie: tectonique des plaques, roches magmatiques/métamorphiques/sédimentaires.
 
 ════════════════════════════════════════
-📝 STYLE DE RÉDACTION — INSPECTEUR MAROCAIN (OBLIGATOIRE)
+📝 STYLE DE RÉDACTION — INSPECTEUR & ENSEIGNANT MAROCAIN (OBLIGATOIRE)
 ════════════════════════════════════════
 
-STRUCTURE IMPOSÉE pour chaque astuce:
-  1. Titre en gras: **[Nom du chapitre] — Programme Bac [filière]**
-  2. Corps: étapes numérotées "Étape 1 —", "Étape 2 —" avec LaTeX complet, aucune étape sautée
-  3. Connecteurs OBLIGATOIRES: "On a", "D'où", "Or", "Il vient", "En effet", "On en déduit que", "Ainsi", "On conclut que"
-  4. Citation du cours OBLIGATOIRE: "D'après le programme Bac SM", "Par le théorème [NOM]", "Rappel: [formule]"
-  5. Conclusion en gras: **Réponse: [lettre]) [valeur/expression]**
+STRUCTURE IMPOSÉE pour chaque astuce :
+  1. Titre en gras : **[Nom du chapitre] — Programme Bac [filière]**
+  2. Corps : Adopte un ton extrêmement sobre, digne, précis et rigoureux. Respecte scrupuleusement la mise en page et les retours à la ligne (utilises-en abondamment, p. ex. "\\n\\n" ou "\\\n\\\n"). Chaque étape de calcul ou de raisonnement doit commencer par un retour à la ligne. Ne compresse jamais les calculs et explications dans un paragraphe continu.
+  3. Étapes claires : Divise les explications par sous-questions (ex: 1.a., 1.b.) ou étapes numérotées ("Étape 1 —", "Étape 2 —") avec LaTeX complet, aucune étape de calcul ou justification sautée.
+  4. Connecteurs OBLIGATOIRES : "On a :", "D'où", "Or", "Il vient", "En effet", "On en déduit que", "Ainsi", "On conclut que", "Puisque ... alors ...".
+  5. Citation du cours OBLIGATOIRE : "D'après le programme Bac", "Par le théorème [NOM]", "Rappel: [formule]".
+  6. Pour les vecteurs et géométrie : Utilise les flèches complètes (ex : $\\overrightarrow{AB}$) et le produit vectoriel marocain officiel $\\wedge$ (ex : $\\overrightarrow{AB} \\wedge \\overrightarrow{AC}$), et détaille soigneusement le calcul.
+  7. Conclusion en gras : **Réponse: [lettre]) [valeur/expression]**
 
 NOTATIONS OFFICIELLES DU PROGRAMME MAROCAIN (ne jamais dévier):
   - Suite: $(u_n)_{n \\in \\mathbb{N}}$
@@ -486,7 +535,7 @@ EXEMPLE 4 — Physique-Chimie (Cinétique d'ordre 1):
 ════════════════════════════════════════
 🎯 MISSION
 ════════════════════════════════════════
-Extrais TOUTES les questions QCM du document PDF fourni, sans en omettre aucune.
+Extrais TOUTES les questions QCM du document PDF fourni, sans en omettre absolument aucune. Tu dois impérativement extraire TOUTES les questions du premier au dernier numéro du document, sans aucune troncature ni omission, même si le document est très long.
 Pour chaque question:
 - Respecte EXACTEMENT le format JSON des 4 exemples ci-dessus
 - Astuce en style INSPECTEUR MAROCAIN: étapes numérotées, connecteurs officiels, citations du cours, conclusion en gras
@@ -848,8 +897,8 @@ Pour le champ 'astuce', extrais/résume l'explication officielle fournie dans le
 
   // Call DeepSeek Chat Completions API with extracted text
   const fetchDeepSeekWithText = async (pdfText, correctionText) => {
-    let pageNote = '';
-    let userPromptText = '';
+    let pageNote;
+    let userPromptText;
 
     if (mode === 'with_correction') {
       pageNote = `IMPORTANT : Les données textuelles fournies contiennent à la fois les questions de l'examen et la correction officielle.
@@ -1087,7 +1136,7 @@ ${pdfText}
       astuce: q.astuce,
       trick: q.trick || null
     }));
-    addExam(examName, school, year, tier, formatted, null);
+    addExam(examName, school, year, tier, formatted, null, school);
     setPhase(3);
   };
 
@@ -1109,8 +1158,28 @@ ${pdfText}
     </div>
   );
 
+  const isArMode = /[\u0600-\u06FF]/.test(examName + ' ' + school + ' ' + (questions || []).map(q => q.question + ' ' + q.subject).join(' '));
+
   return (
     <div className="animate-fade-in" style={{ maxWidth: 960, margin: '0 auto' }}>
+      {isArMode && (
+        <style>{`
+          @font-face {
+            font-family: 'UKIJMerdaneRegular';
+            src: url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+          }
+          input, textarea, select {
+            font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif !important;
+            direction: rtl !important;
+            text-align: right !important;
+          }
+          label, th, td, h2, h3, h4 {
+            font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif !important;
+            direction: rtl !important;
+            text-align: right !important;
+          }
+        `}</style>
+      )}
       {/* ── Page Header ── */}
       <header style={{ marginBottom: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
@@ -1398,9 +1467,9 @@ ${pdfText}
           {/* Exam metadata */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
             <div className="input-group">
-              <label>École cible</label>
+              <label>Niveau cible</label>
               <select className="input-control" value={school} onChange={e => setSchool(e.target.value)}>
-                {schools.map(s => <option key={s}>{s}</option>)}
+                {schools.map(s => <option key={s} value={s}>{getLevelDisplayName(s)}</option>)}
               </select>
             </div>
             <div className="input-group">

@@ -19,10 +19,10 @@ export default function BottomNav() {
 
   const studentItems = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Accueil'  },
+    { to: '/levels',    icon: Library,         label: 'Cours'    },
     { to: '/schools',   icon: GraduationCap,   label: 'Écoles'   },
     { to: '/scanner',   icon: Camera,          label: 'Scanner'  },
-    { to: '/study',     icon: BookOpen,         label: 'Réviser'  },
-    { to: '/ranking',   icon: Trophy,           label: 'Rank'     },
+    { to: '/ranking',   icon: Trophy,          label: 'Rank'     },
   ];
 
   const adminItems = [

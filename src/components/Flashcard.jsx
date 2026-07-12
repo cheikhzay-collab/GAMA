@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { renderWithMath } from '../utils/mathRenderer';
 import { Lightbulb, CheckCircle2, XCircle, Frown, Meh, Smile, BrainCircuit, Zap, Clock } from 'lucide-react';
 import { playCorrectSound, playIncorrectSound } from '../utils/audio';
@@ -35,12 +35,12 @@ export default function Flashcard({ card, onNext }) {
   const revealTimeoutRef = useRef(null);
   const exitTimeoutRef = useRef(null);
 
-  useState(() => {
+  useEffect(() => {
     return () => {
       if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
       if (exitTimeoutRef.current) clearTimeout(exitTimeoutRef.current);
     };
-  });
+  }, []);
 
   const revealCard = (optionId) => {
     if (selectedOption !== null && selectedOption !== undefined) return;

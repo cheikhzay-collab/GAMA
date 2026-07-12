@@ -6,8 +6,78 @@ import {
 } from '../services/lessonService';
 import { 
   BookOpen, Sparkles, Search, Trash2, Eye, Edit,
-  CheckCircle, XCircle, Library, PlusCircle, AlertCircle 
+  CheckCircle, XCircle, Library, PlusCircle, AlertCircle, Languages 
 } from 'lucide-react';
+import TranslateModal from '../components/TranslateModal';
+import { renderWithMath } from '../utils/mathRenderer';
+
+
+const normalizeLevel = (rawLevel) => {
+  if (!rawLevel) return '2bac_pc_svt';
+  const normalized = rawLevel.toLowerCase().trim();
+  
+  if (normalized.includes('common_core_sci') || normalized.includes('common-core-sci')) return 'common_core_sci';
+  if (normalized.includes('common_core_arts') || normalized.includes('common-core-arts')) return 'common_core_arts';
+  if (normalized.includes('1bac_sci') || normalized.includes('1bac-sci')) return '1bac_sci';
+  if (normalized.includes('1bac_arts') || normalized.includes('1bac-arts')) return '1bac_arts';
+  if (normalized.includes('2bac_sm') || normalized.includes('2bac-sm')) return '2bac_sm';
+  if (normalized.includes('2bac_pc_svt') || normalized.includes('2bac-pc-svt') || normalized.includes('2bac_pc/svt')) return '2bac_pc_svt';
+  if (normalized.includes('2bac_arts') || normalized.includes('2bac-arts')) return '2bac_arts';
+
+  if (normalized.includes('sm') || normalized.includes('math') || normalized.includes('رياضية')) {
+    return '2bac_sm';
+  }
+  if (normalized.includes('pc') || normalized.includes('svt') || normalized.includes('تجريبية')) {
+    return '2bac_pc_svt';
+  }
+  if (normalized.includes('2bac') || normalized.includes('ثانية باك')) {
+    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
+      return '2bac_arts';
+    }
+    return '2bac_pc_svt';
+  }
+  if (normalized.includes('1bac') || normalized.includes('أولى باك') || normalized.includes('1ère bac') || normalized.includes('première bac')) {
+    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
+      return '1bac_arts';
+    }
+    return '1bac_sci';
+  }
+  if (normalized.includes('commun') || normalized.includes('tc') || normalized.includes('مشترك')) {
+    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
+      return 'common_core_arts';
+    }
+    return 'common_core_sci';
+  }
+  
+  const validKeys = ['common_core_sci', 'common_core_arts', '1bac_sci', '1bac_arts', '2bac_sm', '2bac_pc_svt', '2bac_arts'];
+  if (validKeys.includes(rawLevel)) {
+    return rawLevel;
+  }
+  
+  return '2bac_pc_svt';
+};
+
+const getLevelLabel = (rawLevel) => {
+  const level = normalizeLevel(rawLevel);
+  switch (level) {
+    case 'common_core_sci':
+      return 'Tronc Commun Sci (جدع مشترك علوم)';
+    case 'common_core_arts':
+      return 'Tronc Commun Lettres (جدع مشترك آداب)';
+    case '1bac_sci':
+      return '1ère Bac Sciences (أولى باك علوم)';
+    case '1bac_arts':
+      return '1ère Bac Lettres (أولى باك آداب)';
+    case '2bac_sm':
+      return '2ème Bac SM (ثانية باك علوم رياضية)';
+    case '2bac_pc_svt':
+      return '2ème Bac PC/SVT (ثانية باك علوم تجريبية)';
+    case '2bac_arts':
+      return '2ème Bac Lettres (ثانية باك آداب)';
+    default:
+      return level || 'Non spécifié';
+  }
+};
 
 export default function AdminLessons() {
   const { user, loading, profName, profPhone } = useAuth();
@@ -25,7 +95,10 @@ export default function AdminLessons() {
   const [selectedSubject, setSelectedSubject] = useState('Tous');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [selectedLevelFilter, setSelectedLevelFilter] = useState('Tous');
+  const [selectedDocTypeFilter, setSelectedDocTypeFilter] = useState('Tous');
   const [showConfirmDelete, setShowConfirmDelete] = useState(null); // id of lesson to delete
+  const [showTranslateModal, setShowTranslateModal] = useState(null); // lesson object to translate
 
   // Fetch Lessons
   const fetchLessonsList = async () => {
@@ -84,7 +157,9 @@ export default function AdminLessons() {
                           l.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           l.teacher?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSubject = selectedSubject === 'Tous' || l.subject === selectedSubject;
-    return matchesSearch && matchesSubject;
+    const matchesLevel = selectedLevelFilter === 'Tous' || normalizeLevel(l.level) === selectedLevelFilter;
+    const matchesDocType = selectedDocTypeFilter === 'Tous' || l.docType === selectedDocTypeFilter;
+    return matchesSearch && matchesSubject && matchesLevel && matchesDocType;
   });
 
   // Stats
@@ -193,10 +268,10 @@ export default function AdminLessons() {
         </div>
 
         {/* ── Table Controls (Search & Filters) ── */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: '1.5rem', width: '100%' }}>
           
           {/* Search */}
-          <div style={{ position: 'relative', width: '100%', maxWidth: '350px' }}>
+          <div style={{ position: 'relative', flex: '2', minWidth: '240px' }}>
             <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
             <input 
               type="text" 
@@ -211,25 +286,56 @@ export default function AdminLessons() {
             />
           </div>
 
-          {/* Subject Pills Filter */}
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {/* Subject Filter Dropdown */}
+          <select
+            value={selectedSubject}
+            onChange={(e) => setSelectedSubject(e.target.value)}
+            className="input-control"
+            style={{
+              fontSize: '0.85rem', minWidth: '160px', flex: '1'
+            }}
+          >
             {subjects.map(sub => (
-              <button
-                key={sub}
-                onClick={() => setSelectedSubject(sub)}
-                style={{
-                  padding: '0.45rem 1rem', borderRadius: '99px', fontSize: '0.78rem', fontWeight: 700,
-                  cursor: 'pointer',
-                  border: selectedSubject === sub ? '1px solid var(--violet)' : '1px solid var(--border)',
-                  background: selectedSubject === sub ? 'var(--violet-soft)' : 'var(--bg-glass)',
-                  color: selectedSubject === sub ? 'var(--violet)' : 'var(--text-muted)',
-                  transition: 'all 0.2s'
-                }}
-              >
+              <option key={sub} value={sub}>
                 {sub === 'Tous' ? 'Toutes les matières' : sub}
-              </button>
+              </option>
             ))}
-          </div>
+          </select>
+
+          {/* Level Filter Dropdown */}
+          <select
+            value={selectedLevelFilter}
+            onChange={(e) => setSelectedLevelFilter(e.target.value)}
+            className="input-control"
+            style={{
+              fontSize: '0.85rem', minWidth: '165px', flex: '1'
+            }}
+          >
+            <option value="Tous">Tous les niveaux</option>
+            <option value="common_core_sci">TC Scientifique</option>
+            <option value="common_core_arts">TC Lettres</option>
+            <option value="1bac_sci">1ère Bac Sciences</option>
+            <option value="1bac_arts">1ère Bac Lettres</option>
+            <option value="2bac_sm">2ème Bac SM</option>
+            <option value="2bac_pc_svt">2ème Bac PC/SVT</option>
+            <option value="2bac_arts">2ème Bac Lettres</option>
+          </select>
+
+          {/* DocType Filter Dropdown */}
+          <select
+            value={selectedDocTypeFilter}
+            onChange={(e) => setSelectedDocTypeFilter(e.target.value)}
+            className="input-control"
+            style={{
+              fontSize: '0.85rem', minWidth: '150px', flex: '1'
+            }}
+          >
+            <option value="Tous">Tous les types</option>
+            <option value="course">📖 Cours (درس)</option>
+            <option value="exercises">📝 Exercices (تمارين)</option>
+            <option value="homework">📑 Devoirs (فرض)</option>
+            <option value="concours">🏆 Concours (مباراة)</option>
+          </select>
 
         </div>
 
@@ -282,9 +388,11 @@ export default function AdminLessons() {
                             <BookOpen size={16} />
                           </div>
                           <div>
-                            <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.92rem' }}>{l.title}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', marginTop: '0.15rem' }}>
-                              Écoles : {l.schools?.join(', ') || 'Toutes'}
+                            <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.92rem' }}>{renderWithMath(l.title)}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', marginTop: '0.2rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                              <span style={{ background: 'rgba(255,255,255,0.04)', padding: '0.1rem 0.4rem', borderRadius: '4px', border: '1px solid var(--border)' }}>
+                                {getLevelLabel(l.level)}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -349,6 +457,32 @@ export default function AdminLessons() {
                           >
                             <Edit size={15} />
                           </button>
+
+                          {/* ── زر الترجمة بالذكاء الاصطناعي ── */}
+                          <button
+                            onClick={() => setShowTranslateModal(l)}
+                            className="btn-outline"
+                            title="ترجمة بالذكاء الاصطناعي"
+                            style={{
+                              padding: '0.45rem', borderRadius: '8px',
+                              border: '1px solid rgba(66,133,244,0.35)',
+                              color: '#4285F4',
+                              background: 'rgba(66,133,244,0.04)',
+                              transition: 'all 0.2s',
+                            }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.borderColor = '#4285F4';
+                              e.currentTarget.style.background = 'rgba(66,133,244,0.12)';
+                              e.currentTarget.style.transform = 'scale(1.05)';
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.borderColor = 'rgba(66,133,244,0.35)';
+                              e.currentTarget.style.background = 'rgba(66,133,244,0.04)';
+                              e.currentTarget.style.transform = 'scale(1)';
+                            }}
+                          >
+                            <Languages size={15} />
+                          </button>
                           
                           <button
                             onClick={() => setShowConfirmDelete(l.id)}
@@ -374,6 +508,24 @@ export default function AdminLessons() {
         </div>
 
       </div>
+
+      {/* ── Modal Traduction IA ── */}
+      {showTranslateModal && (
+        <TranslateModal
+          lesson={showTranslateModal}
+          onClose={() => setShowTranslateModal(null)}
+          onSuccess={({ newId, language }) => {
+            setShowTranslateModal(null);
+            fetchLessonsList(); // Refresh the list to show the new translated lesson
+            setSuccess(
+              language === 'ar'
+                ? '✅ تم إنشاء النسخة العربية بنجاح! يمكنك مراجعتها في القائمة.'
+                : `✅ La version traduite a été créée avec succès !`
+            );
+            setTimeout(() => setSuccess(''), 5000);
+          }}
+        />
+      )}
 
       {/* ── Confirmation Modal for Deletion ── */}
       {showConfirmDelete && (

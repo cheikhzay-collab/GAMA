@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Plus, Trash2, Settings, School, KeyRound, Eye, EyeOff, CheckCircle2, Sparkles, Image, RefreshCw, Layers, MousePointerClick, Crown, Download, Sliders, FileText, Camera, MessageCircle, Volume2 } from 'lucide-react';
+import { Plus, Trash2, Settings, School, KeyRound, Eye, EyeOff, CheckCircle2, Sparkles, Image, RefreshCw, Layers, MousePointerClick, Crown, Download, Sliders, FileText, Camera, MessageCircle, Volume2, BookOpen, Calendar, Palmtree } from 'lucide-react';
 import { getLandingArConfig, saveLandingArConfig } from '../services/schoolService';
 import { uploadAsset } from '../services/storageService';
 
@@ -314,170 +314,318 @@ export default function AdminSettings() {
     setTimeout(() => setKeySaved(false), 2500);
   };
 
+  // ── Logbook / Timetable / Holidays Settings ──────────────────────────────────
+  const WEEKDAYS = [
+    { id: 1, label: 'Lundi' },
+    { id: 2, label: 'Mardi' },
+    { id: 3, label: 'Mercredi' },
+    { id: 4, label: 'Jeudi' },
+    { id: 5, label: 'Vendredi' },
+    { id: 6, label: 'Samedi' },
+  ];
+
+  const TIME_SLOTS = [
+    '08:00 - 10:00', '10:00 - 12:00', '12:00 - 14:00',
+    '14:00 - 16:00', '16:00 - 18:00'
+  ];
+
+  const [logbookSchedule, setLogbookSchedule] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('teacher_schedule_current') || '{}'); }
+    catch { return {}; }
+  });
+
+  const [logbookHolidays, setLogbookHolidays] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('school_holidays') || '[]'); }
+    catch { return []; }
+  });
+
+  const [logbookArFont, setLogbookArFont] = useState(() => localStorage.getItem('logbook_ar_font') || 'UKIJ Merdane');
+  const [logbookFrFont, setLogbookFrFont] = useState(() => localStorage.getItem('logbook_fr_font') || 'Outfit');
+  const [logbookFontSize, setLogbookFontSize] = useState(() => localStorage.getItem('logbook_font_size') || '0.8rem');
+  const [logbookLineHeight, setLogbookLineHeight] = useState(() => parseInt(localStorage.getItem('logbook_line_height') || '20', 10));
+  const [logbookColorInk, setLogbookColorInk] = useState(() => localStorage.getItem('logbook_color_ink') || '#334155');
+  const [logbookColorChapter, setLogbookColorChapter] = useState(() => localStorage.getItem('logbook_color_chapter') || '#0f172a');
+  const [logbookColorAxis, setLogbookColorAxis] = useState(() => localStorage.getItem('logbook_color_axis') || '#2563eb');
+  const [logbookColorExercise, setLogbookColorExercise] = useState(() => localStorage.getItem('logbook_color_exercise') || '#d97706');
+
+  // Holiday form
+  const [newHolLabel, setNewHolLabel] = useState('');
+  const [newHolStart, setNewHolStart] = useState('');
+  const [newHolEnd, setNewHolEnd] = useState('');
+
+  const [logbookSaved, setLogbookSaved] = useState(false);
+  const [logbookSubTab, setLogbookSubTab] = useState('timetable'); // 'timetable' | 'holidays' | 'style'
+
+  const handleLogbookScheduleChange = (slotKey, field, value) => {
+    setLogbookSchedule(prev => ({
+      ...prev,
+      [slotKey]: { ...(prev[slotKey] || {}), [field]: value }
+    }));
+  };
+
+  const addHoliday = () => {
+    if (!newHolLabel || !newHolStart || !newHolEnd) return;
+    const hol = { id: `hol-${Date.now()}`, label: newHolLabel, startDate: newHolStart, endDate: newHolEnd };
+    setLogbookHolidays(prev => [...prev, hol]);
+    setNewHolLabel(''); setNewHolStart(''); setNewHolEnd('');
+  };
+
+  const removeHoliday = (id) => setLogbookHolidays(prev => prev.filter(h => h.id !== id));
+
+  const saveLogbookSettings = () => {
+    localStorage.setItem('teacher_schedule_current', JSON.stringify(logbookSchedule));
+    localStorage.setItem('school_holidays', JSON.stringify(logbookHolidays));
+    localStorage.setItem('logbook_ar_font', logbookArFont);
+    localStorage.setItem('logbook_fr_font', logbookFrFont);
+    localStorage.setItem('logbook_font_size', logbookFontSize);
+    localStorage.setItem('logbook_line_height', String(logbookLineHeight));
+    localStorage.setItem('logbook_color_ink', logbookColorInk);
+    localStorage.setItem('logbook_color_chapter', logbookColorChapter);
+    localStorage.setItem('logbook_color_axis', logbookColorAxis);
+    localStorage.setItem('logbook_color_exercise', logbookColorExercise);
+    setLogbookSaved(true);
+    setTimeout(() => setLogbookSaved(false), 2500);
+  };
+
   return (
     <div className="animate-fade-in" style={{ maxWidth: '1100px', margin: '0 auto' }}>
       
       <style>{`
-        .settings-container {
-          display: grid;
-          grid-template-columns: 240px 1fr;
-          gap: 2rem;
-          align-items: start;
-        }
-        .settings-tabs {
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-          position: sticky;
-          top: 2rem;
-        }
-        .settings-tab-btn {
-          display: flex;
-          align-items: center;
-          gap: 0.85rem;
-          padding: 0.85rem 1.25rem;
-          border-radius: 12px;
-          border: 1px solid var(--border);
-          cursor: pointer;
-          background: var(--bg-glass);
-          text-align: left;
-          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-          width: 100%;
-          position: relative;
-          overflow: hidden;
-        }
-        .settings-tab-btn:hover {
-          background: var(--bg-hover);
-          border-color: var(--border-hover);
-          transform: translateX(4px);
-        }
-        .settings-tab-btn.active {
-          background: linear-gradient(135deg, var(--violet-soft) 0%, rgba(99, 102, 241, 0.03) 100%);
-          border-color: var(--violet);
-          box-shadow: 0 4px 20px rgba(99, 102, 241, 0.08);
-        }
-        .settings-tab-btn::after {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 0;
-          bottom: 0;
-          width: 4px;
-          background: var(--violet);
-          border-radius: 0 4px 4px 0;
-          opacity: 0;
-          transform: scaleY(0.3);
-          transition: all 0.25s ease;
-        }
-        .settings-tab-btn.active::after {
-          opacity: 1;
-          transform: scaleY(1);
-          box-shadow: var(--shadow-glow-violet);
-        }
-        .settings-tab-icon {
-          color: var(--text-muted);
-          transition: transform 0.25s ease, color 0.25s ease;
-        }
-        .settings-tab-btn:hover .settings-tab-icon {
-          transform: scale(1.1);
-          color: var(--violet);
-        }
-        .settings-tab-btn.active .settings-tab-icon {
-          color: var(--violet);
-        }
-        .settings-tab-title {
-          font-weight: 700;
-          font-size: 0.85rem;
-          color: var(--text-muted);
-          transition: color 0.25s ease;
-        }
-        .settings-tab-btn.active .settings-tab-title {
-          color: var(--text-main);
-        }
-        .settings-tab-btn:hover .settings-tab-title {
-          color: var(--text-main);
-        }
-        .settings-tab-desc {
-          font-size: 0.68rem;
-          color: var(--text-subtle);
-          margin-top: 2px;
-          transition: color 0.25s ease;
-        }
-        .settings-tab-btn.active .settings-tab-desc {
-          color: var(--violet);
-        }
-        @media (max-width: 768px) {
-          .settings-container {
-            grid-template-columns: 1fr !important;
-            gap: 1.25rem !important;
-          }
-          .settings-tabs {
-            flex-direction: row !important;
-            overflow-x: auto;
-            padding-bottom: 0.5rem;
-            position: static !important;
-          }
-          .settings-tabs .settings-tab-btn {
-            flex-shrink: 0;
-            width: auto !important;
-            min-width: 170px;
-          }
-          .settings-tab-btn:hover {
-            transform: translateY(-2px);
-          }
-          .settings-tab-btn::after {
-            left: 0; right: 0; bottom: 0; top: auto;
-            width: 100%; height: 3px;
-            border-radius: 4px 4px 0 0;
-            transform: scaleX(0.3);
-          }
-          .settings-tab-btn.active::after {
-            transform: scaleX(1);
-          }
-        }
-      `}</style>
+         /* ═══ 2026 DESIGN SYSTEM ═══ */
+         .settings-aurora-bg {
+           position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
+         }
+         .settings-aurora-bg::before, .settings-aurora-bg::after {
+           content: ''; position: absolute; border-radius: 50%; filter: blur(140px);
+           opacity: 0.25; animation: auroraDrift 22s ease-in-out infinite;
+         }
+         .settings-aurora-bg::before {
+           width: 600px; height: 600px; top: -200px; left: -150px;
+           background: radial-gradient(circle, var(--violet) 0%, transparent 70%);
+         }
+         .settings-aurora-bg::after {
+           width: 500px; height: 500px; bottom: -150px; right: -120px;
+           background: radial-gradient(circle, var(--emerald) 0%, transparent 70%);
+           animation-delay: -11s; animation-direction: reverse;
+         }
+         @keyframes auroraDrift {
+           0%, 100% { transform: translate(0,0) scale(1); }
+           33%      { transform: translate(50px, -40px) scale(1.15); }
+           66%      { transform: translate(-30px, 45px) scale(0.9); }
+         }
 
-      <header style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem' }}>
-            <div style={{ width: 40, height: 40, borderRadius: '12px', background: 'linear-gradient(135deg, var(--violet), var(--emerald))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Settings size={22} color="#fff" />
-            </div>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>Paramètres</h1>
-          </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>Gérez les options globales de la plateforme.</p>
-        </div>
-      </header>
+         .settings-container {
+           display: grid;
+           grid-template-columns: 260px 1fr;
+           gap: 2rem;
+           align-items: start;
+         }
 
-      <div className="settings-container">
-        {/* Left Tabs Column */}
-        <div className="settings-tabs">
-          {[
-            { id: 'general', label: 'Général & Branding', icon: Sliders, desc: 'Identité PDF & Écoles' },
-            { id: 'whatsapp', label: 'Support WhatsApp', icon: MessageCircle, desc: 'Bouton flottant & message' },
-            { id: 'pdf', label: 'Design & Impression PDF', icon: FileText, desc: 'Marges, polices & sauts' },
-            { id: 'flashcards', label: 'Méthode Flashcards', icon: Layers, desc: 'Animations & Révélation' },
-            { id: 'apis', label: 'Clés API & IA', icon: KeyRound, desc: 'Claude, Gemini' },
-            { id: 'landing_editor', label: 'Page de vente (AR)', icon: Image, desc: 'Modifier images & sections' },
-            { id: 'subscriptions', label: 'Baqat & Vouchers', icon: Crown, desc: 'Tarifs & Activation' },
-          ].map(tab => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className={`settings-tab-btn ${isActive ? 'active' : ''}`}
-              >
-                <tab.icon size={18} className="settings-tab-icon" />
-                <div>
-                  <div className="settings-tab-title">{tab.label}</div>
-                  <div className="settings-tab-desc">{tab.desc}</div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
+         .settings-tabs {
+           display: flex;
+           flex-direction: column;
+           gap: 0.3rem;
+           position: sticky;
+           top: 1rem;
+           padding: 1.25rem;
+           background: var(--bg-card);
+           backdrop-filter: blur(24px);
+           border: 1px solid var(--border);
+           border-radius: 20px;
+           box-shadow: var(--shadow-card);
+         }
+         .settings-tab-btn {
+           display: flex;
+           align-items: center;
+           gap: 0.75rem;
+           padding: 0.65rem 0.85rem;
+           border-radius: 10px;
+           border: 1px solid transparent;
+           cursor: pointer;
+           background: transparent;
+           text-align: left;
+           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+           width: 100%;
+           position: relative;
+           font-family: inherit;
+         }
+         .settings-tab-btn:hover { background: var(--bg-hover); }
+         .settings-tab-btn.active {
+           background: linear-gradient(135deg, var(--violet-soft) 0%, var(--emerald-soft) 100%);
+           border-color: var(--border-hover);
+           box-shadow: inset 0 0 0 1px rgba(99,102,241,0.1);
+         }
+         .settings-tab-btn.active::before {
+           content: '';
+           position: absolute;
+           left: -1.25rem; top: 50%;
+           transform: translateY(-50%);
+           width: 3px; height: 55%;
+           background: linear-gradient(180deg, var(--violet), var(--emerald));
+           border-radius: 0 3px 3px 0;
+           box-shadow: 0 0 8px rgba(99,102,241,0.4);
+         }
+         .settings-tab-icon {
+           width: 32px; height: 32px;
+           border-radius: 8px;
+           display: flex; align-items: center; justify-content: center;
+           background: var(--bg-glass);
+           border: 1px solid var(--border);
+           color: var(--text-muted);
+           transition: all 0.2s ease;
+           flex-shrink: 0;
+         }
+         .settings-tab-btn:hover .settings-tab-icon {
+           color: var(--violet);
+           border-color: var(--border-hover);
+         }
+         .settings-tab-btn.active .settings-tab-icon {
+           background: linear-gradient(135deg, var(--violet), #818cf8);
+           color: #fff;
+           border-color: transparent;
+           box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+         }
+         .settings-tab-title {
+           font-weight: 700; font-size: 0.85rem;
+           color: var(--text-muted); transition: color 0.2s;
+         }
+         .settings-tab-btn.active .settings-tab-title { color: var(--text-main); }
+         .settings-tab-desc {
+           font-size: 0.67rem; color: var(--text-subtle);
+           margin-top: 1px; transition: color 0.2s;
+         }
+         .settings-tab-btn.active .settings-tab-desc { color: var(--violet); }
+
+         .settings-hero {
+           position: relative; margin-bottom: 2rem; padding: 1.5rem 2rem;
+           border-radius: 20px; background: var(--bg-card);
+           backdrop-filter: blur(24px);
+           border: 1px solid var(--border); box-shadow: var(--shadow-card);
+           overflow: hidden;
+         }
+         .settings-hero::before {
+           content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+           background: linear-gradient(90deg, transparent, rgba(113,109,242,0.4), rgba(16,185,129,0.4), transparent);
+         }
+         .settings-hero::after {
+           content: ''; position: absolute; top: -50%; right: -10%;
+           width: 380px; height: 380px;
+           background: radial-gradient(circle, var(--violet-glow) 0%, transparent 60%);
+           filter: blur(40px); pointer-events: none;
+         }
+         .settings-hero-icon {
+           width: 52px; height: 52px; border-radius: 14px;
+           background: linear-gradient(135deg, var(--violet), var(--emerald));
+           display: flex; align-items: center; justify-content: center;
+           box-shadow: 0 10px 28px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+           flex-shrink: 0;
+         }
+         .settings-hero-title {
+           font-size: 1.75rem; font-weight: 800;
+           letter-spacing: -0.025em; margin: 0;
+         }
+         .settings-hero-subtitle {
+           color: var(--text-muted); font-size: 0.92rem; margin: 0.25rem 0 0;
+         }
+         .settings-hero-stat {
+           display: flex; flex-direction: column; padding: 0.7rem 1.1rem;
+           background: var(--bg-glass); border: 1px solid var(--border);
+           border-radius: 12px; min-width: 90px;
+         }
+         .settings-hero-stat-value {
+           font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em;
+         }
+         .settings-hero-stat-label {
+           font-size: 0.68rem; color: var(--text-subtle);
+           font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+         }
+
+         .glass-panel.col-span-12[style*="display: block"] {
+           animation: panelSlideIn 0.45s cubic-bezier(0.22,1,0.36,1) both;
+         }
+         @keyframes panelSlideIn {
+           from { opacity: 0; transform: translateY(12px); }
+           to   { opacity: 1; transform: translateY(0); }
+         }
+
+         @media (max-width: 768px) {
+           .settings-container {
+             grid-template-columns: 1fr !important;
+             gap: 1.25rem !important;
+           }
+           .settings-tabs {
+             position: static !important;
+             flex-direction: row !important;
+             overflow-x: auto;
+             gap: 0.5rem;
+           }
+           .settings-tabs .settings-tab-btn {
+             flex-shrink: 0;
+             min-width: 170px;
+           }
+           .settings-tab-btn.active::before { display: none; }
+           .settings-hero { padding: 1.2rem; }
+           .settings-hero-title { font-size: 1.4rem; }
+         }
+       `}</style>
+
+       <div className="settings-aurora-bg" aria-hidden="true" />
+
+       <div className="settings-hero" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem' }}>
+         <div style={{ display: 'flex', alignItems: 'center', gap: '1.15rem', position: 'relative', zIndex: 1 }}>
+           <div className="settings-hero-icon">
+             <Settings size={26} color="#fff" />
+           </div>
+           <div>
+             <h1 className="settings-hero-title">Paramètres</h1>
+             <p className="settings-hero-subtitle">Gérez les options globales de la plateforme.</p>
+           </div>
+         </div>
+         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+           <div className="settings-hero-stat">
+             <span className="settings-hero-stat-value">{(plans || []).length}</span>
+             <span className="settings-hero-stat-label">Plans</span>
+           </div>
+           <div className="settings-hero-stat">
+             <span className="settings-hero-stat-value">{(activationCodes || []).length}</span>
+             <span className="settings-hero-stat-label">Codes</span>
+           </div>
+           <div className="settings-hero-stat">
+             <span className="settings-hero-stat-value">{(schools || []).length}</span>
+             <span className="settings-hero-stat-label">Écoles</span>
+           </div>
+         </div>
+       </div>
+
+       <div className="settings-container">
+         <div className="settings-tabs">
+           {[
+             { id: 'general', label: 'Général & Branding', icon: Sliders, desc: 'Identité PDF & Écoles' },
+             { id: 'whatsapp', label: 'Support WhatsApp', icon: MessageCircle, desc: 'Bouton flottant & message' },
+             { id: 'pdf', label: 'Design & Impression PDF', icon: FileText, desc: 'Marges, polices & sauts' },
+             { id: 'flashcards', label: 'Méthode Flashcards', icon: Layers, desc: 'Animations & Révélation' },
+             { id: 'apis', label: 'Clés API & IA', icon: KeyRound, desc: 'Claude, Gemini' },
+             { id: 'landing_editor', label: 'Page de vente (AR)', icon: Image, desc: 'Modifier images & sections' },
+             { id: 'subscriptions', label: 'Baqat & Vouchers', icon: Crown, desc: 'Tarifs & Activation' },
+             { id: 'logbook', label: 'دفتر النصوص', icon: BookOpen, desc: 'جدول الحصص، العطل والتصميم' },
+           ].map(tab => {
+             const isActive = activeTab === tab.id;
+             return (
+               <button
+                 key={tab.id}
+                 type="button"
+                 onClick={() => setActiveTab(tab.id)}
+                 className={`settings-tab-btn ${isActive ? 'active' : ''}`}
+               >
+                 <tab.icon size={16} className="settings-tab-icon" />
+                 <div>
+                   <div className="settings-tab-title">{tab.label}</div>
+                   <div className="settings-tab-desc">{tab.desc}</div>
+                 </div>
+               </button>
+             );
+           })}
+         </div>
 
         {/* Right Content Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%', minWidth: 0 }}>
@@ -2181,6 +2329,240 @@ export default function AdminSettings() {
               </div>
 
             </div>
+          </div>
+        </div>
+
+        {/* ── Logbook / Timetable / Holidays Settings ── */}
+        <div className="col-span-12 glass-panel" style={{ display: activeTab === 'logbook' ? 'block' : 'none' }}>
+          <h3 style={{ marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <BookOpen size={20} style={{ color: 'var(--violet)' }} /> إعدادات دفتر النصوص
+          </h3>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.88rem' }}>
+            قم بإعداد جدول الحصص الأسبوعي، أيام العطل، وأسلوب طباعة دفتر النصوص PDF.
+          </p>
+
+          {/* Sub-tabs */}
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem', flexWrap: 'wrap' }}>
+            {[
+              { id: 'timetable', label: 'جدول الحصص', icon: '🗓️' },
+              { id: 'holidays',  label: 'العطل المدرسية', icon: '🌴' },
+              { id: 'style',    label: 'تصميم الطباعة', icon: '🎨' },
+            ].map(st => (
+              <button
+                key={st.id}
+                type="button"
+                onClick={() => setLogbookSubTab(st.id)}
+                style={{
+                  padding: '0.5rem 1.1rem', borderRadius: 10, border: '1px solid',
+                  borderColor: logbookSubTab === st.id ? 'var(--violet)' : 'var(--border)',
+                  background: logbookSubTab === st.id ? 'var(--violet-soft)' : 'var(--bg-glass)',
+                  color: logbookSubTab === st.id ? 'var(--violet)' : 'var(--text-muted)',
+                  fontWeight: logbookSubTab === st.id ? 700 : 500,
+                  fontSize: '0.83rem', cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit',
+                  display: 'flex', alignItems: 'center', gap: '0.4rem'
+                }}
+              >
+                <span>{st.icon}</span> {st.label}
+              </button>
+            ))}
+          </div>
+
+          {/* ── TIMETABLE TAB ── */}
+          {logbookSubTab === 'timetable' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-subtle)', marginBottom: '0.5rem' }}>
+                حدد مادة دراسية ووقت الحصة لكل يوم في الأسبوع. سيتم استخدام هذا الجدول لاقتراح الإدخالات التلقائية في دفتر النصوص.
+              </p>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ padding: '0.5rem 0.75rem', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 700, borderBottom: '1px solid var(--border)', width: 100 }}>الوقت</th>
+                      {WEEKDAYS.map(d => (
+                        <th key={d.id} style={{ padding: '0.5rem 0.75rem', textAlign: 'center', color: 'var(--violet)', fontWeight: 700, borderBottom: '1px solid var(--border)' }}>{d.label}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {TIME_SLOTS.map(slot => (
+                      <tr key={slot}>
+                        <td style={{ padding: '0.5rem 0.75rem', color: 'var(--text-subtle)', fontWeight: 600, whiteSpace: 'nowrap', borderBottom: '1px solid var(--border)', background: 'var(--bg-glass)' }}>{slot}</td>
+                        {WEEKDAYS.map(d => {
+                          const key = `${d.id}_${slot}`;
+                          const cell = logbookSchedule[key] || {};
+                          return (
+                            <td key={d.id} style={{ padding: '0.35rem', borderBottom: '1px solid var(--border)', minWidth: 130 }}>
+                              <input
+                                type="text"
+                                className="input-control"
+                                placeholder="مادة..."
+                                value={cell.subject || ''}
+                                onChange={e => handleLogbookScheduleChange(key, 'subject', e.target.value)}
+                                style={{ fontSize: '0.78rem', padding: '0.35rem 0.55rem', marginBottom: '0.25rem' }}
+                              />
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ── HOLIDAYS TAB ── */}
+          {logbookSubTab === 'holidays' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-subtle)' }}>
+                أضف أيام العطل الرسمية والأعياد. ستُستثنى هذه الفترات تلقائياً من حساب الحصص الفائتة.
+              </p>
+
+              {/* Add holiday form */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: '0.75rem', alignItems: 'flex-end', background: 'var(--bg-glass)', padding: '1rem', borderRadius: 12, border: '1px solid var(--border)' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)' }}>اسم العطلة</label>
+                  <input type="text" className="input-control" placeholder="مثال: عطلة نصف الفصل" value={newHolLabel} onChange={e => setNewHolLabel(e.target.value)} style={{ fontSize: '0.82rem' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)' }}>من</label>
+                  <input type="date" className="input-control" value={newHolStart} onChange={e => setNewHolStart(e.target.value)} style={{ fontSize: '0.82rem' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)' }}>إلى</label>
+                  <input type="date" className="input-control" value={newHolEnd} onChange={e => setNewHolEnd(e.target.value)} style={{ fontSize: '0.82rem' }} />
+                </div>
+                <button
+                  onClick={addHoliday}
+                  className="btn"
+                  style={{ padding: '0.5rem 1rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                >
+                  <Plus size={15} /> إضافة
+                </button>
+              </div>
+
+              {/* Holiday list */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {logbookHolidays.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-subtle)', fontSize: '0.85rem' }}>
+                    🌴 لا توجد عطل مضافة بعد
+                  </div>
+                )}
+                {logbookHolidays.map(h => (
+                  <div key={h.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 1rem', borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span style={{ fontSize: '1.2rem' }}>🌴</span>
+                      <div>
+                        <p style={{ margin: 0, fontWeight: 700, fontSize: '0.88rem' }}>{h.label}</p>
+                        <p style={{ margin: 0, fontSize: '0.73rem', color: 'var(--text-subtle)' }}>{h.startDate} → {h.endDate}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeHoliday(h.id)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '0.25rem' }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── STYLE TAB ── */}
+          {logbookSubTab === 'style' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-subtle)' }}>
+                خصّص مظهر طباعة دفتر النصوص PDF: الخطوط، أحجام الكتابة، والألوان.
+              </p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+                {/* Arabic Font */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>خط العربية</label>
+                  <select className="input-control" value={logbookArFont} onChange={e => setLogbookArFont(e.target.value)} style={{ fontSize: '0.85rem' }}>
+                    <option value="UKIJ Merdane">UKIJ Merdane (كلاسيكي)</option>
+                    <option value="Noto Naskh Arabic">Noto Naskh Arabic</option>
+                    <option value="Amiri">Amiri (رسمي)</option>
+                    <option value="Tajawal">Tajawal (عصري)</option>
+                    <option value="Cairo">Cairo</option>
+                  </select>
+                </div>
+
+                {/* French Font */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>خط الفرنسية</label>
+                  <select className="input-control" value={logbookFrFont} onChange={e => setLogbookFrFont(e.target.value)} style={{ fontSize: '0.85rem' }}>
+                    <option value="Outfit">Outfit (عصري)</option>
+                    <option value="Inter">Inter (واضح)</option>
+                    <option value="Computer Modern Serif">Computer Modern Serif (أكاديمي)</option>
+                    <option value="Times New Roman">Times New Roman (كلاسيكي)</option>
+                  </select>
+                </div>
+
+                {/* Font Size */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>حجم الخط الأساسي</label>
+                  <select className="input-control" value={logbookFontSize} onChange={e => setLogbookFontSize(e.target.value)} style={{ fontSize: '0.85rem' }}>
+                    <option value="0.7rem">صغير (0.7rem)</option>
+                    <option value="0.8rem">عادي (0.8rem)</option>
+                    <option value="0.9rem">كبير (0.9rem)</option>
+                    <option value="1rem">كبير جداً (1rem)</option>
+                  </select>
+                </div>
+
+                {/* Line Height */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>ارتفاع السطر (بالـ px)</label>
+                  <input
+                    type="number" min={12} max={40}
+                    className="input-control"
+                    value={logbookLineHeight}
+                    onChange={e => setLogbookLineHeight(parseInt(e.target.value, 10) || 20)}
+                    style={{ fontSize: '0.85rem' }}
+                  />
+                </div>
+              </div>
+
+              {/* Color pickers */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                {[
+                  { label: 'لون النص الرئيسي', value: logbookColorInk, setter: setLogbookColorInk },
+                  { label: 'لون عنوان الفصل', value: logbookColorChapter, setter: setLogbookColorChapter },
+                  { label: 'لون عنوان المحور', value: logbookColorAxis, setter: setLogbookColorAxis },
+                  { label: 'لون التمارين', value: logbookColorExercise, setter: setLogbookColorExercise },
+                ].map(({ label, value, setter }) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.6rem 0.9rem', background: 'var(--bg-glass)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                    <input
+                      type="color"
+                      value={value}
+                      onChange={e => setter(e.target.value)}
+                      style={{ width: 36, height: 36, border: 'none', background: 'none', cursor: 'pointer', borderRadius: 6 }}
+                    />
+                    <div>
+                      <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 700 }}>{label}</p>
+                      <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--text-subtle)', fontFamily: 'monospace' }}>{value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Save button */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.75rem' }}>
+            <button
+              onClick={saveLogbookSettings}
+              className="btn"
+              style={{
+                padding: '0.75rem 2rem',
+                background: logbookSaved ? 'linear-gradient(135deg,var(--emerald),#34d399)' : undefined,
+                boxShadow: logbookSaved ? '0 4px 16px rgba(16,185,129,0.35)' : undefined,
+                transition: 'all 0.3s'
+              }}
+            >
+              {logbookSaved ? <><CheckCircle2 size={16} /> تم الحفظ!</> : 'حفظ إعدادات دفتر النصوص'}
+            </button>
           </div>
         </div>
         </div>

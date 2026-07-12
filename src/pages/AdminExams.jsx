@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Lock, Unlock, Library, Eye, EyeOff, Edit, X, FileText, Download, Search, BookOpen, Trash2, Archive } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { generateSubjectHTML, generateCorrectionHTML, generateEbookHTML, openPrintWindow } from '../utils/generateExamPDF';
+import { getLevelDisplayName, mapLegacySchoolToLevel } from './SchoolsPage';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
@@ -75,7 +76,8 @@ export default function AdminExams() {
     if (archiveTab === 'active' && e.isArchived) return false;
     if (archiveTab === 'archived' && !e.isArchived) return false;
     if (search && !e.name?.toLowerCase().includes(search.toLowerCase())) return false;
-    if (filterSchool && e.school !== filterSchool) return false;
+    const itemLevel = e.level || mapLegacySchoolToLevel(e.school);
+    if (filterSchool && itemLevel !== filterSchool) return false;
     if (filterYear && e.year !== filterYear) return false;
     if (filterStatus === 'active' && e.isActive === false) return false;
     if (filterStatus === 'inactive' && e.isActive !== false) return false;
@@ -198,8 +200,8 @@ export default function AdminExams() {
           />
         </div>
         <select value={filterSchool} onChange={e => setFilterSchool(e.target.value)} style={{ ...sel, flex: '1 1 160px' }}>
-          <option value="">🏫 Toutes les écoles</option>
-          {schools.map(s => <option key={s} value={s}>{s}</option>)}
+          <option value="">🎓 Tous les niveaux</option>
+          {schools.map(s => <option key={s} value={s}>{getLevelDisplayName(s)}</option>)}
         </select>
         <select value={filterYear} onChange={e => setFilterYear(e.target.value)} style={{ ...sel, flex: isMobile ? '1 1 130px' : '0 0 auto' }}>
           <option value="">📅 Toutes les années</option>
@@ -281,7 +283,7 @@ export default function AdminExams() {
                 {/* Metadata badges */}
                 <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', fontSize: '0.76rem', color: 'var(--text-muted)' }}>
                   <span style={{ background: 'var(--bg-glass)', border: '1px solid var(--border)', borderRadius: 6, padding: '0.2rem 0.5rem' }}>
-                    🏫 {exam.school || '—'}
+                    🎓 {getLevelDisplayName(exam.level || mapLegacySchoolToLevel(exam.school)) || '—'}
                   </span>
                   <span style={{ background: 'var(--bg-glass)', border: '1px solid var(--border)', borderRadius: 6, padding: '0.2rem 0.5rem' }}>
                     📅 {exam.year || '—'}
@@ -491,8 +493,7 @@ export default function AdminExams() {
                       </div>
                     </td>
 
-                    {/* School */}
-                    <td style={{ padding: '0.9rem 1rem', color: 'var(--text-muted)', fontSize: '0.82rem', maxWidth: 130 }}>{exam.school || '—'}</td>
+                    <td style={{ padding: '0.9rem 1rem', color: 'var(--text-muted)', fontSize: '0.82rem', maxWidth: 130 }}>{getLevelDisplayName(exam.level || mapLegacySchoolToLevel(exam.school)) || '—'}</td>
 
                     {/* Year */}
                     <td style={{ padding: '0.9rem 1rem', color: 'var(--text-muted)', fontSize: '0.82rem', whiteSpace: 'nowrap' }}>{exam.year || '—'}</td>

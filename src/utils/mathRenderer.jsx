@@ -254,6 +254,11 @@ const LATEX_COMMAND_RE = /\\(?:lim|frac|dfrac|left|right|cdot|sqrt|sum|int|prod|
 function autoWrapLatex(text) {
   if (text.includes('$')) return text;
   
+  // Don't auto-wrap if it's a markdown bullet point or contains markdown bold/italic
+  if (/^\s*[\*\-+]\s+/.test(text) || text.includes('**') || /(?<!\*)\*[^*]+\*/.test(text)) {
+    return text;
+  }
+  
   // Check if it looks like a sentence (contains spaces and regular alphabetic words)
   if (text.includes(' ')) {
     const words = text.split(/\s+/);
@@ -304,10 +309,10 @@ const repairCorruptedLatex = (text) => {
     .replace(/(?<!\\)right\b/g, '\\right')
     // Replace "left" (not preceded by backslash) with "\left"
     .replace(/(?<!\\)left\b/g, '\\left')
-    // Replace "frac{" (not preceded by backslash) with "\frac{"
-    .replace(/(?<!\\)frac\{/g, '\\frac{')
-    // Replace "dfrac{" (not preceded by backslash) with "\dfrac{"
-    .replace(/(?<!\\)dfrac\{/g, '\\dfrac{')
+    // Replace "frac{" (not preceded by letter/backslash) with "\frac{"
+    .replace(/(?<![a-zA-Z\\])frac\{/g, '\\frac{')
+    // Replace "dfrac{" (not preceded by letter/backslash) with "\dfrac{"
+    .replace(/(?<![a-zA-Z\\])dfrac\{/g, '\\dfrac{')
     // Replace "rac{" (not preceded by letter/backslash) with "\frac{" (in case f was stripped as form feed)
     .replace(/(?<![a-zA-Z\\])rac\{/g, '\\frac{');
 };
@@ -322,10 +327,195 @@ const repairCorruptedLatex = (text) => {
  *  Now we split FIRST on \n\n (paragraphs) and \n (lines), clean each
  *  line individually, then reassemble with proper block/inline elements.
  */
+const extractTablesAndText = (text) => {
+  if (!text) return [];
+  const lines = text.split('\n');
+  const segments = [];
+  let currentTextLines = [];
+  let i = 0;
+  
+  while (i < lines.length) {
+    const line = lines[i].trim();
+    
+    // Check if it's the start of a table
+    if (line.startsWith('|') && line.endsWith('|') && i + 1 < lines.length) {
+      const nextLine = lines[i + 1].trim();
+      if (nextLine.startsWith('|') && nextLine.endsWith('|') && /^[|\-:\s]+$/.test(nextLine)) {
+        // First push any accumulated text segment
+        if (currentTextLines.length > 0) {
+          segments.push({ type: 'text', content: currentTextLines.join('\n') });
+          currentTextLines = [];
+        }
+        
+        // Accumulate all consecutive table rows
+        const headerRow = line;
+        const separatorRow = nextLine;
+        const dataRows = [];
+        i += 2;
+        while (i < lines.length && lines[i].trim().startsWith('|') && lines[i].trim().endsWith('|')) {
+          dataRows.push(lines[i].trim());
+          i++;
+        }
+        
+        segments.push({
+          type: 'table',
+          headerRow,
+          separatorRow,
+          dataRows
+        });
+        continue;
+      }
+    }
+    
+    currentTextLines.push(lines[i]);
+    i++;
+  }
+  
+  if (currentTextLines.length > 0) {
+    segments.push({ type: 'text', content: currentTextLines.join('\n') });
+  }
+  
+  return segments;
+};
+
+const renderTableSegment = (segment, key) => {
+  const parseRowCells = (rowText) => {
+    const cells = rowText.split('|').map(c => c.trim());
+    if (cells[0] === '') cells.shift();
+    if (cells[cells.length - 1] === '') cells.pop();
+    return cells;
+  };
+  
+  const headerCells = parseRowCells(segment.headerRow);
+  const sepCells = parseRowCells(segment.separatorRow);
+  
+  const alignments = sepCells.map(cell => {
+    const left = cell.startsWith(':');
+    const right = cell.endsWith(':');
+    if (left && right) return 'center';
+    if (right) return 'right';
+    return 'left';
+  });
+  
+  const renderCellContent = (cellText) => {
+    const toParse = autoWrapLatex(cellText);
+    const tokens = tokenizeMath(toParse);
+    if (tokens.length === 1 && tokens[0].type === 'text') {
+      return renderTextWithBold(tokens[0].content);
+    }
+    return tokens.map((tok, i) => {
+      if (tok.type === 'block')  return <SafeBlockMath  key={i} math={tok.content} />;
+      if (tok.type === 'inline') return <SafeInlineMath key={i} math={tok.content} />;
+      return <span key={i}>{renderTextWithBold(tok.content)}</span>;
+    });
+  };
+  
+  return (
+    <div key={key} style={{ display: 'flex', justifyContent: 'center', margin: '2rem 0', width: '100%', overflowX: 'auto' }}>
+      <table style={{
+        borderCollapse: 'collapse',
+        minWidth: '70%',
+        maxWidth: '100%',
+        border: '1px solid #cbd5e1',
+        fontSize: '1.15rem',
+        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.04)',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        background: '#ffffff'
+      }}>
+        <thead>
+          <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1' }}>
+            {headerCells.map((cell, idx) => (
+              <th key={idx} style={{
+                padding: '14px 22px',
+                border: '1px solid #cbd5e1',
+                fontWeight: '800',
+                color: '#005086',
+                textAlign: alignments[idx] || 'center'
+              }}>
+                {renderCellContent(cell)}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {segment.dataRows.map((row, rIdx) => {
+            const cells = parseRowCells(row);
+            const isAlt = rIdx % 2 === 1;
+            return (
+              <tr key={rIdx} style={{ backgroundColor: isAlt ? '#f8fafc' : '#ffffff' }}>
+                {cells.map((cell, idx) => (
+                  <td key={idx} style={{
+                    padding: '14px 22px',
+                    border: '1px solid #cbd5e1',
+                    textAlign: alignments[idx] || 'center',
+                    color: '#334155'
+                  }}>
+                    {renderCellContent(cell)}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
 export function renderWithMath(text) {
   if (text === null || text === undefined) return null;
-  const repaired = repairCorruptedLatex(String(text));
+  
+  // Unify literal '\\n' and CRLF newlines first to split correctly
+  let rawText = String(text)
+    .replace(/\\n(?![a-zA-Z])/g, '\n')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
+
+  const lines = rawText.split('\n');
+  const mergedLines = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    // Match prefix like "1.", "a)", "B.", "**1.**", "**a)**" on its own line
+    if (/^(\*\*)?([a-zA-Z]|\d+)[.)](\*\*)?$/.test(line) && i + 1 < lines.length) {
+      let nextNonEmptyIdx = i + 1;
+      while (nextNonEmptyIdx < lines.length && lines[nextNonEmptyIdx].trim() === '') {
+        nextNonEmptyIdx++;
+      }
+      if (nextNonEmptyIdx < lines.length) {
+        mergedLines.push(line + ' ' + lines[nextNonEmptyIdx].trim());
+        i = nextNonEmptyIdx;
+        continue;
+      }
+    }
+    mergedLines.push(lines[i]);
+  }
+  rawText = mergedLines.join('\n');
+
+  const repaired = repairCorruptedLatex(rawText);
   const raw = repaired;
+  if (!raw.trim()) return null;
+
+  const segments = extractTablesAndText(raw);
+  
+  if (segments.length === 1 && segments[0].type === 'text') {
+    return renderWithMathInternal(segments[0].content);
+  }
+  
+  return (
+    <>
+      {segments.map((seg, idx) => {
+        if (seg.type === 'table') {
+          return renderTableSegment(seg, idx);
+        }
+        return <span key={idx} style={{ display: 'block' }}>{renderWithMathInternal(seg.content)}</span>;
+      })}
+    </>
+  );
+}
+
+function renderWithMathInternal(text) {
+  const raw = text;
   if (!raw.trim()) return null;
 
   // ── Image shorthand ──
@@ -363,8 +553,12 @@ export function renderWithMath(text) {
   const normalised = normalisedTemp.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g)
     .map((part, idx) => {
       if (idx % 2 === 1) return part;
-      let cleanedPart = part.replace(/\\n/g, '\n');
+      let cleanedPart = part.replace(/\\n(?![a-zA-Z])/g, '\n');
       
+      // Force line break after period followed by space and uppercase letter/backslash/math delimiter
+      // NOTE: exclude when preceded by a digit (numbered list item like "1. Calculer")
+      cleanedPart = cleanedPart.replace(/(?<!\d|^|\n|\b\d\.[a-zA-Z]|\bex|\betc|\bvs)\.\s+([A-ZÀ-ÖØ-ß]|\\|\$)/g, '.\n$1');
+
       // Force line break before "Étape" / "Step" / "الخطوة" outside math blocks (case-insensitive)
       if (idx > 0) {
         cleanedPart = cleanedPart.replace(/^\s*(\*\*)?(étape|etape|step|الخطوة)\b/gi, '\n$1$2');
@@ -454,22 +648,22 @@ export function renderWithMath(text) {
     if (/^[-•]\s+/.test(cleaned) || (/^\*\s+/.test(cleaned) && !cleaned.startsWith('**'))) {
       const text = cleaned.replace(/^[-•*]\s+/, '');
       return (
-        <div key={key} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', margin: '0.2rem 0', lineHeight: 1.7 }}>
-          <span style={{ color: '#005086', fontWeight: 800, flexShrink: 0, marginTop: '0.05em' }}>•</span>
-          <span style={{ flex: 1 }}>{renderLineContent(text)}</span>
+        <div key={key} className="list-item-row" style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', margin: '0.2rem 0', lineHeight: 1.7 }}>
+          <span className="list-num" style={{ color: '#005086', fontWeight: 800, flexShrink: 0, marginTop: '0.05em' }}>•</span>
+          <span className="list-content" style={{ flex: 1 }}>{renderLineContent(text)}</span>
         </div>
       );
     }
 
     // ── Markdown numbered list: 1. or 1) 
-    const numberedMatch = cleaned.match(/^(\d+)[.)]\s+(.+)/);
+    const numberedMatch = cleaned.match(/^(\d+)[.)\s]/);
     if (numberedMatch) {
       const num = numberedMatch[1];
-      const text = numberedMatch[2];
+      const text = cleaned.replace(/^\d+[.)\s]+/, '');
       return (
-        <div key={key} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', margin: '0.2rem 0', lineHeight: 1.7 }}>
-          <span style={{ color: '#005086', fontWeight: 800, flexShrink: 0, minWidth: '1.5em' }}>{num}.</span>
-          <span style={{ flex: 1 }}>{renderLineContent(text)}</span>
+        <div key={key} className="list-item-row" style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', margin: '0.2rem 0', lineHeight: 1.7 }}>
+          <span className="list-num" style={{ color: '#005086', fontWeight: 800, flexShrink: 0, minWidth: '1.5em' }}>{num}.</span>
+          <span className="list-content" style={{ flex: 1 }}>{renderLineContent(text)}</span>
         </div>
       );
     }
@@ -620,7 +814,7 @@ export function renderWithMath(text) {
     <>
       {paragraphs.map((lines, pi) => {
         return (
-          <p key={pi} style={{ margin: '0.35em 0', lineHeight: 1.75 }}>
+          <div key={pi} style={{ margin: '0.35em 0', lineHeight: 1.75 }}>
             {lines.map((lineTokens, li) => {
               if (lineTokens.length === 0) return null;
               if (lineTokens.length === 1 && lineTokens[0].type === 'block') {
@@ -633,7 +827,7 @@ export function renderWithMath(text) {
               }).join('');
               return renderLine(reconstructedLine, li);
             })}
-          </p>
+          </div>
         );
       })}
     </>

@@ -21,64 +21,64 @@ const ICON_MAP = {
   'graduationcap': GraduationCap
 };
 
-/* ─── School Brand Registry ─────────────────────────────────────── */
+/* ─── Level Brand Registry ─────────────────────────────────────── */
 const SCHOOL_BRANDS = {
-  'Médecine / Pharmacie': {
-    iconKey: 'stethoscope', tag: 'Sciences de la Santé',
-    gradient: 'linear-gradient(135deg, #EF4444 0%, #991B1B 100%)',
-    glow: 'rgba(239, 68, 68, 0.25)', accent: '#EF4444', accentSoft: 'rgba(239, 68, 68, 0.08)',
-    desc: 'Médecine, Pharmacie, Chirurgie Dentaire — Annales officielles du Maroc.',
-    scoring: { correct: 1, wrong: -0.25, empty: 0 }
-  },
-  'ENSA': {
-    iconKey: 'cpu', tag: 'Ingénierie',
-    gradient: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
-    glow: 'rgba(59, 130, 246, 0.25)', accent: '#3B82F6', accentSoft: 'rgba(59, 130, 246, 0.08)',
-    desc: 'École Nationale des Sciences Appliquées — concours CNC & autres.',
-    scoring: { correct: 1, wrong: -0.25, empty: 0 }
-  },
-  'ENSAM': {
-    iconKey: 'wrench', tag: 'Arts & Métiers',
-    gradient: 'linear-gradient(135deg, #0EA5E9 0%, #0369A1 100%)',
-    glow: 'rgba(14, 165, 233, 0.25)', accent: '#0EA5E9', accentSoft: 'rgba(14, 165, 233, 0.08)',
-    desc: "École Nationale Supérieure d'Arts et Métiers — sciences de l'ingénieur.",
-    scoring: { correct: 1, wrong: -0.25, empty: 0 }
-  },
-  'ENCG': {
-    iconKey: 'barchart', tag: 'Commerce & Gestion',
-    gradient: 'linear-gradient(135deg, #10B981 0%, #047857 100%)',
-    glow: 'rgba(16, 185, 129, 0.25)', accent: 'var(--emerald)', accentSoft: 'rgba(16,185,129,0.08)',
-    desc: "École Nationale de Commerce et de Gestion — commerce, finance, management.",
-    scoring: { correct: 1, wrong: -0.25, empty: 0 }
-  },
-  'INPT': {
-    iconKey: 'wifi', tag: 'Télécommunications',
-    gradient: 'linear-gradient(135deg, #F97316 0%, #C2410C 100%)',
-    glow: 'rgba(249, 115, 22, 0.25)', accent: '#F97316', accentSoft: 'rgba(249,115,22,0.08)',
-    desc: "Institut National des Postes et Télécommunications — réseaux, systèmes.",
-    scoring: { correct: 1, wrong: -0.25, empty: 0 }
-  },
-  'INSEA': {
-    iconKey: 'trendingup', tag: 'Statistiques & Économie',
-    gradient: 'linear-gradient(135deg, #14B8A6 0%, #0F766E 100%)',
-    glow: 'rgba(20, 184, 166, 0.25)', accent: '#14B8A6', accentSoft: 'rgba(20, 184, 166, 0.08)',
-    desc: "Institut National de Statistique et d'Économie Appliquée.",
-    scoring: { correct: 1, wrong: -0.25, empty: 0 }
-  },
-  'Général (Prépa)': {
-    iconKey: 'compass', tag: 'Classes Préparatoires',
+  '2bac_sm': {
+    iconKey: 'compass', tag: 'Sciences Mathématiques',
     gradient: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
     glow: 'rgba(139, 92, 246, 0.25)', accent: '#8B5CF6', accentSoft: 'rgba(139, 92, 246, 0.08)',
-    desc: "MPSI, PCSI, TSI — Préparation générale aux grandes écoles marocaines.",
+    desc: 'Deuxième année Bac Sciences Mathématiques A & B — Préparation aux Grandes Écoles.',
     scoring: { correct: 1, wrong: -0.25, empty: 0 }
   },
+  '2bac_pc_svt': {
+    iconKey: 'stethoscope', tag: 'Sciences Expérimentales',
+    gradient: 'linear-gradient(135deg, #EF4444 0%, #991B1B 100%)',
+    glow: 'rgba(239, 68, 68, 0.25)', accent: '#EF4444', accentSoft: 'rgba(239, 68, 68, 0.08)',
+    desc: 'Deuxième année Bac Sciences Physiques & SVT — Préparation aux concours de Médecine, ENSA, etc.',
+    scoring: { correct: 1, wrong: -0.25, empty: 0 }
+  },
+  '1bac_sci': {
+    iconKey: 'cpu', tag: 'Sciences',
+    gradient: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+    glow: 'rgba(59, 130, 246, 0.25)', accent: '#3B82F6', accentSoft: 'rgba(59, 130, 246, 0.08)',
+    desc: 'Première année Bac Sciences Expérimentales.',
+    scoring: { correct: 1, wrong: 0, empty: 0 }
+  },
+  'common_core_sci': {
+    iconKey: 'wrench', tag: 'Tronc Commun',
+    gradient: 'linear-gradient(135deg, #0EA5E9 0%, #0369A1 100%)',
+    glow: 'rgba(14, 165, 233, 0.25)', accent: '#0EA5E9', accentSoft: 'rgba(14, 165, 233, 0.08)',
+    desc: 'Tronc Commun Scientifique.',
+    scoring: { correct: 1, wrong: 0, empty: 0 }
+  },
+  '2bac_arts': {
+    iconKey: 'barchart', tag: 'Lettres',
+    gradient: 'linear-gradient(135deg, #10B981 0%, #047857 100%)',
+    glow: 'rgba(16, 185, 129, 0.25)', accent: 'var(--emerald)', accentSoft: 'rgba(16, 185, 129, 0.08)',
+    desc: 'Deuxième année Bac Lettres & Sciences Humaines.',
+    scoring: { correct: 1, wrong: 0, empty: 0 }
+  },
+  '1bac_arts': {
+    iconKey: 'wifi', tag: 'Lettres',
+    gradient: 'linear-gradient(135deg, #F97316 0%, #C2410C 100%)',
+    glow: 'rgba(249, 115, 22, 0.25)', accent: '#F97316', accentSoft: 'rgba(249, 115, 22, 0.08)',
+    desc: 'Première année Bac Lettres.',
+    scoring: { correct: 1, wrong: 0, empty: 0 }
+  },
+  'common_core_arts': {
+    iconKey: 'trendingup', tag: 'Tronc Commun',
+    gradient: 'linear-gradient(135deg, #14B8A6 0%, #0F766E 100%)',
+    glow: 'rgba(20, 184, 166, 0.25)', accent: '#14B8A6', accentSoft: 'rgba(20, 184, 166, 0.08)',
+    desc: 'Tronc Commun Littéraire.',
+    scoring: { correct: 1, wrong: 0, empty: 0 }
+  }
 };
 
 const DEFAULT_BRAND = {
-  iconKey: 'graduationcap', tag: 'Grande École',
+  iconKey: 'graduationcap', tag: 'Niveau',
   gradient: 'linear-gradient(135deg, #6366F1 0%, #4338CA 100%)',
-  glow: 'rgba(99, 102, 241, 0.25)', accent: '#818CF8', accentSoft: 'rgba(129,140,248,0.08)',
-  desc: 'Concours nationaux — Annales et QCM officiels.',
+  glow: 'rgba(99, 102, 241, 0.25)', accent: '#818CF8', accentSoft: 'rgba(129, 140, 248, 0.08)',
+  desc: 'Concours nationaux par niveau d\'études.',
   scoring: { correct: 1, wrong: -0.25, empty: 0 }
 };
 
@@ -104,6 +104,26 @@ const GRADIENT_PALETTE = [
   { label:'Émeraude', value:'linear-gradient(135deg, #059669 0%, #10b981 100%)', dot:'var(--emerald)' },
   { label:'Or',       value:'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', dot:'var(--warning)' },
 ];
+
+export const getLevelDisplayName = (id, isArabic = false) => {
+  switch (id) {
+    case 'common_core_sci': return isArabic ? 'جدع مشترك علوم' : 'Tronc Commun Scientifique';
+    case 'common_core_arts': return isArabic ? 'جدع مشترك آداب' : 'Tronc Commun Littéraire';
+    case '1bac_sci': return isArabic ? 'أولى باك علوم تجريبية' : '1ère Bac Sciences Expérimentales';
+    case '1bac_arts': return isArabic ? 'أولى باك آداب' : '1ère Bac Littéraire';
+    case '2bac_sm': return isArabic ? 'ثانية باك علوم رياضية' : '2ème Bac Sciences Mathématiques';
+    case '2bac_pc_svt': return isArabic ? 'ثانية باك علوم تجريبية (PC/SVT)' : '2ème Bac Sciences Expérimentales (PC/SVT)';
+    case '2bac_arts': return isArabic ? 'ثانية باك آداب' : '2ème Bac Lettres & Sciences Humaines';
+    default: return id;
+  }
+};
+
+export const mapLegacySchoolToLevel = (sch) => {
+  if (!sch) return sch;
+  if (sch === 'Médecine / Pharmacie' || sch === 'ENCG') return '2bac_pc_svt';
+  if (['ENSA', 'ENSAM', 'INPT', 'INSEA', 'Général (Prépa)'].includes(sch)) return '2bac_sm';
+  return sch;
+};
 
 function getBrand(name, schoolBranding) {
   const custom = schoolBranding?.[name] || {};
@@ -616,7 +636,7 @@ export default function SchoolsPage() {
 
   const allSchoolNames = Array.from(new Set([
     ...schools,
-    ...exams.map(e => e.school).filter(Boolean),
+    ...exams.map(e => e.level || mapLegacySchoolToLevel(e.school)).filter(Boolean),
   ]));
 
   const uniqueTags = ['Tous', ...Array.from(new Set(allSchoolNames.map(name => getBrand(name, schoolBranding).tag).filter(Boolean)))];
@@ -625,12 +645,12 @@ export default function SchoolsPage() {
     const brand = getBrand(name, schoolBranding);
     if (!isAdmin && brand.isActive === false) return false;
 
-    const matchesSearch = name.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = getLevelDisplayName(name).toLowerCase().includes(search.toLowerCase()) || name.toLowerCase().includes(search.toLowerCase());
     if (selectedTag === 'Tous') return matchesSearch;
     return matchesSearch && brand.tag === selectedTag;
   });
 
-  const getExamCount = s => exams.filter(e => e.school === s && e.isArchived !== true).length;
+  const getExamCount = s => exams.filter(e => (e.level === s || mapLegacySchoolToLevel(e.school) === s) && e.isArchived !== true).length;
 
   const handleEdit = (school) => setEditTarget(school);
   const handleDelete = (school) => setDeleteTarget(school);
@@ -666,13 +686,13 @@ export default function SchoolsPage() {
             <div style={{ width:40, height:40, borderRadius:'12px', background:'linear-gradient(135deg,var(--violet),var(--emerald))', display:'flex', alignItems:'center', justifyContent: 'center', boxShadow: 'var(--btn-primary-shadow)' }}>
               <GraduationCap size={22} color="#fff" />
             </div>
-            <h1 style={{ fontSize:'1.75rem', fontWeight:800, letterSpacing:'-0.02em', margin:0 }}>Grandes Écoles</h1>
+            <h1 style={{ fontSize:'1.75rem', fontWeight:800, letterSpacing:'-0.02em', margin:0 }}>Concours par Niveau</h1>
           </div>
           {!isMobile && (
             <p style={{ color:'var(--text-muted)', fontSize:'0.9rem', margin:0 }}>
               {isAdmin
-                ? 'Gérez les établissements, personnalisez leurs logos, icônes et règles de notation.'
-                : 'Choisissez votre école pour accéder aux annales et QCM officiels.'}
+                ? 'Gérez les niveaux, personnalisez leurs logos, icônes et règles de notation.'
+                : 'Choisissez votre niveau pour accéder aux annales et QCM officiels.'}
             </p>
           )}
         </div>
@@ -681,7 +701,7 @@ export default function SchoolsPage() {
         {isAdmin && (
           <button className="btn-emerald" onClick={() => setShowAddForm(v => !v)}
             style={{ display:'flex', alignItems:'center', gap:'0.5rem', boxShadow: '0 8px 20px var(--emerald-glow)' }}>
-            <Plus size={16} /> Ajouter une école
+            <Plus size={16} /> Ajouter un niveau
           </button>
         )}
       </header>
@@ -691,7 +711,7 @@ export default function SchoolsPage() {
         <div className="glass-panel animate-fade-in" style={{ marginBottom:'1.5rem', display:'flex', gap:'0.75rem', alignItems:'center', flexWrap:'wrap' }}>
           <input
             className="input-control"
-            placeholder="Nom de la nouvelle école..."
+            placeholder="Nom du nouveau niveau..."
             value={addName}
             onChange={e => setAddName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleAdd()}
@@ -722,7 +742,7 @@ export default function SchoolsPage() {
             <Search size={16} style={{ position:'absolute', left:'0.875rem', top:'50%', transform:'translateY(-50%)', color:'var(--text-subtle)', pointerEvents:'none' }} />
             <input 
               className="input-control" 
-              placeholder="Rechercher une école..." 
+              placeholder="Rechercher un niveau..." 
               value={search} 
               onChange={e => setSearch(e.target.value)} 
               style={{ paddingLeft:'2.5rem', width:'100%', borderRadius: '10px' }} 
@@ -730,8 +750,8 @@ export default function SchoolsPage() {
           </div>
           {!isMobile && (
             <div style={{ display:'flex', gap:'1.25rem', fontSize:'0.83rem', color:'var(--text-muted)' }}>
-              <span><strong className="text-main" style={{ color: 'var(--text-main)' }}>{allSchoolNames.length}</strong> établissements</span>
-              <span><strong className="text-emerald" style={{ color: 'var(--emerald)' }}>{exams.filter(e => e.isArchived !== true).length}</strong> examens</span>
+              <span><strong className="text-main" style={{ color: 'var(--text-main)' }}>{allSchoolNames.length}</strong> niveaux</span>
+              <span><strong className="text-emerald" style={{ color: 'var(--emerald)' }}>{exams.filter(e => e.isArchived !== true).length}</strong> concours</span>
             </div>
           )}
         </div>
@@ -776,7 +796,7 @@ export default function SchoolsPage() {
       {filtered.length === 0 ? (
         <div style={{ textAlign:'center', padding:'4rem', color:'var(--text-muted)' }}>
           <GraduationCap size={48} style={{ opacity:0.25, margin:'0 auto 1rem' }} />
-          <p>Aucune école trouvée</p>
+          <p>Aucun niveau trouvé</p>
         </div>
       ) : (
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(290px, 1fr))', gap: isMobile ? '1rem' : '1.5rem' }}>
@@ -784,7 +804,7 @@ export default function SchoolsPage() {
             const brand = getBrand(school, schoolBranding);
             
             // Calculate interacted questions percentage
-            const schoolExams = exams.filter(e => e.school === school && e.isArchived !== true);
+            const schoolExams = exams.filter(e => (e.level === school || mapLegacySchoolToLevel(e.school) === school) && e.isArchived !== true);
             const totalQuestions = schoolExams.reduce((sum, exam) => sum + (exam.questionsCount || 0), 0);
             let interactedCount = 0;
             schoolExams.forEach(exam => {
@@ -799,7 +819,7 @@ export default function SchoolsPage() {
             return (
               <SchoolCard
                 key={school}
-                school={school}
+                school={getLevelDisplayName(school)}
                 examCount={getExamCount(school)}
                 brand={brand}
                 isAdmin={isAdmin}

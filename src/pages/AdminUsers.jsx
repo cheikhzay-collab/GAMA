@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Users, Crown, Activity, TrendingUp, RefreshCw, Search, User, ChevronRight, Download } from 'lucide-react';
+import { Users, Crown, Activity, TrendingUp, RefreshCw, Search, User, ChevronRight, Download, GraduationCap } from 'lucide-react';
 import { unescapeHTML } from '../utils/security';
+import { getAllClasses } from '../services/classService';
 
 const isUserOnline = (user) => {
   if (!user || !user.updatedAt) return false;
@@ -28,6 +29,8 @@ export default function AdminUsers() {
   const [stageFilter, setStageFilter] = useState('all');
   const [cityFilter, setCityFilter] = useState('');
   const [schoolFilter, setSchoolFilter] = useState('');
+  const [classFilter, setClassFilter] = useState('');
+  const [classes, setClasses] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState(null);
@@ -38,6 +41,15 @@ export default function AdminUsers() {
     if (refreshAdminData) {
       refreshAdminData();
     }
+    const loadClasses = async () => {
+      try {
+        const cls = await getAllClasses();
+        setClasses(cls || []);
+      } catch (err) {
+        console.error('Failed to load classes:', err);
+      }
+    };
+    loadClasses();
   }, [refreshAdminData]);
 
   const handleRefresh = async () => {
@@ -69,6 +81,7 @@ export default function AdminUsers() {
     const headers = [
       'Nom Complet',
       'Email',
+      'Classe',
       'Téléphone',
       'Ville',
       'École Ciblée',
@@ -82,6 +95,7 @@ export default function AdminUsers() {
     const rows = filteredUsers.map(u => [
       unescapeHTML(u.name || ''),
       u.email || '',
+      u.classId || 'Aucune',
       u.phone || '',
       unescapeHTML(u.city || ''),
       unescapeHTML(u.school || ''),
@@ -127,7 +141,9 @@ export default function AdminUsers() {
     const currentSchool = u.school || '';
     const matchesSchool = !schoolFilter || currentSchool.toLowerCase().includes(schoolFilter.toLowerCase());
     
-    return matchesSearch && matchesStage && matchesCity && matchesSchool;
+    const matchesClass = !classFilter || u.classId === classFilter;
+    
+    return matchesSearch && matchesStage && matchesCity && matchesSchool && matchesClass;
   });
 
   const stats = [
@@ -330,6 +346,24 @@ export default function AdminUsers() {
             }}
           />
         </div>
+
+        {/* Class Filter Dropdown */}
+        <div style={{ flex: 1, minWidth: '150px' }}>
+          <select
+            value={classFilter}
+            onChange={(e) => setClassFilter(e.target.value)}
+            style={{
+              width: '100%', padding: '0.75rem 1rem', background: 'var(--bg-glass)',
+              border: '1px solid var(--border)', borderRadius: '12px', color: 'white', outline: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            <option value="" style={{ background: '#111827' }}>Toutes les classes</option>
+            {classes.map(c => (
+              <option key={c.id} value={c.id} style={{ background: '#111827' }}>{c.name}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* ── Users Table ── */}
@@ -339,6 +373,7 @@ export default function AdminUsers() {
           <thead>
             <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)' }}>
               <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Étudiant</th>
+              <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Classe</th>
               <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Inscription</th>
               <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Score Global</th>
               <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Plan</th>
@@ -349,7 +384,7 @@ export default function AdminUsers() {
           <tbody>
             {filteredUsers.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <td colSpan={7} style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
                   <Users size={40} style={{ margin: '0 auto 1rem', opacity: 0.3, display: 'block' }} />
                   <p style={{ margin: 0, fontWeight: 600 }}>
                     Aucun élève trouvé pour cette recherche ou ces filtres.
@@ -396,6 +431,19 @@ export default function AdminUsers() {
                       <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{u.email}</div>
                     </div>
                   </div>
+                </td>
+                <td style={{ padding: '1.25rem 1.5rem' }}>
+                  {u.classId ? (
+                    <span style={{ 
+                      display: 'inline-flex', alignItems: 'center', gap: '0.3rem', 
+                      color: 'var(--emerald)', background: 'rgba(16, 185, 129, 0.08)', 
+                      padding: '0.35rem 0.65rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700 
+                    }}>
+                      <GraduationCap size={13} /> {u.classId}
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-subtle)', fontStyle: 'italic' }}>Non assigné</span>
+                  )}
                 </td>
                 <td style={{ padding: '1.25rem 1.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                   {u.joined ? new Date(u.joined).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '15 Mai 2026'}

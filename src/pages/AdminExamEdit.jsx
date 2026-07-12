@@ -11,6 +11,7 @@ import {
 import { renderWithMath } from '../utils/mathRenderer';
 import { uploadAsset } from '../services/storageService';
 import { getExamQuestionsOnly } from '../services/examService';
+import { getLevelDisplayName, mapLegacySchoolToLevel } from './SchoolsPage';
 
 /* ─────────────────────────────────────────────────────────────
    Tiny LaTeX toolbar
@@ -361,6 +362,7 @@ export default function AdminExamEdit() {
 
   const [editName, setEditName] = useState('');
   const [editSchool, setEditSchool] = useState('');
+  const [editLevel, setEditLevel] = useState('');
   const [editYear, setEditYear] = useState('');
   const [editTier, setEditTier] = useState('freemium');
 
@@ -378,6 +380,7 @@ export default function AdminExamEdit() {
     if (!exam) return;
     setEditName(prev => prev === exam.name ? prev : (exam.name || ''));
     setEditSchool(prev => prev === exam.school ? prev : (exam.school || ''));
+    setEditLevel(prev => prev === exam.level ? prev : (exam.level || mapLegacySchoolToLevel(exam.school) || ''));
     setEditYear(prev => prev === exam.year ? prev : (exam.year || ''));
     setEditTier(prev => prev === exam.tier ? prev : (exam.tier || 'freemium'));
   }, [exam]);
@@ -437,6 +440,7 @@ export default function AdminExamEdit() {
     updateExamDetails(exam.id, {
       name: editName,
       school: editSchool,
+      level: editLevel,
       year: editYear,
       tier: editTier,
       questions: localQuestions,
@@ -898,19 +902,35 @@ Tu dois analyser la question et :
               />
             </div>
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.45rem', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                École / Faculté
-              </label>
-              <select
-                value={editSchool}
-                onChange={e => { setEditSchool(e.target.value); markDirty(); }}
-                required
-                className="input-control"
-                style={{ fontSize: '0.9rem' }}
-              >
-                {schools.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
+             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1.25rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.45rem', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Niveau Cible
+                </label>
+                <select
+                  value={editLevel}
+                  onChange={e => { setEditLevel(e.target.value); markDirty(); }}
+                  required
+                  className="input-control"
+                  style={{ fontSize: '0.9rem' }}
+                >
+                  {schools.map(s => <option key={s} value={s}>{getLevelDisplayName(s)}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.45rem', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  École / Établissement (Affichage)
+                </label>
+                <input
+                  value={editSchool}
+                  onChange={e => { setEditSchool(e.target.value); markDirty(); }}
+                  required
+                  className="input-control"
+                  style={{ fontSize: '0.9rem' }}
+                  placeholder="Ex: ENSA, ENSAM, Médecine..."
+                />
+              </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1.25rem' }}>

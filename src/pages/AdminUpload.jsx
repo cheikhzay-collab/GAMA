@@ -3,6 +3,7 @@ import Papa from 'papaparse';
 import { useAuth } from '../context/AuthContext';
 import { UploadCloud, CheckCircle2, Copy, Check, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getLevelDisplayName } from './SchoolsPage';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
@@ -89,7 +90,7 @@ Langue : Français (termes mathématiques en LaTeX)`;
       complete: (results) => {
         const stripCR = (s) => typeof s === 'string' ? s.replace(/[\r\n\t]+/g, ' ').trim() : s;
         const parsedQuestions = results.data.map(row => ({
-          id: Math.random().toString(36).substr(2, 9),
+          id: Math.random().toString(36).substring(2, 11),
           topic: stripCR(row['Sujet'] || row['Topic'] || 'Général'),
           context: row['Context'] ? stripCR(row['Context']) : null,
           question: stripCR(row['Question'] || ''),
@@ -148,7 +149,7 @@ Langue : Français (termes mathématiques en LaTeX)`;
     e.preventDefault();
     if (!fileData || !examName) return;
 
-    addExam(examName, school, year, tier, fileData, pdfBase64);
+    addExam(examName, school, year, tier, fileData, pdfBase64, school);
     navigate('/admin/exams'); // redirect to library
   };
 
@@ -358,10 +359,10 @@ Langue : Français (termes mathématiques en LaTeX)`;
 
           <div className="dashboard-grid" style={{ marginBottom: 0 }}>
             <div className="col-span-4 input-group">
-              <label>École Cible</label>
+              <label>Niveau Cible</label>
               <select className="input-control" value={school} onChange={(e) => setSchool(e.target.value)}>
                 {schools.map(s => (
-                  <option key={s} value={s}>{s}</option>
+                  <option key={s} value={s}>{getLevelDisplayName(s)}</option>
                 ))}
               </select>
             </div>

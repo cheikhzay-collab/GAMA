@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 const mapExamToDB = (e) => ({
   name: e.name,
   school: e.school,
+  level: e.level || null,
   year: e.year,
   tier: e.tier,
   questions: e.questions,
@@ -25,6 +26,7 @@ const mapDBToExam = (row) => {
     id: row.id,
     name: row.name,
     school: row.school,
+    level: row.level || null,
     year: row.year,
     tier: row.tier,
     questions: row.questions,
@@ -116,7 +118,7 @@ export const getExamQuestionsOnly = async (examId) => {
  */
 export const addExam = async (examData) => {
   if (!supabase) return null;
-  const id = examData.id || Math.random().toString(36).substr(2, 9).toUpperCase();
+  const id = examData.id || Math.random().toString(36).substring(2, 11).toUpperCase();
   const dbExam = {
     id,
     ...mapExamToDB(examData),
@@ -141,6 +143,7 @@ export const updateExam = async (examId, updates) => {
   const dbUpdates = {};
   if (updates.name !== undefined) dbUpdates.name = updates.name;
   if (updates.school !== undefined) dbUpdates.school = updates.school;
+  if (updates.level !== undefined) dbUpdates.level = updates.level;
   if (updates.year !== undefined) dbUpdates.year = updates.year;
   if (updates.tier !== undefined) dbUpdates.tier = updates.tier;
   if (updates.questions !== undefined) dbUpdates.questions = updates.questions;

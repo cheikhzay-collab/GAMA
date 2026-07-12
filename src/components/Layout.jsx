@@ -40,12 +40,6 @@ const LayoutLoadingFallback = () => (
         animation: 'spinLayout 1s cubic-bezier(0.5, 0, 0.5, 1) infinite'
       }} />
     </div>
-    <style dangerouslySetInnerHTML={{__html: `
-      @keyframes spinLayout {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-    `}} />
   </div>
 );
 
@@ -55,20 +49,25 @@ export default function Layout() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Memoize confetti elements configuration so it doesn't recalculate on every render,
-  // preventing constant layout shifts and DOM remounts.
-  const confettiArray = useMemo(() => {
-    const colors = ['#FFC72C', '#FF5A5F', '#00A699', '#7C3AED', '#3B82F6', '#EC4899', '#F59E0B', '#10B981'];
-    return Array.from({ length: 70 }).map((_, i) => ({
-      left: Math.random() * 100,
-      delay: Math.random() * 5,
-      duration: 2.5 + Math.random() * 3.5,
-      size: 10 + Math.random() * 12,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      isStar: Math.random() > 0.6,
-      borderRadius: Math.random() > 0.5 ? '50%' : '3px'
-    }));
-  }, []);
+  // Generate confetti in useEffect to keep rendering phase pure and idempotent.
+  const [confettiArray, setConfettiArray] = useState([]);
+  useEffect(() => {
+    if (upgradedPlan) {
+      const colors = ['#FFC72C', '#FF5A5F', '#00A699', '#7C3AED', '#3B82F6', '#EC4899', '#F59E0B', '#10B981'];
+      const array = Array.from({ length: 70 }).map(() => ({
+        left: Math.random() * 100,
+        delay: Math.random() * 5,
+        duration: 2.5 + Math.random() * 3.5,
+        size: 10 + Math.random() * 12,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        isStar: Math.random() > 0.6,
+        borderRadius: Math.random() > 0.5 ? '50%' : '3px'
+      }));
+      setConfettiArray(array);
+    } else {
+      setConfettiArray([]);
+    }
+  }, [upgradedPlan]);
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try { return localStorage.getItem('sidebar-collapsed') === 'true'; }
@@ -158,13 +157,6 @@ export default function Layout() {
           GIMA • Préparation Digitale
         </p>
 
-        {/* Keyframe style injection for spin animation */}
-        <style dangerouslySetInnerHTML={{__html: `
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}} />
       </div>
     );
   }
@@ -238,17 +230,6 @@ export default function Layout() {
             top: 0,
             zIndex: 100
           }}>
-            <style dangerouslySetInnerHTML={{__html: `
-              @keyframes slideDownBanner {
-                from { transform: translateY(-100%); }
-                to { transform: translateY(0); }
-              }
-              @keyframes pulseOffline {
-                0% { transform: scale(0.9); opacity: 0.6; }
-                50% { transform: scale(1.3); opacity: 1; }
-                100% { transform: scale(0.9); opacity: 0.6; }
-              }
-            `}} />
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--danger)', animation: 'pulseOffline 1.5s infinite' }} />
             <span>Mode hors ligne — Vos révisions sont enregistrées localement et seront synchronisées au retour de la connexion.</span>
           </div>
@@ -466,61 +447,6 @@ export default function Layout() {
               C'est parti ! 🚀
             </button>
           </div>
-
-          <style dangerouslySetInnerHTML={{__html: `
-            .animate-modal {
-              animation: modalBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            }
-            .upgrade-success-icon-container {
-              width: 104px;
-              height: 104px;
-              border-radius: 50%;
-              border: 4px solid #FFFFFF;
-              background: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              margin: 0 auto;
-              animation: floatIcon 3s infinite ease-in-out;
-              box-shadow: 0 6px 0px #B45309, 0 12px 24px rgba(245, 158, 11, 0.4);
-            }
-            .btn-game {
-              background: #10B981 !important;
-              border: none !important;
-              border-bottom: 6px solid #059669 !important;
-              box-shadow: 0 8px 0px rgba(5, 150, 105, 0.2), 0 12px 24px rgba(16, 185, 129, 0.3) !important;
-              transition: all 0.1s ease !important;
-              transform: translateY(0px);
-            }
-            .btn-game:hover {
-              background: #059669 !important;
-              border-bottom-width: 6px !important;
-              transform: translateY(-2px) !important;
-              box-shadow: 0 10px 0px rgba(4, 120, 87, 0.2), 0 16px 28px rgba(16, 185, 129, 0.4) !important;
-            }
-            .btn-game:active {
-              transform: translateY(4px) !important;
-              border-bottom-width: 2px !important;
-              box-shadow: 0 2px 0px rgba(4, 120, 87, 0.2), 0 6px 12px rgba(16, 185, 129, 0.3) !important;
-            }
-            @keyframes modalBounce {
-              0% { transform: scale(0.85); opacity: 0; }
-              100% { transform: scale(1); opacity: 1; }
-            }
-            @keyframes spinSunburst {
-              0% { transform: translate(-50%, -50%) rotate(0deg); }
-              100% { transform: translate(-50%, -50%) rotate(360deg); }
-            }
-            @keyframes floatIcon {
-              0% { transform: translateY(0px) rotate(0deg); }
-              50% { transform: translateY(-8px) rotate(6deg); }
-              100% { transform: translateY(0px) rotate(0deg); }
-            }
-            @keyframes confettiFall {
-              0% { transform: translateY(-30px) rotate(0deg); opacity: 1; }
-              100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
-            }
-          `}} />
         </div>
       )}
     </div>

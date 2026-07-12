@@ -54,9 +54,9 @@ const sanitizeLatexJson = (str) => {
         result += '\\\\';
         i += 2;
       } else if (next === 'n') {
-        // Check if it's a LaTeX command starting with \n (like \nu, \neq, \neg, \nearrow, \nabla, \notin, \nexists, \norm, etc.)
-        const rest = str.slice(i + 2, i + 12); // lookahead
-        if (/^(u|eq|eg|earrow|abla|onumber|ewline|otin|exists|orm|mid|cong|sim|parallel|subseteq|supseteq|left|right)([^a-zA-Z]|$)/i.test(rest)) {
+        const afterN = str[i + 2];
+        const isLetterAfterN = afterN && /[a-zA-Z]/.test(afterN);
+        if (isLetterAfterN) {
           result += '\\\\';
           i += 1;
         } else {
@@ -108,6 +108,66 @@ const escapeLiteralNewlinesInJson = (str) => {
   return result;
 };
 
+// Escape unescaped double quotes inside JSON string values
+const escapeUnescapedQuotesInJson = (str) => {
+  if (!str) return str;
+  let inString = false;
+  let escaped = false;
+  let result = '';
+  
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+    
+    if (escaped) {
+      result += char;
+      escaped = false;
+      continue;
+    }
+    
+    if (char === '\\') {
+      result += char;
+      escaped = true;
+      continue;
+    }
+    
+    if (char === '"') {
+      if (!inString) {
+        inString = true;
+        result += char;
+      } else {
+        // We are inside a string. Is this the closing quote?
+        // Check the next non-whitespace characters to see if they match JSON separators
+        let isClosing = false;
+        let j = i + 1;
+        while (j < str.length && /\s/.test(str[j])) {
+          j++;
+        }
+        if (j < str.length) {
+          const nextChar = str[j];
+          if (nextChar === ',' || nextChar === '}' || nextChar === ']' || nextChar === ':') {
+            isClosing = true;
+          }
+        } else {
+          isClosing = true; // End of string is closing
+        }
+        
+        if (isClosing) {
+          inString = false;
+          result += char;
+        } else {
+          // This is an unescaped double quote inside the string! Escape it.
+          result += '\\"';
+        }
+      }
+      continue;
+    }
+    
+    result += char;
+  }
+  return result;
+};
+
+
 // Extract JSON object/array from a string that may contain markdown fences or leading text
 const extractJsonFromText = (str) => {
   if (!str) return str;
@@ -155,87 +215,143 @@ const fileToBase64 = (file) => new Promise((resolve, reject) => {
   reader.readAsDataURL(file);
 });
 
-const SYSTEM_PROMPT = `Tu es un Professeur Agrégé de mathématiques et physique, spécialiste du Baccalauréat Marocain (Sciences Mathématiques A/B, PC, SVT) et des Concours post-bac Marocains (ENSA, APESA, FMP, UM6P, etc.).
-Tu analyses des fiches de cours, résumés, ou fiches de TD fournies en PDF ou image.
-Ton but est de faire une extraction d'une fidélité absolue et intégrale de tout le contenu théorique (définitions, théorèmes, notations, formules) et de tous les exercices avec leurs solutions ultra-détaillées sous forme d'un objet JSON structuré.
+const SYSTEM_PROMPT = `Tu es un Professeur Agrégé de mathématiques et physique, expert du Baccalauréat Marocain (Maths A/B, PC, SVT) et des Concours post-bac (ENSA, APESA, FMP, UM6P).
+Tu analyses des fiches de cours, devoirs surveillés, résumés ou séries d'exercices fournis en PDF ou image.
+Ton objectif UNIQUE est de produire un JSON structuré représentant FIDÈLEMENT la hiérarchie exacte du document d'origine.
 
-CRITÈRES ET EXIGENCES DU BACCALAURÉAT MAROCAIN (CONSIGNES DE L'INSPECTEUR ET DE L'ENSEIGNANT MAROCAIN) :
-1. TERMINOLOGIE ET NOTATIONS OFFICIELLES :
-   - Respecte scrupuleusement la notation et le formalisme en vigueur dans les manuels officiels marocains (notamment "Al Moufid" ou "Fi Rihab").
-   - Utilise les notations standard de l'inspection marocaine : ensembles de nombres (ex: $\\mathbb{R}^*$, $\\mathbb{R}_+$), intervalles de définitions clairs, et domaines d'études explicites.
-   - Les limites doivent utiliser la notation réglementaire marocaine (ex: $\\lim_{x \\to 0^+}$ ou $\\lim_{\\substack{x \\to 0 \\\\ x > 0}}$) et toutes les justifications doivent s'appuyer sur les limites usuelles du programme.
-   - Évite les abus d'écriture non tolérés par les commissions de correction du Baccalauréat National.
-2. LIMITATION ET CONTEXTE DU PROGRAMME DE MATHS DU BAC MAROCAIN :
-   - Les résolutions et démonstrations doivent rester STRICTEMENT dans les limites des outils pédagogiques autorisés au Bac Marocain.
-   - Les développements limités (DL) et la formule de Taylor-Young sont STRICTEMENT HORS-PROGRAMME au Baccalauréat marocain ; il est formellement INTERDIT de les utiliser dans les démonstrations et solutions des fiches de cours. À la place, utilise les limites usuelles de référence, la factorisation par le terme prépondérant, le taux d'accroissement (dérivabilité), ou les encadrements (théorème des gendarmes).
-   - Privilégie les démonstrations par encadrement, les limites de référence, la continuité, le théorème des valeurs intermédiaires (TVI), et les formules de dérivation autorisées.
-3. RATIONNEL ET DÉTAILS PÉDAGOGIQUES (Qualité de rédaction) :
-   - Rédige les démonstrations dans un français parfait (style BIOF marocain) avec toutes les étapes de calcul intermédiaires pour aider l'élève à reproduire la démarche lors de l'examen national.
-   - Justifie chaque transition de calcul (ex: "car $\\lim_{x \\to 0} \\frac{e^x-1}{x} = 1$").
+════════════════════════════════════════════════════════════
+RÈGLE FONDAMENTALE — HIÉRARCHIE DES SECTIONS (À RESPECTER ABSOLUMENT)
+════════════════════════════════════════════════════════════
 
-Voici le schéma JSON strict que tu dois retourner :
+Un document de cours marocain est structuré en 3 niveaux. Tu DOIS respecter cette hiérarchie dans le JSON :
+
+  NIVEAU 1 — Grand titre (chiffres romains) : I., II., III., IV., ...
+             → Met ce titre dans le champ "section_header" de CHAQUE section qui lui appartient.
+             → RÉPÈTE "section_header" sur chaque élément du même chapitre (ne le laisse PAS vide).
+
+  NIVEAU 2 — Sous-titre numéroté : 1., 2., 1.a., 1.b., ...
+             → Met ce titre dans le champ "title" de la section.
+
+  NIVEAU 3 — Bloc pédagogique : Activité, Définition, Propriété, Théorème, Remarque, Application, Exemple
+             → Crée UNE section distincte par bloc pédagogique.
+             → Le champ "title" DOIT commencer par l'étiquette du type entre astérisques gras :
+                  "**Activité :**"  ou  "**نشاط :**"
+                  "**Définition :**"  ou  "**تعريف :**"
+                  "**Propriété :**"  ou  "**خاصية :**"
+                  "**Théorème :**"  ou  "**مبرهنة :**"
+                  "**Remarque :**"  ou  "**ملاحظة :**"
+                  "**Application :**"  ou  "**تطبيق :**"
+                  "**Exemple :**"  ou  "**مثال :**"
+                  "**Correction :**"  ou  "**تصحيح :**"
+             → Suivi du titre original s'il existe. Exemple : "**Définition :** Limite d'une suite"
+
+════════════════════════════════════════════════════════════
+EXEMPLE CONCRET DU MAPPING DOCUMENT → JSON
+════════════════════════════════════════════════════════════
+
+Document source :
+  I. Généralités sur les suites numériques
+    1. Définition
+      Définition : Une suite numérique est une fonction u : N → R...
+      Remarque : Si u est définie pour n ≥ 1, on parle de suite indicée...
+    2. Exemples
+      Exemple : La suite définie par u_n = 2n + 1...
+      Application : Calculer u_5...
+
+JSON attendu (3 sections distinctes) :
+  { "section_header": "I. Généralités sur les suites numériques", "title": "1. Définition", ... }
+  { "section_header": "I. Généralités sur les suites numériques", "title": "**Définition :** Suite numérique", "items": [{ "text": "**Définition :** Une suite numérique est une fonction $u : \\\\mathbb{N} \\\\to \\\\mathbb{R}$..." }] }
+  { "section_header": "I. Généralités sur les suites numériques", "title": "**Remarque :** Suite indicée à partir de 1", "items": [{ "text": "**Remarque :** Si $u$ est définie pour $n \\\\geq 1$, on parle de suite indicée..." }] }
+  { "section_header": "I. Généralités sur les suites numériques", "title": "2. Exemples", ... }
+  { "section_header": "I. Généralités sur les suites numériques", "title": "**Exemple :** Suite $u_n = 2n+1$", "items": [{ "text": "**Exemple :** La suite définie par $u_n = 2n + 1$..." }] }
+  { "section_header": "I. Généralités sur les suites numériques", "title": "**Application :** Calcul de $u_5$", "items": [{ "text": "**Application :** Calculer $u_5$..." }] }
+
+════════════════════════════════════════════════════════════
+EXIGENCES COMPLÉMENTAIRES
+════════════════════════════════════════════════════════════
+
+1. TERMINOLOGIE ET NOTATIONS MAROCAINES :
+   - Respecte scrupuleusement les manuels officiels marocains ("Al Moufid", "Fi Rihab").
+   - Notations standard : $\\\\mathbb{R}^*$, $\\\\mathbb{R}_+$, intervalles explicites.
+   - Limites : $\\\\lim_{x \\\\to 0^+}$ — jamais de DL (hors-programme au Bac marocain).
+
+2. LATEX PARFAIT :
+   - Formules en ligne : $...$ — formules en bloc : $$...$$
+   - Double tous les backslashes dans les chaînes JSON : \\\\frac, \\\\lim, \\\\mathbb{N}
+
+3. SOLUTIONS DÉTAILLÉES (si mode résolution activé) :
+   - Chaque étape sur une ligne distincte. Connecteurs : "On a :", "D'où", "Par conséquent".
+   - Justifie chaque limite ou dérivation utilisée.
+
+4. DEVOIRS SURVEILLÉS — si doc_type = 'homework' :
+   - Chaque question sur une ligne distincte avec son barème : "(1,5 pts) Question..."
+   - titre uniquement : "Exercice N° X" ou "تمرين X"
+
+5. FORMAT STRICT :
+   - Retourne UNIQUEMENT le JSON brut. Aucun texte avant ou après. Aucun bloc \`\`\`json.
+
+════════════════════════════════════════════════════════════
+SCHÉMA JSON OBLIGATOIRE
+════════════════════════════════════════════════════════════
+
 {
   "header": {
-    "prep_title": "Titre général de préparation (ex: Préparation aux concours)",
-    "schools": ["Liste des écoles cibles mentionnées, ex: ENSA, UM6P"],
-    "subject": "Matière ou Chapitre global (ex: Algèbre, Analyse, Physique)",
-    "fiche_title": "Titre précis de la fiche (ex: Fiche 01 : Arithmétique)",
+    "prep_title": "Titre général (ex: Préparation aux concours)",
+    "schools": ["ENSA", "UM6P"],
+    "subject": "Matière (ex: Algèbre)",
+    "fiche_title": "Titre de la fiche (ex: Fiche 01 : Suites numériques)",
     "teacher": "Nom du professeur si présent",
-    "phone": "Numéro de téléphone si présent"
+    "phone": "Téléphone si présent",
+    "doc_type": "'course' | 'homework' | 'exercises' | 'concours'"
   },
   "sections": [
     {
-      "id": "Chaîne unique, ex: sec-1",
-      "title": "Titre de la sous-section (ex: Généralités sur les suites)",
+      "id": "sec-1",
+      "section_header": "I. Généralités sur les suites numériques",
+      "title": "1. Définition",
       "type": "content",
-      "section_number": "Index ou N° de section (ex: 1)",
-      "section_header": "Nom de la section globale (ex: Résumé : Suites Numériques). Remplis-le uniquement sur le premier bloc de cette section, laisse-le vide pour les blocs suivants de la même section.",
-      "accent_text": "Optionnel: Sous-titre vert d'accent (ex: Définitions-Notations-Vocabulaire)",
+      "section_number": "1",
+      "accent_text": "",
       "items": [
-        {
-          "type": "text", // "text", "bullet", "highlight_box", "notation_grid", "table"
-          "text": "Contenu textuel si type 'text', 'bullet' ou 'highlight_box'. Rédige les formules mathématiques en LaTeX complet délimité par $ pour les formules en ligne, et $$ pour les formules en bloc (ex: $u_n = u_p + (n-p)r$).",
-          "notation_columns": [ // Requis uniquement pour type "notation_grid"
-            {
-              "title": "Titre de la colonne (ex: • Notation fonctionnelle)",
-              "math_blocks": ["Blocs de formules LaTeX, ex: u : E \\rightarrow \\mathbb{R}", "n \\mapsto u(n)"]
-            }
-          ],
-          "table_data": { // Requis uniquement pour type "table"
-            "headers": ["En-têtes de colonnes, ex: Concept", "une suite arithmétique", "une suite géométrique"],
-            "rows": [
-              ["Définition", "(\\forall n \\ge n_0) : U_{n+1} = U_n + r", "(\\forall n \\ge n_0) : U_{n+1} = qU_n"],
-              ["Terme général", "(\\forall n \\ge n_0) : U_n = U_p + (n-p)r", "(\\forall n \\ge n_0) : U_n = U_p \\times q^{n-p}"]
-            ]
-          }
-        }
+        { "type": "text", "text": "Contenu du paragraphe introductif..." }
       ]
     },
     {
-      "id": "Chaîne unique, ex: ex-1",
-      "title": "Titre de l'exercice (ex: Exercice N° 1)",
+      "id": "sec-2",
+      "section_header": "I. Généralités sur les suites numériques",
+      "title": "**Définition :** Suite numérique",
+      "type": "content",
+      "section_number": "1.1",
+      "accent_text": "",
+      "items": [
+        { "type": "highlight_box", "text": "**Définition :** Une suite numérique est une application $u : \\\\mathbb{N} \\\\to \\\\mathbb{R}$, $n \\\\mapsto u_n$." }
+      ]
+    },
+    {
+      "id": "sec-3",
+      "section_header": "I. Généralités sur les suites numériques",
+      "title": "**Remarque :** Suite indicée à partir de 1",
+      "type": "content",
+      "section_number": "1.2",
+      "accent_text": "",
+      "items": [
+        { "type": "text", "text": "**Remarque :** Si $u$ est définie pour $n \\\\geq 1$, on parle de suite indicée à partir de 1." }
+      ]
+    },
+    {
+      "id": "ex-1",
+      "section_header": "II. Exercices d'application",
+      "title": "Exercice N° 1",
       "type": "exercise",
-      "section_number": "Index ou N° de section (ex: 2)",
-      "section_header": "Nom de la section globale (ex: Problème)",
-      "content": "Texte complet de l'énoncé de l'exercice avec LaTeX pour les formules.",
-      "solution": "Solution rédigée étape par étape de manière très claire, rigoureuse et extrêmement détaillée avec LaTeX.",
+      "section_number": "1",
+      "content": "Énoncé complet de l'exercice avec formules LaTeX.",
+      "solution": "Solution détaillée étape par étape.",
       "interactive_answers": [
-        {
-          "question_idx": 1,
-          "label": "Libellé de la question interactive (ex: u_1 =)",
-          "expected_answer": "La réponse exacte attendue, simple (ex: 3 ou 7/3)"
-        }
+        { "question_idx": 1, "label": "u_1 =", "expected_answer": "3" }
       ]
     }
   ]
 }
-
-Exigences d'extraction intégrale :
-1. ABSOLUMENT TOUT EXTRAIRE : Ne résume JAMAIS, n'omets aucun détail, formule, notation ou exemple du document. Si le document contient des tableaux comparatifs, extrais-les avec le type 'table'. Si le document contient des notations en colonnes, extrais-les avec le type 'notation_grid'.
-2. LATEX PARFAIT : Utilise LaTeX délimité par $ pour toutes les formules mathématiques en ligne, et $$ pour les formules complexes en bloc. Veille à ce que les backslashes de LaTeX (ex: \\frac, \\lim, \\mathbb{N}) soient correctement doublés dans les chaînes JSON (ex: "\\\\frac{a}{b}").
-3. SOLUTIONS DÉTAILLÉES : Résous chaque exercice de manière exhaustive en fournissant toutes les étapes de calcul et de démonstration mathématique.
-4. QUESTIONS INTERACTIVES : Pour chaque exercice, crée au moins un champ interactif dans "interactive_answers" permettant à l'élève de saisir sa réponse (ex: la valeur calculée d'un terme).
-5. FORMAT STRICT : Retourne uniquement le JSON brut. Pas de balise de code markdown (\`\`\`json ... \`\`\`), pas de texte d'introduction ni de conclusion.
 `;
 
 function useIsMobile() {
@@ -248,6 +364,51 @@ function useIsMobile() {
   }, []);
   return isMobile;
 }
+
+const normalizeLevel = (rawLevel) => {
+  if (!rawLevel) return '2bac_pc_svt';
+  const normalized = rawLevel.toLowerCase().trim();
+  
+  if (normalized.includes('common_core_sci') || normalized.includes('common-core-sci')) return 'common_core_sci';
+  if (normalized.includes('common_core_arts') || normalized.includes('common-core-arts')) return 'common_core_arts';
+  if (normalized.includes('1bac_sci') || normalized.includes('1bac-sci')) return '1bac_sci';
+  if (normalized.includes('1bac_arts') || normalized.includes('1bac-arts')) return '1bac_arts';
+  if (normalized.includes('2bac_sm') || normalized.includes('2bac-sm')) return '2bac_sm';
+  if (normalized.includes('2bac_pc_svt') || normalized.includes('2bac-pc-svt') || normalized.includes('2bac_pc/svt')) return '2bac_pc_svt';
+  if (normalized.includes('2bac_arts') || normalized.includes('2bac-arts')) return '2bac_arts';
+
+  if (normalized.includes('sm') || normalized.includes('math') || normalized.includes('رياضية')) {
+    return '2bac_sm';
+  }
+  if (normalized.includes('pc') || normalized.includes('svt') || normalized.includes('تجريبية')) {
+    return '2bac_pc_svt';
+  }
+  if (normalized.includes('2bac') || normalized.includes('ثانية باك')) {
+    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
+      return '2bac_arts';
+    }
+    return '2bac_pc_svt';
+  }
+  if (normalized.includes('1bac') || normalized.includes('أولى باك') || normalized.includes('1ère bac') || normalized.includes('première bac')) {
+    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
+      return '1bac_arts';
+    }
+    return '1bac_sci';
+  }
+  if (normalized.includes('commun') || normalized.includes('tc') || normalized.includes('مشترك')) {
+    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
+      return 'common_core_arts';
+    }
+    return 'common_core_sci';
+  }
+  
+  const validKeys = ['common_core_sci', 'common_core_arts', '1bac_sci', '1bac_arts', '2bac_sm', '2bac_pc_svt', '2bac_arts'];
+  if (validKeys.includes(rawLevel)) {
+    return rawLevel;
+  }
+  
+  return '2bac_pc_svt';
+};
 
 export default function AdminLessonsImport() {
   const isMobile = useIsMobile();
@@ -291,6 +452,9 @@ export default function AdminLessonsImport() {
   const [selectedSchools, setSelectedSchools] = useState([]);
   const [sections, setSections] = useState([]);
   const [prepTitle, setPrepTitle] = useState('Préparation aux concours');
+  const [selectedLevel, setSelectedLevel] = useState('2bac_pc_svt');
+  const [docType, setDocType] = useState('course');
+  const [docLanguage, setDocLanguage] = useState('fr');
 
   // Load API key from settings if updated
   useEffect(() => {
@@ -449,21 +613,37 @@ export default function AdminLessonsImport() {
     const modelToUse = deepseekModel || 'deepseek-chat';
     const cleanUrl = deepseekUrl.trim().replace(/\/$/, '');
     const endpoint = `${cleanUrl}/v1/chat/completions`;
-    
-    const payload = {
-      model: modelToUse,
-      messages: [
-        {
-          role: "system",
-          content: SYSTEM_PROMPT
-        },
-        {
-          role: "user",
-          content: `TEXTE DU DOCUMENT :
+
+    const solveSolutions = localStorage.getItem('deepseek_solve_solutions') !== 'false';
+
+    const NO_SOLUTION_ADDENDUM = `
+⚠️ INSTRUCTION STRICTE — MODE EXTRACTION UNIQUEMENT (SANS RÉSOLUTION) :
+- Tu dois extraire et structurer FIDÈLEMENT tout le contenu du document (énoncés, cours, définitions, théorèmes, propriétés, remarques, activités, applications).
+- Pour le champ "solution" de chaque exercice, écris UNIQUEMENT la chaîne vide "" — ne fournis AUCUNE résolution, aucune étape de calcul, aucune réponse numérique.
+- Pour le tableau "interactive_answers", retourne un tableau vide [].
+- N'explique pas pourquoi tu ne résous pas. Mets juste "" dans le champ solution.
+- Cette consigne est ABSOLUE et PRIORITAIRE sur toutes les autres instructions du prompt système.`;
+
+    const systemContent = solveSolutions
+      ? SYSTEM_PROMPT
+      : SYSTEM_PROMPT + NO_SOLUTION_ADDENDUM;
+
+    const userContent = solveSolutions
+      ? `TEXTE DU DOCUMENT :
 ${pdfText}
 
 Transcris et extrais l'intégralité absolue de ce texte. Analyse chaque paragraphe, formule et exercice. Ne résume rien, ne laisse aucun élément de côté, et génère le JSON complet selon le schéma exigé.`
-        }
+      : `TEXTE DU DOCUMENT :
+${pdfText}
+
+Extrais et structure FIDÈLEMENT tout le contenu. N'oublie aucun titre, définition, théorème, propriété, remarque, activité ou exercice.
+IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "interactive_answers" comme tableau vide []. Ne résous rien.`;
+
+    const payload = {
+      model: modelToUse,
+      messages: [
+        { role: "system", content: systemContent },
+        { role: "user",   content: userContent }
       ],
       response_format: modelToUse === 'deepseek-chat' ? { type: 'json_object' } : undefined,
       temperature: 0.1
@@ -557,40 +737,50 @@ Transcris et extrais l'intégralité absolue de ce texte. Analyse chaque paragra
       }
 
       let parsed;
-      try {
-        const extracted = extractJsonFromText(rawText);
-        parsed = JSON.parse(extracted);
-      } catch (firstErr) {
-        console.warn('[JSON Parse] Step 1 failed, trying repair...', firstErr.message);
+      let cleanText = rawText.trim();
+      if (cleanText.includes('</think>')) {
+        cleanText = cleanText.split('</think>').pop().trim();
+      }
+      cleanText = sanitizeLatexJson(cleanText);
+
+      const parseStrategies = [
+        // Strategy 1: Direct JSON parse of the extracted JSON block
+        (txt) => JSON.parse(extractJsonFromText(txt)),
+        
+        // Strategy 2: Escape literal newlines inside strings
+        (txt) => JSON.parse(escapeLiteralNewlinesInJson(extractJsonFromText(txt))),
+        
+        // Strategy 3: Escape literal newlines + escape unescaped inner quotes
+        (txt) => JSON.parse(escapeUnescapedQuotesInJson(escapeLiteralNewlinesInJson(extractJsonFromText(txt)))),
+        
+        // Strategy 4: Escape literal newlines + escape unescaped inner quotes + repair truncation
+        (txt) => JSON.parse(repairTruncatedJson(escapeUnescapedQuotesInJson(escapeLiteralNewlinesInJson(extractJsonFromText(txt))))),
+        
+        // Strategy 5: LaTeX sanitize + escape literal newlines + escape unescaped inner quotes + repair truncation
+        (txt) => JSON.parse(repairTruncatedJson(escapeUnescapedQuotesInJson(escapeLiteralNewlinesInJson(sanitizeLatexJson(extractJsonFromText(txt))))))
+      ];
+
+      let parseError = null;
+      for (let i = 0; i < parseStrategies.length; i++) {
         try {
-          const extracted = extractJsonFromText(rawText);
-          const escaped = escapeLiteralNewlinesInJson(extracted);
-          parsed = JSON.parse(escaped);
-        } catch (secondErr) {
-          try {
-            const extracted = extractJsonFromText(rawText);
-            const escaped = escapeLiteralNewlinesInJson(extracted);
-            const repaired = repairTruncatedJson(escaped);
-            parsed = JSON.parse(repaired);
-          } catch (thirdErr) {
-            try {
-              const sanitized = sanitizeLatexJson(rawText.trim());
-              const escaped = escapeLiteralNewlinesInJson(sanitized);
-              const repaired = repairTruncatedJson(escaped);
-              parsed = JSON.parse(repaired);
-            } catch (fourthErr) {
-              console.error('[JSON Parse] All strategies failed.', { firstErr, secondErr, thirdErr, fourthErr });
-              throw new Error(
-                `Impossible de lire la réponse JSON.\n` +
-                `Erreur : ${firstErr.message}\n\n` +
-                `💡 Solutions :\n` +
-                `• Essayez un autre modèle/moteur d'IA\n` +
-                `• Découpez le document en sections plus courtes\n` +
-                `• Vérifiez ou saisissez votre clé API`
-              );
-            }
-          }
+          parsed = parseStrategies[i](cleanText);
+          console.log(`[JSON Parse] Strategy ${i + 1} succeeded!`);
+          break;
+        } catch (e) {
+          console.warn(`[JSON Parse] Strategy ${i + 1} failed:`, e.message);
+          parseError = e;
         }
+      }
+
+      if (!parsed) {
+        throw new Error(
+          `Impossible de lire la réponse JSON.\n` +
+          `Erreur : ${parseError ? parseError.message : 'JSON invalide'}\n\n` +
+          `💡 Solutions :\n` +
+          `• Essayez un autre modèle/moteur d'IA\n` +
+          `• Découpez le document en sections plus courtes\n` +
+          `• Vérifiez ou saisissez votre clé API`
+        );
       }
 
       console.log('[Extraction Response]:', parsed);
@@ -601,8 +791,18 @@ Transcris et extrais l'intégralité absolue de ce texte. Analyse chaque paragra
       setPrepTitle(parsed.header.prep_title || 'Préparation aux concours');
       setTeacher(parsed.header.teacher || '');
       setPhone(parsed.header.phone || '');
-      setSelectedSchools(parsed.header.schools || []);
-      setSections(parsed.sections || []);
+      const mappedSections = (parsed.sections || []).map(sec => {
+        const hasAr = /[\u0600-\u06FF]/.test((sec.title || '') + ' ' + (sec.content || '') + ' ' + (sec.solution || '') + ' ' + (sec.items || []).map(it => it.text || '').join(' '));
+        return {
+          ...sec,
+          language: sec.language || (hasAr ? 'ar' : 'fr')
+        };
+      });
+      setSections(mappedSections);
+      setSelectedLevel(normalizeLevel(parsed.header.level));
+      setDocType(parsed.header.doc_type || 'course');
+      const isAr = /[\u0600-\u06FF]/.test((parsed.header.fiche_title || '') + ' ' + (parsed.header.subject || ''));
+      setDocLanguage(parsed.metadata?.language || (isAr ? 'ar' : 'fr'));
       
       const numMatch = (parsed.header.fiche_title || '').match(/Fiche\s*(\d+)/i);
       if (numMatch) setChapterNumber(numMatch[1]);
@@ -629,8 +829,8 @@ Transcris et extrais l'intégralité absolue de ce texte. Analyse chaque paragra
   const handleAddSection = (type) => {
     const newId = `sec-${Date.now()}`;
     const newSec = type === 'content' 
-      ? { id: newId, title: 'Nouvelle Section', type: 'content', section_number: '', section_header: '', accent_text: '', items: [{ type: 'text', text: '' }] }
-      : { id: newId, title: 'Nouvel Exercice', type: 'exercise', section_number: '', section_header: '', content: '', solution: '', interactive_answers: [] };
+      ? { id: newId, title: 'Nouvelle Section', type: 'content', section_number: '', section_header: '', accent_text: '', items: [{ type: 'text', text: '' }], language: docLanguage }
+      : { id: newId, title: 'Nouvel Exercice', type: 'exercise', section_number: '', section_header: '', content: '', solution: '', interactive_answers: [], language: docLanguage };
     setSections([...sections, newSec]);
   };
 
@@ -737,11 +937,17 @@ Transcris et extrais l'intégralité absolue de ce texte. Analyse chaque paragra
         chapterNumber,
         teacher,
         phone,
-        schools: selectedSchools,
+        level: selectedLevel,
+        docType: docType,
         content: {
+          level: selectedLevel,
+          doc_type: docType,
+          metadata: {
+            language: docLanguage
+          },
           header: {
             prep_title: prepTitle,
-            schools: selectedSchools,
+            schools: [],
             subject,
             fiche_title: ficheTitle,
             teacher,
@@ -770,8 +976,33 @@ Transcris et extrais l'intégralité absolue de ce texte. Analyse chaque paragra
     }
   };
 
+  const isArMode = /[\u0600-\u06FF]/.test(ficheTitle + ' ' + subject + ' ' + (sections || []).map(s => s.title + ' ' + (s.content || '')).join(' '));
+
   return (
     <div className="animate-fade-in" style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '3rem' }}>
+      {isArMode && (
+        <style>{`
+          @font-face {
+            font-family: 'UKIJMerdaneRegular';
+            src: url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+          }
+          .input-control, textarea, select {
+            font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif !important;
+            direction: rtl !important;
+            text-align: right !important;
+          }
+          select.input-control {
+            background-position: left 0.75rem center !important;
+            padding-left: 2.25rem !important;
+            padding-right: 1rem !important;
+          }
+          label, h2, h3, h4 {
+            font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif !important;
+            direction: rtl !important;
+            text-align: right !important;
+          }
+        `}</style>
+      )}
       
       {/* ── Header ── */}
       <header style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
@@ -1025,26 +1256,48 @@ Transcris et extrais l'intégralité absolue de ce texte. Analyse chaque paragra
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
           {/* Section 1: Header metadata */}
-          <div className="glass-panel" style={{ padding: '2rem' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>
-              📁 Informations Générales du Document
+          <div className="glass-panel" style={{ padding: '2.25rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)' }}>
+            <h2 style={{ 
+              fontSize: '1.3rem', 
+              fontWeight: 800, 
+              marginBottom: '1.75rem', 
+              borderBottom: '1px solid var(--border)', 
+              paddingBottom: '0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.6rem',
+              color: 'var(--text-main)'
+            }}>
+              <span style={{ fontSize: '1.4rem', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}>📁</span>
+              <span>Informations Générales du Document</span>
             </h2>
 
             <div className="dashboard-grid">
-              <div className="col-span-6 input-group">
-                <label>Titre de la Fiche (ex: Fiche 01 : Arithmétique)</label>
+              <div className="col-span-5 input-group">
+                <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Titre de la Fiche <span style={{ color: 'var(--text-subtle)', fontWeight: 400 }}>(ex: Fiche 01 : Arithmétique)</span></label>
                 <input 
                   type="text" 
                   className="input-control" 
                   value={ficheTitle}
                   onChange={e => setFicheTitle(e.target.value)}
                   placeholder="Fiche 01 : Arithmétique"
+                  style={{ width: '100%' }}
                 />
               </div>
 
               <div className="col-span-3 input-group">
-                <label>Matière</label>
-                <select className="input-control" value={subject} onChange={e => setSubject(e.target.value)}>
+                <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Type de Document</label>
+                <select className="input-control" value={docType} onChange={e => setDocType(e.target.value)} style={{ width: '100%' }}>
+                  <option value="course">درس (Cours)</option>
+                  <option value="homework">فرض محروس (Devoir Surveillé)</option>
+                  <option value="exercises">سلسلة تمارين (Série d'exercices)</option>
+                  <option value="concours">مباراة (Concours)</option>
+                </select>
+              </div>
+
+              <div className="col-span-2 input-group">
+                <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Matière</label>
+                <select className="input-control" value={subject} onChange={e => setSubject(e.target.value)} style={{ width: '100%' }}>
                   <option value="Algèbre">Algèbre</option>
                   <option value="Analyse">Analyse</option>
                   <option value="Géométrie">Géométrie</option>
@@ -1055,78 +1308,90 @@ Transcris et extrais l'intégralité absolue de ce texte. Analyse chaque paragra
                 </select>
               </div>
 
-              <div className="col-span-3 input-group">
-                <label>Numéro de Fiche</label>
+              <div className="col-span-2 input-group">
+                <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Numéro</label>
                 <input 
                   type="text" 
                   className="input-control" 
                   value={chapterNumber}
                   onChange={e => setChapterNumber(e.target.value)}
                   placeholder="01"
+                  style={{ width: '100%' }}
                 />
               </div>
             </div>
 
             <div className="dashboard-grid" style={{ marginTop: '1.5rem' }}>
-              <div className="col-span-6 input-group">
-                <label>En-tête de préparation</label>
+              <div className="col-span-3 input-group">
+                <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>En-tête de préparation</label>
                 <input 
                   type="text" 
                   className="input-control" 
                   value={prepTitle}
                   onChange={e => setPrepTitle(e.target.value)}
                   placeholder="Préparation aux concours"
+                  style={{ width: '100%' }}
                 />
               </div>
 
               <div className="col-span-3 input-group">
-                <label>Enseignant</label>
+                <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Niveau Scolaire</label>
+                <select 
+                  className="input-control" 
+                  value={selectedLevel} 
+                  onChange={e => setSelectedLevel(e.target.value)}
+                  style={{ width: '100%' }}
+                >
+                  <option value="common_core_sci">جدع مشترك علوم (Tronc Commun Sci)</option>
+                  <option value="common_core_arts">جدع مشترك آداب (Tronc Commun Lettres)</option>
+                  <option value="1bac_sci">أولى باك علوم (1ère Bac Sciences)</option>
+                  <option value="1bac_arts">أولى باك آداب (1ère Bac Lettres)</option>
+                  <option value="2bac_sm">ثانية باك علوم رياضية (2ème Bac Sciences Maths)</option>
+                  <option value="2bac_pc_svt">ثانية باك علوم تجريبية (2ème Bac PC/SVT)</option>
+                  <option value="2bac_arts">ثانية باك آداب (2ème Bac Lettres)</option>
+                </select>
+              </div>
+
+              <div className="col-span-2 input-group">
+                <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Enseignant</label>
                 <input 
                   type="text" 
                   className="input-control" 
                   value={teacher}
                   onChange={e => setTeacher(e.target.value)}
                   placeholder="Prof : FAYSSAL"
+                  style={{ width: '100%' }}
                 />
               </div>
 
-              <div className="col-span-3 input-group">
-                <label>Numéro Téléphone</label>
+              <div className="col-span-2 input-group">
+                <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Téléphone</label>
                 <input 
                   type="text" 
                   className="input-control" 
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   placeholder="0681399067"
+                  style={{ width: '100%' }}
                 />
+              </div>
+
+              <div className="col-span-2 input-group">
+                <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Langue du document / لغة الملف</label>
+                <select 
+                  className="input-control" 
+                  value={docLanguage} 
+                  onChange={e => setDocLanguage(e.target.value)}
+                  style={{ width: '100%' }}
+                >
+                  <option value="fr">Français (الفرنسية)</option>
+                  <option value="ar">Arabe (العربية)</option>
+                  <option value="en">Anglais (الإنجليزية)</option>
+                </select>
               </div>
             </div>
 
-            <div className="input-group" style={{ marginTop: '1.5rem' }}>
-              <label>Écoles cibles</label>
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-                {schools.map(sch => (
-                  <button
-                    key={sch}
-                    type="button"
-                    onClick={() => toggleSchool(sch)}
-                    style={{
-                      padding: '0.4rem 0.85rem',
-                      borderRadius: '99px',
-                      fontSize: '0.8rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      border: selectedSchools.includes(sch) ? '1px solid var(--violet)' : '1px solid var(--border)',
-                      background: selectedSchools.includes(sch) ? 'var(--violet-soft)' : 'transparent',
-                      color: selectedSchools.includes(sch) ? 'var(--violet)' : 'var(--text-muted)',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    {sch}
-                  </button>
-                ))}
-              </div>
-            </div>
+
           </div>
 
           {/* Section 2: Course Contents */}
@@ -1149,6 +1414,7 @@ Transcris et extrais l'intégralité absolue de ce texte. Analyse chaque paragra
               {sections.map((sec, secIdx) => (
                 <div 
                   key={sec.id} 
+                  className={docLanguage === 'ar' ? 'rtl-section' : 'ltr-section'}
                   style={{
                     border: '1px solid var(--border)',
                     borderRadius: '12px',
@@ -1170,7 +1436,7 @@ Transcris et extrais l'intégralité absolue de ce texte. Analyse chaque paragra
                   </button>
 
                   {/* Section Title */}
-                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1rem', width: '100%', marginBottom: '1.25rem' }}>
+                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1rem', width: '100%', marginBottom: '1.25rem', alignItems: 'flex-start' }}>
                     <div style={{ flex: 1 }}>
                       <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)' }}>Titre du Bloc</label>
                       <input 
@@ -1178,7 +1444,7 @@ Transcris et extrais l'intégralité absolue de ce texte. Analyse chaque paragra
                         className="input-control" 
                         value={sec.title || ''} 
                         onChange={e => handleUpdateSection(secIdx, 'title', e.target.value)}
-                        style={{ fontWeight: 800, fontSize: '1rem' }}
+                        style={{ fontWeight: 800, fontSize: '1rem', width: '100%' }}
                       />
                     </div>
                     <div style={{ width: isMobile ? '100%' : '150px' }}>
@@ -1187,6 +1453,7 @@ Transcris et extrais l'intégralité absolue de ce texte. Analyse chaque paragra
                         className="input-control"
                         value={sec.type}
                         onChange={e => handleUpdateSection(secIdx, 'type', e.target.value)}
+                        style={{ width: '100%' }}
                       >
                         <option value="content">Théorie (Cours)</option>
                         <option value="exercise">Exercice / Corrigé</option>

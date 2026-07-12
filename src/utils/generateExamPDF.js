@@ -152,10 +152,10 @@ const repairCorruptedLatex = (text) => {
     .replace(/(?<!\\)right\b/g, '\\right')
     // Replace "left" (not preceded by backslash) with "\left"
     .replace(/(?<!\\)left\b/g, '\\left')
-    // Replace "frac{" (not preceded by backslash) with "\frac{"
-    .replace(/(?<!\\)frac\{/g, '\\frac{')
-    // Replace "dfrac{" (not preceded by backslash) with "\dfrac{"
-    .replace(/(?<!\\)dfrac\{/g, '\\dfrac{')
+    // Replace "frac{" (not preceded by letter/backslash) with "\frac{"
+    .replace(/(?<![a-zA-Z\\])frac\{/g, '\\frac{')
+    // Replace "dfrac{" (not preceded by letter/backslash) with "\dfrac{"
+    .replace(/(?<![a-zA-Z\\])dfrac\{/g, '\\dfrac{')
     // Replace "rac{" (not preceded by letter/backslash) with "\frac{" (in case f was stripped as form feed)
     .replace(/(?<![a-zA-Z\\])rac\{/g, '\\frac{');
 };
@@ -164,6 +164,11 @@ const LATEX_COMMAND_RE = /\\(?:lim|frac|dfrac|left|right|cdot|sqrt|sum|int|prod|
 
 function autoWrapLatex(text) {
   if (text.includes('$')) return text;
+  
+  // Don't auto-wrap if it's a markdown bullet point or contains markdown bold/italic
+  if (/^\s*[\*\-+]\s+/.test(text) || text.includes('**') || /(?<!\*)\*[^*]+\*/.test(text)) {
+    return text;
+  }
   
   // Check if it looks like a sentence (contains spaces and regular alphabetic words)
   if (text.includes(' ')) {
@@ -383,10 +388,134 @@ const renderLine = (line) => {
   return `<span style="display: block; line-height: 1.75;">${content}</span>`;
 };
 
+const extractTablesAndText = (text) => {
+  if (!text) return [];
+  const lines = text.split('\n');
+  const segments = [];
+  let currentTextLines = [];
+  let i = 0;
+  
+  while (i < lines.length) {
+    const line = lines[i].trim();
+    
+    // Check if it's the start of a table
+    if (line.startsWith('|') && line.endsWith('|') && i + 1 < lines.length) {
+      const nextLine = lines[i + 1].trim();
+      if (nextLine.startsWith('|') && nextLine.endsWith('|') && /^[|\-:\s]+$/.test(nextLine)) {
+        // First push any accumulated text segment
+        if (currentTextLines.length > 0) {
+          segments.push({ type: 'text', content: currentTextLines.join('\n') });
+          currentTextLines = [];
+        }
+        
+        // Accumulate all consecutive table rows
+        const headerRow = line;
+        const separatorRow = nextLine;
+        const dataRows = [];
+        i += 2;
+        while (i < lines.length && lines[i].trim().startsWith('|') && lines[i].trim().endsWith('|')) {
+          dataRows.push(lines[i].trim());
+          i++;
+        }
+        
+        segments.push({
+          type: 'table',
+          headerRow,
+          separatorRow,
+          dataRows
+        });
+        continue;
+      }
+    }
+    
+    currentTextLines.push(lines[i]);
+    i++;
+  }
+  
+  if (currentTextLines.length > 0) {
+    segments.push({ type: 'text', content: currentTextLines.join('\n') });
+  }
+  
+  return segments;
+};
+
+const renderTableSegmentHTML = (segment) => {
+  const parseRowCells = (rowText) => {
+    const cells = rowText.split('|').map(c => c.trim());
+    if (cells[0] === '') cells.shift();
+    if (cells[cells.length - 1] === '') cells.pop();
+    return cells;
+  };
+  
+  const headerCells = parseRowCells(segment.headerRow);
+  const sepCells = parseRowCells(segment.separatorRow);
+  
+  const alignments = sepCells.map(cell => {
+    const left = cell.startsWith(':');
+    const right = cell.endsWith(':');
+    if (left && right) return 'center';
+    if (right) return 'right';
+    return 'left';
+  });
+  
+  const headerHtml = `
+    <tr style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
+      ${headerCells.map((cell, idx) => `
+        <th style="padding: 14px 22px; border: 1px solid #cbd5e1; font-weight: 800; color: #005086; text-align: ${alignments[idx] || 'center'};">
+          ${renderLineContent(cell)}
+        </th>
+      `).join('')}
+    </tr>`;
+    
+  const rowsHtml = segment.dataRows.map((row, rIdx) => {
+    const cells = parseRowCells(row);
+    const isAlt = rIdx % 2 === 1 ? 'background-color: #f8fafc;' : 'background-color: #ffffff;';
+    return `
+      <tr style="${isAlt}">
+        ${cells.map((cell, idx) => `
+          <td style="padding: 14px 22px; border: 1px solid #cbd5e1; text-align: ${alignments[idx] || 'center'}; color: #334155;">
+            ${renderLineContent(cell)}
+          </td>
+        `).join('')}
+      </tr>`;
+  }).join('');
+  
+  return `
+    <div style="display: flex; justify-content: center; margin: 2rem 0; width: 100%;">
+      <table style="border-collapse: collapse; min-width: 70%; max-width: 100%; border: 1px solid #cbd5e1; font-size: 1.15rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04); border-radius: 12px; overflow: hidden; background: #ffffff;">
+        <thead>
+          ${headerHtml}
+        </thead>
+        <tbody>
+          ${rowsHtml}
+        </tbody>
+      </table>
+    </div>`;
+};
+
 const renderMath = (text) => {
   if (text === null || text === undefined) return '';
   const repaired = repairCorruptedLatex(String(text));
   const raw = repaired;
+  if (!raw.trim()) return '';
+
+  const segments = extractTablesAndText(raw);
+  
+  if (segments.length === 1 && segments[0].type === 'text') {
+    return renderMathInternal(segments[0].content);
+  }
+  
+  return segments.map(seg => {
+    if (seg.type === 'table') {
+      return renderTableSegmentHTML(seg);
+    }
+    return renderMathInternal(seg.content);
+  }).join('');
+};
+
+const renderMathInternal = (text) => {
+  if (text === null || text === undefined) return '';
+  const raw = text;
   if (!raw.trim()) return '';
 
   // ── Image shorthand ──
@@ -409,8 +538,11 @@ const renderMath = (text) => {
   const normalised = normalisedTemp.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g)
     .map((part, idx) => {
       if (idx % 2 === 1) return part;
-      let cleanedPart = part.replace(/\\n/g, '\n');
+      let cleanedPart = part.replace(/\\n(?![a-zA-Z])/g, '\n');
       
+      // Force line break after period followed by space and uppercase letter/backslash/math delimiter
+      cleanedPart = cleanedPart.replace(/(?<!^|\n|\b\d\.[a-zA-Z]|\bex|\betc|\bvs)\.\s+([A-ZÀ-ÖØ-ß]|\\|\$)/g, '.\n$1');
+
       // Force line break before "Étape" / "Step" / "الخطوة" outside math blocks (case-insensitive)
       if (idx > 0) {
         cleanedPart = cleanedPart.replace(/^\s*(\*\*)?(étape|etape|step|الخطوة)\b/gi, '\n$1$2');

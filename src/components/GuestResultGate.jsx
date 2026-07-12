@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Eye, EyeOff, AlertCircle, Check, Lock, Trophy, Zap, Users, TrendingUp, Crown } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, Check, Lock, Trophy, Zap, Users, Crown } from 'lucide-react';
 
 /**
  * GuestResultGate — displayed to unauthenticated guests after finishing an exam.
  * Shows a teaser of the result and prompts registration/login to unlock full results.
  *
  * Props:
- *   answeredCount   {number}  — number of questions answered
  *   totalCount      {number}  — total number of questions
  *   examId          {string}  — exam ID for redirect after auth
  *   answers         {object}  — full answers map to persist across OAuth redirect
@@ -15,7 +14,6 @@ import { Eye, EyeOff, AlertCircle, Check, Lock, Trophy, Zap, Users, TrendingUp, 
  *   onAuthSuccess   {function}— called when user logs in / registers successfully (email flow)
  */
 export default function GuestResultGate({ 
-  answeredCount, 
   totalCount, 
   examId, 
   answers, 
@@ -24,7 +22,6 @@ export default function GuestResultGate({
   score = 0,
   correctCount = 0,
   wrongCount = 0,
-  emptyCount = 0,
   pct = 0
 }) {
   const { login, register, loginWithGoogle } = useAuth();

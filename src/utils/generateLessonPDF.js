@@ -1,5 +1,46 @@
 import katex from 'katex';
 
+/* ── RTL mode flag — set per render call ── */
+let _rtlMode = false;
+
+/* ── Level key to display name mapping ── */
+const getLevelDisplayName = (levelKey, isArabic) => {
+  const mapping = {
+    'common_core_sci': {
+      fr: 'Tronc Commun Scientifique',
+      ar: 'جدع مشترك علوم'
+    },
+    'common_core_arts': {
+      fr: 'Tronc Commun Lettres',
+      ar: 'جدع مشترك آداب'
+    },
+    '1bac_sci': {
+      fr: '1ère Bac Sciences',
+      ar: 'أولى باك علوم'
+    },
+    '1bac_arts': {
+      fr: '1ère Bac Lettres',
+      ar: 'أولى باك آداب'
+    },
+    '2bac_sm': {
+      fr: '2ème Bac Sciences Maths',
+      ar: 'ثانية باك علوم رياضية'
+    },
+    '2bac_pc_svt': {
+      fr: '2ème Bac PC/SVT',
+      ar: 'ثانية باك علوم تجريبية'
+    },
+    '2bac_arts': {
+      fr: '2ème Bac Lettres',
+      ar: 'ثانية باك آداب'
+    }
+  };
+
+  const match = mapping[levelKey];
+  if (match) return isArabic ? match.ar : match.fr;
+  return levelKey || '';
+};
+
 /* ── Math renderer: same tokenizer as generateExamPDF.js ── */
 const KATEX_OPTIONS = {
   strict: 'ignore',
@@ -20,6 +61,11 @@ const LATEX_COMMAND_RE = /\\(?:lim|frac|dfrac|left|right|cdot|sqrt|sum|int|prod|
 
 function autoWrapLatex(text) {
   if (text.includes('$')) return text;
+  
+  // Don't auto-wrap if it's a markdown bullet point or contains markdown bold/italic
+  if (/^\s*[\*\-+]\s+/.test(text) || text.includes('**') || /(?<!\*)\*[^*]+\*/.test(text)) {
+    return text;
+  }
   
   // Check if it looks like a sentence (contains spaces and regular alphabetic words)
   if (text.includes(' ')) {
@@ -161,8 +207,11 @@ const repairCorruptedLatex = (text) => {
     .replace(/(?<![a-zA-Z\\])ight\b/g, '\\right')
     .replace(/(?<!\\)right\b/g, '\\right')
     .replace(/(?<!\\)left\b/g, '\\left')
-    .replace(/(?<!\\)frac\{/g, '\\frac{')
-    .replace(/(?<!\\)dfrac\{/g, '\\dfrac{')
+    // Replace "frac{" (not preceded by letter/backslash) with "\frac{"
+    .replace(/(?<![a-zA-Z\\])frac\{/g, '\\frac{')
+    // Replace "dfrac{" (not preceded by letter/backslash) with "\dfrac{"
+    .replace(/(?<![a-zA-Z\\])dfrac\{/g, '\\dfrac{')
+    // Replace "rac{" (not preceded by letter/backslash) with "\frac{" (in case f was stripped as form feed)
     .replace(/(?<![a-zA-Z\\])rac\{/g, '\\frac{');
 };
 
@@ -218,12 +267,199 @@ const renderLine = (line) => {
     return `<span style="display:block;line-height:1.75;margin-top:0.5rem"><strong>${formattedLabel} :</strong> ${stepText ? renderLineContent(stepText) : ''}</span>`;
   }
 
+  // Markdown unordered list: - item or • item
+  if (/^[-•]\s+/.test(cleaned) || (/^\*\s+/.test(cleaned) && !cleaned.startsWith('**'))) {
+    const text = cleaned.replace(/^[-•*]\s+/, '');
+    if (_rtlMode) {
+      return `<div style="display:flex;align-items:flex-start;flex-direction:row;gap:0.4rem;margin:0.2rem 0;line-height:1.7;text-align:right">
+        <span style="color:#005086;font-weight:800;flex-shrink:0;margin-top:0.05em">•</span>
+        <span style="flex:1;direction:rtl;text-align:right">${renderLineContent(text)}</span>
+      </div>`;
+    }
+    return `<div style="display:flex;align-items:flex-start;gap:0.5rem;margin:0.2rem 0;line-height:1.7">
+      <span style="color:#005086;font-weight:800;flex-shrink:0;margin-top:0.05em">•</span>
+      <span style="flex:1">${renderLineContent(text)}</span>
+    </div>`;
+  }
+
+  // Markdown numbered list: 1. or 1)
+  const numberedMatch = cleaned.match(/^(\d+)[.)]/); 
+  if (numberedMatch && /^\d+[.)\s]/.test(cleaned)) {
+    const num = numberedMatch[1];
+    const text = cleaned.replace(/^\d+[.)\s]+/, '');
+    if (_rtlMode) {
+      return `<div style="display:flex;align-items:flex-start;flex-direction:row;gap:0.4rem;margin:0.2rem 0;line-height:1.7;text-align:right">
+        <span style="color:#005086;font-weight:800;flex-shrink:0;min-width:1.4em;text-align:center">${num}.</span>
+        <span style="flex:1;direction:rtl;text-align:right">${renderLineContent(text)}</span>
+      </div>`;
+    }
+    return `<div style="display:flex;align-items:flex-start;gap:0.5rem;margin:0.2rem 0;line-height:1.7">
+      <span style="color:#005086;font-weight:800;flex-shrink:0;min-width:1.4em">${num}.</span>
+      <span style="flex:1">${renderLineContent(text)}</span>
+    </div>`;
+  }
+
+  if (_rtlMode) {
+    return `<span style="display:block;line-height:1.75;direction:rtl;text-align:right">${renderLineContent(cleaned)}</span>`;
+  }
   return `<span style="display:block;line-height:1.75">${renderLineContent(cleaned)}</span>`;
+};
+
+const extractTablesAndText = (text) => {
+  if (!text) return [];
+  const lines = text.split('\n');
+  const segments = [];
+  let currentTextLines = [];
+  let i = 0;
+  
+  while (i < lines.length) {
+    const line = lines[i].trim();
+    
+    // Check if it's the start of a table
+    if (line.startsWith('|') && line.endsWith('|') && i + 1 < lines.length) {
+      const nextLine = lines[i + 1].trim();
+      if (nextLine.startsWith('|') && nextLine.endsWith('|') && /^[|\-:\s]+$/.test(nextLine)) {
+        // First push any accumulated text segment
+        if (currentTextLines.length > 0) {
+          segments.push({ type: 'text', content: currentTextLines.join('\n') });
+          currentTextLines = [];
+        }
+        
+        // Accumulate all consecutive table rows
+        const headerRow = line;
+        const separatorRow = nextLine;
+        const dataRows = [];
+        i += 2;
+        while (i < lines.length && lines[i].trim().startsWith('|') && lines[i].trim().endsWith('|')) {
+          dataRows.push(lines[i].trim());
+          i++;
+        }
+        
+        segments.push({
+          type: 'table',
+          headerRow,
+          separatorRow,
+          dataRows
+        });
+        continue;
+      }
+    }
+    
+    currentTextLines.push(lines[i]);
+    i++;
+  }
+  
+  if (currentTextLines.length > 0) {
+    segments.push({ type: 'text', content: currentTextLines.join('\n') });
+  }
+  
+  return segments;
+};
+
+const renderTableSegmentHTML = (segment) => {
+  const parseRowCells = (rowText) => {
+    const cells = rowText.split('|').map(c => c.trim());
+    if (cells[0] === '') cells.shift();
+    if (cells[cells.length - 1] === '') cells.pop();
+    return cells;
+  };
+  
+  const headerCells = parseRowCells(segment.headerRow);
+  const sepCells = parseRowCells(segment.separatorRow);
+  
+  const alignments = sepCells.map(cell => {
+    const left = cell.startsWith(':');
+    const right = cell.endsWith(':');
+    if (left && right) return 'center';
+    if (right) return 'right';
+    return 'left';
+  });
+  
+  const headerHtml = `
+    <tr style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
+      ${headerCells.map((cell, idx) => `
+        <th style="padding: 14px 22px; border: 1px solid #cbd5e1; font-weight: 800; color: #005086; text-align: ${alignments[idx] || 'center'};">
+          ${renderLineContent(cell)}
+        </th>
+      `).join('')}
+    </tr>`;
+    
+  const rowsHtml = segment.dataRows.map((row, rIdx) => {
+    const cells = parseRowCells(row);
+    const isAlt = rIdx % 2 === 1 ? 'background-color: #f8fafc;' : 'background-color: #ffffff;';
+    return `
+      <tr style="${isAlt}">
+        ${cells.map((cell, idx) => `
+          <td style="padding: 14px 22px; border: 1px solid #cbd5e1; text-align: ${alignments[idx] || 'center'}; color: #334155;">
+            ${renderLineContent(cell)}
+          </td>
+        `).join('')}
+      </tr>`;
+  }).join('');
+  
+  return `
+    <div style="display: flex; justify-content: center; margin: 2rem 0; width: 100%;">
+      <table style="border-collapse: collapse; min-width: 70%; max-width: 100%; border: 1px solid #cbd5e1; font-size: 1.15rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04); border-radius: 12px; overflow: hidden; background: #ffffff;">
+        <thead>
+          ${headerHtml}
+        </thead>
+        <tbody>
+          ${rowsHtml}
+        </tbody>
+      </table>
+    </div>`;
 };
 
 const renderMath = (text) => {
   if (text === null || text === undefined) return '';
-  const repaired = repairCorruptedLatex(String(text));
+  
+  // Unify literal '\\n' and CRLF newlines first to split correctly
+  let rawText = String(text)
+    .replace(/\\n(?![a-zA-Z])/g, '\n')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
+
+  const lines = rawText.split('\n');
+  const mergedLines = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    // Match prefix like "1.", "a)", "B.", "**1.**", "**a)**" on its own line
+    if (/^(\*\*)?([a-zA-Z]|\d+)[.)](\*\*)?$/.test(line) && i + 1 < lines.length) {
+      let nextNonEmptyIdx = i + 1;
+      while (nextNonEmptyIdx < lines.length && lines[nextNonEmptyIdx].trim() === '') {
+        nextNonEmptyIdx++;
+      }
+      if (nextNonEmptyIdx < lines.length) {
+        mergedLines.push(line + ' ' + lines[nextNonEmptyIdx].trim());
+        i = nextNonEmptyIdx;
+        continue;
+      }
+    }
+    mergedLines.push(lines[i]);
+  }
+  rawText = mergedLines.join('\n');
+
+  const repaired = repairCorruptedLatex(rawText);
+  const raw = repaired;
+  if (!raw.trim()) return '';
+
+  const segments = extractTablesAndText(raw);
+  
+  if (segments.length === 1 && segments[0].type === 'text') {
+    return renderMathInternal(segments[0].content);
+  }
+  
+  return segments.map(seg => {
+    if (seg.type === 'table') {
+      return renderTableSegmentHTML(seg);
+    }
+    return renderMathInternal(seg.content);
+  }).join('');
+};
+
+const renderMathInternal = (text) => {
+  if (text === null || text === undefined) return '';
+  const repaired = text;
   if (!repaired.trim()) return '';
 
   // Image shorthand
@@ -243,7 +479,12 @@ const renderMath = (text) => {
   normalised = normalised.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g)
     .map((part, idx) => {
       if (idx % 2 === 1) return part; // inside math — leave as-is
-      let p = part.replace(/\\n/g, '\n');
+      let p = part.replace(/\\n(?![a-zA-Z])/g, '\n');
+      
+      // Force line break after period followed by space and uppercase letter/backslash/math delimiter
+      // NOTE: exclude when preceded by a digit (numbered list item like "1. Calculer")
+      p = p.replace(/(?<!\d|^|\n|\b\d\.[a-zA-Z]|\bex|\betc|\bvs)\.\s+([A-ZÀ-ÖØ-ß]|\\|\$)/g, '.\n$1');
+
       // Force line break before Step / Response / Attention blocks
       if (idx > 0) p = p.replace(/^\s*(\*\*)?(étape|etape|step|الخطوة)\b/gi, '\n$1$2');
       p = p.replace(/(?<=[.!?$;:\-)\]}»*])\s+(\*\*)?(étape|etape|step|الخطوة)\b/gi, '\n$1$2');
@@ -300,9 +541,22 @@ const renderMath = (text) => {
 
 
 /* ── Parse exercise title helper ── */
-const parseExerciseTitle = (title, fallbackIdx) => {
+const parseExerciseTitle = (title, fallbackIdx, isArabicMode = false) => {
   if (!title) return { number: String(fallbackIdx + 1), label: '' };
   let clean = title.trim();
+
+  // Handle Arabic titles: "تمرين 1" or "تمرين: 1"
+  if (isArabicMode || /^\u062a\u0645\u0631\u064a\u0646/.test(clean)) {
+    const arabicMatch = clean.match(/^\u062a\u0645\u0631\u064a\u0646[:\s]*([\d١-٩]+)\s*(.*)$/);
+    if (arabicMatch) {
+      return { number: arabicMatch[1], label: arabicMatch[2].trim() };
+    }
+    // fallback: extract any number from the title
+    const numMatch = clean.match(/([\d]+)/);
+    return { number: numMatch ? numMatch[1] : String(fallbackIdx + 1), label: '' };
+  }
+
+  // Original French parsing
   const prefixMatch = clean.match(/^Exercice\s*(?:N?°|N)?\s*/i);
   if (prefixMatch) clean = clean.substring(prefixMatch[0].length).trim();
   const match = clean.match(/^([0-9a-zA-Z\s]+)(.*)$/);
@@ -314,13 +568,118 @@ const parseExerciseTitle = (title, fallbackIdx) => {
   return { number: clean || String(fallbackIdx + 1), label: '' };
 };
 
+/* ── Render Devoir Surveillé homework body with barème ── */
+const renderHomeworkBody = (text, isArabicMode) => {
+  if (text === null || text === undefined) return '';
+
+  let rawText = String(text)
+    .replace(/\\n(?![a-zA-Z])/g, '\n')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
+
+  const lines = rawText.split('\n');
+  const mergedLines = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (/^(\*\*)?([a-zA-Z]|\d+)[.)](\*\*)?$/.test(line) && i + 1 < lines.length) {
+      let nextNonEmptyIdx = i + 1;
+      while (nextNonEmptyIdx < lines.length && lines[nextNonEmptyIdx].trim() === '') {
+        nextNonEmptyIdx++;
+      }
+      if (nextNonEmptyIdx < lines.length) {
+        mergedLines.push(line + ' ' + lines[nextNonEmptyIdx].trim());
+        i = nextNonEmptyIdx;
+        continue;
+      }
+    }
+    mergedLines.push(lines[i]);
+  }
+
+  // Regex to detect points: (1,5 pts), (1 pt), (0.5 ن), (2 points)
+  const pointsRegex = /\(\s*([\d.,]+)\s*(?:pts?|points?|\u0646|\u0646\u0642\u0637\u0629?|\u0646\u0642\u0637)\s*\)/i;
+  const parenthesizedNumRegex = /^(\s*(?:\d+|[a-zA-Z])[.)]\s*)\(([\d.,]+)\)/;
+
+  const rows = mergedLines.map(line => {
+    let cleanLine = line.trim();
+    if (!cleanLine) return '';
+
+    let pointsStr = '';
+    const match = cleanLine.match(pointsRegex);
+    if (match) {
+      pointsStr = match[0];
+      cleanLine = cleanLine.replace(pointsRegex, '').replace(/\s{2,}/g, ' ').trim();
+    } else {
+      const pMatch = cleanLine.match(parenthesizedNumRegex);
+      if (pMatch) {
+        const prefix = pMatch[1];
+        const val = pMatch[2];
+        const ptsWord = isArabicMode ? 'ن' : 'pts';
+        pointsStr = `(${val} ${ptsWord})`;
+        cleanLine = cleanLine.replace(parenthesizedNumRegex, prefix).trim();
+      }
+    }
+
+    if (!cleanLine) return '';
+
+    return `
+      <div class="homework-row">
+        <div class="homework-bareme-cell">${esc(pointsStr)}</div>
+        <div class="homework-content-cell">${renderMath(cleanLine)}</div>
+      </div>`;
+  }).join('');
+
+  return rows;
+};
+
+/* ── Calculate total points for Devoir Surveillé homework ── */
+const calculateTotalPoints = (text, isArabicMode) => {
+  if (!text) return isArabicMode ? '0 ن' : '0 pts';
+
+  let rawText = String(text)
+    .replace(/\\n(?![a-zA-Z])/g, '\n')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
+
+  const lines = rawText.split('\n');
+  let total = 0;
+
+  const pointsRegex = /\(\s*([\d.,]+)\s*(?:pts?|points?|\u0646|\u0646\u0642\u0637\u0629?|\u0646\u0642\u0637)\s*\)/i;
+  const parenthesizedNumRegex = /^(\s*(?:\d+|[a-zA-Z])[.)]\s*)\(([\d.,]+)\)/;
+
+  lines.forEach(line => {
+    const cleanLine = line.trim();
+    if (!cleanLine) return;
+
+    const match = cleanLine.match(pointsRegex);
+    if (match) {
+      const val = parseFloat(match[1].replace(',', '.'));
+      if (!isNaN(val)) total += val;
+    } else {
+      const pMatch = cleanLine.match(parenthesizedNumRegex);
+      if (pMatch) {
+        const val = parseFloat(pMatch[2].replace(',', '.'));
+        if (!isNaN(val)) total += val;
+      }
+    }
+  });
+
+  const totalStr = String(total).replace('.', ',');
+  const ptsWord = isArabicMode ? 'ن' : (total > 1 ? 'pts' : 'pt');
+  return `${totalStr} ${ptsWord}`;
+};
+
+
+
+
 
 /* ═══════════════════════════════════════════════════════════
    GENERATE LESSON / FICHE PDF HTML
    ═══════════════════════════════════════════════════════════ */
-export const generateLessonHTML = (lesson) => {
+export const generateLessonHTML = (lesson, settings = {}) => {
+  const showSolutions = settings.showSolutions !== undefined ? settings.showSolutions : true;
   const { content } = lesson;
   const { header, sections } = content;
+  const isHomework = lesson.docType === 'homework' || lesson.content?.doc_type === 'homework';
 
   const title = header?.fiche_title || lesson?.title || 'Fiche de Cours';
   const subject = header?.subject || '';
@@ -330,6 +689,45 @@ export const generateLessonHTML = (lesson) => {
   const phone = header?.phone || globalProfPhone || '';
   const prepTitle = header?.prep_title || '';
   const schools = header?.schools || [];
+  const isExercises = lesson.docType === 'exercises' || lesson.content?.doc_type === 'exercises';
+  const isConcours = lesson.docType === 'concours' || lesson.content?.doc_type === 'concours';
+  const checkArabicText = () => {
+    if (lesson.content?.metadata?.language === 'ar') return true;
+    const textToTest = [
+      lesson.title,
+      subject,
+      header?.fiche_title,
+      header?.subject,
+      ...(lesson.content?.sections || []).map(s => s.title)
+    ].filter(Boolean).join(' ');
+    return /[\u0600-\u06FF]/.test(textToTest);
+  };
+  const isArabic = checkArabicText();
+  const levelKey = lesson.level || lesson.content?.level || '';
+  const levelDisplayName = getLevelDisplayName(levelKey, isArabic);
+  const levelText = levelDisplayName || prepTitle || '';
+  const qrData = (typeof window !== 'undefined' && window.location)
+    ? `${window.location.origin}/admin/lessons/${lesson.id}`
+    : `https://lconq.vercel.app/admin/lessons/${lesson.id}`;
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}&color=005086&bgcolor=ffffff`;
+  const docTypeFilename = isHomework
+    ? (isArabic ? 'فرض محروس' : 'Devoir Surveille')
+    : isExercises
+      ? (isArabic ? 'سلسلة تمارين' : 'Serie d exercices')
+      : isConcours
+        ? (isArabic ? 'مباراة' : 'Concours')
+        : (isArabic ? 'درس' : 'Cours');
+
+  const langFilename = isArabic ? 'AR' : 'FR';
+  const cleanLevelKey = levelKey || 'Niveau';
+  const cleanTitle = title.replace(/[\\\/:\*\?"<>\|]/g, '');
+  const pdfDocumentTitle = `${cleanLevelKey} - ${docTypeFilename} - ${langFilename} - ${cleanTitle}`;
+  const dir = isArabic ? 'rtl' : 'ltr';
+  const arabicFontFamily = "'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif";
+  const bodyFont = isArabic ? arabicFontFamily : "'Computer Modern Serif', 'STIX Two Text', 'Times New Roman', serif";
+
+  // Set module-level RTL flag for renderLine
+  _rtlMode = isArabic;
 
   /* ── Build sections HTML ── */
   let sectionsHtml = '';
@@ -338,12 +736,12 @@ export const generateLessonHTML = (lesson) => {
   sections?.forEach((sec, idx) => {
     const isTheory = sec.type === 'content';
 
-    // Section header row
-    if (sec.section_header && sec.section_header !== prevSectionHeader) {
+    // Section header row — shown only for theory/lesson docs, not exercise sheets
+    if (!isExercises && sec.section_header && sec.section_header !== prevSectionHeader) {
       sectionsHtml += `
-        <div class="section-header-row" ${idx > 0 ? 'style="margin-top:0.6rem"' : ''}>
+        <div class="section-header-row" ${isArabic ? 'style="flex-direction:row"' : (idx > 0 ? 'style="margin-top:0.6rem"' : '')}>
           <div class="section-badge">${sec.section_number || '1'}</div>
-          <div class="section-title-pill">${esc(sec.section_header)}</div>
+          <div class="section-title-pill" ${isArabic ? `style="font-family:${arabicFontFamily};direction:rtl"` : ''}>${esc(sec.section_header)}</div>
         </div>`;
       prevSectionHeader = sec.section_header;
     }
@@ -384,14 +782,19 @@ export const generateLessonHTML = (lesson) => {
           </div>`;
         } else {
           // bullet or text
-          const bulletDot = item.type === 'bullet' ? '<span class="bullet-dot">•</span>' : '';
-          itemsHtml += `<div class="bullet-item">${bulletDot}<span style="flex:1">${renderMath(item.text)}</span></div>`;
+          const bulletDot = item.type === 'bullet'
+            ? `<span class="bullet-dot" style="${isArabic ? 'margin-left:0.4rem;margin-right:0' : ''}">•</span>`
+            : '';
+          const bulletStyle = isArabic
+            ? 'flex-direction:row;text-align:right;'
+            : '';
+          itemsHtml += `<div class="bullet-item" style="${bulletStyle}">${bulletDot}<span style="flex:1;font-family:${isArabic ? arabicFontFamily : 'inherit'}">${renderMath(item.text)}</span></div>`;
         }
       });
 
       sectionsHtml += `
-        <div class="subsection-card">
-          <div class="subsection-header">
+        <div class="subsection-card" ${isArabic ? `style="font-family:${arabicFontFamily};direction:rtl"` : ''}>
+          <div class="subsection-header" ${isArabic ? 'style="flex-direction:row;text-align:right"' : ''}>
             <span>${esc(sec.title || '')}</span>
             ${sec.accent_text ? `<span class="accent-green">${esc(sec.accent_text)}</span>` : ''}
           </div>
@@ -400,40 +803,71 @@ export const generateLessonHTML = (lesson) => {
 
     } else {
       // Exercise section
-      const { number: exeNumber, label: exeLabel } = parseExerciseTitle(sec.title, idx);
+      const { number: exeNumber, label: exeLabel } = parseExerciseTitle(sec.title, idx, isArabic);
+      const isHomework = lesson.docType === 'homework' || lesson.content?.doc_type === 'homework';
 
-      sectionsHtml += `
-        <div class="exercise-wrapper">
-          <div class="exercise-banner">
-            <div class="exercise-pill">
-              <span>Exercice N°</span>
-              <span class="exercise-num">${esc(exeNumber)}</span>
+      if (isHomework) {
+        sectionsHtml += `
+          <div class="homework-table" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>
+            <div class="homework-header-row">
+              <div class="homework-bareme-header">${calculateTotalPoints(sec.content, isArabic)}</div>
+              <div class="homework-content-header">
+                ${isArabic ? 'تمرين' : 'Exercice'} ${esc(exeNumber)} ${exeLabel ? ` : ${esc(exeLabel)}` : ''}
+              </div>
             </div>
-            ${exeLabel ? `<span class="exercise-label">${esc(exeLabel)}</span>` : ''}
-          </div>
-          <div class="exercise-body">${renderMath(sec.content)}</div>
-          ${sec.solution ? `
-          <div class="solution-block">
-            <h4 class="solution-title">📖 Démonstration rédigée</h4>
-            <div class="solution-content">${renderMath(sec.solution)}</div>
-          </div>` : ''}
-        </div>`;
+            ${renderHomeworkBody(sec.content, isArabic)}
+            ${(sec.solution && showSolutions) ? `
+            <div class="homework-row" style="background: rgba(16,185,129,0.01);">
+              <div class="homework-bareme-cell" style="background: rgba(16,185,129,0.03); color: #059669; border-top: 1px solid rgba(16,185,129,0.15)">📖</div>
+              <div class="homework-content-cell" style="border-top: 1px solid rgba(16,185,129,0.15)">
+                <div class="solution-block" style="margin-top: 0; padding: 0.5rem 0;">
+                  <h4 class="solution-title" ${isArabic ? `style="flex-direction:row;font-family:${arabicFontFamily}"` : ''}>📖 ${isArabic ? 'الحل المفصل' : 'Démonstration rédigée'}</h4>
+                  <div class="solution-content" ${isArabic ? `style="text-align:right;direction:rtl;font-family:${arabicFontFamily}"` : ''}>${renderMath(sec.solution)}</div>
+                </div>
+              </div>
+            </div>` : ''}
+          </div>`;
+      } else {
+        sectionsHtml += `
+          <div class="exercise-wrapper" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>
+            <div class="exercise-banner" ${isArabic ? 'style="flex-direction:row"' : ''}>
+              <div class="exercise-pill" ${isArabic ? 'style="flex-direction:row"' : ''}>
+                <span>${isArabic ? 'تمرين' : 'Exercice N°'}</span>
+                <span class="exercise-num">${esc(exeNumber)}</span>
+              </div>
+              ${exeLabel ? `<span class="exercise-label" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>${esc(exeLabel)}</span>` : ''}
+            </div>
+            <div class="exercise-body" ${isArabic ? 'style="border-left:none;border-right:4px solid #005086;border-radius:6px 4px 4px 6px;text-align:right;direction:rtl"' : ''}>${renderMath(sec.content)}</div>
+            ${(sec.solution && showSolutions) ? `
+            <div class="solution-block">
+              <h4 class="solution-title" ${isArabic ? `style="flex-direction:row;font-family:${arabicFontFamily}"` : ''}>📖 ${isArabic ? 'الحل المفصل' : 'Démonstration rédigée'}</h4>
+              <div class="solution-content" ${isArabic ? `style="text-align:right;direction:rtl;font-family:${arabicFontFamily}"` : ''}>${renderMath(sec.solution)}</div>
+            </div>` : ''}
+          </div>`;
+      }
     }
   });
 
 
   /* ── Full HTML document ── */
   return `<!DOCTYPE html>
-<html lang="fr">
+<html lang="${isArabic ? 'ar' : 'fr'}" dir="${dir}">
 <head>
 <meta charset="UTF-8">
-<title>${esc(title)} — Fiche de Cours</title>
+<base href="${(typeof window !== 'undefined') ? window.location.origin : ''}/">
+<title>${esc(pdfDocumentTitle)}</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/dreampulse/computer-modern-web-font@master/fonts.css">
 <style>
+@font-face {
+  font-family: 'UKIJMerdaneRegular';
+  src: url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
 /* ═══════════════════════════════════════
    BASE RESET & PAGE SETUP
    ═══════════════════════════════════════ */
@@ -445,7 +879,7 @@ export const generateLessonHTML = (lesson) => {
 
 @page {
   size: A4 portrait;
-  margin: 12mm 12mm 14mm 12mm;
+  margin: ${isHomework ? '8mm 8mm 8mm 8mm' : '12mm 12mm 14mm 12mm'};
   @bottom-center {
     content: "— " counter(page) " —";
     font-family: 'Computer Modern Serif', 'STIX Two Text', 'Times New Roman', serif;
@@ -459,14 +893,14 @@ export const generateLessonHTML = (lesson) => {
 }
 
 html {
-  font-size: 11pt;
+  font-size: ${isHomework ? '9.8pt' : '11pt'};
 }
 
 body {
   font-family: 'Computer Modern Serif', 'STIX Two Text', 'Times New Roman', serif;
   color: #1a202c;
   background: #ffffff;
-  line-height: 1.7;
+  line-height: ${isHomework ? '1.42' : '1.7'};
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
   font-feature-settings: 'liga' 1, 'kern' 1;
@@ -534,15 +968,149 @@ body {
     margin: 0 auto;
     padding: 12mm 12mm;
     background: #fff;
-    min-height: 100vh;
     box-shadow: 0 0 40px rgba(0,0,0,0.08);
   }
 }
 
 /* ═══════════════════════════════════════
-   HEADER (3-column grid)
+   HEADER — Modern 2026 4-zone grid
    ═══════════════════════════════════════ */
 .fiche-header {
+  display: grid;
+  grid-template-columns: 1.15fr 1.6fr 1.15fr 0.45fr;
+  background-color: #005086;
+  gap: 1.5px;
+  border: 1.5px solid #005086;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+  font-family: inherit;
+}
+.fiche-header .hcell {
+  padding: 6px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  background-color: #ffffff;
+}
+
+/* LEFT — prof info */
+.fiche-header .h-left {
+  background-color: #f8fafc;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #475569;
+  line-height: 1.45;
+}
+.fiche-header .h-left span { display: block; }
+.fiche-header .h-left strong {
+  color: #005086;
+  font-weight: 700;
+}
+
+/* CENTER — subject + title */
+.fiche-header .h-center {
+  background-color: #ffffff;
+  align-items: center;
+  text-align: center;
+}
+.fiche-header .h-center .doc-subject {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.fiche-header .h-center .header-banner-pill {
+  background: none;
+  color: #005086;
+  padding: 0.2rem 0;
+  font-weight: 800;
+  font-size: 1.25rem;
+  display: inline-block;
+  text-align: center;
+  box-shadow: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.fiche-header .h-center .doc-type {
+  font-size: 0.72rem;
+  color: #475569;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.2rem;
+}
+
+/* RIGHT — school name */
+.fiche-header .h-right {
+  background-color: #f8fafc;
+  align-items: flex-end;
+  text-align: right;
+  font-size: 0.8rem;
+  color: #475569;
+}
+.fiche-header .h-right .school-label {
+  font-size: 0.68rem;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.fiche-header .h-right .school-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #005086;
+  line-height: 1.25;
+}
+.fiche-header .h-right .level-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #475569;
+  margin-top: 2px;
+}
+.fiche-header .h-right .level-name strong {
+  color: #005086;
+  font-weight: 700;
+}
+
+/* PAGE badge (QR Code) */
+.fiche-header .h-page {
+  background-color: #005086;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4px;
+}
+.fiche-header .h-page .qr-wrapper {
+  background-color: #ffffff;
+  padding: 3px;
+  border-radius: 4px;
+  display: inline-block;
+  margin: 0 auto;
+}
+.fiche-header .h-page .qr-img {
+  width: 44px;
+  height: 44px;
+  display: block;
+}
+.fiche-header .h-page .qr-label {
+  font-size: 0.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 2px;
+  line-height: 1;
+}
+
+/* ═══════════════════════════════════════
+   CLASSIC HEADER (lessons / courses)
+   ═══════════════════════════════════════ */
+.fiche-header-classic {
   display: grid;
   grid-template-columns: 1fr 1.5fr 1fr;
   border-bottom: 2.5px solid #005086;
@@ -550,7 +1118,7 @@ body {
   margin-bottom: 0.6rem;
   align-items: center;
 }
-.fiche-header .left {
+.fiche-header-classic .left-classic {
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
@@ -558,31 +1126,31 @@ body {
   font-weight: 700;
   color: #1a202c;
 }
-.fiche-header .left .schools {
+.fiche-header-classic .left-classic .schools-classic {
   color: #005086;
   font-weight: 800;
 }
-.fiche-header .center {
+.fiche-header-classic .center-classic {
   text-align: center;
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
   align-items: center;
 }
-.fiche-header .center .subject-label {
+.fiche-header-classic .center-classic .subject-label-classic {
   font-size: 0.72rem;
   color: #6b7280;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
-.fiche-header .center .fiche-title {
+.fiche-header-classic .center-classic .fiche-title-classic {
   font-weight: 900;
   font-size: 1.1rem;
   color: #b91c1c;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-.fiche-header .right {
+.fiche-header-classic .right-classic {
   text-align: right;
   font-size: 0.82rem;
   font-weight: 700;
@@ -592,7 +1160,7 @@ body {
   gap: 0.1rem;
   align-items: flex-end;
 }
-.fiche-header .right .phone {
+.fiche-header-classic .right-classic .phone-classic {
   color: #4b5563;
   font-weight: 600;
 }
@@ -873,7 +1441,10 @@ body {
 /* ═══════════════════════════════════════
    KATEX OVERRIDES
    ═══════════════════════════════════════ */
-.katex { color: #1a202c !important; }
+.katex {
+  color: #1a202c !important;
+  font-size: 0.98em !important;
+}
 .katex .mord, .katex .mbin, .katex .mrel,
 .katex .mopen, .katex .mclose, .katex .mpunct,
 .katex .minner, .katex .mop { color: #1a202c !important; }
@@ -893,46 +1464,255 @@ body {
   width: 100%;
 }
 
+.exercises-two-columns {
+  display: block !important;
+  column-count: 2 !important;
+  column-gap: 1.5rem !important;
+  column-rule: 1px solid rgba(0, 80, 134, 0.2) !important;
+}
+
+.exercises-two-columns > * {
+  break-inside: auto;
+  page-break-inside: auto;
+  margin-bottom: 0.6rem !important;
+}
+
+/* Keep exercise header attached to its body — never break between banner and body */
+.exercises-two-columns .exercise-banner {
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+/* Solution block can break freely too */
+.exercises-two-columns .solution-block {
+  break-inside: auto;
+  page-break-inside: auto;
+}
+
+/* Prevent math formulas from overflowing two-column layouts in compiled PDF */
+.exercises-two-columns .katex-display {
+  max-width: 100% !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  font-size: 0.82em !important;
+}
+.exercises-two-columns .katex,
+.exercises-two-columns .katex-html {
+  white-space: normal !important;
+  display: inline !important;
+}
+.exercises-two-columns .katex .base {
+  white-space: nowrap !important;
+  display: inline-block !important;
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+
+/* ═══════════════════════════════════════
+   RTL — Arabic Language Support
+   ═══════════════════════════════════════ */
+html[dir="rtl"] body {
+  font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif;
+  direction: rtl;
+  text-align: right;
+}
+html[dir="rtl"] .sections-container,
+html[dir="rtl"] .section-header-row,
+html[dir="rtl"] .subsection-header,
+html[dir="rtl"] .exercise-banner,
+html[dir="rtl"] .fiche-header,
+html[dir="rtl"] .fiche-header-classic,
+html[dir="rtl"] .fiche-footer,
+html[dir="rtl"] .print-hint {
+  direction: rtl;
+  font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif !important;
+}
+html[dir="rtl"] span[style*="display:block"],
+html[dir="rtl"] span[style*="display: block"] {
+  text-align: right;
+  direction: rtl;
+  font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif;
+}
+/* Bullet and numbered lists reverse in RTL */
+html[dir="rtl"] div[style*="display:flex"][style*="align-items:flex-start"],
+html[dir="rtl"] div[style*="display: flex"][style*="align-items: flex-start"] {
+  flex-direction: row !important;
+  text-align: right;
+}
+/* KaTeX stays LTR inside RTL */
+html[dir="rtl"] .katex,
+html[dir="rtl"] .katex-display {
+  direction: ltr !important;
+  unicode-bidi: isolate;
+}
+/* Arabic badge in translated lessons */
+html[dir="rtl"] .banner-title {
+  font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif;
+  direction: rtl;
+}
+/* Callout blocks — flip border */
+html[dir="rtl"] .mfc-callout-response {
+  border-left: none !important;
+  border-right: 4px solid #009688 !important;
+  border-radius: 6px 0 0 6px !important;
+}
+html[dir="rtl"] .mfc-callout-attention {
+  border-left: none !important;
+  border-right: 4px solid #d97706 !important;
+  border-radius: 6px 0 0 6px !important;
+}
+/* Section title pill in RTL */
+html[dir="rtl"] .section-header-row {
+  flex-direction: row;
+}
+
+/* ═══════════════════════════════════════
+   HOMEWORK EXAM LAYOUT (Devoir Surveillé)
+   ═══════════════════════════════════════ */
+.homework-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1.5px solid #005086;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 0.6rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+  page-break-inside: auto;
+}
+.homework-header-row {
+  display: flex;
+  background: #005086;
+  color: #ffffff;
+  font-weight: 800;
+  border-bottom: 2px solid #005086;
+  align-items: stretch;
+}
+.homework-row {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  align-items: stretch;
+}
+.homework-row:last-child {
+  border-bottom: none;
+}
+.homework-bareme-cell, .homework-bareme-header {
+  width: 55px;
+  flex-shrink: 0;
+  padding: 0.35rem 0.2rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.homework-bareme-header {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-right: 2px solid #ffffff;
+}
+.homework-bareme-cell {
+  background: rgba(0, 80, 134, 0.02);
+  color: #475569;
+  border-right: 2px solid #005086;
+  font-family: inherit;
+}
+.homework-content-cell, .homework-content-header {
+  flex: 1;
+  padding: 0.4rem 0.75rem;
+}
+.homework-content-header {
+  font-size: 1.02rem;
+  display: flex;
+  align-items: center;
+  font-weight: 800;
+}
+/* RTL support for homework table */
+html[dir="rtl"] .homework-header-row,
+html[dir="rtl"] .homework-row {
+  flex-direction: row-reverse;
+}
+html[dir="rtl"] .homework-bareme-cell {
+  border-right: none;
+  border-left: 2px solid #005086;
+}
+html[dir="rtl"] .homework-bareme-header {
+  border-right: none;
+  border-left: 2px solid #ffffff;
+}
+
+
 </style>
 </head>
-<body>
+<body style="font-family:${bodyFont}">
 
 <!-- Print Hint Bar (visible on screen only) -->
 <div class="print-hint" id="printHint">
   <div class="print-hint-msg">
     <span class="print-hint-icon">🖨️</span>
     <div class="print-hint-text">
-      <strong>Fiche de Cours Prête</strong><br>
-      <span>Appuyez sur <b>Ctrl+P</b> pour imprimer ou enregistrer en PDF. Choisissez "Enregistrer en PDF" comme destination.</span>
+      ${isArabic
+        ? '<strong style="color:#38bdf8">الملف جاهز للطباعة</strong><br><span>اضغط على <b>Ctrl+P</b> لطباعة أو حفظ PDF. اختر "حفظ كـ PDF" كوجهة.</span>'
+        : '<strong>Fiche de Cours Pr\u00eate</strong><br><span>Appuyez sur <b>Ctrl+P</b> pour imprimer ou enregistrer en PDF. Choisissez "Enregistrer en PDF" comme destination.</span>'
+      }
     </div>
   </div>
-  <button class="hint-badge" onclick="printNow()">⚡ Imprimer</button>
+  <button class="hint-badge" onclick="printNow()">${isArabic ? '⚡ طباعة' : '⚡ Imprimer'}</button>
 </div>
 
 <div class="page-content">
   <!-- HEADER -->
+  ${(isExercises || isHomework) ? `
+  <!-- NEW 2026 HEADER: exercises and homework -->
   <div class="fiche-header">
-    <div class="left">
-      <span>${esc(prepTitle)}</span>
-      <span class="schools">${esc(schools.join(' - '))}</span>
+    <div class="hcell h-left">
+      ${teacher ? `<span>${isArabic ? 'الأستاذ' : 'Prof'} : <strong>${esc(teacher)}</strong></span>` : ''}
+      <span>${isArabic ? 'السنة الدراسية' : 'A.S'} : <strong>${new Date().getFullYear() - 1}/${new Date().getFullYear()}</strong></span>
+      ${schools.length ? `<span><strong>${esc(schools[0])}</strong></span>` : ''}
     </div>
-    <div class="center">
-      <span class="subject-label">${esc(subject)}</span>
-      <span class="fiche-title">${esc(title)}</span>
+    <div class="hcell h-center">
+      <div class="header-banner-pill">${esc(title)}</div>
+      <span class="doc-type">${isArabic ? (isHomework ? 'فرض محروس' : 'سلسلة تمارين') : (isHomework ? 'Devoir Surveill\u00e9' : 'S\u00e9rie d\'exercices')}</span>
     </div>
-    <div class="right">
-      <span>${esc(teacher)}</span>
-      ${phone ? `<span class="phone">${esc(phone)}</span>` : ''}
+    <div class="hcell h-right">
+      ${schools.length ? `<span class="school-label">${isArabic ? 'المؤسسة' : 'Lyc\u00e9e'} :</span><span class="school-name">${schools.length > 1 ? esc(schools[1]) : esc(schools[0])}</span>` : ''}
+      ${levelText ? `<span class="level-name">${isArabic ? 'المستوى' : 'Niveau'} : <strong>${esc(levelText)}</strong></span>` : ''}
+    </div>
+    <div class="hcell h-page">
+      <div class="qr-wrapper">
+        <img src="${qrImageUrl}" class="qr-img" alt="QR" />
+      </div>
+      <span class="qr-label">${isArabic ? 'التصحيح' : 'Solution'}</span>
     </div>
   </div>
+  ` : `
+  <!-- CLASSIC HEADER: lessons / courses -->
+  <div class="fiche-header-classic">
+    <div class="left-classic">
+      <span>${esc(prepTitle)}</span>
+      <span class="schools-classic">${esc(schools.join(' - '))}</span>
+    </div>
+    <div class="center-classic">
+      <span class="subject-label-classic">${esc(subject)}</span>
+      <span class="fiche-title-classic">${esc(title)}</span>
+    </div>
+    <div class="right-classic">
+      <span>${esc(teacher)}</span>
+      ${phone ? `<span class="phone-classic">${esc(phone)}</span>` : ''}
+    </div>
+  </div>
+  `}
 
-  <!-- BANNER -->
+  <!-- BANNER: only for classic (non-exercise/non-homework) docs -->
+  ${(!isExercises && !isHomework) ? `
   <div class="banner-wrapper">
     <div class="banner-title">${esc(title)}</div>
   </div>
+  ` : ''}
 
   <!-- SECTIONS -->
-  <div class="sections-container">
+  <div class="sections-container ${(lesson.docType === 'exercises' || lesson.content?.doc_type === 'exercises') ? 'exercises-two-columns' : ''}">
     ${sectionsHtml}
   </div>
 
@@ -962,8 +1742,8 @@ printNow();
 
 
 /* ── Open the lesson HTML in a new window ── */
-export const openLessonPrintWindow = (lesson) => {
-  const html = generateLessonHTML(lesson);
+export const openLessonPrintWindow = (lesson, settings = {}) => {
+  const html = generateLessonHTML(lesson, settings);
   const title = lesson?.content?.header?.fiche_title || lesson?.title || 'Fiche_de_cours';
 
   const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;

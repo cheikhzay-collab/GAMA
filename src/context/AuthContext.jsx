@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
 import { onAuthChange, loginWithEmail, logoutUser, registerStudent, loginWithGoogle } from '../services/authService';
-import { getUserDoc, createUserDoc, updateUserDoc, saveQuestionProgress, getAllProgress, getProgressDeltas, saveMockResult, getMockHistory, incrementDailyActivity, getRecentActivity, getAllUsers, setUserSubscription, getLeaderboard, addLoginLog, getLoginLogs, syncStudentsWithSupabase, logUserDownload } from '../services/userService';
+import { getUserDoc, createUserDoc, updateUserDoc, saveQuestionProgress, getProgressDeltas, saveMockResult, getMockHistory, incrementDailyActivity, getRecentActivity, getAllUsers, setUserSubscription, getLeaderboard, addLoginLog, syncStudentsWithSupabase, logUserDownload } from '../services/userService';
 import { getAllExams, addExam as dbAddExam, updateExam as dbUpdateExam, deleteExam as dbDeleteExam, toggleExamStatus as dbToggleExamStatus, toggleArchiveExam as dbToggleArchiveExam, getExamQuestionsOnly } from '../services/examService';
 import { getSchoolsConfig, saveSchoolsConfig, getBrandingConfig, saveBrandingConfig, getFlashcardSettingsConfig, saveFlashcardSettingsConfig, getPdfSettingsConfig, savePdfSettingsConfig, getOmrScannerSettingsConfig, saveOmrScannerSettingsConfig, getWhatsAppSettingsConfig, saveWhatsAppSettingsConfig } from '../services/schoolService';
 import { getPlans, savePlans, getAllCodes, saveActivationCodes, redeemCodeViaRPC } from '../services/planService';
@@ -38,7 +38,9 @@ const safeSetItem = (key, value) => {
                   .slice(0, 300)
               );
               localStorage.setItem('progress', JSON.stringify(trimmed));
-            } catch {}
+            } catch (err) {
+              console.warn('[Storage] Failed to parse progress for eviction:', err);
+            }
           }
         }
         // Retry the original write
@@ -118,6 +120,7 @@ const loadAndMigrateExams = () => {
         id: "QVVOBFE7",
         name: "Concours Médecine / Pharmacie 2024",
         school: "Médecine / Pharmacie",
+        level: "2bac_pc_svt",
         year: "2024",
         tier: "freemium",
         isActive: true,
@@ -303,6 +306,9 @@ const computeStudentStats = (exams, progress, leaderboard, user) => {
   };
 };
 
+// Helper: extract readable name from email prefix
+const split_part_email = (email) => email ? email.split('@')[0] : 'Élève';
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('user');
@@ -312,6 +318,114 @@ export function AuthProvider({ children }) {
   // Initialize loading to true if Supabase is enabled so we can check and verify the session first
   const [loading, setLoading] = useState(SUPABASE_ENABLED);
   const [isOnline, setIsOnline] = useState(() => navigator.onLine);
+
+  // Progress state for SRS: { [questionId]: { difficulty, stability, repetitions, easeFactor, lastReviewDate, nextReviewDate } }
+  // Migrated from legacy SM-2: { interval, repetitions, easeFactor, nextReviewDate }
+  const [progress, setProgress] = useState(() => {
+    const saved = localStorage.getItem('progress');
+    if (!saved) return {};
+    try {
+      const parsed = JSON.parse(saved);
+      let migrated = false;
+      const migratedProgress = {};
+      Object.entries(parsed).forEach(([id, card]) => {
+        if (!card) return;
+        
+        let difficulty = card.difficulty;
+        let stability = card.stability;
+        let repetitions = card.repetitions;
+        let easeFactor = card.easeFactor;
+        let lastReviewDate = card.lastReviewDate;
+        let nextReviewDate = card.nextReviewDate;
+
+        // Migrate legacy card
+        if (card.repetitions !== undefined && card.difficulty === undefined) {
+          migrated = true;
+          const ef = card.easeFactor || 2.5;
+          const interval = card.interval || 1;
+          difficulty = Math.max(1.0, Math.min(10.0, 12.0 - 4.0 * ef));
+          stability = Math.max(0.5, interval);
+          const nextDate = card.nextReviewDate || new Date().toISOString();
+          const lastDateObj = new Date(nextDate);
+          lastDateObj.setDate(lastDateObj.getDate() - Math.round(stability));
+          lastReviewDate = lastDateObj.toISOString();
+          nextReviewDate = nextDate;
+          easeFactor = ef;
+        }
+
+        // Healing corrupt/NaN values
+        if (difficulty === undefined || difficulty === null || isNaN(difficulty)) {
+          const ef = easeFactor || 2.5;
+          difficulty = Math.max(1.0, Math.min(10.0, 1.0 + 4.5 * (3.0 - ef)));
+          if (isNaN(difficulty)) difficulty = 5.0;
+          migrated = true;
+        }
+        if (stability === undefined || stability === null || isNaN(stability) || stability <= 0) {
+          stability = repetitions > 0 ? Math.max(1.0, 2.0 * Math.pow(3, repetitions - 1)) : 2.0;
+          if (isNaN(stability) || stability <= 0) stability = 2.0;
+          migrated = true;
+        }
+        if (repetitions === undefined || repetitions === null || isNaN(repetitions)) {
+          repetitions = 0;
+          migrated = true;
+        }
+        if (easeFactor === undefined || easeFactor === null || isNaN(easeFactor)) {
+          easeFactor = 3.0 - (difficulty - 1.0) / 4.5;
+          if (isNaN(easeFactor)) easeFactor = 2.5;
+          migrated = true;
+        }
+        
+        // Date checks
+        const checkLastDate = new Date(lastReviewDate);
+        if (!lastReviewDate || isNaN(checkLastDate.getTime())) {
+          lastReviewDate = new Date().toISOString();
+          migrated = true;
+        }
+        const checkNextDate = new Date(nextReviewDate);
+        if (!nextReviewDate || isNaN(checkNextDate.getTime())) {
+          nextReviewDate = new Date().toISOString();
+          migrated = true;
+        }
+
+        migratedProgress[id] = {
+          difficulty,
+          stability,
+          repetitions,
+          easeFactor,
+          lastReviewDate,
+          nextReviewDate
+        };
+      });
+      if (migrated) {
+        safeSetItem('progress', JSON.stringify(migratedProgress));
+      }
+      return migratedProgress;
+    } catch (err) {
+      console.warn('[Storage] Failed to initialize progress:', err);
+      return {};
+    }
+  });
+
+  // Mock Exam History state: [ { id, date, examId, examName, school, score, maxScore, pct, correctCount, wrongCount, emptyCount, mode } ]
+  const [mockExamHistory, setMockExamHistory] = useState(() => {
+    const saved = localStorage.getItem('mockExamHistory');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const clearLocalSessionData = useCallback(() => {
+    // Clean up local review cache and sync info for privacy/security
+    localStorage.removeItem('progress');
+    localStorage.removeItem('progress_last_synced_at');
+    localStorage.removeItem('last_synced_user_id');
+    localStorage.removeItem('dailyActivity');
+    localStorage.removeItem('reviewDates');
+    localStorage.removeItem('mockExamHistory');
+    localStorage.removeItem('user');
+    localStorage.removeItem('unsynced_progress');
+    setProgress({});
+    setMockExamHistory([]);
+    setUser(null);
+  }, []);
 
   const [profName, setProfName] = useState(() => localStorage.getItem('profName') || '');
   const [profPhone, setProfPhone] = useState(() => localStorage.getItem('profPhone') || '');
@@ -481,7 +595,7 @@ export function AuthProvider({ children }) {
         }
         setLoading(false);
       }
-    }, 3000);
+    }, 8000);
 
     const initializeAuthAndListen = async () => {
       try {
@@ -659,8 +773,7 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // Helper: extract readable name from email prefix
-  const split_part_email = (email) => email ? email.split('@')[0] : 'Élève';
+
 
 
   const { exams: initialExams, needsSave } = loadAndMigrateExams();
@@ -737,91 +850,7 @@ export function AuthProvider({ children }) {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
-  // Progress state for SRS: { [questionId]: { difficulty, stability, repetitions, easeFactor, lastReviewDate, nextReviewDate } }
-  // Migrated from legacy SM-2: { interval, repetitions, easeFactor, nextReviewDate }
-  const [progress, setProgress] = useState(() => {
-    const saved = localStorage.getItem('progress');
-    if (!saved) return {};
-    try {
-      const parsed = JSON.parse(saved);
-      let migrated = false;
-      const migratedProgress = {};
-      Object.entries(parsed).forEach(([id, card]) => {
-        if (!card) return;
-        
-        let difficulty = card.difficulty;
-        let stability = card.stability;
-        let repetitions = card.repetitions;
-        let easeFactor = card.easeFactor;
-        let lastReviewDate = card.lastReviewDate;
-        let nextReviewDate = card.nextReviewDate;
 
-        // Migrate legacy card
-        if (card.repetitions !== undefined && card.difficulty === undefined) {
-          migrated = true;
-          const ef = card.easeFactor || 2.5;
-          const interval = card.interval || 1;
-          difficulty = Math.max(1.0, Math.min(10.0, 12.0 - 4.0 * ef));
-          stability = Math.max(0.5, interval);
-          const nextDate = card.nextReviewDate || new Date().toISOString();
-          const lastDateObj = new Date(nextDate);
-          lastDateObj.setDate(lastDateObj.getDate() - Math.round(stability));
-          lastReviewDate = lastDateObj.toISOString();
-          nextReviewDate = nextDate;
-          easeFactor = ef;
-        }
-
-        // Healing corrupt/NaN values
-        if (difficulty === undefined || difficulty === null || isNaN(difficulty)) {
-          const ef = easeFactor || 2.5;
-          difficulty = Math.max(1.0, Math.min(10.0, 1.0 + 4.5 * (3.0 - ef)));
-          if (isNaN(difficulty)) difficulty = 5.0;
-          migrated = true;
-        }
-        if (stability === undefined || stability === null || isNaN(stability) || stability <= 0) {
-          stability = repetitions > 0 ? Math.max(1.0, 2.0 * Math.pow(3, repetitions - 1)) : 2.0;
-          if (isNaN(stability) || stability <= 0) stability = 2.0;
-          migrated = true;
-        }
-        if (repetitions === undefined || repetitions === null || isNaN(repetitions)) {
-          repetitions = 0;
-          migrated = true;
-        }
-        if (easeFactor === undefined || easeFactor === null || isNaN(easeFactor)) {
-          easeFactor = 3.0 - (difficulty - 1.0) / 4.5;
-          if (isNaN(easeFactor)) easeFactor = 2.5;
-          migrated = true;
-        }
-        
-        // Date checks
-        const checkLastDate = new Date(lastReviewDate);
-        if (!lastReviewDate || isNaN(checkLastDate.getTime())) {
-          lastReviewDate = new Date().toISOString();
-          migrated = true;
-        }
-        const checkNextDate = new Date(nextReviewDate);
-        if (!nextReviewDate || isNaN(checkNextDate.getTime())) {
-          nextReviewDate = new Date().toISOString();
-          migrated = true;
-        }
-
-        migratedProgress[id] = {
-          difficulty,
-          stability,
-          repetitions,
-          easeFactor,
-          lastReviewDate,
-          nextReviewDate
-        };
-      });
-      if (migrated) {
-        safeSetItem('progress', JSON.stringify(migratedProgress));
-      }
-      return migratedProgress;
-    } catch {
-      return {};
-    }
-  });
 
   const dueTodayCount = useMemo(() => {
     const now = new Date();
@@ -852,15 +881,7 @@ export function AuthProvider({ children }) {
     return () => clearTimeout(timer);
   }, [progress]);
 
-  // Mock Exam History state: [ { id, date, examId, examName, school, score, maxScore, pct, correctCount, wrongCount, emptyCount, mode } ]
-  const [mockExamHistory, setMockExamHistory] = useState(() => {
-    const saved = localStorage.getItem('mockExamHistory');
-    return saved ? JSON.parse(saved) : [];
-  });
 
-  useEffect(() => {
-    safeSetItem('mockExamHistory', JSON.stringify(mockExamHistory));
-  }, [mockExamHistory]);
 
   const [leaderboard, setLeaderboard] = useState([]);
 
@@ -879,7 +900,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const saveMockExamResult = async (result) => {
-    const localId = Math.random().toString(36).substr(2, 9);
+    const localId = Math.random().toString(36).substring(2, 11);
     const newResult = {
       date: new Date().toISOString(),
       ...result
@@ -904,20 +925,7 @@ export function AuthProvider({ children }) {
   };
 
 
-  const clearLocalSessionData = useCallback(() => {
-    // Clean up local review cache and sync info for privacy/security
-    localStorage.removeItem('progress');
-    localStorage.removeItem('progress_last_synced_at');
-    localStorage.removeItem('last_synced_user_id');
-    localStorage.removeItem('dailyActivity');
-    localStorage.removeItem('reviewDates');
-    localStorage.removeItem('mockExamHistory');
-    localStorage.removeItem('user');
-    localStorage.removeItem('unsynced_progress');
-    setProgress({});
-    setMockExamHistory([]);
-    setUser(null);
-  }, []);
+
 
   const syncOfflineData = useCallback(async () => {
     if (!SUPABASE_ENABLED || !user || !navigator.onLine) return;
@@ -1163,7 +1171,37 @@ export function AuthProvider({ children }) {
     }
 
     // ── Fallback when Supabase is disabled ────────────────────────────────────
-    throw new Error('Supabase integration is required. Please check your environment variables configuration.');
+    if (email === 'admin@lconq.ma' && password === 'admin123') {
+      const mockAdmin = {
+        id: 'local-admin-id',
+        uid: 'local-admin-id',
+        email: 'admin@lconq.ma',
+        name: 'Administrateur Local',
+        role: 'admin',
+        tier: 'premium',
+        joined: new Date().toISOString()
+      };
+      setUser(mockAdmin);
+      localStorage.setItem('user', JSON.stringify(mockAdmin));
+      return mockAdmin;
+    }
+
+    if (email === 'student@lconq.ma' && password === 'student123') {
+      const mockStudent = {
+        id: 'local-student-id',
+        uid: 'local-student-id',
+        email: 'student@lconq.ma',
+        name: 'Étudiant Local',
+        role: 'student',
+        tier: 'premium',
+        joined: new Date().toISOString()
+      };
+      setUser(mockStudent);
+      localStorage.setItem('user', JSON.stringify(mockStudent));
+      return mockStudent;
+    }
+
+    throw new Error('Identifiants incorrects pour le mode hors-ligne. Utilisez admin@lconq.ma / admin123 ou student@lconq.ma / student123.');
   };
 
   const loginGoogle = async () => {
@@ -1188,11 +1226,12 @@ export function AuthProvider({ children }) {
 
 
 
-  const addExam = async (name, school, year, tier, questions, pdfUrl = null) => {
+  const addExam = async (name, school, year, tier, questions, pdfUrl = null, level = null) => {
     const cleanQuestions = sanitizeExams([{ questions }])[0].questions;
     const newExam = {
       name,
       school,
+      level,
       year,
       tier,
       questions: cleanQuestions,
@@ -1210,7 +1249,7 @@ export function AuthProvider({ children }) {
         console.error('[Supabase] Failed to add exam:', e);
       }
     } else {
-      setExams(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), ...newExam }]);
+      setExams(prev => [...prev, { id: Math.random().toString(36).substring(2, 11), ...newExam }]);
     }
   };
 
@@ -1284,7 +1323,7 @@ export function AuthProvider({ children }) {
     } else {
       setUsers(users.map(u => u.id === userId ? { ...u, tier: newTier } : u));
       if (user && user.id === userId) {
-        setUser({ ...user, tier: newTier });
+        setUser(u => ({ ...u, tier: newTier }));
       }
     }
   };
@@ -1407,7 +1446,7 @@ export function AuthProvider({ children }) {
 
   const addPlan = async (name, price, durationDays, allowedSchools, description = '', isRecommended = false, features = []) => {
     const newPlan = {
-      id: 'plan_' + Math.random().toString(36).substr(2, 9),
+      id: 'plan_' + Math.random().toString(36).substring(2, 11),
       name,
       price: parseFloat(price) || 0,
       durationDays: parseInt(durationDays) || 365,
@@ -1494,7 +1533,7 @@ export function AuthProvider({ children }) {
 
       if (user && user.id === userId) {
         const match = updatedUsers.find(u => u.id === userId);
-        setUser({ ...user, ...match });
+        setUser(u => ({ ...u, ...match }));
       }
     }
   };
@@ -1526,7 +1565,7 @@ export function AuthProvider({ children }) {
 
       if (user && user.id === userId) {
         const match = updatedUsers.find(u => u.id === userId);
-        setUser({ ...user, ...match });
+        setUser(u => ({ ...u, ...match }));
       }
     }
   };
@@ -1854,7 +1893,12 @@ export function AuthProvider({ children }) {
 
   const [schools, setSchools] = useState(() => {
     const saved = localStorage.getItem('schools');
-    return saved ? JSON.parse(saved) : ['Médecine / Pharmacie', 'ENSA', 'ENSAM', 'ENCG', 'INPT', 'INSEA', 'Général (Prépa)'];
+    const parsed = saved ? JSON.parse(saved) : null;
+    const defaultLevels = ['2bac_sm', '2bac_pc_svt', '1bac_sci', 'common_core_sci', '2bac_arts', '1bac_arts', 'common_core_arts'];
+    if (!parsed || parsed.some(s => ['ENSA', 'ENSAM', 'ENCG', 'Médecine / Pharmacie', 'INPT', 'INSEA', 'Général (Prépa)'].includes(s))) {
+      return defaultLevels;
+    }
+    return parsed;
   });
 
   useEffect(() => {
@@ -2218,18 +2262,20 @@ export function AuthProvider({ children }) {
   }, [user?.uid, user?.id]);
 
   const refreshAdminData = useCallback(async () => {
-    if (!SUPABASE_ENABLED || user?.role !== 'admin') return;
+    if (user?.role !== 'admin') return;
     try {
       const fbUsers = await getAllUsers();
       if (fbUsers) {
         setUsers(fbUsers);
       }
-      const fbCodes = await getAllCodes();
-      if (fbCodes) {
-        setActivationCodes(fbCodes);
+      if (SUPABASE_ENABLED) {
+        const fbCodes = await getAllCodes();
+        if (fbCodes) {
+          setActivationCodes(fbCodes);
+        }
       }
     } catch (e) {
-      console.warn('[Supabase] Error loading admin users/codes:', e.message);
+      console.warn('[Auth] Error loading admin users/codes:', e.message);
     }
   }, [user?.role]);
 

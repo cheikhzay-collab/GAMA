@@ -20,6 +20,51 @@ function useIsMobile() {
   return isMobile;
 }
 
+const normalizeLevel = (rawLevel) => {
+  if (!rawLevel) return '2bac_pc_svt';
+  const normalized = rawLevel.toLowerCase().trim();
+  
+  if (normalized.includes('common_core_sci') || normalized.includes('common-core-sci')) return 'common_core_sci';
+  if (normalized.includes('common_core_arts') || normalized.includes('common-core-arts')) return 'common_core_arts';
+  if (normalized.includes('1bac_sci') || normalized.includes('1bac-sci')) return '1bac_sci';
+  if (normalized.includes('1bac_arts') || normalized.includes('1bac-arts')) return '1bac_arts';
+  if (normalized.includes('2bac_sm') || normalized.includes('2bac-sm')) return '2bac_sm';
+  if (normalized.includes('2bac_pc_svt') || normalized.includes('2bac-pc-svt') || normalized.includes('2bac_pc/svt')) return '2bac_pc_svt';
+  if (normalized.includes('2bac_arts') || normalized.includes('2bac-arts')) return '2bac_arts';
+
+  if (normalized.includes('sm') || normalized.includes('math') || normalized.includes('رياضية')) {
+    return '2bac_sm';
+  }
+  if (normalized.includes('pc') || normalized.includes('svt') || normalized.includes('تجريبية')) {
+    return '2bac_pc_svt';
+  }
+  if (normalized.includes('2bac') || normalized.includes('ثانية باك')) {
+    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
+      return '2bac_arts';
+    }
+    return '2bac_pc_svt';
+  }
+  if (normalized.includes('1bac') || normalized.includes('أولى باك') || normalized.includes('1ère bac') || normalized.includes('première bac')) {
+    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
+      return '1bac_arts';
+    }
+    return '1bac_sci';
+  }
+  if (normalized.includes('commun') || normalized.includes('tc') || normalized.includes('مشترك')) {
+    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
+      return 'common_core_arts';
+    }
+    return 'common_core_sci';
+  }
+  
+  const validKeys = ['common_core_sci', 'common_core_arts', '1bac_sci', '1bac_arts', '2bac_sm', '2bac_pc_svt', '2bac_arts'];
+  if (validKeys.includes(rawLevel)) {
+    return rawLevel;
+  }
+  
+  return '2bac_pc_svt';
+};
+
 export default function AdminLessonEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -46,6 +91,9 @@ export default function AdminLessonEdit() {
   const [phone, setPhone] = useState('');
   const [selectedSchools, setSelectedSchools] = useState([]);
   const [prepTitle, setPrepTitle] = useState('Préparation aux concours');
+  const [selectedLevel, setSelectedLevel] = useState('2bac_pc_svt');
+  const [docType, setDocType] = useState('course');
+  const [docLanguage, setDocLanguage] = useState('fr');
   
   // Sections state
   const [sections, setSections] = useState([]);
@@ -72,8 +120,18 @@ export default function AdminLessonEdit() {
           
           const header = data.content?.header || {};
           setPrepTitle(header.prep_title || 'Préparation aux concours');
+          setSelectedLevel(normalizeLevel(data.level || data.content?.level || '2bac_pc_svt'));
+          setDocType(data.docType || data.content?.doc_type || 'course');
+          setDocLanguage(data.content?.metadata?.language || 'fr');
           
-          setSections(data.content?.sections || []);
+          const loadedSections = (data.content?.sections || []).map(sec => {
+            const hasAr = /[\u0600-\u06FF]/.test((sec.title || '') + ' ' + (sec.content || '') + ' ' + (sec.solution || '') + ' ' + (sec.items || []).map(it => it.text || '').join(' '));
+            return {
+              ...sec,
+              language: sec.language || (hasAr ? 'ar' : 'fr')
+            };
+          });
+          setSections(loadedSections);
         }
       } catch (err) {
         console.error(err);
@@ -90,8 +148,8 @@ export default function AdminLessonEdit() {
   const handleAddSection = (type) => {
     const newId = `sec-${Date.now()}`;
     const newSec = type === 'content' 
-      ? { id: newId, title: 'Nouvelle Section', type: 'content', section_number: '', section_header: '', accent_text: '', items: [{ type: 'text', text: '' }] }
-      : { id: newId, title: 'Nouvel Exercice', type: 'exercise', section_number: '', section_header: '', content: '', solution: '', interactive_answers: [] };
+      ? { id: newId, title: 'Nouvelle Section', type: 'content', section_number: '', section_header: '', accent_text: '', items: [{ type: 'text', text: '' }], language: docLanguage }
+      : { id: newId, title: 'Nouvel Exercice', type: 'exercise', section_number: '', section_header: '', content: '', solution: '', interactive_answers: [], language: docLanguage };
     setSections([...sections, newSec]);
   };
 
@@ -229,11 +287,18 @@ export default function AdminLessonEdit() {
         chapterNumber,
         teacher,
         phone,
-        schools: selectedSchools,
+        level: selectedLevel,
+        docType: docType,
         content: {
+          level: selectedLevel,
+          doc_type: docType,
+          metadata: {
+            ...lesson?.content?.metadata, // Preserve other metadata if any
+            language: docLanguage
+          },
           header: {
             prep_title: prepTitle,
-            schools: selectedSchools,
+            schools: [],
             subject,
             fiche_title: ficheTitle,
             teacher,
@@ -265,6 +330,8 @@ export default function AdminLessonEdit() {
     }
   };
 
+  const isArMode = /[\u0600-\u06FF]/.test(ficheTitle + ' ' + subject + ' ' + (sections || []).map(s => s.title + ' ' + (s.content || '')).join(' '));
+
   if (loading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
@@ -276,6 +343,29 @@ export default function AdminLessonEdit() {
 
   return (
     <div className="animate-fade-in" style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '3rem' }}>
+      {isArMode && (
+        <style>{`
+          @font-face {
+            font-family: 'UKIJMerdaneRegular';
+            src: url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+          }
+          .input-control, textarea, select {
+            font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif !important;
+            direction: rtl !important;
+            text-align: right !important;
+          }
+          select.input-control {
+            background-position: left 0.75rem center !important;
+            padding-left: 2.25rem !important;
+            padding-right: 1rem !important;
+          }
+          label, h2, h3, h4 {
+            font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif !important;
+            direction: rtl !important;
+            text-align: right !important;
+          }
+        `}</style>
+      )}
       
       {/* ── Header ── */}
       <header style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
@@ -309,26 +399,48 @@ export default function AdminLessonEdit() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
         
         {/* Section 1: Header metadata */}
-        <div className="glass-panel" style={{ padding: '2rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>
-            📁 Informations Générales du Document
+        <div className="glass-panel" style={{ padding: '2.25rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)' }}>
+          <h2 style={{ 
+            fontSize: '1.3rem', 
+            fontWeight: 800, 
+            marginBottom: '1.75rem', 
+            borderBottom: '1px solid var(--border)', 
+            paddingBottom: '0.75rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.6rem',
+            color: 'var(--text-main)'
+          }}>
+            <span style={{ fontSize: '1.4rem', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}>📁</span>
+            <span>Informations Générales du Document</span>
           </h2>
 
           <div className="dashboard-grid">
-            <div className="col-span-6 input-group">
-              <label>Titre de la Fiche (ex: Fiche 01 : Arithmétique)</label>
+            <div className="col-span-5 input-group">
+              <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Titre de la Fiche <span style={{ color: 'var(--text-subtle)', fontWeight: 400 }}>(ex: Fiche 01 : Arithmétique)</span></label>
               <input 
                 type="text" 
                 className="input-control" 
                 value={ficheTitle}
                 onChange={e => setFicheTitle(e.target.value)}
                 placeholder="Fiche 01 : Arithmétique"
+                style={{ width: '100%' }}
               />
             </div>
 
             <div className="col-span-3 input-group">
-              <label>Matière</label>
-              <select className="input-control" value={subject} onChange={e => setSubject(e.target.value)}>
+              <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Type de Document</label>
+              <select className="input-control" value={docType} onChange={e => setDocType(e.target.value)} style={{ width: '100%' }}>
+                <option value="course">درس (Cours)</option>
+                <option value="homework">فرض محروس (Devoir Surveillé)</option>
+                <option value="exercises">سلسلة تمارين (Série d'exercices)</option>
+                <option value="concours">مباراة (Concours)</option>
+              </select>
+            </div>
+
+            <div className="col-span-2 input-group">
+              <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Matière</label>
+              <select className="input-control" value={subject} onChange={e => setSubject(e.target.value)} style={{ width: '100%' }}>
                 <option value="Algèbre">Algèbre</option>
                 <option value="Analyse">Analyse</option>
                 <option value="Géométrie">Géométrie</option>
@@ -339,78 +451,90 @@ export default function AdminLessonEdit() {
               </select>
             </div>
 
-            <div className="col-span-3 input-group">
-              <label>Numéro de Fiche</label>
+            <div className="col-span-2 input-group">
+              <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Numéro</label>
               <input 
                 type="text" 
                 className="input-control" 
                 value={chapterNumber}
                 onChange={e => setChapterNumber(e.target.value)}
                 placeholder="01"
+                style={{ width: '100%' }}
               />
             </div>
           </div>
 
           <div className="dashboard-grid" style={{ marginTop: '1.5rem' }}>
-            <div className="col-span-6 input-group">
-              <label>En-tête de préparation</label>
+            <div className="col-span-3 input-group">
+              <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>En-tête de préparation</label>
               <input 
                 type="text" 
                 className="input-control" 
                 value={prepTitle}
                 onChange={e => setPrepTitle(e.target.value)}
                 placeholder="Préparation aux concours"
+                style={{ width: '100%' }}
               />
             </div>
 
             <div className="col-span-3 input-group">
-              <label>Enseignant</label>
+              <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Niveau Scolaire</label>
+              <select 
+                className="input-control" 
+                value={selectedLevel} 
+                onChange={e => setSelectedLevel(e.target.value)}
+                style={{ width: '100%' }}
+              >
+                <option value="common_core_sci">جدع مشترك علوم (Tronc Commun Sci)</option>
+                <option value="common_core_arts">جدع مشترك آداب (Tronc Commun Lettres)</option>
+                <option value="1bac_sci">أولى باك علوم (1ère Bac Sciences)</option>
+                <option value="1bac_arts">أولى باك آداب (1ère Bac Lettres)</option>
+                <option value="2bac_sm">ثانية باك علوم رياضية (2ème Bac Sciences Maths)</option>
+                <option value="2bac_pc_svt">ثانية باك علوم تجريبية (2ème Bac PC/SVT)</option>
+                <option value="2bac_arts">ثانية باك آداب (2ème Bac Lettres)</option>
+              </select>
+            </div>
+
+            <div className="col-span-2 input-group">
+              <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Enseignant</label>
               <input 
                 type="text" 
                 className="input-control" 
                 value={teacher}
                 onChange={e => setTeacher(e.target.value)}
                 placeholder="Prof : FAYSSAL"
+                style={{ width: '100%' }}
               />
             </div>
 
-            <div className="col-span-3 input-group">
-              <label>Numéro Téléphone</label>
+            <div className="col-span-2 input-group">
+              <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Téléphone</label>
               <input 
                 type="text" 
                 className="input-control" 
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
                 placeholder="0681399067"
+                style={{ width: '100%' }}
               />
+            </div>
+
+            <div className="col-span-2 input-group">
+              <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Langue du document / لغة الملف</label>
+              <select 
+                className="input-control" 
+                value={docLanguage} 
+                onChange={e => setDocLanguage(e.target.value)}
+                style={{ width: '100%' }}
+              >
+                <option value="fr">Français (الفرنسية)</option>
+                <option value="ar">Arabe (العربية)</option>
+                <option value="en">Anglais (الإنجليزية)</option>
+              </select>
             </div>
           </div>
 
-          <div className="input-group" style={{ marginTop: '1.5rem' }}>
-            <label>Écoles cibles</label>
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-              {(schools || []).map(sch => (
-                <button
-                  key={sch}
-                  type="button"
-                  onClick={() => toggleSchool(sch)}
-                  style={{
-                    padding: '0.4rem 0.85rem',
-                    borderRadius: '99px',
-                    fontSize: '0.8rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    border: selectedSchools.includes(sch) ? '1px solid var(--violet)' : '1px solid var(--border)',
-                    background: selectedSchools.includes(sch) ? 'var(--violet-soft)' : 'transparent',
-                    color: selectedSchools.includes(sch) ? 'var(--violet)' : 'var(--text-muted)',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  {sch}
-                </button>
-              ))}
-            </div>
-          </div>
+
         </div>
 
         {/* Section 2: Course Contents */}
@@ -433,6 +557,7 @@ export default function AdminLessonEdit() {
             {sections.map((sec, secIdx) => (
               <div 
                 key={sec.id || secIdx} 
+                className={docLanguage === 'ar' ? 'rtl-section' : 'ltr-section'}
                 style={{
                   border: '1px solid var(--border)',
                   borderRadius: '12px',
@@ -480,7 +605,7 @@ export default function AdminLessonEdit() {
                 </div>
 
                 {/* Section Title */}
-                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1rem', width: '100%', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1rem', width: '100%', marginBottom: '1.25rem', alignItems: 'flex-start' }}>
                   <div style={{ flex: 1 }}>
                     <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)' }}>Titre du Bloc</label>
                     <input 
@@ -488,7 +613,7 @@ export default function AdminLessonEdit() {
                       className="input-control" 
                       value={sec.title || ''} 
                       onChange={e => handleUpdateSection(secIdx, 'title', e.target.value)}
-                      style={{ fontWeight: 800, fontSize: '1rem' }}
+                      style={{ fontWeight: 800, fontSize: '1rem', width: '100%' }}
                     />
                   </div>
                   <div style={{ width: isMobile ? '100%' : '150px' }}>
@@ -497,6 +622,7 @@ export default function AdminLessonEdit() {
                       className="input-control"
                       value={sec.type}
                       onChange={e => handleUpdateSection(secIdx, 'type', e.target.value)}
+                      style={{ width: '100%' }}
                     >
                       <option value="content">Théorie (Cours)</option>
                       <option value="exercise">Exercice / Corrigé</option>

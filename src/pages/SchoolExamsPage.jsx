@@ -23,16 +23,36 @@ const ICON_MAP = {
 };
 
 const SCHOOL_BRANDS_DEFAULTS = {
-  'Médecine / Pharmacie': { iconKey:'stethoscope', gradient:'linear-gradient(135deg, #EF4444 0%, #991B1B 100%)', accent:'#EF4444', accentSoft:'rgba(239, 68, 68, 0.08)', tag:'Sciences de la Santé' },
-  'ENSA':                  { iconKey:'cpu', gradient:'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)', accent:'#3B82F6', accentSoft:'rgba(59, 130, 246, 0.08)',  tag:'Ingénierie' },
-  'ENSAM':                 { iconKey:'wrench', gradient:'linear-gradient(135deg, #0EA5E9 0%, #0369A1 100%)', accent:'#0EA5E9', accentSoft:'rgba(14, 165, 233, 0.08)',  tag:'Arts & Métiers' },
-  'ENCG':                  { iconKey:'barchart', gradient:'linear-gradient(135deg, #10B981 0%, #047857 100%)', accent:'var(--emerald)', accentSoft:'rgba(16, 185, 129, 0.08)',  tag:'Commerce & Gestion' },
-  'INPT':                  { iconKey:'wifi', gradient:'linear-gradient(135deg, #F97316 0%, #C2410C 100%)', accent:'#F97316', accentSoft:'rgba(249, 115, 22, 0.08)',  tag:'Télécommunications' },
-  'INSEA':                 { iconKey:'trendingup', gradient:'linear-gradient(135deg, #14B8A6 0%, #0F766E 100%)', accent:'#14B8A6', accentSoft:'rgba(20, 184, 166, 0.08)',  tag:'Statistiques & Économie' },
-  'Général (Prépa)':       { iconKey:'compass', gradient:'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', accent:'#8B5CF6', accentSoft:'rgba(139, 92, 246, 0.08)', tag:'Classes Préparatoires' },
+  '2bac_sm': { iconKey:'compass', gradient:'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', accent:'#8B5CF6', accentSoft:'rgba(139, 92, 246, 0.08)', tag:'Sciences Mathématiques' },
+  '2bac_pc_svt': { iconKey:'stethoscope', gradient:'linear-gradient(135deg, #EF4444 0%, #991B1B 100%)', accent:'#EF4444', accentSoft:'rgba(239, 68, 68, 0.08)', tag:'Sciences Expérimentales' },
+  '1bac_sci': { iconKey:'cpu', gradient:'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)', accent:'#3B82F6', accentSoft:'rgba(59, 130, 246, 0.08)', tag:'Sciences' },
+  'common_core_sci': { iconKey:'wrench', gradient:'linear-gradient(135deg, #0EA5E9 0%, #0369A1 100%)', accent:'#0EA5E9', accentSoft:'rgba(14, 165, 233, 0.08)', tag:'Tronc Commun' },
+  '2bac_arts': { iconKey:'barchart', gradient:'linear-gradient(135deg, #10B981 0%, #047857 100%)', accent:'var(--emerald)', accentSoft:'rgba(16, 185, 129, 0.08)', tag:'Lettres' },
+  '1bac_arts': { iconKey:'wifi', gradient:'linear-gradient(135deg, #F97316 0%, #C2410C 100%)', accent:'#F97316', accentSoft:'rgba(249, 115, 22, 0.08)', tag:'Lettres' },
+  'common_core_arts': { iconKey:'trendingup', gradient:'linear-gradient(135deg, #14B8A6 0%, #0F766E 100%)', accent:'#14B8A6', accentSoft:'rgba(20, 184, 166, 0.08)', tag:'Tronc Commun' }
 };
 
-const DEFAULT_BRAND = { iconKey:'graduationcap', gradient:'linear-gradient(135deg, #6366F1 0%, #4338CA 100%)', accent:'#818CF8', accentSoft:'rgba(129, 140, 248, 0.08)', tag:'Grande École' };
+const DEFAULT_BRAND = { iconKey:'graduationcap', gradient:'linear-gradient(135deg, #6366F1 0%, #4338CA 100%)', accent:'#818CF8', accentSoft:'rgba(129, 140, 248, 0.08)', tag:'Niveau' };
+
+export const getLevelDisplayName = (id, isArabic = false) => {
+  switch (id) {
+    case 'common_core_sci': return isArabic ? 'جدع مشترك علوم' : 'Tronc Commun Scientifique';
+    case 'common_core_arts': return isArabic ? 'جدع مشترك آداب' : 'Tronc Commun Littéraire';
+    case '1bac_sci': return isArabic ? 'أولى باك علوم تجريبية' : '1ère Bac Sciences Expérimentales';
+    case '1bac_arts': return isArabic ? 'أولى باك آداب' : '1ère Bac Littéraire';
+    case '2bac_sm': return isArabic ? 'ثانية باك علوم رياضية' : '2ème Bac Sciences Mathématiques';
+    case '2bac_pc_svt': return isArabic ? 'ثانية باك علوم تجريبية (PC/SVT)' : '2ème Bac Sciences Expérimentales (PC/SVT)';
+    case '2bac_arts': return isArabic ? 'ثانية باك آداب' : '2ème Bac Lettres & Sciences Humaines';
+    default: return id;
+  }
+};
+
+export const mapLegacySchoolToLevel = (sch) => {
+  if (!sch) return sch;
+  if (sch === 'Médecine / Pharmacie' || sch === 'ENCG') return '2bac_pc_svt';
+  if (['ENSA', 'ENSAM', 'INPT', 'INSEA', 'Général (Prépa)'].includes(sch)) return '2bac_sm';
+  return sch;
+};
 
 function getBrand(name, schoolBranding) {
   const custom = schoolBranding?.[name] || {};
@@ -69,7 +89,7 @@ export default function SchoolExamsPage() {
     }
   }, [brand, isAdmin, navigate]);
   const schoolExams = exams
-    .filter(e => e.school === school && e.isActive !== false && e.isArchived !== true)
+    .filter(e => (e.level === school || mapLegacySchoolToLevel(e.school) === school) && e.isActive !== false && e.isArchived !== true)
     .sort((a, b) => (parseInt(b.year) || 0) - (parseInt(a.year) || 0));
 
   const handleDownloadPDF = async (exam) => {
@@ -147,7 +167,7 @@ export default function SchoolExamsPage() {
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'translateX(-4px)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'translateX(0)'; }}
             >
-              <ArrowLeft size={16} /> Retour aux écoles
+              <ArrowLeft size={16} /> Retour aux niveaux
             </button>
 
             <div style={{ display:'flex', alignItems:'center', gap:'1.5rem', flexWrap:'wrap' }}>
@@ -180,7 +200,7 @@ export default function SchoolExamsPage() {
                   {brand.tag}
                 </div>
                 <h1 style={{ fontSize:'2.5rem', fontWeight:900, color:'#fff', letterSpacing:'-0.03em', lineHeight:1.1, margin: 0 }}>
-                  {school}
+                  {getLevelDisplayName(school)}
                 </h1>
               </div>
             </div>

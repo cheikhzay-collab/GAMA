@@ -21,6 +21,7 @@ const mapProfileToDB = (profile) => ({
   school: profile.school,
   downloads: profile.downloads,
   crm: profile.crm,
+  class_id: profile.classId || null,
 });
 
 // Helper to map snake_case DB columns to camelCase fields
@@ -46,7 +47,33 @@ const mapDBToProfile = (row) => {
     school: row.school,
     downloads: row.downloads,
     crm: row.crm || { stage: 'Lead', notes: [], reminders: [], interactions: [] },
+    classId: row.class_id || null,
   };
+};
+
+const getLocalUsers = () => {
+  const saved = localStorage.getItem('users');
+  if (!saved || saved === 'null' || saved === 'undefined') {
+    const defaultData = [
+      { id: '1', name: 'Youssef Alaoui', email: 'youssef@massar.ma', role: 'student', tier: 'freemium', xp: 450, joined: new Date().toISOString(), school: 'Lycée Qualifiant 18 Novembre', class_id: '1BACSEF-1' },
+      { id: '2', name: 'Sara Bennani', email: 'premium@lconq.ma', role: 'student', tier: 'premium', xp: 8450, joined: new Date().toISOString(), school: 'Lycée Qualifiant Zellaqa' },
+      { id: '3', name: 'Aymane Idrissi', email: 'free@lconq.ma', role: 'student', tier: 'freemium', xp: 120, joined: new Date().toISOString(), school: 'Lycée Qualifiant Moulay Yacoub' },
+    ];
+    localStorage.setItem('users', JSON.stringify(defaultData));
+    return defaultData;
+  }
+  try {
+    const parsed = JSON.parse(saved);
+    if (Array.isArray(parsed)) return parsed;
+    return [];
+  } catch (e) {
+    console.error('[localStorage] Error loading users:', e);
+    return [];
+  }
+};
+
+const saveLocalUsers = (users) => {
+  localStorage.setItem('users', JSON.stringify(users));
 };
 
 // ─── User Profile ─────────────────────────────────────────────────────────────
@@ -55,7 +82,23 @@ const mapDBToProfile = (row) => {
  * Create a new user profile in Supabase (called after registration).
  */
 export const createUserDoc = async (uid, userData) => {
-  if (!supabase) return;
+  if (!supabase) {
+    const list = getLocalUsers();
+    const existingIdx = list.findIndex(u => u.id === uid);
+    const dbUser = {
+      id: uid,
+      ...mapProfileToDB(userData),
+      created_at: userData.joined || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    if (existingIdx > -1) {
+      list[existingIdx] = dbUser;
+    } else {
+      list.push(dbUser);
+    }
+    saveLocalUsers(list);
+    return;
+  }
   const { error } = await supabase
     .from('profiles')
     .upsert({
@@ -74,7 +117,11 @@ export const createUserDoc = async (uid, userData) => {
  * @returns {Promise<Object|null>}
  */
 export const getUserDoc = async (uid) => {
-  if (!supabase) return null;
+  if (!supabase) {
+    const list = getLocalUsers();
+    const found = list.find(u => u.id === uid);
+    return found ? mapDBToProfile(found) : null;
+  }
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
@@ -91,7 +138,37 @@ export const getUserDoc = async (uid) => {
  * Update specific fields in a user profile.
  */
 export const updateUserDoc = async (uid, updates) => {
-  if (!supabase) return;
+  if (!supabase) {
+    const list = getLocalUsers();
+    const existingIdx = list.findIndex(u => u.id === uid);
+    if (existingIdx > -1) {
+      const current = list[existingIdx];
+      const dbUpdates = {};
+      if (updates.name !== undefined) dbUpdates.name = updates.name;
+      if (updates.email !== undefined) dbUpdates.email = updates.email;
+      if (updates.role !== undefined) dbUpdates.role = updates.role;
+      if (updates.tier !== undefined) dbUpdates.tier = updates.tier;
+      if (updates.xp !== undefined) dbUpdates.xp = updates.xp;
+      if (updates.streak !== undefined) dbUpdates.streak = updates.streak;
+      if (updates.rank !== undefined) dbUpdates.rank = updates.rank;
+      if (updates.totalStudents !== undefined) dbUpdates.total_students = updates.totalStudents;
+      if (updates.subscription !== undefined) dbUpdates.subscription = updates.subscription;
+      if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
+      if (updates.city !== undefined) dbUpdates.city = updates.city;
+      if (updates.school !== undefined) dbUpdates.school = updates.school;
+      if (updates.downloads !== undefined) dbUpdates.downloads = updates.downloads;
+      if (updates.crm !== undefined) dbUpdates.crm = updates.crm;
+      if (updates.classId !== undefined) dbUpdates.class_id = updates.classId;
+      
+      list[existingIdx] = {
+        ...current,
+        ...dbUpdates,
+        updated_at: new Date().toISOString()
+      };
+      saveLocalUsers(list);
+    }
+    return;
+  }
   const dbUpdates = {};
   if (updates.name !== undefined) dbUpdates.name = updates.name;
   if (updates.email !== undefined) dbUpdates.email = updates.email;
@@ -100,13 +177,14 @@ export const updateUserDoc = async (uid, updates) => {
   if (updates.xp !== undefined) dbUpdates.xp = updates.xp;
   if (updates.streak !== undefined) dbUpdates.streak = updates.streak;
   if (updates.rank !== undefined) dbUpdates.rank = updates.rank;
-  if (updates.totalStudents !== undefined) dbUpdates.total_students = updates.totalStudents;
+  if (updates.total_students !== undefined) dbUpdates.total_students = updates.totalStudents;
   if (updates.subscription !== undefined) dbUpdates.subscription = updates.subscription;
   if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
   if (updates.city !== undefined) dbUpdates.city = updates.city;
   if (updates.school !== undefined) dbUpdates.school = updates.school;
   if (updates.downloads !== undefined) dbUpdates.downloads = updates.downloads;
   if (updates.crm !== undefined) dbUpdates.crm = updates.crm;
+  if (updates.classId !== undefined) dbUpdates.class_id = updates.classId;
   dbUpdates.updated_at = new Date().toISOString();
 
   const { error } = await supabase
@@ -335,8 +413,10 @@ export const deleteUser = async (uid) => {
  * @returns {Promise<Array>}
  */
 export const getAllUsers = async () => {
-
-  if (!supabase) return [];
+  if (!supabase) {
+    const list = getLocalUsers();
+    return list.map(mapDBToProfile);
+  }
 
   // Try RPC first (bypasses RLS — for admin dashboard)
   try {

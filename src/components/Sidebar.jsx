@@ -2,12 +2,29 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, BookOpen, UploadCloud,
   LogOut, Trophy, Library, Users, Settings, Zap, Sun, Moon, GraduationCap,
-  Sparkles, BookMarked, Camera, Crown
+  Sparkles, BookMarked, Camera, Crown, FolderOpen, ClipboardList
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import LconqLogo from './LconqLogo';
 
-export default function Sidebar({ collapsed = false, onToggle }) {
+// Helper: nav item with tooltip support when collapsed
+const NavItem = ({ to, icon: Icon, label, collapsed }) => (
+  <NavLink
+    to={to}
+    className={({ isActive }) => `nav-item${isActive ? ' active' : ''}${collapsed ? ' nav-item--collapsed' : ''}`}
+    title={collapsed ? label : undefined}
+  >
+    <span className="nav-item__icon"><Icon size={18} /></span>
+    {!collapsed && <span className="nav-item__label">{label}</span>}
+  </NavLink>
+);
+
+const SectionLabel = ({ children, collapsed }) =>
+  collapsed ? null : (
+    <p className="sidebar-section-label">{children}</p>
+  );
+
+export default function Sidebar({ collapsed = false }) {
   const { user, logout, theme, toggleTheme } = useAuth();
   const navigate = useNavigate();
 
@@ -15,23 +32,6 @@ export default function Sidebar({ collapsed = false, onToggle }) {
 
   const isStudent = user?.role === 'student';
   const isAdmin   = user?.role === 'admin';
-
-  // Helper: nav item with tooltip support when collapsed
-  const NavItem = ({ to, icon: Icon, label }) => (
-    <NavLink
-      to={to}
-      className={({ isActive }) => `nav-item${isActive ? ' active' : ''}${collapsed ? ' nav-item--collapsed' : ''}`}
-      title={collapsed ? label : undefined}
-    >
-      <span className="nav-item__icon"><Icon size={18} /></span>
-      {!collapsed && <span className="nav-item__label">{label}</span>}
-    </NavLink>
-  );
-
-  const SectionLabel = ({ children }) =>
-    collapsed ? null : (
-      <p className="sidebar-section-label">{children}</p>
-    );
 
   return (
     <aside className={`sidebar${collapsed ? ' sidebar--collapsed' : ''}`}>
@@ -66,37 +66,42 @@ export default function Sidebar({ collapsed = false, onToggle }) {
 
         {!user && (
           <>
-            <SectionLabel>Visiteur</SectionLabel>
-            <NavItem to="/schools" icon={GraduationCap} label="Grandes Écoles" />
+            <SectionLabel collapsed={collapsed}>Visiteur</SectionLabel>
+            <NavItem to="/levels"  icon={Library}       label="Niveaux & Cours" collapsed={collapsed} />
+            <NavItem to="/schools" icon={GraduationCap} label="Grandes Écoles" collapsed={collapsed} />
           </>
         )}
 
         {isStudent && (
           <>
-            <SectionLabel>Espace Élève</SectionLabel>
-            <NavItem to="/dashboard"    icon={LayoutDashboard} label="Tableau de bord" />
-            <NavItem to="/schools"      icon={GraduationCap}   label="Grandes Écoles" />
-            <NavItem to="/scanner"      icon={Camera}          label="Scanner QCM" />
-            <NavItem to="/study"        icon={BookOpen}        label="Révision SRS" />
-            <NavItem to="/ranking"      icon={Trophy}          label="Classement" />
-            <NavItem to="/subscription" icon={Crown}           label="Mon Abonnement" />
+            <SectionLabel collapsed={collapsed}>Espace Élève</SectionLabel>
+            <NavItem to="/dashboard"    icon={LayoutDashboard} label="Tableau de bord" collapsed={collapsed} />
+            <NavItem to="/levels"       icon={Library}         label="Niveaux & Cours" collapsed={collapsed} />
+            <NavItem to="/schools"      icon={GraduationCap}   label="Grandes Écoles" collapsed={collapsed} />
+            <NavItem to="/scanner"      icon={Camera}          label="Scanner QCM" collapsed={collapsed} />
+            <NavItem to="/study"        icon={BookOpen}        label="Révision SRS" collapsed={collapsed} />
+            <NavItem to="/ranking"      icon={Trophy}          label="Classement" collapsed={collapsed} />
+            <NavItem to="/subscription" icon={Crown}           label="Mon Abonnement" collapsed={collapsed} />
           </>
         )}
 
         {isAdmin && (
           <>
-            <SectionLabel>Centre de Contrôle</SectionLabel>
-            <NavItem to="/admin/dashboard" icon={LayoutDashboard} label="Vue d'ensemble" />
-            <NavItem to="/schools"         icon={GraduationCap}   label="Grandes Écoles" />
-            <NavItem to="/scanner"         icon={Camera}          label="Scanner QCM" />
-            <NavItem to="/admin/exams"     icon={Library}         label="Bibliothèque QCM" />
-            <NavItem to="/admin/users"     icon={Users}           label="Élèves" />
-            <NavItem to="/admin/upload"    icon={UploadCloud}     label="Upload QCM" />
-            <NavItem to="/admin/ai-import" icon={Sparkles}        label="Import IA (QCM)" />
-            <NavItem to="/admin/lessons"   icon={BookOpen}        label="Fiches de Cours" />
-            <NavItem to="/admin/ai-lessons"icon={Sparkles}        label="Import IA (Cours)" />
-            <NavItem to="/admin/ebooks"    icon={BookMarked}      label="E-Books" />
-            <NavItem to="/admin/settings"  icon={Settings}        label="Paramètres" />
+            <SectionLabel collapsed={collapsed}>Centre de Contrôle</SectionLabel>
+            <NavItem to="/admin/dashboard" icon={LayoutDashboard} label="Vue d'ensemble" collapsed={collapsed} />
+            <NavItem to="/levels"          icon={Library}         label="Aperçu des Cours" collapsed={collapsed} />
+            <NavItem to="/schools"         icon={GraduationCap}   label="Grandes Écoles" collapsed={collapsed} />
+            <NavItem to="/scanner"         icon={Camera}          label="Scanner QCM" collapsed={collapsed} />
+            <NavItem to="/admin/exams"     icon={Library}         label="Bibliothèque QCM" collapsed={collapsed} />
+            <NavItem to="/admin/users"     icon={Users}           label="Élèves" collapsed={collapsed} />
+            <NavItem to="/admin/classes"   icon={FolderOpen}      label="Classes & Sections" collapsed={collapsed} />
+            <NavItem to="/admin/logbook"   icon={ClipboardList}   label="Cahier de Textes" collapsed={collapsed} />
+            <NavItem to="/admin/upload"    icon={UploadCloud}     label="Upload QCM" collapsed={collapsed} />
+            <NavItem to="/admin/ai-import" icon={Sparkles}        label="Import IA (QCM)" collapsed={collapsed} />
+            <NavItem to="/admin/lessons"   icon={BookOpen}        label="Fiches de Cours" collapsed={collapsed} />
+            <NavItem to="/admin/ai-lessons"icon={Sparkles}        label="Import IA (Cours)" collapsed={collapsed} />
+            <NavItem to="/admin/ebooks"    icon={BookMarked}      label="E-Books" collapsed={collapsed} />
+            <NavItem to="/admin/settings"  icon={Settings}        label="Paramètres" collapsed={collapsed} />
           </>
         )}
       </nav>
