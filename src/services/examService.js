@@ -1,8 +1,9 @@
 // src/services/examService.js
-// Supabase CRUD for exams — the core content of L'CONQ
-// All functions return empty/null when supabase is null (no Supabase configured).
+// CRUD for exams — the core content of L'CONQ.
+// Supports both Supabase and Local Companion API.
 
 import { supabase } from '../lib/supabase';
+import { localDb } from '../lib/localDbClient';
 
 // Helper to map exam fields to DB columns
 const mapExamToDB = (e) => ({
@@ -45,7 +46,16 @@ const mapDBToExam = (row) => {
  * Fetch ALL exams (admin view).
  */
 export const getAllExams = async () => {
-  if (!supabase) return [];
+  if (!supabase) {
+    try {
+      const data = await localDb.get('/exams');
+      return data;
+    } catch (err) {
+      console.error('[LocalDB] Failed to fetch all exams:', err);
+      return [];
+    }
+  }
+
   const { data, error } = await supabase
     .from('exams_metadata')
     .select('*')
@@ -62,7 +72,16 @@ export const getAllExams = async () => {
  * Fetch only active, non-archived exams (student view).
  */
 export const getActiveExams = async () => {
-  if (!supabase) return [];
+  if (!supabase) {
+    try {
+      const data = await localDb.get('/exams');
+      return data.filter(e => e.isActive && !e.isArchived);
+    } catch (err) {
+      console.error('[LocalDB] Failed to fetch active exams:', err);
+      return [];
+    }
+  }
+
   const { data, error } = await supabase
     .from('exams_metadata')
     .select('*')
@@ -80,7 +99,16 @@ export const getActiveExams = async () => {
  * Fetch a single exam by ID.
  */
 export const getExamById = async (examId) => {
-  if (!supabase) return null;
+  if (!supabase) {
+    try {
+      const data = await localDb.get('/exams');
+      return data.find(e => e.id === examId) || null;
+    } catch (err) {
+      console.error('[LocalDB] Failed to fetch exam by ID:', err);
+      return null;
+    }
+  }
+
   const { data, error } = await supabase
     .from('exams')
     .select('*')
@@ -95,7 +123,17 @@ export const getExamById = async (examId) => {
  * Fetch only the questions array of a single exam.
  */
 export const getExamQuestionsOnly = async (examId) => {
-  if (!supabase) return [];
+  if (!supabase) {
+    try {
+      const data = await localDb.get('/exams');
+      const exam = data.find(e => e.id === examId);
+      return exam ? (exam.questions || []) : [];
+    } catch (err) {
+      console.error('[LocalDB] Failed to fetch exam questions:', err);
+      return [];
+    }
+  }
+
   const { data, error } = await supabase
     .from('exams')
     .select('questions')
@@ -112,13 +150,34 @@ export const getExamQuestionsOnly = async (examId) => {
 // ─── Write ────────────────────────────────────────────────────────────────────
 
 /**
- * Add a new exam to Supabase.
- * @param {Object} examData — { name, school, year, tier, questions, pdfUrl }
- * @returns {Promise<string>} — new exam ID
+ * Add a new exam.
  */
 export const addExam = async (examData) => {
-  if (!supabase) return null;
   const id = examData.id || Math.random().toString(36).substring(2, 11).toUpperCase();
+  
+  if (!supabase) {
+    try {
+      const newExam = {
+        id,
+        name: examData.name,
+        school: examData.school,
+        level: examData.level || null,
+        year: examData.year,
+        tier: examData.tier,
+        questions: examData.questions || [],
+        pdfUrl: examData.pdfUrl || null,
+        isActive: examData.isActive !== undefined ? examData.isActive : true,
+        isArchived: examData.isArchived !== undefined ? examData.isArchived : false,
+        dateAdded: examData.dateAdded || new Date().toISOString()
+      };
+      await localDb.post('/exams', newExam);
+      return id;
+    } catch (err) {
+      console.error('[LocalDB] Failed to add exam:', err);
+      throw err;
+    }
+  }
+
   const dbExam = {
     id,
     ...mapExamToDB(examData),
@@ -139,7 +198,25 @@ export const addExam = async (examData) => {
  * Update specific fields of an exam.
  */
 export const updateExam = async (examId, updates) => {
-  if (!supabase) return;
+  if (!supabase) {
+    try {
+      const exams = await localDb.get('/exams');
+      const exam = exams.find(e => e.id === examId);
+      if (exam) {
+        const updated = {
+          ...exam,
+          ...updates,
+          updatedAt: new Date().toISOString()
+        };
+        await localDb.post('/exams', updated);
+      }
+      return;
+    } catch (err) {
+      console.error('[LocalDB] Failed to update exam:', err);
+      throw err;
+    }
+  }
+
   const dbUpdates = {};
   if (updates.name !== undefined) dbUpdates.name = updates.name;
   if (updates.school !== undefined) dbUpdates.school = updates.school;
@@ -167,7 +244,21 @@ export const updateExam = async (examId, updates) => {
  * Toggle the active/inactive status of an exam.
  */
 export const toggleExamStatus = async (examId, currentStatus) => {
-  if (!supabase) return;
+  if (!supabase) {
+    try {
+      const exams = await localDb.get('/exams');
+      const exam = exams.find(e => e.id === examId);
+      if (exam) {
+        exam.isActive = !currentStatus;
+        await localDb.post('/exams', exam);
+      }
+      return;
+    } catch (err) {
+      console.error('[LocalDB] Failed to toggle exam status:', err);
+      throw err;
+    }
+  }
+
   const { error } = await supabase
     .from('exams')
     .update({
@@ -186,7 +277,21 @@ export const toggleExamStatus = async (examId, currentStatus) => {
  * Toggle archived status of an exam.
  */
 export const toggleArchiveExam = async (examId, currentArchived) => {
-  if (!supabase) return;
+  if (!supabase) {
+    try {
+      const exams = await localDb.get('/exams');
+      const exam = exams.find(e => e.id === examId);
+      if (exam) {
+        exam.isArchived = !currentArchived;
+        await localDb.post('/exams', exam);
+      }
+      return;
+    } catch (err) {
+      console.error('[LocalDB] Failed to toggle archive status:', err);
+      throw err;
+    }
+  }
+
   const { error } = await supabase
     .from('exams')
     .update({
@@ -205,7 +310,16 @@ export const toggleArchiveExam = async (examId, currentArchived) => {
  * Permanently delete an exam.
  */
 export const deleteExam = async (examId) => {
-  if (!supabase) return;
+  if (!supabase) {
+    try {
+      await localDb.delete('/exams', examId);
+      return;
+    } catch (err) {
+      console.error('[LocalDB] Failed to delete exam:', err);
+      throw err;
+    }
+  }
+
   const { error } = await supabase
     .from('exams')
     .delete()

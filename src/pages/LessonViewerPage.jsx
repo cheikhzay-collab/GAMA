@@ -6,7 +6,7 @@ import {
   Calculator, BookOpenCheck, Loader
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getLessonById } from '../services/lessonService';
+import { getLessonById, updateLesson } from '../services/lessonService';
 import { renderWithMath } from '../utils/mathRenderer';
 import { openLessonPrintWindow } from '../utils/generateLessonPDF';
 
@@ -24,6 +24,184 @@ const parseBold = (text) => {
   );
 };
 
+function SignTableViewer({ altText }) {
+  const alt = (altText || '').toLowerCase();
+  
+  // Case A: Sign of ax + b
+  if (alt.includes('ax+b') || alt.includes('ax + b') || (alt.includes('signe') && (alt.includes('1er degré') || alt.includes('1-er degré') || alt.includes('1er degre')))) {
+    return (
+      <div style={{ margin: '1rem 0', padding: '1.15rem', borderRadius: '14px', background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', width: '100%' }}>
+        <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--violet)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          📊 Tableaux de signe de f(x) = ax + b (a ≠ 0)
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
+          {/* Case a > 0 */}
+          <div style={{ overflowX: 'auto' }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--emerald)', marginBottom: '0.35rem' }}>Premier cas : a &gt; 0</div>
+            <table className="sheet-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.85rem' }}>
+              <thead>
+                <tr style={{ background: 'rgba(124, 58, 237, 0.08)' }}>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$x$')}</th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\infty$')}</th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\frac{b}{a}$')}</th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$+\\infty$')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'var(--bg-glass)' }}>{renderWithMath('$ax+b$')}</td>
+                  <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
+                  <td style={{ padding: '0.6rem', color: '#EF4444', fontWeight: 800, border: '1px solid var(--border)' }}>−</td>
+                  <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'rgba(245,158,11,0.1)' }}>0</td>
+                  <td style={{ padding: '0.6rem', color: '#10B981', fontWeight: 800, border: '1px solid var(--border)' }}>+</td>
+                  <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Case a < 0 */}
+          <div style={{ overflowX: 'auto' }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--warning)', marginBottom: '0.35rem' }}>Deuxième cas : a &lt; 0</div>
+            <table className="sheet-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.85rem' }}>
+              <thead>
+                <tr style={{ background: 'rgba(124, 58, 237, 0.08)' }}>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$x$')}</th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\infty$')}</th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\frac{b}{a}$')}</th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$+\\infty$')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'var(--bg-glass)' }}>{renderWithMath('$ax+b$')}</td>
+                  <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
+                  <td style={{ padding: '0.6rem', color: '#10B981', fontWeight: 800, border: '1px solid var(--border)' }}>+</td>
+                  <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'rgba(245,158,11,0.1)' }}>0</td>
+                  <td style={{ padding: '0.6rem', color: '#EF4444', fontWeight: 800, border: '1px solid var(--border)' }}>−</td>
+                  <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Case B: Sign of ax^2 + bx + c
+  if (alt.includes('ax^2') || alt.includes('ax2') || alt.includes('delta') || alt.includes('trinôme') || alt.includes('trinome') || alt.includes('2nd degré') || alt.includes('2ème degré')) {
+    return (
+      <div style={{ margin: '1rem 0', padding: '1.15rem', borderRadius: '14px', background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', width: '100%' }}>
+        <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--emerald)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          📊 Tableaux de signe du trinôme f(x) = ax² + bx + c (a ≠ 0)
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          
+          {/* Delta > 0 */}
+          <div style={{ overflowX: 'auto' }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--violet)', marginBottom: '0.35rem' }}>
+              {renderWithMath('1er cas : $\\Delta > 0$ ($x_1 < x_2$ deux racines distinctes)')}
+            </div>
+            <table className="sheet-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.85rem' }}>
+              <thead>
+                <tr style={{ background: 'rgba(124, 58, 237, 0.08)' }}>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$x$')}</th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\infty$')}</th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$x_1$')}</th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$x_2$')}</th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$+\\infty$')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'var(--bg-glass)' }}>{renderWithMath('$ax^2+bx+c$')}</td>
+                  <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
+                  <td style={{ padding: '0.6rem', fontWeight: 700, border: '1px solid var(--border)' }}>Signe de {renderWithMath('$a$')}</td>
+                  <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'rgba(245,158,11,0.1)' }}>0</td>
+                  <td style={{ padding: '0.6rem', fontWeight: 700, color: 'var(--violet)', border: '1px solid var(--border)' }}>Signe de {renderWithMath('$-a$')}</td>
+                  <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'rgba(245,158,11,0.1)' }}>0</td>
+                  <td style={{ padding: '0.6rem', fontWeight: 700, border: '1px solid var(--border)' }}>Signe de {renderWithMath('$a$')}</td>
+                  <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Delta = 0 */}
+          <div style={{ overflowX: 'auto' }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--emerald)', marginBottom: '0.35rem' }}>
+              {renderWithMath('2ème cas : $\\Delta = 0$ ($x_0 = -\\frac{b}{2a}$ racine double)')}
+            </div>
+            <table className="sheet-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.85rem' }}>
+              <thead>
+                <tr style={{ background: 'rgba(16, 185, 129, 0.08)' }}>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$x$')}</th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\infty$')}</th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$x_0$')}</th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$+\\infty$')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'var(--bg-glass)' }}>{renderWithMath('$ax^2+bx+c$')}</td>
+                  <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
+                  <td style={{ padding: '0.6rem', fontWeight: 700, border: '1px solid var(--border)' }}>Signe de {renderWithMath('$a$')}</td>
+                  <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'rgba(245,158,11,0.1)' }}>0</td>
+                  <td style={{ padding: '0.6rem', fontWeight: 700, border: '1px solid var(--border)' }}>Signe de {renderWithMath('$a$')}</td>
+                  <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Delta < 0 */}
+          <div style={{ overflowX: 'auto' }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--warning)', marginBottom: '0.35rem' }}>
+              {renderWithMath('3ème cas : $\\Delta < 0$ (aucune racine réelle)')}
+            </div>
+            <table className="sheet-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.85rem' }}>
+              <thead>
+                <tr style={{ background: 'rgba(245, 158, 11, 0.08)' }}>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$x$')}</th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\infty$')}</th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$+\\infty$')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'var(--bg-glass)' }}>{renderWithMath('$ax^2+bx+c$')}</td>
+                  <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
+                  <td style={{ padding: '0.6rem', fontWeight: 700, border: '1px solid var(--border)' }}>Signe de {renderWithMath('$a$')} sur {renderWithMath('$\\mathbb{R}$')} tout entier</td>
+                  <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback for general math image description
+  return (
+    <div style={{ margin: '0.75rem 0', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-card)', border: '1px solid var(--border)', textAlign: 'center', fontStyle: 'italic', color: 'var(--text-muted)', width: '100%' }}>
+      {renderWithMath(altText)}
+    </div>
+  );
+}
+
 
 const parseExerciseTitle = (title, fallbackIdx, isArabicMode = false) => {
   if (!title) return { number: String(fallbackIdx + 1), label: '' };
@@ -39,21 +217,48 @@ const parseExerciseTitle = (title, fallbackIdx, isArabicMode = false) => {
     const numMatch = clean.match(/([\d]+)/);
     return { number: numMatch ? numMatch[1] : String(fallbackIdx + 1), label: '' };
   }
-  
+
+  // Strip markdown bold markers
+  clean = clean.replace(/\*\*/g, '').trim();
+
+  // Map circled numbers to regular digits
+  const circledMap = { '①': '1', '②': '2', '③': '3', '④': '4', '⑤': '5', '⑥': '6', '⑦': '7', '⑧': '8', '⑨': '9', '⑩': '10' };
+
+  // Check for patterns like "Application ① :" or "Exercice ② de la série :"
+  const circledMatch = clean.match(/^(Application|Exercice|Activité|Problème)\s*([①②③④⑤⑥⑦⑧⑨⑩])\s*[:\-–—]?\s*(.*)$/i);
+  if (circledMatch) {
+    const type = circledMatch[1];
+    const num = circledMap[circledMatch[2]] || circledMatch[2];
+    const rest = circledMatch[3].replace(/\*\*$/, '').trim();
+    return {
+      number: `${num}`,
+      label: rest || '',
+      prefix: type,
+    };
+  }
+
+  // Check for circled number at start (e.g. "① Exercice :")
+  const circledFirst = clean.match(/^([①②③④⑤⑥⑦⑧⑨⑩])\s*(.*)$/);
+  if (circledFirst) {
+    const num = circledMap[circledFirst[1]] || circledFirst[1];
+    const rest = circledFirst[2].replace(/\*\*$/, '').trim();
+    return { number: num, label: rest };
+  }
+
   // Remove "Exercice" prefix if any
-  const prefixMatch = clean.match(/^Exercice\s*(?:N?°|N)?\s*/i);
+  const prefixMatch = clean.match(/^(Application|Exercice|Activité|Problème)\s*(?:N?°|N)?\s*/i);
   if (prefixMatch) {
     clean = clean.substring(prefixMatch[0].length).trim();
   }
   
-  // Match number (alphanumeric/spaces) and the rest
-  const match = clean.match(/^([0-9a-zA-Z\s]+)(.*)$/);
+  // Match number (digits, circled, alphanumeric) and the rest
+  const match = clean.match(/^([0-9a-zA-Z①-⑩\s]+)(.*?)(\*\*)?$/);
   if (match) {
     const number = match[1].trim();
     let label = match[2].trim();
     
     // Clean leading separators from the label (colons, dashes, etc.)
-    label = label.replace(/^[:\-–—\s]+/, '').trim();
+    label = label.replace(/^[:\-–—\s]+/, '').replace(/\*\*$/, '').trim();
     
     return {
       number: number || String(fallbackIdx + 1),
@@ -61,18 +266,34 @@ const parseExerciseTitle = (title, fallbackIdx, isArabicMode = false) => {
     };
   }
   
+  // If nothing matched, return the whole clean string as label (strip **) with fallback number
   return {
-    number: clean || String(fallbackIdx + 1),
-    label: ''
+    number: String(fallbackIdx + 1),
+    label: clean.replace(/\*\*/g, '').trim()
   };
 };
 
+
 /* ── Render Devoir Surveillé homework body with barème ── */
-const renderHomeworkBody = (text, isArabicMode, arabicFont, renderWithMath, secId, onPointsChange) => {
+const renderHomeworkBody = (text, isArabicMode, arabicFont, renderWithMath, secId, onPointsChange, isDirectEdit = false, onContentChange = null) => {
   if (text === null || text === undefined) return null;
 
-  let rawText = String(text)
-    .replace(/\\n(?![a-zA-Z])/g, '\n')
+  let rawText = String(text);
+  
+  // Split by math blocks to safely replace literal \n outside math without corrupting LaTeX commands like \neq
+  const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
+  const processedParts = parts.map((part, idx) => {
+    if (idx % 2 === 1) {
+      // Inside math block: only replace literal \n if NOT followed by letters (e.g. KaTeX commands)
+      return part.replace(/\\n(?![a-zA-Z])/g, '\n');
+    } else {
+      // Outside math block: replace all literal \n with real newlines safely
+      return part.replace(/\\n/g, '\n');
+    }
+  });
+  rawText = processedParts.join('');
+
+  rawText = rawText
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n');
 
@@ -150,7 +371,29 @@ const renderHomeworkBody = (text, isArabicMode, arabicFont, renderWithMath, secI
           <span className="print-only" style={{ fontWeight: 700, fontSize: '0.9rem' }}>{pointsStr}</span>
         </div>
         <div className="homework-content-cell" style={isArabicMode ? { textAlign: 'right', direction: 'rtl', fontFamily: arabicFont } : {}}>
-          {renderWithMath(cleanLine)}
+          {isDirectEdit ? (
+            <textarea
+              className="homework-content-textarea"
+              value={cleanLine}
+              onChange={(e) => onContentChange(secId, idx, e.target.value)}
+              style={{
+                width: '100%',
+                border: '1px solid rgba(0, 80, 134, 0.2)',
+                borderRadius: '4px',
+                background: '#fff',
+                padding: '0.4rem',
+                fontSize: '0.95rem',
+                color: '#1a202c',
+                fontFamily: isArabicMode ? arabicFont : 'inherit',
+                resize: 'vertical',
+                minHeight: '2.5rem',
+                direction: isArabicMode ? 'rtl' : 'ltr',
+                textAlign: isArabicMode ? 'right' : 'left'
+              }}
+            />
+          ) : (
+            renderWithMath(cleanLine)
+          )}
         </div>
       </div>
     );
@@ -163,8 +406,22 @@ const renderHomeworkBody = (text, isArabicMode, arabicFont, renderWithMath, secI
 const calculateTotalPoints = (text, isArabicMode) => {
   if (!text) return isArabicMode ? '0 ن' : '0 pts';
 
-  let rawText = String(text)
-    .replace(/\\n(?![a-zA-Z])/g, '\n')
+  let rawText = String(text);
+  
+  // Split by math blocks to safely replace literal \n outside math without corrupting LaTeX commands like \neq
+  const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
+  const processedParts = parts.map((part, idx) => {
+    if (idx % 2 === 1) {
+      // Inside math block: only replace literal \n if NOT followed by letters (e.g. KaTeX commands)
+      return part.replace(/\\n(?![a-zA-Z])/g, '\n');
+    } else {
+      // Outside math block: replace all literal \n with real newlines safely
+      return part.replace(/\\n/g, '\n');
+    }
+  });
+  rawText = processedParts.join('');
+
+  rawText = rawText
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n');
 
@@ -225,6 +482,9 @@ export default function LessonViewerPage() {
   const [studentAnswers, setStudentAnswers] = useState({});
   const [checkResults, setCheckResults] = useState({}); // key -> 'success' | 'error'
   const [includeSolutionsInPdf, setIncludeSolutionsInPdf] = useState(true);
+  const [isDirectEdit, setIsDirectEdit] = useState(false);
+  const [originalLessonBackup, setOriginalLessonBackup] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   if (!authLoading && !user) {
     return <Navigate to="/login" replace />;
@@ -260,6 +520,211 @@ export default function LessonViewerPage() {
     if (id) fetchLesson();
   }, [id]);
 
+  const handleHeaderChange = (field, value) => {
+    setLesson(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        ...(field === 'fiche_title' ? { title: value } : {}),
+        ...(field === 'subject' ? { subject: value } : {}),
+        ...(field === 'teacher' ? { teacher: value } : {}),
+        ...(field === 'phone' ? { phone: value } : {}),
+        content: {
+          ...prev.content,
+          header: {
+            ...prev.content.header,
+            [field]: value,
+            ...(field === 'fiche_title' ? { fiche_title: value } : {}),
+            ...(field === 'subject' ? { subject: value } : {}),
+            ...(field === 'teacher' ? { teacher: value } : {}),
+            ...(field === 'phone' ? { phone: value } : {})
+          }
+        }
+      };
+    });
+  };
+
+  const handleTitleChange = (secId, value) => {
+    setLesson(prev => {
+      if (!prev) return prev;
+      const updatedSections = prev.content.sections.map(sec => {
+        if (sec.id === secId) {
+          return { ...sec, title: value };
+        }
+        return sec;
+      });
+      return {
+        ...prev,
+        content: {
+          ...prev.content,
+          sections: updatedSections
+        }
+      };
+    });
+  };
+
+  const handleSectionHeaderChange = (secId, value) => {
+    setLesson(prev => {
+      if (!prev) return prev;
+      const targetSec = prev.content.sections.find(s => s.id === secId);
+      const oldHeader = targetSec ? targetSec.section_header : '';
+      const updatedSections = prev.content.sections.map(sec => {
+        if (sec.section_header === oldHeader || sec.id === secId) {
+          return { ...sec, section_header: value };
+        }
+        return sec;
+      });
+      return {
+        ...prev,
+        content: {
+          ...prev.content,
+          sections: updatedSections
+        }
+      };
+    });
+  };
+
+  const handleSectionNumberChange = (secId, value) => {
+    setLesson(prev => {
+      if (!prev) return prev;
+      const targetSec = prev.content.sections.find(s => s.id === secId);
+      const oldNumber = targetSec ? targetSec.section_number : '';
+      const updatedSections = prev.content.sections.map(sec => {
+        if (sec.section_number === oldNumber || sec.id === secId) {
+          return { ...sec, section_number: value };
+        }
+        return sec;
+      });
+      return {
+        ...prev,
+        content: {
+          ...prev.content,
+          sections: updatedSections
+        }
+      };
+    });
+  };
+
+  const handleContentChange = (secId, lineIdx, newText) => {
+    setLesson(prev => {
+      if (!prev) return prev;
+      const updatedSections = prev.content.sections.map(sec => {
+        if (sec.id !== secId) return sec;
+
+        let rawText = String(sec.content);
+        const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
+        const processedParts = parts.map((part, idx) => {
+          if (idx % 2 === 1) return part.replace(/\\n(?![a-zA-Z])/g, '\n');
+          return part.replace(/\\n/g, '\n');
+        });
+        rawText = processedParts.join('').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        const lines = rawText.split('\n');
+
+        const mergedToOriginalMap = [];
+        const mergedLines = [];
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (/^(\*\*)?([a-zA-Z]|\d+)[.)](\*\*)?$/.test(line) && i + 1 < lines.length) {
+            let nextNonEmptyIdx = i + 1;
+            while (nextNonEmptyIdx < lines.length && lines[nextNonEmptyIdx].trim() === '') {
+              nextNonEmptyIdx++;
+            }
+            if (nextNonEmptyIdx < lines.length) {
+              mergedToOriginalMap.push({ start: i, end: nextNonEmptyIdx });
+              mergedLines.push(line + ' ' + lines[nextNonEmptyIdx].trim());
+              i = nextNonEmptyIdx;
+              continue;
+            }
+          }
+          mergedToOriginalMap.push({ start: i, end: i });
+          mergedLines.push(lines[i]);
+        }
+
+        const mapEntry = mergedToOriginalMap[lineIdx];
+        if (!mapEntry) return sec;
+
+        const targetOriginalLineIdx = mapEntry.start;
+        let originalLine = lines[targetOriginalLineIdx];
+
+        const pointsRegex = /\(\s*([\d.,]+)\s*(?:pts?|points?|\u0646|\u0646\u0642\u0637\u0629?|\u0646\u0642\u0637)\s*\)/i;
+        const matchPoints = originalLine.match(pointsRegex);
+        let pointsStr = matchPoints ? matchPoints[0] : '';
+
+        let updatedLine = newText;
+        if (pointsStr) {
+          const listPrefixRegex = /^(\s*(?:\d+|[a-zA-Z])[.)]\s*)/;
+          const prefixMatch = updatedLine.match(listPrefixRegex);
+          if (prefixMatch) {
+            const prefix = prefixMatch[1];
+            const restOfLine = updatedLine.substring(prefix.length);
+            updatedLine = `${prefix}${pointsStr} ${restOfLine}`;
+          } else {
+            updatedLine = `${pointsStr} ${updatedLine}`;
+          }
+        }
+
+        lines[targetOriginalLineIdx] = updatedLine;
+        if (mapEntry.start !== mapEntry.end) {
+          lines[mapEntry.end] = '';
+        }
+
+        return {
+          ...sec,
+          content: lines.join('\n')
+        };
+      });
+
+      return {
+        ...prev,
+        content: {
+          ...prev.content,
+          sections: updatedSections
+        }
+      };
+    });
+  };
+
+  const handleSaveDirectEdit = async () => {
+    if (!lesson) return;
+    setIsSaving(true);
+    try {
+      const updates = {
+        title: lesson.title,
+        subject: lesson.subject,
+        chapterNumber: lesson.chapterNumber || lesson.content?.chapter_number || lesson.chapter_number,
+        teacher: lesson.teacher || lesson.content?.header?.teacher,
+        phone: lesson.phone || lesson.content?.header?.phone,
+        level: lesson.level || lesson.content?.level,
+        docType: lesson.docType || lesson.content?.doc_type,
+        content: lesson.content,
+      };
+      await updateLesson(id, updates);
+      setIsDirectEdit(false);
+      setOriginalLessonBackup(null);
+      alert(lesson.content?.metadata?.language === 'ar' ? 'تم حفظ التعديلات بنجاح!' : 'Modifications enregistrées avec succès !');
+    } catch (err) {
+      console.error(err);
+      alert(lesson.content?.metadata?.language === 'ar' ? 'حدث خطأ أثناء الحفظ.' : "Erreur lors de l'enregistrement des modifications.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelDirectEdit = () => {
+    if (originalLessonBackup) {
+      setLesson(originalLessonBackup);
+      setOriginalLessonBackup(null);
+    }
+    setIsDirectEdit(false);
+  };
+
+  const handleToggleDirectEdit = () => {
+    if (!isDirectEdit) {
+      setOriginalLessonBackup(JSON.parse(JSON.stringify(lesson)));
+      setIsDirectEdit(true);
+    }
+  };
+
   const handlePointsChange = (secId, lineIdx, newPoints) => {
     setLesson(prev => {
       if (!prev) return prev;
@@ -267,8 +732,22 @@ export default function LessonViewerPage() {
       const updatedSections = prev.content.sections.map(sec => {
         if (sec.id !== secId) return sec;
 
-        let rawText = String(sec.content)
-          .replace(/\\n(?![a-zA-Z])/g, '\n')
+        let rawText = String(sec.content);
+        
+        // Split by math blocks to safely replace literal \n outside math without corrupting LaTeX commands like \neq
+        const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
+        const processedParts = parts.map((part, idx) => {
+          if (idx % 2 === 1) {
+            // Inside math block: only replace literal \n if NOT followed by letters (e.g. KaTeX commands)
+            return part.replace(/\\n(?![a-zA-Z])/g, '\n');
+          } else {
+            // Outside math block: replace all literal \n with real newlines safely
+            return part.replace(/\\n/g, '\n');
+          }
+        });
+        rawText = processedParts.join('');
+
+        rawText = rawText
           .replace(/\r\n/g, '\n')
           .replace(/\r/g, '\n');
 
@@ -410,7 +889,7 @@ export default function LessonViewerPage() {
 
   const { content } = lesson;
   const { header, sections } = content;
-  const theorySections = sections?.filter(s => s.type === 'content') || [];
+  const theorySections = sections?.filter(s => s.type !== 'exercise') || [];
   const exerciseSections = sections?.filter(s => s.type === 'exercise') || [];
 
   // دعم RTL للنسخ المترجمة للعربية
@@ -1353,56 +1832,7 @@ export default function LessonViewerPage() {
             >
               🚀 Mode Interactif
             </button>
-            <button 
-              onClick={() => setUiStyle('classic')}
-              style={{
-                background: uiStyle === 'classic' ? '#005086' : 'transparent',
-                color: uiStyle === 'classic' ? '#ffffff' : 'var(--text-muted)',
-                border: 'none',
-                padding: '0.4rem 0.85rem',
-                borderRadius: '99px',
-                fontSize: '0.75rem',
-                fontWeight: 800,
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-            >
-              📄 Style Papier
-            </button>
           </div>
-
-          {/* Solutions Print Option Toggle */}
-          <label style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            fontSize: '0.82rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-            userSelect: 'none',
-            color: 'var(--text-main)',
-            marginRight: '0.25rem',
-            background: 'var(--bg-glass)',
-            border: '1px solid var(--border)',
-            padding: '0.4rem 0.85rem',
-            borderRadius: '99px',
-            transition: 'all 0.2s'
-          }}>
-            <input 
-              type="checkbox"
-              checked={includeSolutionsInPdf}
-              onChange={(e) => setIncludeSolutionsInPdf(e.target.checked)}
-              style={{
-                width: '14px',
-                height: '14px',
-                accentColor: 'var(--violet)',
-                cursor: 'pointer',
-                margin: 0
-              }}
-            />
-            <span>Imprimer les réponses</span>
-          </label>
-
           {/* PDF Download button */}
           <button 
             onClick={handleExportPDF}
@@ -1427,23 +1857,26 @@ export default function LessonViewerPage() {
               : <><Download size={16} /> Télécharger PDF</>}
           </button>
 
-          {/* Edit button */}
+          {/* Edit button options */}
           {user?.role === 'admin' && (
-            <button 
-              onClick={() => navigate(`/admin/lessons/${id}/edit`)}
-              className="btn-outline"
-              style={{
-                padding: '0.5rem 1.1rem',
-                fontSize: '0.85rem',
-                fontWeight: 800,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                border: '1px solid var(--border)'
-              }}
-            >
-              <Edit size={16} /> Modifier
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <button 
+                onClick={() => navigate(`/admin/lessons/${id}/edit`)}
+                className="btn-outline"
+                style={{
+                  padding: '0.5rem 1.1rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 800,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  border: '1px solid var(--border)'
+                }}
+              >
+                <Edit size={16} />
+                Éditeur Complet
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -1483,20 +1916,65 @@ export default function LessonViewerPage() {
             background: '#ffffff'
           }}>
             <div className="paper-header-cell" style={{ padding: '1rem', borderRight: '1.5px solid #005086', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '0.25rem', color: '#111827', fontSize: '0.8rem', fontWeight: 'bold' }}>
-              <div>{header.prep_title}</div>
+              {isDirectEdit ? (
+                <input
+                  type="text"
+                  value={header.prep_title}
+                  onChange={(e) => handleHeaderChange('prep_title', e.target.value)}
+                  style={{ width: '100%', fontSize: '0.8rem', border: '1px solid rgba(0,80,134,0.2)', padding: '0.2rem', textAlign: 'center', fontWeight: 'bold', borderRadius: '4px' }}
+                />
+              ) : (
+                <div>{header.prep_title}</div>
+              )}
               <div style={{ color: '#005086' }}>{header.schools?.join(' - ')}</div>
             </div>
             <div className="paper-header-cell" style={{ padding: '1rem', borderRight: '1.5px solid #005086', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '0.25rem', color: '#111827' }}>
-              <div style={{ fontSize: '0.9rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {header.subject}
-              </div>
-              <div className="paper-header-title" style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#005086' }}>
-                <span className="paper-header-title-underline" style={{ color: '#b91c1c', textDecoration: 'underline', fontWeight: 900 }}>{renderWithMath(header.fiche_title)}</span>
+              {isDirectEdit ? (
+                <input
+                  type="text"
+                  value={header.subject}
+                  onChange={(e) => handleHeaderChange('subject', e.target.value)}
+                  style={{ width: '100%', fontSize: '0.85rem', border: '1px solid rgba(0,80,134,0.2)', padding: '0.2rem', textAlign: 'center', borderRadius: '4px', textTransform: 'uppercase', color: '#6b7280' }}
+                />
+              ) : (
+                <div style={{ fontSize: '0.9rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  {header.subject}
+                </div>
+              )}
+              <div className="paper-header-title" style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#005086', width: '100%' }}>
+                {isDirectEdit ? (
+                  <input
+                    type="text"
+                    value={header.fiche_title}
+                    onChange={(e) => handleHeaderChange('fiche_title', e.target.value)}
+                    style={{ width: '100%', fontSize: '1.1rem', border: '1px solid rgba(0,80,134,0.2)', padding: '0.2rem', textAlign: 'center', borderRadius: '4px', color: '#b91c1c', fontWeight: 900 }}
+                  />
+                ) : (
+                  <span className="paper-header-title-underline" style={{ color: '#b91c1c', textDecoration: 'underline', fontWeight: 900 }}>{renderWithMath(header.fiche_title)}</span>
+                )}
               </div>
             </div>
             <div className="paper-header-cell" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '0.25rem', color: '#111827', fontSize: '0.8rem', fontWeight: 'bold' }}>
-              <div>{header.teacher || profName}</div>
-              {(header.phone || profPhone) && <div style={{ color: '#4b5563' }}>{header.phone || profPhone}</div>}
+              {isDirectEdit ? (
+                <input
+                  type="text"
+                  value={header.teacher || profName}
+                  onChange={(e) => handleHeaderChange('teacher', e.target.value)}
+                  style={{ width: '100%', fontSize: '0.8rem', border: '1px solid rgba(0,80,134,0.2)', padding: '0.2rem', textAlign: 'center', fontWeight: 'bold', borderRadius: '4px' }}
+                />
+              ) : (
+                <div>{header.teacher || profName}</div>
+              )}
+              {isDirectEdit ? (
+                <input
+                  type="text"
+                  value={header.phone || profPhone}
+                  onChange={(e) => handleHeaderChange('phone', e.target.value)}
+                  style={{ width: '100%', fontSize: '0.8rem', border: '1px solid rgba(0,80,134,0.2)', padding: '0.2rem', textAlign: 'center', color: '#4b5563', borderRadius: '4px', marginTop: '0.1rem' }}
+                />
+              ) : (
+                (header.phone || profPhone) && <div style={{ color: '#4b5563' }}>{header.phone || profPhone}</div>
+              )}
             </div>
           </div>
         ) : (
@@ -1510,38 +1988,101 @@ export default function LessonViewerPage() {
             gap: '1rem'
           }}>
             <div>
-              <span style={{
-                background: 'var(--violet-soft)',
-                color: 'var(--violet)',
-                padding: '0.2rem 0.65rem',
-                borderRadius: '6px',
-                fontSize: '0.72rem',
-                fontWeight: 900,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                display: 'inline-block',
-                marginBottom: '0.5rem'
-              }}>
-                {header.subject}
-              </span>
-              <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
-                {renderWithMath(header.fiche_title)}
-              </h1>
+              {isDirectEdit ? (
+                <input
+                  type="text"
+                  value={header.subject}
+                  onChange={(e) => handleHeaderChange('subject', e.target.value)}
+                  style={{
+                    background: 'var(--violet-soft)',
+                    color: 'var(--violet)',
+                    padding: '0.2rem 0.65rem',
+                    borderRadius: '6px',
+                    fontSize: '0.72rem',
+                    fontWeight: 900,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    border: '1px solid rgba(79,70,229,0.2)',
+                    marginBottom: '0.5rem'
+                  }}
+                />
+              ) : (
+                <span style={{
+                  background: 'var(--violet-soft)',
+                  color: 'var(--violet)',
+                  padding: '0.2rem 0.65rem',
+                  borderRadius: '6px',
+                  fontSize: '0.72rem',
+                  fontWeight: 900,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  display: 'inline-block',
+                  marginBottom: '0.5rem'
+                }}>
+                  {header.subject}
+                </span>
+              )}
+              {isDirectEdit ? (
+                <input
+                  type="text"
+                  value={header.fiche_title}
+                  onChange={(e) => handleHeaderChange('fiche_title', e.target.value)}
+                  style={{
+                    fontSize: '1.5rem',
+                    fontWeight: 800,
+                    width: '100%',
+                    border: '1px solid var(--border)',
+                    background: 'var(--bg-glass)',
+                    color: 'var(--text-main)',
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: '6px',
+                    marginTop: '0.25rem'
+                  }}
+                />
+              ) : (
+                <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
+                  {renderWithMath(header.fiche_title)}
+                </h1>
+              )}
             </div>
             
             {/* Meta badges */}
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              {(header.teacher || profName) && (
+              {isDirectEdit ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--bg-glass)', border: '1px solid var(--border)', padding: '0.3rem 0.75rem', borderRadius: '8px' }}>
                   <User size={14} />
-                  <span>{header.teacher || profName}</span>
+                  <input
+                    type="text"
+                    value={header.teacher || profName}
+                    onChange={(e) => handleHeaderChange('teacher', e.target.value)}
+                    style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', fontSize: '0.8rem', width: '100px', outline: 'none' }}
+                  />
                 </div>
+              ) : (
+                (header.teacher || profName) && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--bg-glass)', border: '1px solid var(--border)', padding: '0.3rem 0.75rem', borderRadius: '8px' }}>
+                    <User size={14} />
+                    <span>{header.teacher || profName}</span>
+                  </div>
+                )
               )}
-              {(header.phone || profPhone) && (
+              {isDirectEdit ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--bg-glass)', border: '1px solid var(--border)', padding: '0.3rem 0.75rem', borderRadius: '8px' }}>
                   <Phone size={14} />
-                  <span>{header.phone || profPhone}</span>
+                  <input
+                    type="text"
+                    value={header.phone || profPhone}
+                    onChange={(e) => handleHeaderChange('phone', e.target.value)}
+                    style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', fontSize: '0.8rem', width: '100px', outline: 'none' }}
+                  />
                 </div>
+              ) : (
+                (header.phone || profPhone) && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--bg-glass)', border: '1px solid var(--border)', padding: '0.3rem 0.75rem', borderRadius: '8px' }}>
+                    <Phone size={14} />
+                    <span>{header.phone || profPhone}</span>
+                  </div>
+                )
               )}
             </div>
           </div>
@@ -1549,6 +2090,30 @@ export default function LessonViewerPage() {
 
         {/* WORKBOOK MAIN BODY */}
         <div className="sheet-body" dir={lessonDir} style={isArabic ? { fontFamily: arabicFont } : {}}>
+          {/* Direct Edit Mode Banner */}
+          {isDirectEdit && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.65rem',
+              background: 'rgba(79,70,229,0.08)',
+              border: '1.5px dashed rgba(79,70,229,0.35)',
+              borderRadius: '10px',
+              padding: '0.65rem 1.1rem',
+              marginBottom: '1rem',
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              color: 'var(--violet)',
+              flexWrap: 'wrap',
+            }}>
+              <Edit size={15} />
+              <span>
+                {isArabic
+                  ? 'أنت الآن في وضع التعديل المباشر — يمكنك تعديل النصوص والعناوين. انقر على حقل لبدء التعديل.'
+                  : 'Mode Modification Directe — Cliquez sur un champ pour le modifier. Les formules LaTeX entre $ sont supportées.'}
+              </span>
+            </div>
+          )}
           {/* Arabic badge for translated lessons */}
           {isArabic && (
             <div style={{
@@ -1572,10 +2137,10 @@ export default function LessonViewerPage() {
 
           <div className={`sections-list-container ${lesson?.docType === 'exercises' ? 'exercises-two-columns-layout' : ''}`}>
             {sections?.map((sec, idx) => {
-              const isTheory = sec.type === 'content';
-              const { number: exeNumber, label: exeLabel } = !isTheory 
+              const isTheory = sec.type !== 'exercise';
+              const { number: exeNumber, label: exeLabel, prefix: exePrefix } = !isTheory 
                 ? parseExerciseTitle(sec.title, idx, isArabic)
-                : { number: '', label: '' };
+                : { number: '', label: '', prefix: '' };
               
               // Decide whether to show section header row
               const prevSec = idx > 0 ? sections[idx - 1] : null;
@@ -1583,7 +2148,7 @@ export default function LessonViewerPage() {
               
               return (
                 <div key={sec.id || idx} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
-                  {showSectionHeader && (
+                  {(showSectionHeader || (isDirectEdit && sec.section_header !== undefined)) && sec.section_header !== undefined && (
                     <div
                       className="section-header-row"
                       style={{
@@ -1591,28 +2156,252 @@ export default function LessonViewerPage() {
                         flexDirection: isArabic ? 'row-reverse' : 'row',
                       }}
                     >
-                      <div className="section-badge-circle">{sec.section_number || '1'}</div>
-                      <div
-                        className="section-title-pill"
-                        style={{ fontFamily: isArabic ? arabicFont : 'inherit', direction: lessonDir }}
-                      >
-                        {sec.section_header}
-                      </div>
+                      {isDirectEdit ? (
+                        <input
+                          type="text"
+                          value={sec.section_number || ''}
+                          onChange={(e) => handleSectionNumberChange(sec.id, e.target.value)}
+                          style={{
+                            width: '2.2rem',
+                            height: '2.2rem',
+                            borderRadius: '50%',
+                            background: '#005086',
+                            color: '#ffffff',
+                            border: '2px solid rgba(255,255,255,0.3)',
+                            textAlign: 'center',
+                            fontWeight: 900,
+                            fontSize: '0.85rem',
+                            flexShrink: 0
+                          }}
+                        />
+                      ) : (
+                        <div className="section-badge-circle">{sec.section_number || '1'}</div>
+                      )}
+                      {isDirectEdit ? (
+                        <input
+                          type="text"
+                          value={sec.section_header || ''}
+                          onChange={(e) => handleSectionHeaderChange(sec.id, e.target.value)}
+                          style={{
+                            flex: 1,
+                            fontFamily: isArabic ? arabicFont : 'inherit',
+                            direction: lessonDir,
+                            fontSize: '0.9rem',
+                            fontWeight: 700,
+                            color: '#005086',
+                            border: '1px solid rgba(0,80,134,0.25)',
+                            borderRadius: '8px',
+                            padding: '0.3rem 0.65rem',
+                            background: 'rgba(0,80,134,0.04)'
+                          }}
+                        />
+                      ) : (
+                        <div
+                          className="section-title-pill"
+                          style={{ fontFamily: isArabic ? arabicFont : 'inherit', direction: lessonDir }}
+                        >
+                          {renderWithMath(sec.section_header)}
+                        </div>
+                      )}
                     </div>
                   )}
                   
-                  {isTheory ? (
-                    <div className="subsection-card" style={isArabic ? { fontFamily: arabicFont } : {}}>
+                  {isTheory ? (() => {
+                    const type = sec.type || 'content';
+                    const titleLower = (sec.title || '').toLowerCase();
+                    
+                    const isDefinition = type === 'definition' || titleLower.includes('définition') || titleLower.includes('definition') || titleLower.includes('تعريف');
+                    const isProperty = type === 'property' || titleLower.includes('propriété') || titleLower.includes('propriete') || titleLower.includes('خاصية');
+                    const isTheorem = type === 'theorem' || titleLower.includes('théorème') || titleLower.includes('theoreme') || titleLower.includes('مبرهنة');
+                    const isCorollary = type === 'corollary' || titleLower.includes('corollaire') || titleLower.includes('نتيجة');
+                    const isExample = type === 'example' || titleLower.includes('exemple') || titleLower.includes('مثال');
+                    const isRemark = type === 'remark' || titleLower.includes('remarque') || titleLower.includes('ملاحظة');
+                    const isActivity = type === 'activity' || titleLower.includes('activité') || titleLower.includes('activite') || titleLower.includes('تطبيق');
+
+                    let cardStyle = {
+                      ...(isArabic ? { fontFamily: arabicFont } : {}),
+                    };
+
+                    let headerStyle = {
+                      flexDirection: isArabic ? 'row-reverse' : 'row',
+                      textAlign: isArabic ? 'right' : 'left',
+                      fontFamily: isArabic ? arabicFont : 'inherit',
+                    };
+
+                    if (isDefinition) {
+                      cardStyle = {
+                        ...cardStyle,
+                        border: '1.5px solid var(--violet)',
+                        background: 'var(--violet-soft)',
+                        borderRadius: '12px',
+                        padding: '1.5rem',
+                      };
+                      headerStyle = {
+                        ...headerStyle,
+                        color: 'var(--violet)',
+                        borderBottom: '1px dashed rgba(79, 70, 229, 0.25)',
+                      };
+                    } else if (isProperty) {
+                      cardStyle = {
+                        ...cardStyle,
+                        border: '1.5px solid var(--emerald)',
+                        background: 'var(--emerald-soft)',
+                        borderRadius: '12px',
+                        padding: '1.5rem',
+                      };
+                      headerStyle = {
+                        ...headerStyle,
+                        color: 'var(--emerald)',
+                        borderBottom: '1px dashed rgba(5, 150, 105, 0.25)',
+                      };
+                    } else if (isTheorem) {
+                      cardStyle = {
+                        ...cardStyle,
+                        border: '1.5px solid var(--danger)',
+                        background: 'var(--danger-soft)',
+                        borderRadius: '12px',
+                        padding: '1.5rem',
+                      };
+                      headerStyle = {
+                        ...headerStyle,
+                        color: 'var(--danger)',
+                        borderBottom: '1px dashed rgba(220, 38, 38, 0.25)',
+                      };
+                    } else if (isCorollary) {
+                      cardStyle = {
+                        ...cardStyle,
+                        border: '1.5px solid var(--warning)',
+                        background: 'var(--warning-soft)',
+                        borderRadius: '12px',
+                        padding: '1.5rem',
+                      };
+                      headerStyle = {
+                        ...headerStyle,
+                        color: 'var(--warning)',
+                        borderBottom: '1px dashed rgba(217, 119, 6, 0.25)',
+                      };
+                    } else if (isExample) {
+                      cardStyle = {
+                        ...cardStyle,
+                        border: 'none',
+                        background: 'rgba(148, 163, 184, 0.04)',
+                        padding: '1rem 1.25rem',
+                        borderRadius: '8px',
+                        boxShadow: 'none',
+                        ...(isArabic ? {
+                          borderRight: '4px solid var(--text-subtle)',
+                        } : {
+                          borderLeft: '4px solid var(--text-subtle)',
+                        })
+                      };
+                      headerStyle = {
+                        ...headerStyle,
+                        color: 'var(--text-main)',
+                        fontWeight: '800',
+                        borderBottom: 'none',
+                        marginBottom: '0.25rem',
+                        paddingBottom: 0,
+                      };
+                    } else if (isRemark) {
+                      cardStyle = {
+                        ...cardStyle,
+                        border: '1px solid rgba(217, 119, 6, 0.15)',
+                        background: 'var(--warning-soft)',
+                        padding: '1rem 1.25rem',
+                        borderRadius: '8px',
+                        boxShadow: 'none',
+                        ...(isArabic ? {
+                          borderRight: '4px solid var(--warning)',
+                        } : {
+                          borderLeft: '4px solid var(--warning)',
+                        })
+                      };
+                      headerStyle = {
+                        ...headerStyle,
+                        color: 'var(--warning)',
+                        fontWeight: '800',
+                        borderBottom: 'none',
+                        marginBottom: '0.25rem',
+                        paddingBottom: 0,
+                      };
+                    } else if (isActivity) {
+                      cardStyle = {
+                        ...cardStyle,
+                        border: '1px solid rgba(79, 70, 229, 0.15)',
+                        background: 'var(--violet-soft)',
+                        padding: '1rem 1.25rem',
+                        borderRadius: '8px',
+                        boxShadow: 'none',
+                        ...(isArabic ? {
+                          borderRight: '4px solid var(--violet)',
+                        } : {
+                          borderLeft: '4px solid var(--violet)',
+                        })
+                      };
+                      headerStyle = {
+                        ...headerStyle,
+                        color: 'var(--violet)',
+                        fontWeight: '800',
+                        borderBottom: 'none',
+                        marginBottom: '0.25rem',
+                        paddingBottom: 0,
+                      };
+                    } else {
+                      cardStyle = {
+                        ...cardStyle,
+                        border: 'none',
+                        background: 'transparent',
+                        padding: '0.25rem 0 0.25rem 1rem',
+                        boxShadow: 'none',
+                        borderRadius: 0,
+                        ...(isArabic ? {
+                          borderRight: '3px solid rgba(0,80,134,0.15)',
+                        } : {
+                          borderLeft: '3px solid rgba(0,80,134,0.15)',
+                        })
+                      };
+                      headerStyle = {
+                        ...headerStyle,
+                        borderBottom: '1px dashed rgba(0, 80, 134, 0.15)',
+                      };
+                    }
+
+                    return (
+                    <div
+                      className="subsection-card"
+                      style={cardStyle}
+                    >
                       <div
                         className="subsection-header-inline"
-                        style={{
-                          flexDirection: isArabic ? 'row-reverse' : 'row',
-                          textAlign: isArabic ? 'right' : 'left',
-                          fontFamily: isArabic ? arabicFont : 'inherit',
-                        }}
+                        style={headerStyle}
                       >
-                        <span>{parseBold(sec.title)}</span>
-                        {sec.accent_text && <span className="accent-green-text">{sec.accent_text}</span>}
+                        {isDirectEdit ? (
+                          <input
+                            type="text"
+                            value={sec.title || ''}
+                            onChange={(e) => handleTitleChange(sec.id, e.target.value)}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              borderBottom: '1.5px dashed rgba(79,70,229,0.4)',
+                              outline: 'none',
+                              fontSize: 'inherit',
+                              fontWeight: 'inherit',
+                              color: 'inherit',
+                              width: '100%',
+                              fontFamily: 'inherit',
+                              padding: '0.1rem 0',
+                              direction: lessonDir,
+                            }}
+                          />
+                        ) : (
+                          <span>{renderWithMath(sec.title)}</span>
+                        )}
+                        {sec.accent_text && (
+                          <span className="accent-green-text" style={{ display: 'block', marginTop: '0.35rem', fontStyle: 'italic' }}>
+                            {renderWithMath(sec.accent_text.replace(/\\n/g, '\n'))}
+                          </span>
+                        )}
                       </div>
 
                       {sec.items?.map((item, itemIdx) => {
@@ -1624,6 +2413,55 @@ export default function LessonViewerPage() {
                               style={isArabic ? { direction: 'rtl', textAlign: 'right', fontFamily: arabicFont } : {}}
                             >
                               {renderWithMath(item.text)}
+                            </div>
+                          );
+                        }
+                        if (item.type === 'image') {
+                          const align = item.align || 'center';
+                          const widthPct = item.width_pct || 80;
+                          const justifyMap = { left: 'flex-start', center: 'center', right: 'flex-end' };
+                          const rawUrl = (item.url || '').trim();
+                          const isInvalidUrl = !rawUrl || rawUrl.length < 5 || rawUrl.includes('placeholder') || rawUrl.includes('example.com') || rawUrl === 'none' || rawUrl === 'url' || rawUrl === 'image';
+                          const isSignTable = (item.alt || rawUrl).toLowerCase().includes('signe') || (item.alt || rawUrl).toLowerCase().includes('tableau') || (item.alt || rawUrl).includes('ax+b') || (item.alt || rawUrl).includes('ax^2');
+
+                          if (isInvalidUrl || isSignTable) {
+                            return (
+                              <div key={itemIdx} style={{ display: 'flex', justifyContent: justifyMap[align], width: '100%', margin: '0.75rem 0' }}>
+                                <SignTableViewer altText={item.alt || item.url || ''} />
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div key={itemIdx} style={{ display: 'flex', flexDirection: 'column', alignItems: justifyMap[align], margin: '0.75rem 0' }}>
+                              <img
+                                src={item.url}
+                                alt={item.alt || ''}
+                                style={{
+                                  width: `${widthPct}%`,
+                                  maxWidth: '100%',
+                                  borderRadius: '8px',
+                                  border: '1px solid var(--border)',
+                                  boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+                                  display: 'block',
+                                  objectFit: 'contain',
+                                }}
+                                onError={e => {
+                                  e.target.style.display = 'none';
+                                }}
+                              />
+                              {item.alt && (
+                                <div style={{
+                                  fontSize: '0.78rem',
+                                  color: 'var(--text-muted)',
+                                  fontStyle: 'italic',
+                                  marginTop: '0.35rem',
+                                  textAlign: align,
+                                  width: `${widthPct}%`,
+                                }}>
+                                  {renderWithMath(item.alt)}
+                                </div>
+                              )}
                             </div>
                           );
                         }
@@ -1690,12 +2528,44 @@ export default function LessonViewerPage() {
                             {item.type === 'bullet' && (
                               <span className="bullet-dot" style={isArabic ? { marginLeft: '0.5rem', marginRight: 0 } : {}}>•</span>
                             )}
-                            <span style={{ flex: 1 }}>{renderWithMath(item.text)}</span>
+                            {isDirectEdit ? (
+                              <textarea
+                                value={item.text || ''}
+                                onChange={(e) => {
+                                  setLesson(prev => {
+                                    if (!prev) return prev;
+                                    const updatedSections = prev.content.sections.map(s => {
+                                      if (s.id !== sec.id) return s;
+                                      const newItems = (s.items || []).map((it, i) => i === itemIdx ? { ...it, text: e.target.value } : it);
+                                      return { ...s, items: newItems };
+                                    });
+                                    return { ...prev, content: { ...prev.content, sections: updatedSections } };
+                                  });
+                                }}
+                                style={{
+                                  flex: 1,
+                                  border: '1px solid rgba(0,80,134,0.15)',
+                                  borderRadius: '4px',
+                                  background: 'rgba(255,255,255,0.7)',
+                                  padding: '0.3rem 0.5rem',
+                                  fontSize: '0.95rem',
+                                  color: '#1a202c',
+                                  fontFamily: isArabic ? arabicFont : 'inherit',
+                                  resize: 'vertical',
+                                  minHeight: '2.2rem',
+                                  width: '100%',
+                                  direction: lessonDir
+                                }}
+                              />
+                            ) : (
+                              <span style={{ flex: 1 }}>{renderWithMath(item.text)}</span>
+                            )}
                           </div>
                         );
                       })}
                     </div>
-                  ) : (
+                  );
+                })() : (
                     (() => {
                       const isHomework = lesson.docType === 'homework' || lesson.content?.doc_type === 'homework';
                       if (isHomework) {
@@ -1708,7 +2578,7 @@ export default function LessonViewerPage() {
                               </div>
                             </div>
                             
-                            {renderHomeworkBody(sec.content, isArabic, arabicFont, renderWithMath, sec.id, handlePointsChange)}
+                            {renderHomeworkBody(sec.content, isArabic, arabicFont, renderWithMath, sec.id, handlePointsChange, isDirectEdit, handleContentChange)}
 
                             {/* Interactive student checks inside homework row */}
                             {sec.interactive_answers?.length > 0 && (
@@ -1819,7 +2689,10 @@ export default function LessonViewerPage() {
                             }}>
                               <div className="exercise-pill" style={isArabic ? { fontFamily: arabicFont, flexDirection: 'row' } : {}}>
                                 <span>
-                                  {isArabic ? 'تمرين' : 'Exercice N°'}
+                                  {isArabic
+                                    ? (exePrefix === 'Application' ? 'تطبيق' : exePrefix === 'Activité' ? 'نشاط' : 'تمرين')
+                                    : (exePrefix || 'Exercice N°')
+                                  }
                                 </span>
                                 <span style={{
                                   background: '#ffffff', color: '#005086',
@@ -1836,7 +2709,7 @@ export default function LessonViewerPage() {
                                   display: 'inline-flex', alignItems: 'center',
                                   fontFamily: isArabic ? arabicFont : 'inherit',
                                 }}>
-                                  {exeLabel}
+                                  {renderWithMath(exeLabel)}
                                 </span>
                               )}
                             </div>

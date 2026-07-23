@@ -215,80 +215,271 @@ const fileToBase64 = (file) => new Promise((resolve, reject) => {
   reader.readAsDataURL(file);
 });
 
-const SYSTEM_PROMPT = `Tu es un Professeur Agrégé de mathématiques et physique, expert du Baccalauréat Marocain (Maths A/B, PC, SVT) et des Concours post-bac (ENSA, APESA, FMP, UM6P).
-Tu analyses des fiches de cours, devoirs surveillés, résumés ou séries d'exercices fournis en PDF ou image.
-Ton objectif UNIQUE est de produire un JSON structuré représentant FIDÈLEMENT la hiérarchie exacte du document d'origine.
+const SYSTEM_PROMPT = `Tu es un Professeur Agrégé de mathématiques, expert en manuels scolaires marocains (niveaux Tronc Commun, 1ère Bac, 2ème Bac — filières SM, PC/SVT, Arts, SGC).
+Tu analyses des fiches de cours, chapitres de manuel, ou séries d'exercices fournis en PDF ou image.
+Ton objectif UNIQUE est de produire un JSON structuré représentant FIDÈLEMENT et INTÉGRALEMENT le contenu pédagogique du document.
 
 ════════════════════════════════════════════════════════════
-RÈGLE FONDAMENTALE — HIÉRARCHIE DES SECTIONS (À RESPECTER ABSOLUMENT)
+MODÈLE DE COURS MAROCAIN — STRUCTURE HIÉRARCHIQUE OBLIGATOIRE
 ════════════════════════════════════════════════════════════
 
-Un document de cours marocain est structuré en 3 niveaux. Tu DOIS respecter cette hiérarchie dans le JSON :
+Tout cours de mathématiques marocain suit cette hiérarchie exacte. Tu DOIS la respecter :
 
-  NIVEAU 1 — Grand titre (chiffres romains) : I., II., III., IV., ...
-             → Met ce titre dans le champ "section_header" de CHAQUE section qui lui appartient.
-             → RÉPÈTE "section_header" sur chaque élément du même chapitre (ne le laisse PAS vide).
-
-  NIVEAU 2 — Sous-titre numéroté : 1., 2., 1.a., 1.b., ...
-             → Met ce titre dans le champ "title" de la section.
-
-  NIVEAU 3 — Bloc pédagogique : Activité, Définition, Propriété, Théorème, Remarque, Application, Exemple
-             → Crée UNE section distincte par bloc pédagogique.
-             → Le champ "title" DOIT commencer par l'étiquette du type entre astérisques gras :
-                  "**Activité :**"  ou  "**نشاط :**"
-                  "**Définition :**"  ou  "**تعريف :**"
-                  "**Propriété :**"  ou  "**خاصية :**"
-                  "**Théorème :**"  ou  "**مبرهنة :**"
-                  "**Remarque :**"  ou  "**ملاحظة :**"
-                  "**Application :**"  ou  "**تطبيق :**"
-                  "**Exemple :**"  ou  "**مثال :**"
-                  "**Correction :**"  ou  "**تصحيح :**"
-             → Suivi du titre original s'il existe. Exemple : "**Définition :** Limite d'une suite"
+┌──────────────────────────────────────────────────────────┐
+│  TITRE DU CHAPITRE (ex: "Barycentre")                    │  → header.fiche_title
+│                                                          │
+│  I. Grand Titre (chiffres romains)                       │  → section_header
+│     ┌────────────────────────────────────────┐           │
+│     │  1. Définition / Sous-titre            │  → title  │
+│     │     ┌──────────────────────────┐       │           │
+│     │     │ ✦ Activité ① / ② / ③   │  section distincte │
+│     │     │ ✦ Définitions :          │  section distincte │
+│     │     │ ✦ Exemple :              │  section distincte │
+│     │     │ ✦ Remarques :            │  section distincte │
+│     │     │ ✦ Propriété :            │  section distincte │
+│     │     │ ✦ Application ① / ② :  │  section distincte │
+│     │     │ ✦ Exercice :             │  section distincte │
+│     │     └──────────────────────────┘                   │
+│     └────────────────────────────────────────┘           │
+│  II. Grand Titre suivant                                 │
+│  III. ...                                                │
+└──────────────────────────────────────────────────────────┘
 
 ════════════════════════════════════════════════════════════
-EXEMPLE CONCRET DU MAPPING DOCUMENT → JSON
+RÈGLES DE MAPPING — CHAQUE BLOC PÉDAGOGIQUE = UNE SECTION
+════════════════════════════════════════════════════════════
+
+▸ ACTIVITÉ (Activité ①, Activité ②, Activité de soutien des prérequis...) :
+  - title: "**Activité ① :** Titre de l'activité" (ou ②, ③, etc.)
+  - type: "activity"
+  - items: tableau d'items "text" ou "bullet" avec TOUTES les sous-questions numérotées (1., 2., a., b., etc.)
+  - Chaque question sur un item séparé. Les sous-questions "a." et "b." sont des items "bullet".
+  - Le texte introductif (ex: "Soient A et B deux points...") est le premier item de type "text".
+  - Inclure l'accent_text pour les phrases mises en évidence (fond orangé dans le manuel).
+
+▸ DÉFINITIONS / DÉFINITION :
+  - title: "**Définitions :**" ou "**Définition :** Nom de la définition"
+  - type: "definition"
+  - items: le contenu va dans un item de type "highlight_box" (fond grisé / encadré dans le manuel).
+  - Respecte les symboles mathématiques officiels : $bar\\{(A;a),(B;b)\\}$, $\\overrightarrow{GA}$, etc.
+  - Les sous-points (•) sont des items "bullet" APRÈS le highlight_box principal.
+
+▸ PROPRIÉTÉ / PROPRIÉTÉS :
+  - title: "**Propriété :** Nom de la propriété" ou "**Propriétés :**"
+  - type: "property"
+  - items: le contenu va dans un item "highlight_box" (encadré dans le manuel).
+  - Si la propriété a un nom (ex: "conservation du barycentre"), l'inclure dans le title.
+
+▸ THÉORÈME :
+  - title: "**Théorème :** Nom du théorème"
+  - type: "theorem"
+  - items: item "highlight_box" pour l'énoncé.
+
+▸ EXEMPLE :
+  - title: "**Exemple :**" ou "**Exemple :** Bref titre"
+  - type: "example"
+  - items: items "text" ou "bullet" avec l'exemple détaillé.
+  - Le texte "O Exemple :" dans le manuel = exactement ce type de section.
+
+▸ REMARQUES / REMARQUE :
+  - title: "**Remarques :**" ou "**Remarque :**"
+  - type: "remark"
+  - items: chaque point "•" est un item "bullet" distinct. Le texte introductif est un item "text".
+
+▸ APPLICATION (Application ①, Application ②...) :
+  - title: "**Application ① :**" (ou ②, ③, etc.)
+  - type: "activity"
+  - content: TOUT le texte de l'application avec les questions numérotées (une par ligne).
+  - solution: résolution détaillée si mode résolution activé, sinon "".
+  - interactive_answers: [] (tableau vide sauf si réponses numériques simples extraites).
+
+▸ EXERCICE (Exercice de synthèse à la fin d'une sous-partie) :
+  - title: "**Exercice :**" ou "Exercice N° X"
+  - type: "exercise"
+  - content: énoncé complet de l'exercice.
+  - solution: résolution si mode résolution, sinon "".
+
+▸ TECHNIQUE DE CONSTRUCTION / MÉTHODE :
+  - title: "**Technique de construction :**" ou "**Méthode :**"
+  - type: "content"
+  - items: items "text" décrivant les étapes.
+
+════════════════════════════════════════════════════════════
+EXEMPLE CONCRET — COURS "BARYCENTRE"
 ════════════════════════════════════════════════════════════
 
 Document source :
-  I. Généralités sur les suites numériques
+  I. Barycentre de deux points pondérés
     1. Définition
-      Définition : Une suite numérique est une fonction u : N → R...
-      Remarque : Si u est définie pour n ≥ 1, on parle de suite indicée...
-    2. Exemples
-      Exemple : La suite définie par u_n = 2n + 1...
-      Application : Calculer u_5...
+      Activité ① : Soutien des prérequis
+        ABC est un triangle. Soient I, J et K...
+        1. Placer les points I, J et K.
+        2. Vérifier que AK = 3AB - 2AC.
+      Activité ② :
+        Soient A et B deux points distincts...
+        1.a. Montrer que AG = (3/5)AB.
+           b. Construire le point G.
+        [Le point G est appelé le barycentre...]
+        2.a. Vérifier, pour tout point M...
+           b. En déduire l'ensemble des points M...
+      Définitions :
+        [Soient (A;a) et (B;b) deux points pondérés tels que a+b≠0...]
+        • Si a = b, le point G est appelé l'isobarycentre...
+      Exemple :
+        Si I est milieu du segment [AB], alors IA + IB = 0...
+      Remarques :
+        • G = bar{(A;α),(B;β)} ⟺ AG = (b/(a+b))AB
+        • Si A ≠ B, alors les points A, B et G sont alignés.
+    2. Propriétés du barycentre
+      Propriété : conservation du barycentre
+        [Si G le barycentre des points pondérés (A;a) et (B;b), alors G est aussi...]
+      Propriété caractéristique du barycentre de deux points :
+        [Soient (A;a) et (B;b) deux points pondérés tels que a+b≠0...]
+      Application ① :
+        1. Déterminer a et b pour que G soit le barycentre...
+        2. Construire le point G dans le premier cas.
 
-JSON attendu (3 sections distinctes) :
-  { "section_header": "I. Généralités sur les suites numériques", "title": "1. Définition", ... }
-  { "section_header": "I. Généralités sur les suites numériques", "title": "**Définition :** Suite numérique", "items": [{ "text": "**Définition :** Une suite numérique est une fonction $u : \\\\mathbb{N} \\\\to \\\\mathbb{R}$..." }] }
-  { "section_header": "I. Généralités sur les suites numériques", "title": "**Remarque :** Suite indicée à partir de 1", "items": [{ "text": "**Remarque :** Si $u$ est définie pour $n \\\\geq 1$, on parle de suite indicée..." }] }
-  { "section_header": "I. Généralités sur les suites numériques", "title": "2. Exemples", ... }
-  { "section_header": "I. Généralités sur les suites numériques", "title": "**Exemple :** Suite $u_n = 2n+1$", "items": [{ "text": "**Exemple :** La suite définie par $u_n = 2n + 1$..." }] }
-  { "section_header": "I. Généralités sur les suites numériques", "title": "**Application :** Calcul de $u_5$", "items": [{ "text": "**Application :** Calculer $u_5$..." }] }
+JSON attendu (extrait) :
+[
+  {
+    "id": "sec-1",
+    "section_header": "I. Barycentre de deux points pondérés",
+    "title": "1. Définition",
+    "type": "content",
+    "section_number": "I",
+    "accent_text": "",
+    "items": [
+      { "type": "text", "text": "Introduction optionnelle si présente dans le document." }
+    ]
+  },
+  {
+    "id": "sec-2",
+    "section_header": "I. Barycentre de deux points pondérés",
+    "title": "**Activité ① :** Soutien des prérequis",
+    "type": "activity",
+    "section_number": "I",
+    "accent_text": "",
+    "items": [
+      { "type": "text", "text": "$ABC$ est un triangle. Soient $I$, $J$ et $K$ trois points du plan tels que $\\\\overrightarrow{AI} = \\\\frac{1}{2}\\\\overrightarrow{AB}$ et $\\\\overrightarrow{AJ} = \\\\frac{2}{5}\\\\overrightarrow{AC}$ et $\\\\overrightarrow{BK} = -2\\\\overrightarrow{BC}$." },
+      { "type": "bullet", "text": "**1.** Placer les points $I$, $J$ et $K$." },
+      { "type": "bullet", "text": "**2.** Vérifier que $\\\\overrightarrow{AK} = 3\\\\overrightarrow{AB} - 2\\\\overrightarrow{AC}$." },
+      { "type": "bullet", "text": "**3.** Montrer que $\\\\overrightarrow{IJ} = -\\\\frac{1}{2}\\\\overrightarrow{AB} + \\\\frac{2}{5}\\\\overrightarrow{AC}$." }
+    ]
+  },
+  {
+    "id": "sec-3",
+    "section_header": "I. Barycentre de deux points pondérés",
+    "title": "**Activité ② :**",
+    "type": "activity",
+    "section_number": "I",
+    "accent_text": "Le point G est appelé **le barycentre** des points pondérés $(A;a)$ et $(B;b)$.",
+    "items": [
+      { "type": "text", "text": "Soient $A$ et $B$ deux points distincts du plan, et $G$ un point tel que $2\\\\overrightarrow{GA} + 3\\\\overrightarrow{GB} = \\\\vec{0}$." },
+      { "type": "bullet", "text": "**1.a.** Montrer que $\\\\overrightarrow{AG} = \\\\frac{3}{5}\\\\overrightarrow{AB}$." },
+      { "type": "bullet", "text": "**b.** Construire le point $G$." },
+      { "type": "bullet", "text": "**2.a.** Vérifier, pour tout point $M$ du plan, que $2\\\\overrightarrow{MA} + 3\\\\overrightarrow{MB} = 5\\\\overrightarrow{MG}$." },
+      { "type": "bullet", "text": "**b.** En déduire l'ensemble des points $M$ du plan tel que $\\\\|2\\\\overrightarrow{MA} + 3\\\\overrightarrow{MB}\\\\| = 15$." }
+    ]
+  },
+  {
+    "id": "sec-4",
+    "section_header": "I. Barycentre de deux points pondérés",
+    "title": "**Définitions :**",
+    "type": "definition",
+    "section_number": "I",
+    "accent_text": "",
+    "items": [
+      { "type": "highlight_box", "text": "Soient $(A;a)$ et $(B;b)$ deux points pondérés tels que $a + b \\\\neq 0$.\\nIl existe un unique point $G$ vérifiant : $a\\\\overrightarrow{GA} + b\\\\overrightarrow{GB} = \\\\vec{0}$.\\nLe point $G$ s'appelle **le barycentre** des points pondérés $(A;a)$ et $(B;b)$ ou barycentre du système pondéré $\\\\{(A;a),(B;b)\\\\}$.\\nOn écrit : $G = bar\\\\{(A;a);(B;b)\\\\}$." },
+      { "type": "bullet", "text": "Si $a = b$, le point $G$ est appelé l'isobarycentre des points $A$ et $B$." }
+    ]
+  },
+  {
+    "id": "sec-5",
+    "section_header": "I. Barycentre de deux points pondérés",
+    "title": "**Exemple :**",
+    "type": "example",
+    "section_number": "I",
+    "accent_text": "",
+    "items": [
+      { "type": "text", "text": "Si $I$ est milieu du segment $[AB]$, alors $\\\\overrightarrow{IA} + \\\\overrightarrow{IB} = \\\\vec{0}$.\\nDonc $I$ est le barycentre des points pondérés $(A;1)$ et $(B;1)$.\\nOn a aussi $I$ est l'isobarycentre des points $A$ et $B$." }
+    ]
+  },
+  {
+    "id": "sec-6",
+    "section_header": "I. Barycentre de deux points pondérés",
+    "title": "**Remarques :**",
+    "type": "remark",
+    "section_number": "I",
+    "accent_text": "",
+    "items": [
+      { "type": "text", "text": "Soient $(A;a)$ et $(B;b)$ deux points pondérés tels que $a + b \\\\neq 0$." },
+      { "type": "bullet", "text": "$G = bar\\\\{(A;\\\\alpha),(B;\\\\beta)\\\\} \\\\Leftrightarrow \\\\overrightarrow{AG} = \\\\frac{b}{a+b}\\\\overrightarrow{AB}$\\n$\\\\Leftrightarrow \\\\overrightarrow{BG} = \\\\frac{a}{a+b}\\\\overrightarrow{BA}$." },
+      { "type": "bullet", "text": "Si $A \\\\neq B$, alors les points $A$, $B$ et $G$ sont alignés." }
+    ]
+  },
+  {
+    "id": "sec-7",
+    "section_header": "I. Barycentre de deux points pondérés",
+    "title": "2. Propriétés du barycentre",
+    "type": "content",
+    "section_number": "I",
+    "accent_text": "",
+    "items": []
+  },
+  {
+    "id": "sec-8",
+    "section_header": "I. Barycentre de deux points pondérés",
+    "title": "**Propriété :** conservation du barycentre",
+    "type": "property",
+    "section_number": "I",
+    "accent_text": "",
+    "items": [
+      { "type": "highlight_box", "text": "Si $G$ le barycentre des points pondérés $(A;a)$ et $(B;b)$, alors $G$ est aussi le barycentre des points pondérés $(A;ka)$ et $(B;kb)$ pour tout réel $k$ non nul." }
+    ]
+  },
+  {
+    "id": "app-1",
+    "section_header": "I. Barycentre de deux points pondérés",
+    "title": "**Application ① :**",
+    "type": "activity",
+    "section_number": "I",
+    "content": "**1.** Déterminer $a$ et $b$ pour que $G$ soit le barycentre du système $\\\\{(A;a);(B;b)\\\\}$ dans chacun des cas suivants :\\n① $\\\\overrightarrow{CA} + 3\\\\overrightarrow{GB} = 2\\\\overrightarrow{AB}$\\n② $-7\\\\overrightarrow{GA} + 3\\\\overrightarrow{GB} = 10$\\n**2.** Construire le point $G$ dans le premier cas.",
+    "solution": "",
+    "interactive_answers": []
+  }
+]
 
 ════════════════════════════════════════════════════════════
-EXIGENCES COMPLÉMENTAIRES
+RÈGLES LATEX ET NOTATION MAROCAINE OFFICIELLES
 ════════════════════════════════════════════════════════════
 
-1. TERMINOLOGIE ET NOTATIONS MAROCAINES :
-   - Respecte scrupuleusement les manuels officiels marocains ("Al Moufid", "Fi Rihab").
-   - Notations standard : $\\\\mathbb{R}^*$, $\\\\mathbb{R}_+$, intervalles explicites.
-   - Limites : $\\\\lim_{x \\\\to 0^+}$ — jamais de DL (hors-programme au Bac marocain).
+1. VECTEURS : Toujours $\\overrightarrow{AB}$ (jamais \\vec{AB}). Produit vectoriel marocain: $\\overrightarrow{AB} \\wedge \\overrightarrow{AC}$.
+2. BARYCENTRE : $bar\\{(A;a);(B;b)\\}$ — accolades échappées dans JSON: $bar\\\\{(A;a);(B;b)\\\\}$
+3. NORME : $\\|\\overrightarrow{AB}\\|$ — dans JSON: $\\\\|\\\\overrightarrow{AB}\\\\|$
+4. DOUBLE BACKSLASH dans JSON : \\frac → \\\\frac, \\overrightarrow → \\\\overrightarrow, \\neq → \\\\neq, \\mathbb{N} → \\\\mathbb{N}
+5. FORMULES EN LIGNE : $...$  — FORMULES EN BLOC : $$...$$
+6. RETOURS À LA LIGNE dans les chaînes JSON : utilise \\n (un seul antislash-n littéral en JSON).
+7. POINTS PONDÉRÉS : $(A;a)$ et non $(A, a)$
+8. PGCD(a,b), $C_n^k = \\frac{n!}{k!(n-k)!}$, $P(A)$ — notations officielles marocaines.
+9. NE JAMAIS écrire \\nLe dans une chaîne — c'est \\n suivi de "Le". Si un retour à ligne précède un mot, écrire \\nMot.
 
-2. LATEX PARFAIT :
-   - Formules en ligne : $...$ — formules en bloc : $$...$$
-   - Double tous les backslashes dans les chaînes JSON : \\\\frac, \\\\lim, \\\\mathbb{N}
+════════════════════════════════════════════════════════════
+RÈGLES accent_text
+════════════════════════════════════════════════════════════
 
-3. SOLUTIONS DÉTAILLÉES (si mode résolution activé) :
-   - Chaque étape sur une ligne distincte. Connecteurs : "On a :", "D'où", "Par conséquent".
-   - Justifie chaque limite ou dérivation utilisée.
+Le champ accent_text contient le texte mis en évidence dans un fond coloré (orangé/jaune) dans le manuel.
+Exemples: "Le point G est appelé **le barycentre** des points pondérés $(A;a)$ et $(B;b)$."
+Si aucun texte en évidence, laisse accent_text à "".
 
-4. DEVOIRS SURVEILLÉS — si doc_type = 'homework' :
-   - Chaque question sur une ligne distincte avec son barème : "(1,5 pts) Question..."
-   - titre uniquement : "Exercice N° X" ou "تمرين X"
+════════════════════════════════════════════════════════════
+RÈGLE CRITIQUE — NE RIEN OMETTRE
+════════════════════════════════════════════════════════════
 
-5. FORMAT STRICT :
-   - Retourne UNIQUEMENT le JSON brut. Aucun texte avant ou après. Aucun bloc \`\`\`json.
+✅ Extrais CHAQUE bloc pédagogique comme une section distincte.
+✅ Ne regroupe pas une Propriété et une Application dans la même section.
+✅ Ne résume PAS : copie FIDÈLEMENT tout le texte, formule par formule, ligne par ligne.
+✅ Les numéros d'Activité et d'Application (①②③ ou 1,2,3) DOIVENT apparaître dans le titre.
+✅ Retourne UNIQUEMENT le JSON brut. Zéro texte avant ou après. Pas de bloc \`\`\`json.
 
 ════════════════════════════════════════════════════════════
 SCHÉMA JSON OBLIGATOIRE
@@ -296,63 +487,55 @@ SCHÉMA JSON OBLIGATOIRE
 
 {
   "header": {
-    "prep_title": "Titre général (ex: Préparation aux concours)",
-    "schools": ["ENSA", "UM6P"],
-    "subject": "Matière (ex: Algèbre)",
-    "fiche_title": "Titre de la fiche (ex: Fiche 01 : Suites numériques)",
-    "teacher": "Nom du professeur si présent",
-    "phone": "Téléphone si présent",
+    "prep_title": "Titre de la série ou de la préparation si présent, sinon \"\"",
+    "subject": "Matière (ex: Mathématiques)",
+    "fiche_title": "Titre du chapitre (ex: Barycentre)",
+    "teacher": "Nom du professeur si présent, sinon \"\"",
+    "phone": "Téléphone si présent, sinon \"\"",
     "doc_type": "'course' | 'homework' | 'exercises' | 'concours'"
   },
   "sections": [
     {
       "id": "sec-1",
-      "section_header": "I. Généralités sur les suites numériques",
-      "title": "1. Définition",
-      "type": "content",
-      "section_number": "1",
-      "accent_text": "",
+      "section_header": "I. Grand titre (chiffres romains) — RÉPÉTER sur toutes les sections du même chapitre",
+      "title": "1. Sous-titre OU **Activité ① :** titre OU **Définitions :** OU **Propriété :** nom OU ...",
+      "type": "content | definition | property | theorem | corollary | example | remark | activity",
+      "section_number": "I",
+      "accent_text": "Texte mis en évidence (fond coloré) si présent, sinon \"\"",
       "items": [
-        { "type": "text", "text": "Contenu du paragraphe introductif..." }
-      ]
-    },
-    {
-      "id": "sec-2",
-      "section_header": "I. Généralités sur les suites numériques",
-      "title": "**Définition :** Suite numérique",
-      "type": "content",
-      "section_number": "1.1",
-      "accent_text": "",
-      "items": [
-        { "type": "highlight_box", "text": "**Définition :** Une suite numérique est une application $u : \\\\mathbb{N} \\\\to \\\\mathbb{R}$, $n \\\\mapsto u_n$." }
-      ]
-    },
-    {
-      "id": "sec-3",
-      "section_header": "I. Généralités sur les suites numériques",
-      "title": "**Remarque :** Suite indicée à partir de 1",
-      "type": "content",
-      "section_number": "1.2",
-      "accent_text": "",
-      "items": [
-        { "type": "text", "text": "**Remarque :** Si $u$ est définie pour $n \\\\geq 1$, on parle de suite indicée à partir de 1." }
+        { "type": "text", "text": "Paragraphe ou introduction." },
+        { "type": "highlight_box", "text": "Contenu encadré (définition, propriété, théorème)." },
+        { "type": "bullet", "text": "• Point de liste ou sous-question." },
+        {
+          "type": "image",
+          "url": "",
+          "alt": "Légende ou description de la figure (ex: Figure 1 — Construction du barycentre G)",
+          "align": "center",
+          "width_pct": 70
+        }
       ]
     },
     {
       "id": "ex-1",
-      "section_header": "II. Exercices d'application",
-      "title": "Exercice N° 1",
+      "section_header": "I. Grand titre correspondant",
+      "title": "**Application ① :**",
       "type": "exercise",
-      "section_number": "1",
-      "content": "Énoncé complet de l'exercice avec formules LaTeX.",
-      "solution": "Solution détaillée étape par étape.",
-      "interactive_answers": [
-        { "question_idx": 1, "label": "u_1 =", "expected_answer": "3" }
-      ]
+      "section_number": "I",
+      "content": "Énoncé complet de l'application ou exercice, questions sur des lignes séparées par \\n.",
+      "solution": "Solution détaillée étape par étape si mode résolution activé, sinon \"\".",
+      "interactive_answers": []
     }
   ]
 }
+
+NOTE sur les images :
+Si le document contient une figure géométrique, un graphique ou un schéma, insère un item de type "image" à l'endroit exact de la figure.
+- url: "" (laisser vide — l'image sera ajoutée manuellement par le professeur)
+- alt: Description précise de la figure (ex: "Figure — Construction du barycentre G des points A(2) et B(3)")
+- align: "center" par défaut
+- width_pct: 70 par défaut
 `;
+
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
@@ -410,7 +593,7 @@ const normalizeLevel = (rawLevel) => {
   return '2bac_pc_svt';
 };
 
-export default function AdminLessonsImport() {
+export default function AdminLessonsImport({ onBack }) {
   const isMobile = useIsMobile();
   const { schools, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -485,6 +668,23 @@ export default function AdminLessonsImport() {
     const modelToUse = geminiModel || 'gemini-3.5-flash';
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${geminiKey}`;
     
+    const solveSolutions = localStorage.getItem('gemini_solve_solutions') !== 'false';
+    const NO_SOLUTION_ADDENDUM = `
+⚠️ INSTRUCTION STRICTE — MODE EXTRACTION UNIQUEMENT (SANS RÉSOLUTION) :
+- Tu dois extraire et structurer FIDÈLEMENT tout le contenu du document (énoncés, cours, définitions, théorèmes, propriétés, remarques, activités, applications).
+- Pour le champ "solution" de chaque exercice, écris UNIQUEMENT la chaîne vide "" — ne fournis AUCUNE résolution, aucune étape de calcul, aucune réponse numérique.
+- Pour le tableau "interactive_answers", retourne un tableau vide [].
+- N'explique pas pourquoi tu ne résous pas. Mets juste "" dans le champ solution.
+- Cette consigne est ABSOLUE et PRIORITAIRE sur toutes les autres instructions du prompt système.`;
+
+    const systemContent = solveSolutions
+      ? SYSTEM_PROMPT
+      : SYSTEM_PROMPT + NO_SOLUTION_ADDENDUM;
+
+    const userText = solveSolutions
+      ? "Transcris et extrais l'intégralité absolue de ce document. Analyse chaque paragraphe, formule et exercice. Ne résume rien, ne laisse aucun élément de côté, et génère le JSON complet selon le schéma exigé."
+      : "Extrais et structure FIDÈLEMENT tout le contenu. N'oublie aucun titre, définition, théorème, propriété, remarque, activité ou exercice. IMPORTANT : Laisse le champ \"solution\" vide (\"\") pour chaque exercice et \"interactive_answers\" comme tableau vide []. Ne résous rien.";
+
     const payload = {
       contents: [
         {
@@ -496,13 +696,13 @@ export default function AdminLessonsImport() {
               }
             },
             {
-              text: "Transcris et extrais l'intégralité absolue de ce document. Analyse chaque paragraphe, formule et exercice. Ne résume rien, ne laisse aucun élément de côté, et génère le JSON complet selon le schéma exigé."
+              text: userText
             }
           ]
         }
       ],
       systemInstruction: {
-        parts: [{ text: SYSTEM_PROMPT }]
+        parts: [{ text: systemContent }]
       },
       generationConfig: {
         responseMimeType: "application/json",
@@ -544,6 +744,23 @@ export default function AdminLessonsImport() {
       ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64Data } }
       : { type: 'image', source: { type: 'base64', media_type: fileType, data: base64Data } };
 
+    const solveSolutions = localStorage.getItem('claude_solve_solutions') !== 'false';
+    const NO_SOLUTION_ADDENDUM = `
+⚠️ INSTRUCTION STRICTE — MODE EXTRACTION UNIQUEMENT (SANS RÉSOLUTION) :
+- Tu dois extraire et structurer FIDÈLEMENT tout le contenu du document (énoncés, cours, définitions, théorèmes, propriétés, remarques, activités, applications).
+- Pour le champ "solution" de chaque exercice, écris UNIQUEMENT la chaîne vide "" — ne fournis AUCUNE résolution, aucune étape de calcul, aucune réponse numérique.
+- Pour le tableau "interactive_answers", retourne un tableau vide [].
+- N'explique pas pourquoi tu ne résous pas. Mets juste "" dans le champ solution.
+- Cette consigne est ABSOLUE et PRIORITAIRE sur toutes les autres instructions du prompt système.`;
+
+    const systemContent = solveSolutions
+      ? SYSTEM_PROMPT
+      : SYSTEM_PROMPT + NO_SOLUTION_ADDENDUM;
+
+    const userText = solveSolutions
+      ? "Transcris et extrais l'intégralité absolue de ce document. Analyse chaque paragraphe, formule et exercice. Ne résume rien, ne laisse aucun élément de côté, et génère le JSON complet selon le schéma exigé."
+      : "Extrais et structure FIDÈLEMENT tout le contenu. N'oublie aucun titre, définition, théorème, propriété, remarque, activité ou exercice. IMPORTANT : Laisse le champ \"solution\" vide (\"\") pour chaque exercice et \"interactive_answers\" comme tableau vide []. Ne résous rien.";
+
     const res = await fetch(endpoint, {
       method: 'POST',
       headers,
@@ -551,12 +768,12 @@ export default function AdminLessonsImport() {
         model: claudeModel,
         max_tokens: 16000,
         stream: true,
-        system: SYSTEM_PROMPT,
+        system: systemContent,
         messages: [{
           role: 'user',
           content: [
             sourceBlock,
-            { type: 'text', text: "Transcris et extrais l'intégralité absolue de ce document. Analyse chaque paragraphe, formule et exercice. Ne résume rien, ne laisse aucun élément de côté, et génère le JSON complet selon le schéma exigé." }
+            { type: 'text', text: userText }
           ]
         }]
       })
@@ -1006,7 +1223,7 @@ IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "intera
       
       {/* ── Header ── */}
       <header style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-        <button onClick={() => navigate('/admin/lessons')} className="btn-outline" style={{ padding: '0.5rem 0.75rem' }}>
+        <button onClick={onBack || (() => navigate('/admin/lessons'))} className="btn-outline" style={{ padding: '0.5rem 0.75rem' }}>
           <ArrowLeft size={16} />
         </button>
         <div>
@@ -1122,12 +1339,13 @@ IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "intera
                   value={geminiModel}
                   onChange={e => { setGeminiModel(e.target.value); localStorage.setItem('geminiModel', e.target.value); }}
                 >
-                  <option value="gemini-3.5-flash">Gemini 3.5 Flash (Recommandé)</option>
-                  <option value="gemini-3.1-pro">Gemini 3.1 Pro (Haute précision)</option>
-                  <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                  <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                  <option value="gemini-2.5-flash">Gemini 2.5 Flash (Recommandé - Ultra Rapide)</option>
+                  <option value="gemini-2.5-flash-thinking">Gemini 2.5 Flash Thinking (Résolution & LaTeX Avancés)</option>
+                  <option value="gemini-2.5-pro">Gemini 2.5 Pro (Haute précision)</option>
+                  <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+                  <option value="gemini-3.1-pro">Gemini 3.1 Pro</option>
+                  <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
                   <option value="gemini-1.5-flash">Gemini 1.5 Flash (Legacy)</option>
-                  <option value="gemini-1.5-pro">Gemini 1.5 Pro (Legacy)</option>
                 </select>
               )}
             </div>
@@ -1453,10 +1671,17 @@ IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "intera
                         className="input-control"
                         value={sec.type}
                         onChange={e => handleUpdateSection(secIdx, 'type', e.target.value)}
-                        style={{ width: '100%' }}
+                        style={{ width: '100%', fontWeight: 700 }}
                       >
-                        <option value="content">Théorie (Cours)</option>
-                        <option value="exercise">Exercice / Corrigé</option>
+                        <option value="content">Théorie (Général)</option>
+                        <option value="definition">Définition (تعريف)</option>
+                        <option value="property">Propriété (خاصية)</option>
+                        <option value="theorem">Théorème (مبرهنة)</option>
+                        <option value="corollary">Corollaire (نتيجة)</option>
+                        <option value="example">Exemple (مثال)</option>
+                        <option value="remark">Remarque (ملاحظة)</option>
+                        <option value="activity">Activité / Application (تطبيق)</option>
+                        <option value="exercise">Exercice / Corrigé (تمرين)</option>
                       </select>
                     </div>
                   </div>
@@ -1499,7 +1724,7 @@ IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "intera
                   </div>
 
                   {/* Type 1: Content Block Editor */}
-                  {sec.type === 'content' && (
+                  {sec.type !== 'exercise' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--violet)' }}>Éléments de texte</span>

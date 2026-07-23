@@ -73,8 +73,8 @@ body.light-theme {
 
   /* ── Text ── */
   --text-main:   #0F172A;   /* Slate 900 - dark deep navy for high readability */
-  --text-muted:  #334155;   /* Slate 700 - high contrast secondary text */
-  --text-subtle: #4E5D73;   /* Slate 600 - High contrast placeholders and labels */
+  --text-muted:  #1E293B;   /* Slate 800 - darker secondary text for high contrast */
+  --text-subtle: #475569;   /* Slate 600 - Slate 600 for clear labels */
 
   --btn-primary-bg: linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%); /* Indigo to Blue premium gradient */
   --btn-primary-hover: linear-gradient(135deg, #4338CA 0%, #2563EB 100%);
@@ -4818,5 +4818,135 @@ body.light-theme .guest-gate-form-area {
   transform: translateY(4px) !important;
   border-bottom-width: 2px !important;
   box-shadow: 0 2px 0px rgba(4, 120, 87, 0.2), 0 6px 12px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* ─── KaTeX Display Mode Inline Override ────────────────────────────────── */
+.katex-display {
+  display: inline-block !important;
+  margin: 0.15em 0.35em !important;
+  vertical-align: middle !important;
+  text-align: left !important;
+}
+.katex-display > .katex {
+  display: inline-block !important;
+  text-align: left !important;
+}
+
+/* ─── ULTRA-MODERN BENTO & GLASS UI ANIMATIONS ───────────────────────────── */
+@keyframes ambientGlowPulse {
+  0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.6; }
+  50% { transform: scale(1.15) translate(20px, -15px); opacity: 0.9; }
+}
+
+@keyframes livePulseDot {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.bento-hero-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.75rem;
+  background: linear-gradient(135deg, rgba(113, 109, 242, 0.1) 0%, rgba(16, 185, 129, 0.08) 50%, rgba(6, 182, 212, 0.08) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bento-tile {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  padding: 1.35rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.bento-tile:hover {
+  transform: translateY(-4px);
+  border-color: rgba(113, 109, 242, 0.35);
+  box-shadow: 0 12px 35px -5px rgba(113, 109, 242, 0.18);
+}
+
+.pulse-dot-active {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10B981;
+  animation: livePulseDot 2s infinite;
+  display: inline-block;
+}
+
+/* ─── PURE MINIMAL TEXT TICKER MARQUEE ───────────────────────────────────── */
+@keyframes tickerMarquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.news-ticker-container {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.5rem 1rem;
+  position: relative;
+}
+
+body.dark-theme .news-ticker-container {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.news-ticker-badge-text {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+  padding-right: 0.85rem;
+  border-right: 1px solid var(--border);
+  margin-right: 0.85rem;
+}
+
+.news-ticker-track-wrapper {
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+  mask-image: linear-gradient(to right, transparent, black 3%, black 97%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 3%, black 97%, transparent);
+}
+
+.news-ticker-track {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  width: max-content;
+  animation: tickerMarquee 30s linear infinite;
+}
+
+.news-ticker-track-wrapper:hover .news-ticker-track {
+  animation-play-state: paused;
+}
+
+.news-ticker-text-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.news-ticker-text-item:hover {
+  color: var(--violet);
 }
 

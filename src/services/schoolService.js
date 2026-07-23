@@ -1,8 +1,9 @@
 // src/services/schoolService.js
-// Supabase service for schools list and per-school branding (logos, colors)
-// Returns defaults when supabase is null (no Supabase configured).
+// Service for schools list and per-school branding (logos, colors)
+// Supports both Supabase and Local Companion API.
 
 import { supabase } from '../lib/supabase';
+import { localDb } from '../lib/localDbClient';
 
 const DEFAULT_SCHOOLS = [
   '2bac_sm',
@@ -15,11 +16,23 @@ const DEFAULT_SCHOOLS = [
 ];
 
 /**
- * Fetch schools config from Supabase.
+ * Fetch schools config.
  * Returns { schools: string[], branding: Record<string, Object> }
  */
 export const getSchoolsConfig = async () => {
-  if (!supabase) return { schools: DEFAULT_SCHOOLS, branding: {} };
+  if (!supabase) {
+    try {
+      const config = await localDb.get('/config');
+      const val = config['schools_config'] || {};
+      return {
+        schools: val.schools || config.schools || DEFAULT_SCHOOLS,
+        branding: val.branding || config.schoolBranding || {},
+      };
+    } catch (err) {
+      console.error('[LocalDB] Failed to fetch schools config:', err);
+      return { schools: DEFAULT_SCHOOLS, branding: {} };
+    }
+  }
 
   const { data, error } = await supabase
     .from('config')
@@ -39,12 +52,19 @@ export const getSchoolsConfig = async () => {
 };
 
 /**
- * Save the full schools config back to Supabase.
- * @param {string[]} schools
- * @param {Record<string, Object>} branding
+ * Save the full schools config.
  */
 export const saveSchoolsConfig = async (schools, branding) => {
-  if (!supabase) return;
+  if (!supabase) {
+    try {
+      await localDb.post('/config', { schools_config: { schools, branding } });
+      return;
+    } catch (err) {
+      console.error('[LocalDB] Failed to save schools config:', err);
+      throw err;
+    }
+  }
+
   const { error } = await supabase
     .from('config')
     .upsert({
@@ -60,10 +80,18 @@ export const saveSchoolsConfig = async (schools, branding) => {
 };
 
 /**
- * Fetch general platform branding (profName, profPhone, profSite) from Supabase.
+ * Fetch general platform branding.
  */
 export const getBrandingConfig = async () => {
-  if (!supabase) return null;
+  if (!supabase) {
+    try {
+      const config = await localDb.get('/config');
+      return config['branding'] || null;
+    } catch (err) {
+      console.error('[LocalDB] Failed to fetch branding config:', err);
+      return null;
+    }
+  }
 
   const { data, error } = await supabase
     .from('config')
@@ -76,10 +104,19 @@ export const getBrandingConfig = async () => {
 };
 
 /**
- * Save general platform branding (profName, profPhone, profSite) to Supabase.
+ * Save general platform branding.
  */
 export const saveBrandingConfig = async (branding) => {
-  if (!supabase) return;
+  if (!supabase) {
+    try {
+      await localDb.post('/config', { branding });
+      return;
+    } catch (err) {
+      console.error('[LocalDB] Failed to save branding config:', err);
+      throw err;
+    }
+  }
+
   const { error } = await supabase
     .from('config')
     .upsert({
@@ -95,10 +132,19 @@ export const saveBrandingConfig = async (branding) => {
 };
 
 /**
- * Fetch flashcard settings (reveal mode, flip animation, swipe gesture) from Supabase.
+ * Fetch flashcard settings.
  */
 export const getFlashcardSettingsConfig = async () => {
-  if (!supabase) return null;
+  if (!supabase) {
+    try {
+      const config = await localDb.get('/config');
+      return config['flashcard_settings'] || null;
+    } catch (err) {
+      console.error('[LocalDB] Failed to fetch flashcard settings config:', err);
+      return null;
+    }
+  }
+
   const { data, error } = await supabase
     .from('config')
     .select('value')
@@ -110,10 +156,19 @@ export const getFlashcardSettingsConfig = async () => {
 };
 
 /**
- * Save flashcard settings to Supabase.
+ * Save flashcard settings.
  */
 export const saveFlashcardSettingsConfig = async (settings) => {
-  if (!supabase) return;
+  if (!supabase) {
+    try {
+      await localDb.post('/config', { flashcard_settings: settings });
+      return;
+    } catch (err) {
+      console.error('[LocalDB] Failed to save flashcard settings:', err);
+      throw err;
+    }
+  }
+
   const { error } = await supabase
     .from('config')
     .upsert({
@@ -129,10 +184,19 @@ export const saveFlashcardSettingsConfig = async (settings) => {
 };
 
 /**
- * Fetch PDF styling settings from Supabase.
+ * Fetch PDF styling settings.
  */
 export const getPdfSettingsConfig = async () => {
-  if (!supabase) return null;
+  if (!supabase) {
+    try {
+      const config = await localDb.get('/config');
+      return config['pdf_settings'] || null;
+    } catch (err) {
+      console.error('[LocalDB] Failed to fetch PDF settings config:', err);
+      return null;
+    }
+  }
+
   const { data, error } = await supabase
     .from('config')
     .select('value')
@@ -144,10 +208,19 @@ export const getPdfSettingsConfig = async () => {
 };
 
 /**
- * Save PDF styling settings to Supabase.
+ * Save PDF styling settings.
  */
 export const savePdfSettingsConfig = async (settings) => {
-  if (!supabase) return;
+  if (!supabase) {
+    try {
+      await localDb.post('/config', { pdf_settings: settings });
+      return;
+    } catch (err) {
+      console.error('[LocalDB] Failed to save PDF settings:', err);
+      throw err;
+    }
+  }
+
   const { error } = await supabase
     .from('config')
     .upsert({
@@ -163,10 +236,19 @@ export const savePdfSettingsConfig = async (settings) => {
 };
 
 /**
- * Fetch OMR scanner settings from Supabase.
+ * Fetch OMR scanner settings.
  */
 export const getOmrScannerSettingsConfig = async () => {
-  if (!supabase) return null;
+  if (!supabase) {
+    try {
+      const config = await localDb.get('/config');
+      return config['omr_scanner_settings'] || null;
+    } catch (err) {
+      console.error('[LocalDB] Failed to fetch OMR scanner settings:', err);
+      return null;
+    }
+  }
+
   const { data, error } = await supabase
     .from('config')
     .select('value')
@@ -178,10 +260,19 @@ export const getOmrScannerSettingsConfig = async () => {
 };
 
 /**
- * Save OMR scanner settings to Supabase.
+ * Save OMR scanner settings.
  */
 export const saveOmrScannerSettingsConfig = async (settings) => {
-  if (!supabase) return;
+  if (!supabase) {
+    try {
+      await localDb.post('/config', { omr_scanner_settings: settings });
+      return;
+    } catch (err) {
+      console.error('[LocalDB] Failed to save OMR scanner settings:', err);
+      throw err;
+    }
+  }
+
   const { error } = await supabase
     .from('config')
     .upsert({
@@ -197,10 +288,19 @@ export const saveOmrScannerSettingsConfig = async (settings) => {
 };
 
 /**
- * Fetch WhatsApp floating button settings from Supabase.
+ * Fetch WhatsApp floating button settings.
  */
 export const getWhatsAppSettingsConfig = async () => {
-  if (!supabase) return null;
+  if (!supabase) {
+    try {
+      const config = await localDb.get('/config');
+      return config['whatsapp_settings'] || null;
+    } catch (err) {
+      console.error('[LocalDB] Failed to fetch WhatsApp settings:', err);
+      return null;
+    }
+  }
+
   const { data, error } = await supabase
     .from('config')
     .select('value')
@@ -212,10 +312,19 @@ export const getWhatsAppSettingsConfig = async () => {
 };
 
 /**
- * Save WhatsApp floating button settings to Supabase.
+ * Save WhatsApp floating button settings.
  */
 export const saveWhatsAppSettingsConfig = async (settings) => {
-  if (!supabase) return;
+  if (!supabase) {
+    try {
+      await localDb.post('/config', { whatsapp_settings: settings });
+      return;
+    } catch (err) {
+      console.error('[LocalDB] Failed to save WhatsApp settings:', err);
+      throw err;
+    }
+  }
+
   const { error } = await supabase
     .from('config')
     .upsert({
@@ -231,10 +340,19 @@ export const saveWhatsAppSettingsConfig = async (settings) => {
 };
 
 /**
- * Fetch dynamic Arabic sales page config from Supabase.
+ * Fetch dynamic Arabic sales page config.
  */
 export const getLandingArConfig = async () => {
-  if (!supabase) return null;
+  if (!supabase) {
+    try {
+      const config = await localDb.get('/config');
+      return config['landing_ar_settings'] || null;
+    } catch (err) {
+      console.error('[LocalDB] Failed to fetch landing AR settings:', err);
+      return null;
+    }
+  }
+
   const { data, error } = await supabase
     .from('config')
     .select('value')
@@ -246,15 +364,24 @@ export const getLandingArConfig = async () => {
 };
 
 /**
- * Save dynamic Arabic sales page config to Supabase.
+ * Save dynamic Arabic sales page config.
  */
-export const saveLandingArConfig = async (config) => {
-  if (!supabase) return;
+export const saveLandingArConfig = async (landingConfig) => {
+  if (!supabase) {
+    try {
+      await localDb.post('/config', { landing_ar_settings: landingConfig });
+      return;
+    } catch (err) {
+      console.error('[LocalDB] Failed to save landing AR settings:', err);
+      throw err;
+    }
+  }
+
   const { error } = await supabase
     .from('config')
     .upsert({
       key: 'landing_ar_settings',
-      value: config,
+      value: landingConfig,
       updated_at: new Date().toISOString(),
     });
 
@@ -263,8 +390,3 @@ export const saveLandingArConfig = async (config) => {
     throw error;
   }
 };
-
-
-
-
-

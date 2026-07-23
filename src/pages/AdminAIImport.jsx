@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { UploadCloud, Sparkles, Loader2, CheckCircle2, Trash2, Plus, Send, AlertCircle, FileText, StopCircle } from 'lucide-react';
-import { getLevelDisplayName } from './SchoolsPage';
+import { UploadCloud, Sparkles, Loader2, CheckCircle2, Trash2, Plus, Send, AlertCircle, FileText, StopCircle, ArrowLeft } from 'lucide-react';
+import { getLevelDisplayName } from '../utils/levelHelpers';
 import * as pdfjsLib from 'pdfjs-dist';
 import { generateSubjectHTML, generateCorrectionHTML, openPrintWindow } from '../utils/generateExamPDF';
 
@@ -21,6 +21,20 @@ const cleanDoubleBackslashes = (obj) => {
     const newObj = {};
     for (const key in obj) {
       newObj[key] = cleanDoubleBackslashes(obj[key]);
+    }
+    return newObj;
+  }
+  return obj;
+};
+
+const normalizeKeys = (obj) => {
+  if (Array.isArray(obj)) {
+    return obj.map(normalizeKeys);
+  }
+  if (obj && typeof obj === 'object') {
+    const newObj = {};
+    for (const key in obj) {
+      newObj[key.toLowerCase()] = normalizeKeys(obj[key]);
     }
     return newObj;
   }
@@ -541,7 +555,9 @@ Pour chaque question:
 - Astuce en style INSPECTEUR MAROCAIN: étapes numérotées, connecteurs officiels, citations du cours, conclusion en gras
 - STRICTEMENT niveau Bac marocain — JAMAIS CPGE, JAMAIS universitaire
 - Trick: élimination en < 20 secondes, options éliminées nommées explicitement, piège mentionné si applicable
-- Utilise $...$ pour LaTeX inline, $$...$$ pour blocs display
+- Chaque question doit impérativement avoir exactement 4 options de réponse (A, B, C, D). Si le document original en propose plus ou moins, adapte-le. De plus, ces 4 options doivent être très proches les unes des autres (distracteurs plausibles et mathématiquement ou conceptuellement proches de la réponse correcte) avec exactement une seule option correcte parmi les 4.
+- ATTENTION AUX PROPOSITIONS FUSIONNÉES : Souvent, le texte extrait du PDF fusionne la question et les choix de réponses sur une seule ligne (ex: "Question 1: ... A) ... B) ... C) ... D) ..."). Tu dois obligatoirement détecter ces choix, les séparer de l'énoncé de la question, et les extraire proprement dans le tableau JSON "options" sous la forme ["A) ...", "B) ...", "C) ...", "D) ..."]. Ne laisse JAMAIS le tableau "options" vide.
+- Utilise $...$ pour CHAQUE symbole, variable (comme $x$, $n$, $u_n$), indice ou formule mathématique (inline), et $$...$$ pour les blocs de formules (display). Il est absolument crucial de ne laisser AUCUNE expression ou variable mathématique sans délimiteurs $...$ (par exemple: écris toujours $u_n$, $n_0$, $n \\geq n_0$ au lieu de u_n, n_0, n >= n_0). Double-échappe toujours les backslashes dans les chaînes JSON (ex: \\\\geq, \\\\frac).
 - question_number = numéro ORIGINAL du document (pas le rang dans la liste)
 - Ne retourne QUE le tableau JSON brut [ {...}, {...} ], ZÉRO texte avant ou après`;
 
@@ -556,7 +572,39 @@ function useIsMobile() {
   return isMobile;
 }
 
-export default function AdminAIImport() {
+function normalizeOptions(options) {
+  let result = [];
+  if (options) {
+    if (Array.isArray(options)) {
+      result = options.map(opt => {
+        if (typeof opt === 'string') return opt;
+        if (opt && typeof opt === 'object') {
+          const text = opt.text || opt.value || opt.content || '';
+          const id = opt.id || opt.label || opt.key || '';
+          if (id) return `${id}) ${text}`;
+          return text;
+        }
+        return String(opt);
+      });
+    } else if (typeof options === 'object') {
+      result = Object.entries(options).map(([key, val]) => {
+        const prefix = /^[A-E]\b/i.test(key) ? `${key.toUpperCase()}) ` : '';
+        return `${prefix}${val}`;
+      });
+    } else if (typeof options === 'string') {
+      result = options.split('\n').filter(Boolean);
+    }
+  }
+  
+  // Guarantee at least 4 options are returned
+  while (result.length < 4) {
+    const letter = ['A','B','C','D','E'][result.length] || String.fromCharCode(65 + result.length);
+    result.push(`${letter}) `);
+  }
+  return result;
+}
+
+export default function AdminAIImport({ onBack }) {
   const isMobile = useIsMobile();
   const { addExam, schools } = useAuth();
   const navigate = useNavigate();
@@ -1032,8 +1080,8 @@ ${pdfText}
         }
       }
 
-      // Clean double backslashes recursively in both Gemini and Claude outputs
-      const parsed = cleanDoubleBackslashes(parsedRaw);
+      // Clean double backslashes and normalize key casing recursively in AI outputs
+      const parsed = cleanDoubleBackslashes(normalizeKeys(parsedRaw));
 
       clearInterval(timerRef.current);
       setProgress(`✓ Analyse terminée — ${parsed.length} questions extraites`);
@@ -1051,14 +1099,14 @@ ${pdfText}
 
       const qs = parsed.map((q, i) => ({
         id: crypto.randomUUID(),
-        question_number: q.question_number || (i + 1),
-        context: q.context || '',
-        subject: q.subject || 'Général',
-        question: q.question || '',
-        options: Array.isArray(q.options) ? q.options : [],
-        correct_answer: q.correct_answer || 'A',
-        astuce: q.astuce || '',
-        trick: q.trick || ''
+        question_number: q.question_number || q.num || (i + 1),
+        context: q.context || q.enonce_commun || '',
+        subject: q.subject || q.topic || 'Général',
+        question: q.question || q.text || q.statement || q.enonce || q.énoncé || '',
+        options: normalizeOptions(q.options || q.choices || q.propositions || q.answers),
+        correct_answer: String(q.correct_answer || q.answer || q.correct || q.reponse || q.response || q.correctAnswer || 'A').trim().toUpperCase().replace(/[^A-E]/g, '') || 'A',
+        astuce: q.astuce || q.explanation || q.explication || q.solution || q.justification || '',
+        trick: q.trick || q.astuce_rapide || q.quick_trick || q.shortcut || ''
       }));
 
       setQuestions(qs);
@@ -1129,7 +1177,7 @@ ${pdfText}
       question: q.question,
       options: q.options.map((opt, i) => {
         const letter = ['A','B','C','D','E'][i] || String.fromCharCode(65 + i);
-        const text = opt.replace(/^[A-E]\)\s*/, '');
+        const text = (opt || '').replace(/^[A-E]\)\s*/, '');
         return { id: letter, text };
       }),
       correct_answer: q.correct_answer,
@@ -1179,6 +1227,32 @@ ${pdfText}
             text-align: right !important;
           }
         `}</style>
+      )}
+      {/* ── Back Button ── */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '8px',
+            color: 'var(--text-main)',
+            padding: '0.5rem 1rem',
+            cursor: 'pointer',
+            marginBottom: '1.5rem',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            transition: 'all 0.2s',
+            fontFamily: 'inherit'
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+        >
+          <ArrowLeft size={16} /> Retour au choix du générateur
+        </button>
       )}
       {/* ── Page Header ── */}
       <header style={{ marginBottom: '2rem' }}>
@@ -1547,7 +1621,7 @@ ${pdfText}
             <div className="input-group" style={{ marginBottom: '1.5rem' }}>
               <label>Modèle Gemini <span style={{fontWeight:400, color:'var(--text-muted)'}}>— ID exact de l'API</span></label>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
-                {['gemini-3.5-flash', 'gemini-3.1-pro', 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-1.5-flash', 'gemini-1.5-pro'].map(m => (
+                {['gemini-2.5-flash', 'gemini-2.5-flash-thinking', 'gemini-2.5-pro', 'gemini-3.5-flash', 'gemini-3.1-pro', 'gemini-2.0-flash', 'gemini-1.5-flash'].map(m => (
                   <button key={m} type="button"
                     onClick={() => { setGeminiModel(m); localStorage.setItem('geminiModel', m); }}
                     style={{ padding: '0.3rem 0.65rem', borderRadius: 8, border: '1px solid', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',

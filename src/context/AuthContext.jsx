@@ -3,7 +3,7 @@ import { onAuthChange, loginWithEmail, logoutUser, registerStudent, loginWithGoo
 import { getUserDoc, createUserDoc, updateUserDoc, saveQuestionProgress, getProgressDeltas, saveMockResult, getMockHistory, incrementDailyActivity, getRecentActivity, getAllUsers, setUserSubscription, getLeaderboard, addLoginLog, syncStudentsWithSupabase, logUserDownload } from '../services/userService';
 import { getAllExams, addExam as dbAddExam, updateExam as dbUpdateExam, deleteExam as dbDeleteExam, toggleExamStatus as dbToggleExamStatus, toggleArchiveExam as dbToggleArchiveExam, getExamQuestionsOnly } from '../services/examService';
 import { getSchoolsConfig, saveSchoolsConfig, getBrandingConfig, saveBrandingConfig, getFlashcardSettingsConfig, saveFlashcardSettingsConfig, getPdfSettingsConfig, savePdfSettingsConfig, getOmrScannerSettingsConfig, saveOmrScannerSettingsConfig, getWhatsAppSettingsConfig, saveWhatsAppSettingsConfig } from '../services/schoolService';
-import { getPlans, savePlans, getAllCodes, saveActivationCodes, redeemCodeViaRPC } from '../services/planService';
+
 import { sanitizeInputString, validatePhoneNumber } from '../utils/security';
 import { supabase } from '../lib/supabase';
 
@@ -84,7 +84,32 @@ const sanitizeText = (s) => {
 };
 
 /**
+ * Normalizes a single option into { id, text } object form.
+ * Handles: string "A) text", string "text", or already-object { id, text }.
+ */
+const normalizeOption = (opt, index) => {
+  const letters = ['A','B','C','D','E'];
+  if (typeof opt === 'string') {
+    // Match "A) text" or "A. text" or "A- text" patterns
+    const match = opt.match(/^([A-Ea-e])\s*[).\-:]\s*(.*)/s);
+    if (match) {
+      return { id: match[1].toUpperCase(), text: match[2].trim() };
+    }
+    // Plain string without letter prefix
+    return { id: letters[index] || String.fromCharCode(65 + index), text: opt.trim() };
+  }
+  if (opt && typeof opt === 'object') {
+    return {
+      id: opt.id || letters[index] || String.fromCharCode(65 + index),
+      text: opt.text || opt.value || opt.content || ''
+    };
+  }
+  return { id: letters[index] || 'A', text: String(opt || '') };
+};
+
+/**
  * Sanitizes ALL text fields of every question in every exam.
+ * Also normalizes options from string[] to {id,text}[] format.
  * Safe to run multiple times (idempotent).
  */
 const sanitizeExams = (exams) => {
@@ -99,7 +124,10 @@ const sanitizeExams = (exams) => {
           astuce:   sanitizeText(q.astuce),
           trick:    sanitizeText(q.trick),
           options:  Array.isArray(q.options)
-            ? q.options.map(opt => ({ ...opt, text: sanitizeText(opt.text) }))
+            ? q.options.map((opt, i) => {
+                const normalized = normalizeOption(opt, i);
+                return { id: normalized.id, text: sanitizeText(normalized.text) };
+              })
             : q.options,
         }))
       : exam.questions,
@@ -655,7 +683,7 @@ export function AuthProvider({ children }) {
               name:         supabaseUser.user_metadata?.name || supabaseUser.user_metadata?.full_name || split_part_email(supabaseUser.email) || 'Élève',
               email:        supabaseUser.email,
               role:         'student',
-              tier:         'freemium',
+              tier:         'premium',
               xp:           0,
               streak:       0,
               rank:         null,
@@ -678,7 +706,7 @@ export function AuthProvider({ children }) {
               name:         profile.name || supabaseUser.user_metadata?.name || supabaseUser.user_metadata?.full_name || 'Élève',
               email:        supabaseUser.email,
               role:         profile.role || 'student',
-              tier:         profile.tier || 'freemium',
+              tier:         'premium',
               xp:           profile.xp   || 0,
               streak:       profile.streak || 0,
               rank:         profile.rank  || null,
@@ -746,7 +774,7 @@ export function AuthProvider({ children }) {
               name:         profile.name || supabaseUser.user_metadata?.name || supabaseUser.user_metadata?.full_name || 'Élève',
               email:        supabaseUser.email,
               role:         profile.role || 'student',
-              tier:         profile.tier || 'freemium',
+              tier:         'premium',
               xp:           profile.xp   || 0,
               streak:       profile.streak || 0,
               rank:         profile.rank  || null,
@@ -1241,14 +1269,12 @@ export function AuthProvider({ children }) {
       dateAdded: new Date().toISOString()
     };
     
-    if (SUPABASE_ENABLED) {
-      try {
-        const newId = await dbAddExam(newExam);
-        setExams(prev => [...prev, { id: newId, ...newExam }]);
-      } catch (e) {
-        console.error('[Supabase] Failed to add exam:', e);
-      }
-    } else {
+    try {
+      const newId = await dbAddExam(newExam);
+      setExams(prev => [...prev, { id: newId, ...newExam }]);
+    } catch (e) {
+      console.error('Failed to add exam:', e);
+      // Fallback
       setExams(prev => [...prev, { id: Math.random().toString(36).substring(2, 11), ...newExam }]);
     }
   };
@@ -1256,56 +1282,40 @@ export function AuthProvider({ children }) {
   const toggleExamStatus = async (examId) => {
     const target = exams.find(e => e.id === examId);
     if (!target) return;
-    if (SUPABASE_ENABLED) {
-      try {
-        await dbToggleExamStatus(examId, target.isActive);
-        setExams(prev => prev.map(e => e.id === examId ? { ...e, isActive: !e.isActive } : e));
-      } catch (e) {
-        console.error('[Supabase] Failed to toggle exam status:', e);
-      }
-    } else {
+    try {
+      await dbToggleExamStatus(examId, target.isActive);
       setExams(prev => prev.map(e => e.id === examId ? { ...e, isActive: !e.isActive } : e));
+    } catch (e) {
+      console.error('Failed to toggle exam status:', e);
     }
   };
 
   const updateExamDetails = async (examId, updates) => {
-    if (SUPABASE_ENABLED) {
-      try {
-        await dbUpdateExam(examId, updates);
-        setExams(prev => prev.map(e => e.id === examId ? { ...e, ...updates } : e));
-      } catch (e) {
-        console.error('[Supabase] Failed to update exam details:', e);
-      }
-    } else {
+    try {
+      await dbUpdateExam(examId, updates);
       setExams(prev => prev.map(e => e.id === examId ? { ...e, ...updates } : e));
+    } catch (e) {
+      console.error('Failed to update exam details:', e);
     }
   };
 
   const deleteExam = async (examId) => {
-    if (SUPABASE_ENABLED) {
-      try {
-        await dbDeleteExam(examId);
-        setExams(prev => prev.filter(e => e.id !== examId));
-      } catch (e) {
-        console.error('[Supabase] Failed to delete exam:', e);
-      }
-    } else {
+    try {
+      await dbDeleteExam(examId);
       setExams(prev => prev.filter(e => e.id !== examId));
+    } catch (e) {
+      console.error('Failed to delete exam:', e);
     }
   };
 
   const toggleArchiveExam = async (examId) => {
     const target = exams.find(e => e.id === examId);
     if (!target) return;
-    if (SUPABASE_ENABLED) {
-      try {
-        await dbToggleArchiveExam(examId, target.isArchived);
-        setExams(prev => prev.map(e => e.id === examId ? { ...e, isArchived: !e.isArchived } : e));
-      } catch (e) {
-        console.error('[Supabase] Failed to toggle archive status:', e);
-      }
-    } else {
+    try {
+      await dbToggleArchiveExam(examId, target.isArchived);
       setExams(prev => prev.map(e => e.id === examId ? { ...e, isArchived: !e.isArchived } : e));
+    } catch (e) {
+      console.error('Failed to toggle archive status:', e);
     }
   };
 
@@ -1462,37 +1472,16 @@ export function AuthProvider({ children }) {
     };
     const updatedPlans = [...plans, newPlan];
     setPlans(updatedPlans);
-    if (SUPABASE_ENABLED) {
-      try {
-        await savePlans(updatedPlans);
-      } catch (e) {
-        console.error('[Supabase] Failed to save plans config:', e);
-      }
-    }
   };
 
   const removePlan = async (planId) => {
     const updatedPlans = plans.filter(p => p.id !== planId);
     setPlans(updatedPlans);
-    if (SUPABASE_ENABLED) {
-      try {
-        await savePlans(updatedPlans);
-      } catch (e) {
-        console.error('[Supabase] Failed to remove plan:', e);
-      }
-    }
   };
 
   const updatePlan = async (planId, updates) => {
     const updatedPlans = plans.map(p => p.id === planId ? { ...p, ...updates } : p);
     setPlans(updatedPlans);
-    if (SUPABASE_ENABLED) {
-      try {
-        await savePlans(updatedPlans);
-      } catch (e) {
-        console.error('[Supabase] Failed to update plan:', e);
-      }
-    }
   };
 
   const activateSubscription = async (userId, planId, durationDays) => {
@@ -1665,13 +1654,6 @@ export function AuthProvider({ children }) {
       });
     }
     setActivationCodes(prev => [...newCodes, ...prev]);
-    if (SUPABASE_ENABLED) {
-      try {
-        await saveActivationCodes(newCodes);
-      } catch (e) {
-        console.error('[Supabase] Failed to save activation codes:', e);
-      }
-    }
     return newCodes;
   };
 
@@ -1682,58 +1664,29 @@ export function AuthProvider({ children }) {
       throw new Error("Seuls les élèves connectés peuvent activer un abonnement.");
     }
     
-    if (SUPABASE_ENABLED) {
-      try {
-        // Call the secure atomic database function (handles RLS and trigger bypass)
-        const result = await redeemCodeViaRPC(cleanCode, user.name || user.email, user.uid || user.id);
-        
-        const plan = plans.find(p => p.id === result.planId);
-        if (!plan) {
-          throw new Error("Plan d'abonnement introuvable pour ce code.");
-        }
-        
-        // Update local activation codes state if cached locally
-        setActivationCodes(prev => prev.map(c => c.code.toUpperCase() === cleanCode ? { ...c, isUsed: true, usedBy: user.name || user.email, usedAt: new Date().toISOString() } : c));
-        
-        // Update user profile tier and subscription locally
-        const subscription = {
-          planId: result.planId,
-          status: 'active',
-          startDate: new Date().toISOString(),
-          endDate: new Date(new Date().getTime() + result.durationDays * 24 * 3600 * 1000).toISOString()
-        };
-        setUser(u => ({ ...u, tier: 'premium', subscription }));
-        
-        return plan;
-      } catch (e) {
-        console.error('[Supabase] Failed to redeem code:', e);
-        throw e;
-      }
-    } else {
-      const foundIdx = activationCodes.findIndex(c => c.code.toUpperCase() === cleanCode);
-      if (foundIdx === -1) {
-        throw new Error("Code d'activation invalide. Veuillez vérifier la saisie.");
-      }
-      const codeObj = activationCodes[foundIdx];
-      if (codeObj.isUsed) {
-        throw new Error(`Ce code a déjà été utilisé par ${codeObj.usedBy} le ${new Date(codeObj.usedAt).toLocaleDateString('fr-FR')}.`);
-      }
-      const plan = plans.find(p => p.id === codeObj.planId);
-      if (!plan) {
-        throw new Error("Plan d'abonnement introuvable pour ce code.");
-      }
-      
-      const updatedCodes = [...activationCodes];
-      updatedCodes[foundIdx] = {
-        ...codeObj,
-        isUsed: true,
-        usedBy: user.name || user.email,
-        usedAt: new Date().toISOString()
-      };
-      setActivationCodes(updatedCodes);
-      activateSubscription(user.id, plan.id, plan.durationDays);
-      return plan;
+    const foundIdx = activationCodes.findIndex(c => c.code.toUpperCase() === cleanCode);
+    if (foundIdx === -1) {
+      throw new Error("Code d'activation invalide. Veuillez vérifier la saisie.");
     }
+    const codeObj = activationCodes[foundIdx];
+    if (codeObj.isUsed) {
+      throw new Error(`Ce code a déjà été utilisé par ${codeObj.usedBy} le ${new Date(codeObj.usedAt).toLocaleDateString('fr-FR')}.`);
+    }
+    const plan = plans.find(p => p.id === codeObj.planId);
+    if (!plan) {
+      throw new Error("Plan d'abonnement introuvable pour ce code.");
+    }
+    
+    const updatedCodes = [...activationCodes];
+    updatedCodes[foundIdx] = {
+      ...codeObj,
+      isUsed: true,
+      usedBy: user.name || user.email,
+      usedAt: new Date().toISOString()
+    };
+    setActivationCodes(updatedCodes);
+    activateSubscription(user.id, plan.id, plan.durationDays);
+    return plan;
   };
 
   // FSRS (Free Spaced Repetition Scheduler) Algorithm Implementation
@@ -1915,9 +1868,8 @@ export function AuthProvider({ children }) {
     safeSetItem('schoolBranding', JSON.stringify(schoolBranding));
   }, [schoolBranding]);
 
-  // ── Supabase Database Syncing ──────────────────────────────────────────────
+  // ── Database Syncing (Supabase or Local Companion API) ──────────────────────
   useEffect(() => {
-    if (!SUPABASE_ENABLED) return;
 
     const loadConfigAndExams = async () => {
       try {
@@ -2425,27 +2377,11 @@ export function AuthProvider({ children }) {
 
   const isExamLocked = (exam) => {
     if (!exam) return true;
-    if (user?.role === 'admin') return false;
-    
-    // If not logged in, lock it (visitors must log in to access anything)
     if (!user) return true;
-    
-    if (exam.tier === 'freemium') return false;
-    
-    // If not premium, lock it
-    if (user.tier !== 'premium') return true;
-    
-    // Premium tier checks: verify plan allows this exam's school
-    if (!user.subscription || user.subscription.status !== 'active') return true;
-    
-    const plan = plans.find(p => p.id === user.subscription.planId);
-    if (!plan) return true;
-    
-    return !plan.allowedSchools.includes(exam.school);
+    return false;
   };
 
   const loadExamQuestions = async (examId) => {
-    if (!SUPABASE_ENABLED) return;
     const exam = exams.find(e => e.id === examId);
     if (exam && exam.questions && exam.questions.length > 0) {
       return exam.questions;

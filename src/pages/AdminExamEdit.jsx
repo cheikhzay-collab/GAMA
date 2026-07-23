@@ -1,17 +1,19 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+
+const hasArabic = (str) => /[\u0600-\u06FF]/.test(str || '');
 import {
   ArrowLeft, Save, FileText, Image, BrainCircuit,
   CheckCircle2, Lightbulb, Zap, Upload, Trash2,
   Plus, Eye, Lock, Unlock, AlertCircle,
   ChevronLeft, ChevronRight, X, Layers, Download, FileUp,
-  ChevronUp, ChevronDown, Sparkles
+  ChevronUp, ChevronDown, Sparkles, Shuffle
 } from 'lucide-react';
 import { renderWithMath } from '../utils/mathRenderer';
 import { uploadAsset } from '../services/storageService';
-import { getExamQuestionsOnly } from '../services/examService';
-import { getLevelDisplayName, mapLegacySchoolToLevel } from './SchoolsPage';
+import { getExamQuestionsOnly, addExam } from '../services/examService';
+import { getLevelDisplayName, mapLegacySchoolToLevel } from '../utils/levelHelpers';
 
 /* ─────────────────────────────────────────────────────────────
    Tiny LaTeX toolbar
@@ -74,6 +76,11 @@ function CardPreview({ question, side, onFlip }) {
   );
 
   const q = question;
+  const isQuestionArabic = q && (
+    hasArabic(q.question) ||
+    hasArabic(q.context) ||
+    (q.options || []).some(o => hasArabic(typeof o === 'string' ? o : o.text))
+  );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -113,13 +120,17 @@ function CardPreview({ question, side, onFlip }) {
             {q.context && (
               <div style={{
                 padding: '0.5rem 0.75rem',
-                borderLeft: '3px solid var(--violet)',
+                borderLeft: isQuestionArabic ? 'none' : '3px solid var(--violet)',
+                borderRight: isQuestionArabic ? '3px solid var(--violet)' : 'none',
                 background: 'var(--bg-glass)',
-                borderRadius: '0 8px 8px 0',
+                borderRadius: isQuestionArabic ? '8px 0 0 8px' : '0 8px 8px 0',
                 fontSize: '0.8rem',
                 color: 'var(--text-muted)',
                 marginBottom: '0.8rem',
-                lineHeight: 1.5
+                lineHeight: 1.5,
+                direction: isQuestionArabic ? 'rtl' : 'ltr',
+                textAlign: isQuestionArabic ? 'right' : 'left',
+                fontFamily: isQuestionArabic ? "'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit'
               }}>
                 <span style={{ fontWeight: 800, display: 'block', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: 2 }}>Contexte / Énoncé commun</span>
                 {renderWithMath(q.context)}
@@ -192,7 +203,15 @@ function CardPreview({ question, side, onFlip }) {
               );
 
               const questionEl = (
-                <div style={{ fontSize: '0.9rem', lineHeight: 1.55, fontWeight: 500, flex: 1 }}>
+                <div style={{
+                  fontSize: '0.9rem',
+                  lineHeight: 1.55,
+                  fontWeight: 500,
+                  flex: 1,
+                  fontFamily: isQuestionArabic ? "'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit',
+                  direction: isQuestionArabic ? 'rtl' : 'ltr',
+                  textAlign: isQuestionArabic ? 'right' : 'left'
+                }}>
                   {renderWithMath(q.question || '...')}
                 </div>
               );
@@ -220,14 +239,17 @@ function CardPreview({ question, side, onFlip }) {
                 const optId = isStr ? ['A','B','C','D','E'][idx] : opt.id;
                 const optText = isStr ? opt : (opt.text || '');
                 const isCorrect = q.correct_answer === optId;
-                return (
+                 return (
                   <div key={optId} style={{
                     display: 'flex', alignItems: 'center', gap: 8,
                     padding: '0.38rem 0.6rem', borderRadius: 8,
                     background: isCorrect ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.02)',
                     border: `1px solid ${isCorrect ? 'var(--emerald)' : 'var(--border)'}`,
                     fontSize: '0.78rem', fontWeight: isCorrect ? 700 : 400,
-                    color: isCorrect ? 'var(--emerald)' : 'var(--text-main)'
+                    color: isCorrect ? 'var(--emerald)' : 'var(--text-main)',
+                    direction: isQuestionArabic ? 'rtl' : 'ltr',
+                    textAlign: isQuestionArabic ? 'right' : 'left',
+                    fontFamily: isQuestionArabic ? "'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit'
                   }}>
                     <span style={{
                       width: 20, height: 20, borderRadius: 6, display: 'flex', alignItems: 'center',
@@ -274,7 +296,15 @@ function CardPreview({ question, side, onFlip }) {
             }}>
               <CheckCircle2 size={14} /> Réponse : <strong>{q.correct_answer || '—'}</strong>
             </div>
-            <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '0.75rem', lineHeight: 1.5 }}>
+            <div style={{
+              fontSize: '0.82rem',
+              color: 'var(--text-muted)',
+              marginBottom: '0.75rem',
+              lineHeight: 1.5,
+              direction: isQuestionArabic ? 'rtl' : 'ltr',
+              textAlign: isQuestionArabic ? 'right' : 'left',
+              fontFamily: isQuestionArabic ? "'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit'
+            }}>
               {renderWithMath(q.question || '')}
             </div>
             {q.astuce && (
@@ -282,7 +312,17 @@ function CardPreview({ question, side, onFlip }) {
                 <div style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--violet)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Lightbulb size={10} /> Astuce
                 </div>
-                <div style={{ fontSize: '0.78rem', padding: '0.4rem 0.6rem', borderLeft: '2px solid var(--violet)', background: 'rgba(124,58,237,0.05)', borderRadius: '0 6px 6px 0' }}>
+                 <div style={{
+                  fontSize: '0.78rem',
+                  padding: '0.4rem 0.6rem',
+                  borderLeft: isQuestionArabic ? 'none' : '2px solid var(--violet)',
+                  borderRight: isQuestionArabic ? '2px solid var(--violet)' : 'none',
+                  background: 'rgba(124,58,237,0.05)',
+                  borderRadius: isQuestionArabic ? '6px 0 0 6px' : '0 6px 6px 0',
+                  direction: isQuestionArabic ? 'rtl' : 'ltr',
+                  textAlign: isQuestionArabic ? 'right' : 'left',
+                  fontFamily: isQuestionArabic ? "'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit'
+                }}>
                   {renderWithMath(q.astuce)}
                   {q.imagePosition === 'in_correction' && (() => {
                     const sizeH = {
@@ -316,7 +356,17 @@ function CardPreview({ question, side, onFlip }) {
                 <div style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--emerald)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Zap size={10} /> Trick
                 </div>
-                <div style={{ fontSize: '0.78rem', padding: '0.4rem 0.6rem', borderLeft: '2px solid var(--emerald)', background: 'rgba(16,185,129,0.05)', borderRadius: '0 6px 6px 0' }}>
+                 <div style={{
+                  fontSize: '0.78rem',
+                  padding: '0.4rem 0.6rem',
+                  borderLeft: isQuestionArabic ? 'none' : '2px solid var(--emerald)',
+                  borderRight: isQuestionArabic ? '2px solid var(--emerald)' : 'none',
+                  background: 'rgba(16,185,129,0.05)',
+                  borderRadius: isQuestionArabic ? '6px 0 0 6px' : '0 6px 6px 0',
+                  direction: isQuestionArabic ? 'rtl' : 'ltr',
+                  textAlign: isQuestionArabic ? 'right' : 'left',
+                  fontFamily: isQuestionArabic ? "'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit'
+                }}>
                   {renderWithMath(q.trick)}
                 </div>
               </div>
@@ -439,7 +489,7 @@ export default function AdminExamEdit() {
     }
     updateExamDetails(exam.id, {
       name: editName,
-      school: editSchool,
+      school: getLevelDisplayName(editLevel),
       level: editLevel,
       year: editYear,
       tier: editTier,
@@ -448,6 +498,70 @@ export default function AdminExamEdit() {
     setHasUnsaved(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
+  };
+
+  const handleGenerateModelBVariant = async () => {
+    if (!localQuestions || localQuestions.length === 0) {
+      alert("لا توجد أسئلة لتوليد النموذج B");
+      return;
+    }
+
+    const shuffleArray = (arr) => [...arr].sort(() => Math.random() - 0.5);
+
+    const shuffledQuestions = shuffleArray(localQuestions).map((q, idx) => {
+      let options = Array.isArray(q.options) ? [...q.options] : [];
+      const origExpected = (q.correct_answer || q.expected_answer || 'A').toUpperCase();
+
+      let correctContent = '';
+      if (options.length > 0) {
+        if (typeof options[0] === 'string') {
+          const letterIdx = origExpected.charCodeAt(0) - 65;
+          correctContent = options[letterIdx] || options[0];
+          options = shuffleArray(options);
+        } else {
+          const matchOpt = options.find(o => o.id === origExpected);
+          if (matchOpt) correctContent = matchOpt.text;
+          options = shuffleArray(options);
+        }
+      }
+
+      let newExpected = 'A';
+      const formattedOptions = options.map((opt, oIdx) => {
+        const newLetter = String.fromCharCode(65 + oIdx);
+        const optText = typeof opt === 'string' ? opt : opt.text;
+        if (optText === correctContent) {
+          newExpected = newLetter;
+        }
+        return { id: newLetter, text: optText };
+      });
+
+      return {
+        ...q,
+        id: `q_b_${Date.now()}_${idx}`,
+        question_idx: idx + 1,
+        options: formattedOptions,
+        correct_answer: newExpected,
+        expected_answer: newExpected
+      };
+    });
+
+    const modelBExam = {
+      name: `${editName || exam.name} (Modèle B - Anti-Triche)`,
+      school: getLevelDisplayName(editLevel),
+      level: editLevel,
+      year: editYear,
+      tier: editTier,
+      questions: shuffledQuestions,
+      dateAdded: new Date().toISOString()
+    };
+
+    try {
+      await addExam(modelBExam);
+      alert(`✅ تم إنشاء وتخزين النموذج البداغوجي الموازي (Modèle B) بنجاح!\nتم خلط ${shuffledQuestions.length} سؤالاً وتحديث إجابات الماسح الضوئي OMR تلقائياً.`);
+      navigate('/admin/exams');
+    } catch (err) {
+      alert("خطأ أثناء إنشاء النموذج B: " + err.message);
+    }
   };
 
 
@@ -853,6 +967,19 @@ Tu dois analyser la question et :
           >
             <Save size={14} /> Enregistrer
           </button>
+          <button
+            type="button"
+            onClick={handleGenerateModelBVariant}
+            title="Générer un Modèle B parallèle avec ordre aléatoire des questions et réponses"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '0.55rem 1.1rem', fontSize: '0.82rem', borderRadius: 10,
+              background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
+              color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer'
+            }}
+          >
+            <Shuffle size={14} /> Modèle B (Anti-Triche)
+          </button>
         </div>
       </div>
 
@@ -902,7 +1029,7 @@ Tu dois analyser la question et :
               />
             </div>
 
-             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1.25rem' }}>
+             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.25rem' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.45rem', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   Niveau Cible
@@ -916,20 +1043,6 @@ Tu dois analyser la question et :
                 >
                   {schools.map(s => <option key={s} value={s}>{getLevelDisplayName(s)}</option>)}
                 </select>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.45rem', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  École / Établissement (Affichage)
-                </label>
-                <input
-                  value={editSchool}
-                  onChange={e => { setEditSchool(e.target.value); markDirty(); }}
-                  required
-                  className="input-control"
-                  style={{ fontSize: '0.9rem' }}
-                  placeholder="Ex: ENSA, ENSAM, Médecine..."
-                />
               </div>
             </div>
 

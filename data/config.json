@@ -1,0 +1,120 @@
+{
+  "branding": {
+    "profName": "",
+    "profPhone": "",
+    "profSite": "www.lconq.ma",
+    "bankName": "CIH Bank (Maroc)",
+    "bankRIB": "230 780 4567890123 0001 89",
+    "bankBeneficiary": "L'CONQ SARL",
+    "fbPixelId": ""
+  },
+  "schools": [
+    "2bac_sm",
+    "2bac_pc_svt",
+    "1bac_sci",
+    "common_core_sci",
+    "2bac_arts",
+    "1bac_arts",
+    "common_core_arts"
+  ],
+  "schoolBranding": {},
+  "plans": [
+    {
+      "id": "plan_lconq",
+      "name": "Premium L'CONQ",
+      "price": 99,
+      "durationDays": 30,
+      "description": "Le pack complet pour la réussite.",
+      "isRecommended": true,
+      "features": [
+        "Accès à toutes les archives (2010–2025)",
+        "Astuces IA exclusives pour chaque QCM",
+        "Simulateur de concours chronométré",
+        "Heatmaps des faiblesses"
+      ],
+      "allowedSchools": [
+        "Médecine / Pharmacie",
+        "ENSA",
+        "ENSAM",
+        "ENCG",
+        "INPT",
+        "INSEA",
+        "Général (Prépa)"
+      ]
+    },
+    {
+      "id": "plan_complet",
+      "name": "Pack Premium Global",
+      "price": 699,
+      "durationDays": 365,
+      "description": "La préparation ultime sur le long terme.",
+      "isRecommended": false,
+      "features": [
+        "Accès à toutes les archives (2010–2025)",
+        "Astuces IA exclusives pour chaque QCM",
+        "Simulateur de concours chronométré",
+        "Heatmaps des faiblesses",
+        "Accès prioritaire aux nouveautés"
+      ],
+      "allowedSchools": [
+        "Médecine / Pharmacie",
+        "ENSA",
+        "ENSAM",
+        "ENCG",
+        "INPT",
+        "INSEA",
+        "Général (Prépa)"
+      ]
+    }
+  ],
+  "activationCodes": [
+    {
+      "code": "LCONQ-PREM-TEST-30D",
+      "planId": "plan_lconq",
+      "isUsed": false,
+      "usedBy": "",
+      "usedAt": "",
+      "batchName": "Test Batch 30 Jours",
+      "createdDate": "2026-07-12T17:11:40.183Z"
+    },
+    {
+      "code": "LCONQ-GLOB-TEST-365",
+      "planId": "plan_complet",
+      "isUsed": false,
+      "usedBy": "",
+      "usedAt": "",
+      "batchName": "Test Batch 365 Jours",
+      "createdDate": "2026-07-12T17:11:40.183Z"
+    }
+  ],
+  "flashcard_settings": {
+    "cardRevealMode": "flip",
+    "cardFlipEnabled": true,
+    "cardSwipeEnabled": true,
+    "cardSoundEnabled": true,
+    "cardFontFamily": "Computer Modern Serif",
+    "cardFontSize": "1rem",
+    "cardQuestionWeight": "400",
+    "cardAstuceWeight": "400",
+    "cardOptionsWeight": "400"
+  },
+  "pdf_settings": {
+    "pdfPageMargins": "standard",
+    "pdfFontSize": "11pt",
+    "pdfFontFamily": "Computer Modern Serif",
+    "pdfTemplateStyle": "classic_latex",
+    "pdfAvoidPageBreaks": true,
+    "pdfForcePrintColors": true,
+    "pdfShowSidebar": true
+  },
+  "omr_scanner_settings": {
+    "scannerDirectCapture": true
+  },
+  "whatsapp_settings": {
+    "enabled": true,
+    "message": "Bonjour, j'ai une question concernant la plateforme .",
+    "position": "right",
+    "phoneNumber": "212708072844",
+    "tooltipText": "Besoin d'aide ?"
+  }
+}

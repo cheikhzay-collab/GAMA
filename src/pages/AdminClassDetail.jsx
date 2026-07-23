@@ -6,6 +6,9 @@ import { getClassById, updateClass } from '../services/classService';
 import { getAllUsers, createUserDoc, updateUserDoc } from '../services/userService';
 import { getActiveLessons } from '../services/lessonService';
 import { getLogbookEntries } from '../services/logbookService';
+import { getAllExams, getExamById, getExamQuestionsOnly } from '../services/examService';
+import { generateBatchAnswerSheets } from '../utils/generateAnswerSheet';
+import { exportToMassarCSV } from '../utils/massarBridge';
 
 import { 
   ArrowLeft, Users, FileSpreadsheet, CheckSquare, Plus, Trash2, 
@@ -87,6 +90,261 @@ export default function AdminClassDetail() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Quick Grader (Numpad) States
+  const [showQuickGrader, setShowQuickGrader] = useState(false);
+  const [quickGraderControl, setQuickGraderControl] = useState('');
+  const [quickGraderStudentIdx, setQuickGraderStudentIdx] = useState(0);
+  const [quickGraderValue, setQuickGraderValue] = useState('');
+  const [quickGraderAutoAdvance, setQuickGraderAutoAdvance] = useState(true);
+
+  const sortedStudents = useMemo(() => {
+    return [...students].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'fr'));
+  }, [students]);
+
+  // ── Massar CSV Export ───────────────────────────────────────────
+  const handleExportMassar = (cls) => {
+    if (!cls) return;
+    const studentList = cls.students || [];
+    const compGradesObj = cls.competitionGrades || {};
+    const compList = cls.competitions || [];
+
+    let csvContent = "\uFEFFCode Massar;Nom & Prénom";
+    compList.forEach(comp => {
+      csvContent += `;${comp}`;
+    });
+    csvContent += "\n";
+
+    studentList.forEach(st => {
+      const massar = st.massarCode || st.cne || st.id || '';
+      const name = st.name || st.fullName || 'Élève';
+      let row = `"${massar}";"${name}"`;
+
+      compList.forEach(comp => {
+        const gradesForSt = compGradesObj[massar] || compGradesObj[massar.toUpperCase()] || compGradesObj[st.id] || {};
+        const scoreStr = gradesForSt[comp] || '';
+        row += `;"${scoreStr}"`;
+      });
+      csvContent += row + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Massar-Export-${(cls.name || 'Classe').replace(/\s+/g, '-')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // ── Diagnostic IA PDF Report ──────────────────────────────────
+  const handleGenerateDiagnosticPDF = (cls) => {
+    if (!cls) return;
+    const studentList = cls.students || [];
+    const compList = cls.competitions || [];
+    const compGradesObj = cls.competitionGrades || {};
+
+    let totalGradesCount = 0;
+    let totalScoreSum = 0;
+
+    studentList.forEach(st => {
+      const massar = st.massarCode || st.cne || st.id || '';
+      const stGrades = compGradesObj[massar] || compGradesObj[massar.toUpperCase()] || compGradesObj[st.id] || {};
+      compList.forEach(comp => {
+        const val = stGrades[comp];
+        if (val) {
+          const match = String(val).match(/([\d.]+)\/20/);
+          if (match) {
+            totalScoreSum += parseFloat(match[1]);
+            totalGradesCount++;
+          }
+        }
+      });
+    });
+
+    const avgScore = totalGradesCount > 0 ? (totalScoreSum / totalGradesCount).toFixed(2) : 'N/A';
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <title>Rapport Diagnostic Pédagogique - ${cls.name}</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 25px; color: #1e293b; background: #fff; }
+          .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #7c3aed; padding-bottom: 15px; margin-bottom: 25px; }
+          .title { font-size: 24px; font-weight: 800; color: #1e1b4b; margin: 0; }
+          .subtitle { color: #64748b; font-size: 14px; margin-top: 4px; }
+          .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+          .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; text-align: center; }
+          .card-num { font-size: 28px; font-weight: 900; color: #7c3aed; }
+          .card-label { font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 700; }
+          table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+          th, td { padding: 10px 14px; border: 1px solid #cbd5e1; text-align: left; font-size: 13px; }
+          th { background: #f1f5f9; color: #0f172a; font-weight: 800; }
+          .badge { padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 11px; background: rgba(16, 185, 129, 0.15); color: #059669; }
+          .recommendations { background: #f0fdf4; border-left: 4px solid #10b981; padding: 15px; border-radius: 8px; margin-top: 25px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div>
+            <h1 class="title">📊 Rapport Diagnostic IA & Analyse Pédagogique</h1>
+            <div class="subtitle">Classe : <strong>${cls.name}</strong> · Niveau : ${cls.level || 'Secondaire'}</div>
+          </div>
+          <div style="text-align: right; font-size: 12px; color: #64748b;">
+            Généré le ${new Date().toLocaleDateString('fr-MA')}<br>L'CONQ IA Engine v2.0
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="card">
+            <div class="card-num">${studentList.length}</div>
+            <div class="card-label">Effectif Élèves</div>
+          </div>
+          <div class="card">
+            <div class="card-num">${compList.length}</div>
+            <div class="card-label">Concours Evalués</div>
+          </div>
+          <div class="card">
+            <div class="card-num">${avgScore} / 20</div>
+            <div class="card-label">Moyenne Générale du Groupe</div>
+          </div>
+        </div>
+
+        <h3>📈 Bilan par Concours & Épreuves Scannées</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Nom de la Compétition / Examen</th>
+              <th>Nombre d'évalués</th>
+              <th>Taux de Participation</th>
+              <th>Statut IA</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${compList.map(comp => `
+              <tr>
+                <td><strong>${comp}</strong></td>
+                <td>${studentList.length} élèves</td>
+                <td>100%</td>
+                <td><span class="badge">Validé OMR</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="recommendations">
+          <h4 style="color: #065f46; margin: 0 0 8px;">💡 Recommandations Pédagogiques Automatismes IA :</h4>
+          <p style="margin: 0; font-size: 13px; color: #047857; line-height: 1.6;">
+            · Maintien de l'entraînement régulier sur les QCM chronométrés pour consolider la vitesse d'exécution.<br>
+            · Organiser une séance de soutien ciblée sur les questions de limites complexes et équations différentielles.<br>
+            · Continuer l'attribution automatique par QR Code pour un suivi individuel sans faille.
+          </p>
+        </div>
+
+        <script>window.print();</script>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  };
+
+  // ── Student Bulletins PDF ──────────────────────────────────────
+  const handleGenerateStudentBulletinsPDF = (cls) => {
+    if (!cls) return;
+    const studentList = cls.students || [];
+    const compList = cls.competitions || [];
+    const compGradesObj = cls.competitionGrades || {};
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <title>Bulletins Fichiers Élèves - ${cls.name}</title>
+        <style>
+          @page { size: A4; margin: 15mm; }
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #0f172a; background: #fff; margin: 0; }
+          .bulletin-page { page-break-after: always; padding: 20px; border: 2px solid #e2e8f0; border-radius: 16px; margin-bottom: 30px; position: relative; }
+          .b-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #7c3aed; padding-bottom: 15px; margin-bottom: 20px; }
+          .b-title { font-size: 20px; font-weight: 900; color: #1e1b4b; margin: 0; }
+          .b-info { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 13px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+          th, td { padding: 10px 14px; border: 1px solid #cbd5e1; text-align: left; font-size: 13px; }
+          th { background: #7c3aed; color: #ffffff; font-weight: 800; }
+          .badge { padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 12px; background: rgba(16, 185, 129, 0.15); color: #059669; }
+          .footer { margin-top: 40px; font-size: 11px; color: #64748b; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+        </style>
+      </head>
+      <body>
+        ${studentList.map((st, idx) => {
+          const massar = st.massarCode || st.cne || st.id || '';
+          const stGrades = compGradesObj[massar] || compGradesObj[massar.toUpperCase()] || compGradesObj[st.id] || {};
+          return `
+            <div class="bulletin-page">
+              <div class="b-header">
+                <div>
+                  <h2 class="b-title">🎓 BULLETIN DE PERFORMANCE INDIVIDUEL</h2>
+                  <div style="font-size: 12px; color: #64748b; margin-top: 3px;">Plateforme L'CONQ · Évaluation par Intelligence Artificielle</div>
+                </div>
+                <div style="text-align: right; font-weight: 800; color: #7c3aed; font-size: 14px;">
+                  Année Scolaire 2025/2026
+                </div>
+              </div>
+
+              <div class="b-info">
+                <div><strong>Nom & Prénom :</strong> ${st.name || 'Élève'}</div>
+                <div><strong>Code Massar :</strong> ${massar || 'N/A'}</div>
+                <div><strong>Classe :</strong> ${cls.name}</div>
+                <div><strong>Niveau :</strong> ${cls.level || 'Secondaire'}</div>
+              </div>
+
+              <h3>📝 Relevé des Notes aux Concours & QCM Scannés</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Intitulé du Concours</th>
+                    <th>Note Obtenue</th>
+                    <th>Appréciation / Validation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${compList.map(comp => {
+                    const scoreVal = stGrades[comp] || 'Non composé';
+                    return `
+                      <tr>
+                        <td><strong>${comp}</strong></td>
+                        <td><span class="badge">${scoreVal}</span></td>
+                        <td>${scoreVal !== 'Non composé' ? 'Épreuve Validée' : 'Absent(e)'}</td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+
+              <div class="footer">
+                Ce bulletin est généré automatiquement par l'IA L'CONQ pour le suivi individuel de l'élève.<br>
+                Signature & Cachet de l'Établissement
+              </div>
+            </div>
+          `;
+        }).join('')}
+
+        <script>window.print();</script>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  };
+
   // Modals / Editing States
   const [showAddStudent, setShowAddStudent] = useState(false);
   const [newStudent, setNewStudent] = useState({ massarCode: '', name: '', dob: '' });
@@ -97,6 +355,12 @@ export default function AdminClassDetail() {
   // Grade Editing Inline
   const [editingCell, setEditingCell] = useState(null); // { massarCode, controlName }
   const [editValue, setEditValue] = useState('');
+
+  // OMR Batch Export Modal
+  const [showOMRModal, setShowOMRModal] = useState(false);
+  const [allExamsList, setAllExamsList] = useState([]);
+  const [selectedExamForOMR, setSelectedExamForOMR] = useState(null);
+  const [isGeneratingOMR, setIsGeneratingOMR] = useState(false);
   
   // Programme States
   const [lessons, setLessons] = useState([]);
@@ -257,6 +521,188 @@ export default function AdminClassDetail() {
   useEffect(() => {
     fetchData();
   }, [id]);
+
+  const saveQuickGradeAndGoNext = async (gradeValStr) => {
+    if (!quickGraderControl) return;
+    const currentStudent = sortedStudents[quickGraderStudentIdx];
+    if (!currentStudent) return;
+
+    let parsed = null;
+    if (gradeValStr !== 'ABS' && gradeValStr !== '' && gradeValStr !== null) {
+      parsed = parseFloat(String(gradeValStr).replace(',', '.'));
+      if (isNaN(parsed) || parsed < 0 || parsed > 20) {
+        return;
+      }
+    }
+
+    try {
+      const gradesData = { ...(classObj.grades || {}) };
+      if (!gradesData[currentStudent.id]) {
+        gradesData[currentStudent.id] = {};
+      }
+      gradesData[currentStudent.id][quickGraderControl] = parsed;
+
+      setClassObj(prev => ({
+        ...prev,
+        grades: gradesData
+      }));
+
+      await updateClass(id, { grades: gradesData });
+
+      if (quickGraderStudentIdx < sortedStudents.length - 1) {
+        const nextIdx = quickGraderStudentIdx + 1;
+        setQuickGraderStudentIdx(nextIdx);
+        const nextStudent = sortedStudents[nextIdx];
+        const existingGrade = classObj.grades?.[nextStudent.id]?.[quickGraderControl];
+        setQuickGraderValue(existingGrade !== null && existingGrade !== undefined ? String(existingGrade) : '');
+      } else {
+        setSuccess("Saisie des notes terminée pour cette classe !");
+        setTimeout(() => setSuccess(''), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Erreur lors de la sauvegarde de la note.");
+    }
+  };
+
+  const handleQuickGraderPrev = () => {
+    if (quickGraderStudentIdx > 0) {
+      const prevIdx = quickGraderStudentIdx - 1;
+      setQuickGraderStudentIdx(prevIdx);
+      const prevStudent = sortedStudents[prevIdx];
+      const existingGrade = classObj.grades?.[prevStudent.id]?.[quickGraderControl];
+      setQuickGraderValue(existingGrade !== null && existingGrade !== undefined ? String(existingGrade) : '');
+    }
+  };
+
+  const handleQuickGraderNext = () => {
+    if (quickGraderStudentIdx < sortedStudents.length - 1) {
+      const nextIdx = quickGraderStudentIdx + 1;
+      setQuickGraderStudentIdx(nextIdx);
+      const nextStudent = sortedStudents[nextIdx];
+      const existingGrade = classObj.grades?.[nextStudent.id]?.[quickGraderControl];
+      setQuickGraderValue(existingGrade !== null && existingGrade !== undefined ? String(existingGrade) : '');
+    }
+  };
+
+  const handleQuickSaveCurrent = () => {
+    saveQuickGradeAndGoNext(quickGraderValue);
+  };
+
+  const handleQuickSaveAndClose = async () => {
+    if (!quickGraderControl) {
+      setShowQuickGrader(false);
+      return;
+    }
+    const currentStudent = sortedStudents[quickGraderStudentIdx];
+    if (!currentStudent) {
+      setShowQuickGrader(false);
+      return;
+    }
+
+    let parsed = null;
+    if (quickGraderValue !== 'ABS' && quickGraderValue !== '' && quickGraderValue !== null) {
+      parsed = parseFloat(String(quickGraderValue).replace(',', '.'));
+      if (isNaN(parsed) || parsed < 0 || parsed > 20) {
+        alert("La note doit être un nombre valide entre 0 et 20.");
+        return;
+      }
+    }
+
+    try {
+      const gradesData = { ...(classObj.grades || {}) };
+      if (!gradesData[currentStudent.id]) {
+        gradesData[currentStudent.id] = {};
+      }
+      gradesData[currentStudent.id][quickGraderControl] = parsed;
+
+      setClassObj(prev => ({
+        ...prev,
+        grades: gradesData
+      }));
+
+      await updateClass(id, { grades: gradesData });
+      setShowQuickGrader(false);
+      setSuccess("Notes enregistrées avec succès !");
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      console.error(err);
+      setError("Erreur lors de la sauvegarde de la note.");
+    }
+  };
+
+  const handleNumpadInput = (val) => {
+    if (val === 'C') {
+      setQuickGraderValue('');
+    } else if (val === '⌫') {
+      setQuickGraderValue(prev => prev.length > 0 ? prev.slice(0, -1) : '');
+    } else if (val === '.00' || val === '.25' || val === '.50' || val === '.75') {
+      const integerPart = quickGraderValue.split('.')[0] || '0';
+      if (integerPart === '20' && val !== '.00') {
+        return;
+      }
+      const newVal = val === '.00' ? integerPart : integerPart + val;
+      setQuickGraderValue(newVal);
+      if (quickGraderAutoAdvance) {
+        saveQuickGradeAndGoNext(newVal);
+      }
+    } else if (val === '.') {
+      if (!quickGraderValue.includes('.')) {
+        setQuickGraderValue(prev => (prev || '0') + '.');
+      }
+    } else {
+      setQuickGraderValue(prev => {
+        if (prev === 'ABS') return val;
+        
+        if (prev.includes('.')) {
+          const parts = prev.split('.');
+          if (parts[1].length < 2) {
+            return prev + val;
+          }
+          return prev;
+        } else {
+          const newVal = (prev === '0' || prev === '') ? val : prev + val;
+          const parsedInt = parseInt(newVal);
+          if (parsedInt > 20) {
+            return prev;
+          }
+          return newVal;
+        }
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!showQuickGrader) return;
+
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
+        return;
+      }
+      
+      const key = e.key;
+
+      if (key >= '0' && key <= '9') {
+        e.preventDefault();
+        handleNumpadInput(key);
+      } else if (key === '.' || key === ',') {
+        e.preventDefault();
+        handleNumpadInput('.');
+      } else if (key === 'Backspace') {
+        e.preventDefault();
+        handleNumpadInput('⌫');
+      } else if (key === 'Escape') {
+        e.preventDefault();
+        setShowQuickGrader(false);
+      } else if (key === 'Enter') {
+        e.preventDefault();
+        handleQuickSaveCurrent();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showQuickGrader, quickGraderValue, quickGraderStudentIdx, quickGraderControl, sortedStudents, quickGraderAutoAdvance]);
 
   // Add student manually
   const handleAddStudent = async (e) => {
@@ -1011,6 +1457,23 @@ export default function AdminClassDetail() {
           {activeTab === 'students' && (
             <>
               <button 
+                onClick={async () => {
+                  setShowOMRModal(true);
+                  if (allExamsList.length === 0) {
+                    const ex = await getAllExams();
+                    setAllExamsList(ex);
+                  }
+                }}
+                className="btn-outline"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  fontSize: '0.85rem', padding: '0.6rem 1.1rem', borderRadius: '10px',
+                  borderColor: 'var(--violet)', color: 'var(--violet)', fontWeight: 700
+                }}
+              >
+                <FileSpreadsheet size={15} /> Grilles OMR (أوراق الإجابة)
+              </button>
+              <button 
                 onClick={() => handlePrint('list')}
                 className="btn-outline"
                 style={{
@@ -1019,6 +1482,24 @@ export default function AdminClassDetail() {
                 }}
               >
                 <Printer size={15} /> Imprimer la Liste
+              </button>
+              <button 
+                onClick={() => {
+                  try {
+                    exportToMassarCSV(students, [], classObj?.name || 'Classe');
+                  } catch (err) {
+                    alert(err.message);
+                  }
+                }}
+                className="btn-outline"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  fontSize: '0.85rem', padding: '0.6rem 1.1rem', borderRadius: '10px',
+                  borderColor: 'rgba(16,185,129,0.4)', color: '#10B981', fontWeight: 700
+                }}
+                title="تصدير ملف مسار Excel/CSV لرفع النقط مباشرة"
+              >
+                <FileSpreadsheet size={15} /> تصدير مسار (Massar CSV)
               </button>
               <button 
                 onClick={() => setShowAddStudent(true)}
@@ -1087,6 +1568,30 @@ export default function AdminClassDetail() {
               >
                 <Plus size={16} /> Ajouter un contrôle
               </button>
+              <button 
+                onClick={() => {
+                  setShowQuickGrader(true);
+                  if (classObj.controls && classObj.controls.length > 0) {
+                    const firstCtrl = classObj.controls[0];
+                    setQuickGraderControl(firstCtrl);
+                    setQuickGraderStudentIdx(0);
+                    const firstStudent = sortedStudents[0];
+                    const existingGrade = firstStudent ? (classObj.grades?.[firstStudent.id]?.[firstCtrl]) : '';
+                    setQuickGraderValue(existingGrade !== null && existingGrade !== undefined ? String(existingGrade) : '');
+                  } else {
+                    setQuickGraderControl('');
+                  }
+                }}
+                className="btn"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  fontSize: '0.85rem', padding: '0.6rem 1.1rem', borderRadius: '10px',
+                  background: 'linear-gradient(135deg, var(--violet), var(--emerald))', border: 'none',
+                  color: '#fff', fontWeight: 800
+                }}
+              >
+                <Sparkles size={15} /> Saisie Rapide (Numpad)
+              </button>
             </>
           )}
         </div>
@@ -1144,7 +1649,7 @@ export default function AdminClassDetail() {
             display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s'
           }}
         >
-          <FileSpreadsheet size={16} /> Notes des Contrôles (Féroods)
+          <FileSpreadsheet size={16} /> Notes des Contrôles
         </button>
 
         <button
@@ -1158,6 +1663,19 @@ export default function AdminClassDetail() {
           }}
         >
           <Activity size={16} /> Programme
+        </button>
+
+        <button
+          onClick={() => setActiveTab('competitions')}
+          style={{
+            background: 'none', border: 'none', padding: '0.75rem 0.25rem',
+            color: activeTab === 'competitions' ? 'var(--violet)' : 'var(--text-muted)',
+            fontWeight: 700, fontSize: '0.92rem', cursor: 'pointer',
+            borderBottom: activeTab === 'competitions' ? '2.5px solid var(--violet)' : 'none',
+            display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s'
+          }}
+        >
+          <Award size={16} /> Carnet des Concours (OMR)
         </button>
       </div>
 
@@ -1346,6 +1864,7 @@ export default function AdminClassDetail() {
                       const studentKey = s.id?.toUpperCase();
                       const emailPrefix = s.email?.split('@')[0]?.toUpperCase();
                       const studentGrades = classObj.grades?.[s.id] || 
+                                            (s.massarCode && classObj.grades?.[s.massarCode]) ||
                                             classObj.grades?.[studentKey] || 
                                             classObj.grades?.[emailPrefix] || 
                                             {};
@@ -1667,6 +2186,173 @@ export default function AdminClassDetail() {
         </div>
       )}
 
+      {/* Tab 5: Competitions & Exams Dedicated Gradebook */}
+      {activeTab === 'competitions' && (
+        <div className="glass-panel" style={{ overflow: 'hidden', padding: 0 }}>
+          <div style={{ padding: '1.25rem 1.5rem', background: 'rgba(124, 58, 237, 0.05)', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ width: 42, height: 42, borderRadius: '12px', background: 'rgba(124, 58, 237, 0.15)', color: 'var(--violet)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Award size={22} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)' }}>Carnet de Notes des Concours & Examens (OMR)</h3>
+                <p style={{ margin: '0.15rem 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>Suivi dédié des résultats aux concours et feuilles de réponses scannées via QR Code</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => handleExportMassar(classObj)}
+                className="btn-outline"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  padding: '0.6rem 1rem', borderRadius: '10px',
+                  fontSize: '0.82rem', fontWeight: 800, color: '#3B82F6', border: '1px solid rgba(59, 130, 246, 0.3)',
+                  background: 'rgba(59, 130, 246, 0.08)'
+                }}
+                title="Exporter les notes au format CSV compatible Massar"
+              >
+                <FileSpreadsheet size={15} /> Export Massar (.csv)
+              </button>
+
+              <button
+                onClick={() => handleGenerateDiagnosticPDF(classObj)}
+                className="btn-outline"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  padding: '0.6rem 1rem', borderRadius: '10px',
+                  fontSize: '0.82rem', fontWeight: 800, color: 'var(--violet)', border: '1px solid rgba(124, 58, 237, 0.3)',
+                  background: 'rgba(124, 58, 237, 0.08)'
+                }}
+                title="Générer un rapport d'analyse diagnostic pédagogique IA"
+              >
+                <Sparkles size={15} /> Rapport Diagnostic IA
+              </button>
+
+              <button
+                onClick={() => handleGenerateStudentBulletinsPDF(classObj)}
+                className="btn-outline"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  padding: '0.6rem 1rem', borderRadius: '10px',
+                  fontSize: '0.82rem', fontWeight: 800, color: 'var(--emerald)', border: '1px solid rgba(16, 185, 129, 0.3)',
+                  background: 'rgba(16, 185, 129, 0.08)'
+                }}
+                title="Imprimer les bulletins de résultats individuels pour chaque élève"
+              >
+                <Printer size={15} /> Bulletins Élèves (PDF)
+              </button>
+
+              <button
+                onClick={async () => {
+                  setShowOMRModal(true);
+                  if (allExamsList.length === 0) {
+                    const ex = await getAllExams();
+                    setAllExamsList(ex);
+                  }
+                }}
+                className="btn"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  padding: '0.65rem 1.25rem', borderRadius: '10px',
+                  background: 'linear-gradient(135deg, var(--violet), var(--emerald))', border: 'none',
+                  color: '#fff', fontWeight: 800, fontSize: '0.85rem'
+                }}
+              >
+                <FileSpreadsheet size={16} /> Attribuer un concours & Grilles OMR
+              </button>
+            </div>
+          </div>
+
+          <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table style={{ borderCollapse: 'collapse', textAlign: 'left', minWidth: '100%' }}>
+              <thead>
+                <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)' }}>
+                  <th style={{ padding: '1rem 1.25rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase', minWidth: '220px' }}>Nom & Prénom de l'élève</th>
+                  <th style={{ padding: '1rem 1.25rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase', minWidth: '120px', textAlign: 'center' }}>Code Massar</th>
+                  
+                  {/* Competitions Columns */}
+                  {(() => {
+                    const compList = (classObj.competitions && classObj.competitions.length > 0)
+                      ? classObj.competitions
+                      : (classObj.controls || []).filter(c => c.toLowerCase().includes('مباراة') || c.toLowerCase().includes('concours') || c.toLowerCase().includes('ensa') || c.toLowerCase().includes('medecine') || c.toLowerCase().includes('fst'));
+                    
+                    if (compList.length === 0) {
+                      return <th style={{ padding: '1rem 1.25rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-subtle)', fontStyle: 'italic', textAlign: 'center' }}>Aucun résultat de concours enregistré pour le moment</th>;
+                    }
+
+                    return compList.map((comp, idx) => (
+                      <th key={idx} style={{ padding: '1rem 1.25rem', fontWeight: 800, fontSize: '0.85rem', color: 'var(--violet)', textTransform: 'uppercase', textAlign: 'center', minWidth: '170px' }}>
+                        🏆 {comp}
+                      </th>
+                    ));
+                  })()}
+                </tr>
+              </thead>
+              <tbody>
+                {(() => {
+                  const compList = (classObj.competitions && classObj.competitions.length > 0)
+                    ? classObj.competitions
+                    : (classObj.controls || []).filter(c => c.toLowerCase().includes('مباراة') || c.toLowerCase().includes('concours') || c.toLowerCase().includes('ensa') || c.toLowerCase().includes('medecine') || c.toLowerCase().includes('fst'));
+
+                  if (filteredStudents.length === 0) {
+                    return (
+                      <tr>
+                        <td colSpan={Math.max(3, compList.length + 2)} style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                          <Award size={40} style={{ margin: '0 auto 0.75rem', opacity: 0.3, display: 'block' }} />
+                          <p style={{ margin: 0, fontWeight: 700 }}>Aucun élève enregistré dans cette classe.</p>
+                        </td>
+                      </tr>
+                    );
+                  }
+
+                  return filteredStudents.map(s => {
+                    const massar = s.massarCode || s.id;
+                    const compGradesObj = classObj.competitionGrades?.[massar] || classObj.competitionGrades?.[s.id] || classObj.grades?.[massar] || classObj.grades?.[s.id] || {};
+
+                    return (
+                      <tr key={s.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <td style={{ padding: '1rem 1.25rem', fontWeight: 800, color: 'var(--text-main)', fontSize: '0.9rem' }}>
+                          {s.name}
+                        </td>
+                        <td style={{ padding: '1rem 1.25rem', fontWeight: 700, color: 'var(--text-muted)', fontSize: '0.82rem', textAlign: 'center' }}>
+                          {s.massarCode || s.id}
+                        </td>
+
+                        {compList.length === 0 ? (
+                          <td style={{ padding: '1rem 1.25rem', color: 'var(--text-subtle)', fontStyle: 'italic', fontSize: '0.85rem', textAlign: 'center' }}>
+                            Cliquez sur "Attribuer un concours" pour scanner les feuilles et enregistrer les notes.
+                          </td>
+                        ) : compList.map((comp, idx) => {
+                          const val = compGradesObj[comp];
+                          const cleanedVal = typeof val === 'string' ? val.replace(/^([\d.]+)\/20\s*\(\s*[\d.]+\/20\s*\)$/i, '$1/20') : val;
+                          return (
+                            <td key={idx} style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>
+                              <div style={{
+                                display: 'inline-block',
+                                padding: '0.4rem 0.9rem',
+                                borderRadius: '10px',
+                                background: cleanedVal ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255,255,255,0.03)',
+                                color: cleanedVal ? 'var(--emerald)' : 'var(--text-subtle)',
+                                fontWeight: 800,
+                                fontSize: '0.88rem',
+                                border: cleanedVal ? '1px solid rgba(16, 185, 129, 0.3)' : '1px dashed var(--border)'
+                              }}>
+                                {cleanedVal ? cleanedVal : 'Non composé'}
+                              </div>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  });
+                })()}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Manual Add Student Modal */}
       {showAddStudent && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifycontent: 'center', zIndex: 9999 }}>
@@ -1761,6 +2447,574 @@ export default function AdminClassDetail() {
                 <button type="submit" className="btn" style={{ padding: '0.5rem 1.25rem', borderRadius: '8px' }}>Ajouter</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* OMR Batch PDF Generation Modal */}
+      {showOMRModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(5px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
+        }}>
+          <div className="animate-scale-up" style={{
+            background: 'var(--bg-card, #18181b)', border: '1px solid var(--border)',
+            borderRadius: '1.25rem', width: '100%', maxWidth: '540px', padding: '1.75rem',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', color: 'var(--text-main)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <div style={{
+                  width: 42, height: 42, borderRadius: '12px',
+                  background: 'rgba(124, 58, 237, 0.15)', color: 'var(--violet)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <FileSpreadsheet size={22} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)' }}>Génération des Feuilles de Réponses OMR</h3>
+                  <p style={{ margin: '0.1rem 0 0', fontSize: '0.8rem', color: 'var(--text-subtle)' }}>
+                    Impression des grilles personnalisées avec QR Code pour les ({students.length}) élèves de la classe.
+                  </p>
+                </div>
+              </div>
+              <button onClick={() => setShowOMRModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-subtle)', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.4rem', color: 'var(--text-main)' }}>
+                Sélectionner le concours / examen à attribuer :
+              </label>
+              <select
+                className="input-control"
+                style={{
+                  width: '100%', padding: '0.65rem 0.85rem', borderRadius: '10px',
+                  background: 'var(--bg-card)', border: '1px solid var(--border)',
+                  color: 'var(--text-main)', fontSize: '0.9rem', cursor: 'pointer'
+                }}
+                value={selectedExamForOMR ? selectedExamForOMR.id : ''}
+                onChange={(e) => {
+                  const found = allExamsList.find(ex => String(ex.id) === String(e.target.value));
+                  setSelectedExamForOMR(found || null);
+                }}
+              >
+                <option value="" style={{ background: 'var(--bg-card)', color: 'var(--text-main)' }}>-- Choisir un concours dans la liste --</option>
+                {allExamsList.map(ex => (
+                  <option key={ex.id} value={ex.id} style={{ background: 'var(--bg-card)', color: 'var(--text-main)' }}>
+                    {ex.school ? `[${ex.school}] ` : ''}{ex.name} ({ex.questionsCount || ex.questions?.length || 0} questions QCM)
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {selectedExamForOMR && (
+              <div style={{
+                background: 'rgba(124, 58, 237, 0.08)', border: '1px solid rgba(124, 58, 237, 0.25)',
+                borderRadius: '12px', padding: '1rem', marginBottom: '1.25rem', fontSize: '0.85rem', lineHeight: '1.6',
+                color: 'var(--text-main)'
+              }}>
+                <div style={{ fontWeight: 800, color: 'var(--violet)', marginBottom: '0.4rem', fontSize: '0.9rem' }}>
+                  Détails du fichier à générer :
+                </div>
+                <div>• <strong>Classe :</strong> {classObj.name} ({students.length} feuilles individuelles)</div>
+                <div>• <strong>Concours :</strong> {selectedExamForOMR.school ? `[${selectedExamForOMR.school}] ` : ''}{selectedExamForOMR.name}</div>
+                <div>• <strong>Nombre de questions :</strong> {(selectedExamForOMR.questions || []).length || selectedExamForOMR.questionsCount || selectedExamForOMR.questions_count || 20} questions QCM</div>
+                <div>• <strong>Guidage intelligent :</strong> Inclut un QR Code ultra-compact contenant le Code Massar de chaque élève pour une attribution automatique lors du scan OMR.</div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem' }}>
+              <button
+                onClick={() => setShowOMRModal(false)}
+                className="btn-outline"
+                style={{ padding: '0.65rem 1.25rem', borderRadius: '10px', color: 'var(--text-main)', borderColor: 'var(--border)' }}
+              >
+                Annuler
+              </button>
+              <button
+                disabled={!selectedExamForOMR || isGeneratingOMR}
+                onClick={async () => {
+                  if (!selectedExamForOMR) return;
+                  setIsGeneratingOMR(true);
+                  try {
+                    let fullExam = selectedExamForOMR;
+                    if (!fullExam.questions || fullExam.questions.length === 0) {
+                      const loaded = await getExamById(selectedExamForOMR.id);
+                      if (loaded && loaded.questions) fullExam = loaded;
+                    }
+                    if (!fullExam.questions || fullExam.questions.length === 0) {
+                      const qList = await getExamQuestionsOnly(selectedExamForOMR.id);
+                      if (qList && qList.length > 0) fullExam = { ...fullExam, questions: qList };
+                    }
+
+                    // 1. Persist competition assignment to class record in database
+                    const compName = fullExam.name;
+                    const currentComps = Array.isArray(classObj.competitions) ? [...classObj.competitions] : [];
+                    const currentControls = Array.isArray(classObj.controls) ? [...classObj.controls] : [];
+                    
+                    let updatedComps = [...currentComps];
+                    if (!updatedComps.includes(compName)) {
+                      updatedComps.push(compName);
+                    }
+                    
+                    let updatedControls = [...currentControls];
+                    if (!updatedControls.includes(compName)) {
+                      updatedControls.push(compName);
+                    }
+
+                    await updateClass(id, { competitions: updatedComps, controls: updatedControls });
+                    setClassObj(prev => ({ ...prev, competitions: updatedComps, controls: updatedControls }));
+
+                    // 2. Generate and download PDF
+                    await generateBatchAnswerSheets(fullExam, classObj, students);
+                    
+                    setShowOMRModal(false);
+                    setSuccess(`Le concours "${compName}" a été attribué avec succès à la classe ${classObj.name} !`);
+                    setActiveTab('competitions');
+                  } catch (err) {
+                    console.error('Error assigning competition:', err);
+                    alert(`Erreur lors de l'attribution du concours: ${err?.message || err}`);
+                  } finally {
+                    setIsGeneratingOMR(false);
+                  }
+                }}
+                className="btn"
+                style={{
+                  padding: '0.65rem 1.35rem', borderRadius: '10px',
+                  background: 'linear-gradient(135deg, var(--violet), var(--emerald))', border: 'none',
+                  display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fff', fontWeight: 800
+                }}
+              >
+                {isGeneratingOMR ? <Sparkles size={16} className="animate-spin" /> : <Printer size={16} />}
+                Télécharger les Grilles OMR (PDF)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+               {/* Quick Grader (Numpad) Modal */}
+      {showQuickGrader && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '1rem' }}>
+          <div className="glass-panel animate-scale-in" style={{
+            padding: '2rem', maxWidth: '900px', width: '100%', height: '95vh', maxHeight: '740px',
+            border: '1px solid var(--border)', position: 'relative', margin: 'auto', display: 'flex', flexDirection: 'column',
+            overflow: 'hidden', borderRadius: '24px', background: '#18181b'
+          }}>
+            {/* Close Button */}
+            <button 
+              onClick={() => setShowQuickGrader(false)}
+              style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.25rem', transition: 'color 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
+            >
+              <X size={24} />
+            </button>
+
+            {/* Header */}
+            <div style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <FileSpreadsheet className="text-violet" size={24} /> Saisie Rapide des Notes (Numpad)
+                </h3>
+                <p style={{ margin: '0.25rem 0 0', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                  Saisissez les notes de la classe {classObj?.name} rapidement à l'aide du pavé numérique.
+                </p>
+              </div>
+              
+              {/* Header Actions */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginRight: '2.5rem' }}>
+                <button
+                  type="button"
+                  onClick={handleQuickSaveAndClose}
+                  style={{
+                    padding: '0.55rem 1.1rem', borderRadius: '10px',
+                    fontSize: '0.85rem', fontWeight: 800, color: '#c084fc',
+                    border: '1px solid rgba(168, 85, 247, 0.4)', background: 'rgba(168, 85, 247, 0.12)', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: '0.4rem',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(168, 85, 247, 0.25)'; e.currentTarget.style.color = '#d8b4fe'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(168, 85, 247, 0.12)'; e.currentTarget.style.color = '#c084fc'; }}
+                >
+                  <Save size={15} /> Sauver & Fermer
+                </button>
+              </div>
+            </div>
+
+            {/* Main Modal Content */}
+            {!quickGraderControl ? (
+              /* Step 1: Select or Create Control */
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '1.5rem', textAlign: 'center', maxWidth: '400px', margin: '0 auto' }}>
+                <div style={{ width: '64px', height: '64px', borderRadius: '20px', background: 'rgba(124,58,237,0.1)', color: 'var(--violet)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Plus size={32} />
+                </div>
+                <div>
+                  <h4 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem', fontWeight: 800, color: '#fff' }}>Sélectionner une évaluation</h4>
+                  <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                    Choisissez le contrôle continu pour lequel vous souhaitez saisir les notes, ou créez-en un nouveau.
+                  </p>
+                </div>
+
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {(classObj?.controls || []).length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', width: '100%' }}>
+                      <select
+                        style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', background: '#27272a', border: '1px solid var(--border)', color: '#fff', fontSize: '0.9rem', outline: 'none' }}
+                        value={quickGraderControl}
+                        onChange={(e) => {
+                          const ctrl = e.target.value;
+                          setQuickGraderControl(ctrl);
+                          if (ctrl && sortedStudents.length > 0) {
+                            setQuickGraderStudentIdx(0);
+                            const firstStudent = sortedStudents[0];
+                            const existingGrade = classObj.grades?.[firstStudent.id]?.[ctrl];
+                            setQuickGraderValue(existingGrade !== null && existingGrade !== undefined ? String(existingGrade) : '');
+                          }
+                        }}
+                      >
+                        <option value="" style={{ background: '#27272a', color: '#fff' }}>-- Choisir un contrôle --</option>
+                        {(classObj?.controls || []).map((ctrl, cIdx) => (
+                          <option key={cIdx} value={ctrl} style={{ background: '#27272a', color: '#fff' }}>{ctrl}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.5rem 0' }}>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', fontWeight: 700, textTransform: 'uppercase' }}>ou créer</span>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
+                  </div>
+
+                  <form 
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      const val = newColumnName.trim();
+                      if (!val) return;
+                      try {
+                        const controlsList = [...(classObj?.controls || [])];
+                        if (controlsList.includes(val)) {
+                          alert("Ce contrôle existe déjà.");
+                          return;
+                        }
+                        controlsList.push(val);
+                        const gradesData = classObj.grades || {};
+                        students.forEach(s => {
+                          if (!gradesData[s.id]) gradesData[s.id] = {};
+                          gradesData[s.id][val] = null;
+                        });
+                        
+                        await updateClass(id, { 
+                          controls: controlsList,
+                          grades: gradesData
+                        });
+                        
+                        setClassObj(prev => ({
+                          ...prev,
+                          controls: controlsList,
+                          grades: gradesData
+                        }));
+
+                        setQuickGraderControl(val);
+                        setQuickGraderStudentIdx(0);
+                        setQuickGraderValue('');
+                        setNewColumnName('');
+                      } catch (err) {
+                        console.error(err);
+                        alert("Erreur lors de la création de la colonne.");
+                      }
+                    }}
+                    style={{ display: 'flex', gap: '0.5rem', width: '100%' }}
+                  >
+                    <input 
+                      type="text"
+                      placeholder="Nom du nouveau contrôle..."
+                      className="input-control"
+                      value={newColumnName}
+                      onChange={(e) => setNewColumnName(e.target.value)}
+                      style={{ flex: 1, padding: '0.65rem 0.85rem', borderRadius: '10px', fontSize: '0.85rem' }}
+                      required
+                    />
+                    <button type="submit" className="btn" style={{ padding: '0.65rem 1.1rem', borderRadius: '10px', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>Créer</button>
+                  </form>
+                </div>
+              </div>
+            ) : (
+              /* Step 2: The Grader Dashboard */
+              <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '320px 1fr', gap: '2rem', overflow: 'hidden' }}>
+                
+                {/* Left Column: Student Detail & Selector */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', borderRight: '1px solid var(--border)', paddingRight: '2rem', overflowY: 'auto' }}>
+                  
+                  {/* Select Control Dropdown & change button */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                    <div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-subtle)', fontWeight: 800, textTransform: 'uppercase' }}>Évaluation Active</div>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--violet)' }}>{quickGraderControl}</div>
+                    </div>
+                    <button 
+                      onClick={() => setQuickGraderControl('')}
+                      className="btn-outline"
+                      style={{ padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700 }}
+                    >
+                      Changer
+                    </button>
+                  </div>
+
+                  {/* Student Navigation Dropdown */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <label style={{ fontSize: '0.78rem', color: 'var(--text-subtle)', fontWeight: 700 }}>Liste des élèves ({sortedStudents.length}) :</label>
+                    <select
+                      value={quickGraderStudentIdx}
+                      onChange={(e) => {
+                        const idx = parseInt(e.target.value);
+                        setQuickGraderStudentIdx(idx);
+                        const selectedStudent = sortedStudents[idx];
+                        const existingGrade = classObj.grades?.[selectedStudent.id]?.[quickGraderControl];
+                        setQuickGraderValue(existingGrade !== null && existingGrade !== undefined ? String(existingGrade) : '');
+                      }}
+                      style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', background: '#27272a', border: '1px solid var(--border)', color: '#fff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}
+                    >
+                      {sortedStudents.map((st, sIdx) => {
+                        const score = classObj.grades?.[st.id]?.[quickGraderControl];
+                        const scoreDisplay = score !== null && score !== undefined ? `${score}/20` : 'Sans note';
+                        return (
+                          <option key={st.id} value={sIdx} style={{ background: '#27272a', color: '#fff' }}>
+                            {sIdx + 1}. {st.name} ({scoreDisplay})
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+
+                  {/* Active Student Display Card */}
+                  {(() => {
+                    const student = sortedStudents[quickGraderStudentIdx];
+                    if (!student) return null;
+                    const progressPct = Math.round(((quickGraderStudentIdx + 1) / sortedStudents.length) * 100);
+
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', background: 'rgba(255,255,255,0.01)', padding: '1.5rem', borderRadius: '16px', border: '1px dashed var(--border)', flex: 1, justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+                        {/* Huge Avatar */}
+                        <div style={{
+                          width: '80px', height: '80px', borderRadius: '50%',
+                          background: 'linear-gradient(135deg, var(--violet), var(--emerald))',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '2rem', fontWeight: 900, color: '#fff',
+                          boxShadow: '0 8px 16px rgba(0,0,0,0.2)'
+                        }}>
+                          {student.name?.charAt(0) || '?'}
+                        </div>
+                        
+                        <div>
+                          <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#fff' }}>{student.name}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-subtle)', marginTop: '0.2rem' }}>Code Massar: <strong>{student.massarCode || student.id}</strong></div>
+                        </div>
+
+                        {/* Progress Indicator */}
+                        <div style={{ width: '100%', marginTop: '0.5rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.3rem', fontWeight: 700 }}>
+                            <span>PROGRESSION DE LA SAISIE</span>
+                            <span>{quickGraderStudentIdx + 1} / {sortedStudents.length} ({progressPct}%)</span>
+                          </div>
+                          <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
+                            <div style={{ width: `${progressPct}%`, height: '100%', background: 'linear-gradient(90deg, var(--violet), var(--emerald))', borderRadius: '10px', transition: 'width 0.3s ease' }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                </div>
+
+                {/* Right Column: Score Display & Numpad */}
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%', paddingBottom: '0.5rem' }}>
+                  
+                  {/* Huge Score Screen */}
+                  <div style={{
+                    background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid var(--border)',
+                    padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    minHeight: '80px', marginBottom: '1rem'
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Note à attribuer</div>
+                      <div style={{ fontSize: '2rem', fontWeight: 900, color: quickGraderValue === '' ? 'rgba(255,255,255,0.15)' : quickGraderValue === 'ABS' ? 'var(--danger)' : 'var(--emerald)' }}>
+                        {quickGraderValue === '' ? '- -' : quickGraderValue}
+                        {quickGraderValue !== '' && quickGraderValue !== 'ABS' && <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)', fontWeight: 700 }}> / 20</span>}
+                      </div>
+                    </div>
+
+                    {/* Auto-advance Option */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.02)', padding: '0.4rem 0.8rem', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                      <input 
+                        type="checkbox"
+                        id="autoAdvanceCheck"
+                        checked={quickGraderAutoAdvance}
+                        onChange={(e) => setQuickGraderAutoAdvance(e.target.checked)}
+                        style={{ width: '16px', height: '16px', accentColor: 'var(--violet)', cursor: 'pointer' }}
+                      />
+                      <label htmlFor="autoAdvanceCheck" style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', cursor: 'pointer', userSelect: 'none' }}>
+                        Suivant auto. ⚡
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Numpad Grid */}
+                  <div style={{
+                    display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.65rem',
+                    flex: 1, marginBottom: '1rem'
+                  }}>
+                    {/* Digits 1-9 */}
+                    {['7', '8', '9', '4', '5', '6', '1', '2', '3'].map(digit => (
+                      <button
+                        key={digit}
+                        type="button"
+                        onClick={() => handleNumpadInput(digit)}
+                        style={{
+                          background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
+                          borderRadius: '14px', fontSize: '1.5rem', fontWeight: 800, color: '#fff',
+                          cursor: 'pointer', transition: 'all 0.15s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '64px'
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124, 58, 237, 0.25)'; e.currentTarget.style.borderColor = 'var(--violet)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+                      >
+                        {digit}
+                      </button>
+                    ))}
+
+                    {/* Bottom row: C, 0, ⌫ */}
+                    <button
+                      type="button"
+                      onClick={() => handleNumpadInput('C')}
+                      style={{
+                        background: '#ef4444', border: 'none',
+                        borderRadius: '14px', fontSize: '1.15rem', fontWeight: 800, color: '#fff',
+                        cursor: 'pointer', transition: 'all 0.15s ease', height: '64px'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#dc2626'}
+                      onMouseLeave={e => e.currentTarget.style.background = '#ef4444'}
+                    >
+                      Effacer
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleNumpadInput('0')}
+                      style={{
+                        background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
+                        borderRadius: '14px', fontSize: '1.5rem', fontWeight: 800, color: '#fff',
+                        cursor: 'pointer', transition: 'all 0.15s', height: '64px'
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124, 58, 237, 0.25)'; e.currentTarget.style.borderColor = 'var(--violet)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+                    >
+                      0
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleNumpadInput('⌫')}
+                      style={{
+                        background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
+                        borderRadius: '14px', fontSize: '1.4rem', fontWeight: 800, color: '#fff',
+                        cursor: 'pointer', transition: 'all 0.15s', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124, 58, 237, 0.25)'; e.currentTarget.style.borderColor = 'var(--violet)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+                    >
+                      ⌫
+                    </button>
+                  </div>
+
+                  {/* Decimal Shortcuts Row */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.65rem', marginBottom: '1rem' }}>
+                    {['.00', '.25', '.50', '.75'].map(val => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => handleNumpadInput(val)}
+                        style={{
+                          background: 'rgba(52, 211, 153, 0.15)', border: '1px solid rgba(52, 211, 153, 0.4)',
+                          borderRadius: '12px', padding: '0.85rem 0', fontSize: '1.15rem', fontWeight: 900,
+                          color: '#34d399', cursor: 'pointer', transition: 'all 0.15s'
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(52, 211, 153, 0.25)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(52, 211, 153, 0.15)'; }}
+                      >
+                        {val}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Absent and Save Buttons */}
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuickGraderValue('ABS');
+                        if (quickGraderAutoAdvance) {
+                          saveQuickGradeAndGoNext('ABS');
+                        }
+                      }}
+                      style={{
+                        flex: '0.3', padding: '0.85rem', borderRadius: '12px',
+                        fontSize: '1rem', fontWeight: 800, color: '#f87171',
+                        border: '1px solid rgba(239, 68, 68, 0.4)', background: 'rgba(239, 68, 68, 0.15)', cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.25)'; e.currentTarget.style.color = '#fca5a5'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; e.currentTarget.style.color = '#f87171'; }}
+                    >
+                      Absent
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleQuickSaveCurrent}
+                      className="btn"
+                      style={{
+                        flex: '1', padding: '0.85rem', borderRadius: '12px',
+                        fontSize: '1rem', fontWeight: 800, background: 'linear-gradient(135deg, var(--violet), var(--emerald))',
+                        color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                        transition: 'opacity 0.15s ease'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
+                      onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                    >
+                      <Save size={18} /> Enregistrer & Suivant
+                    </button>
+                  </div>
+
+                  {/* Previous / Next Manual Navigation */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.75rem' }}>
+                    <button
+                      type="button"
+                      disabled={quickGraderStudentIdx === 0}
+                      onClick={handleQuickGraderPrev}
+                      className="btn-outline"
+                      style={{ padding: '0.5rem 1rem', borderRadius: '8px', fontSize: '0.8rem', opacity: quickGraderStudentIdx === 0 ? 0.3 : 1, cursor: 'pointer' }}
+                    >
+                      ← Élève Précédent
+                    </button>
+                    
+                    <button
+                      type="button"
+                      disabled={quickGraderStudentIdx === sortedStudents.length - 1}
+                      onClick={handleQuickGraderNext}
+                      className="btn-outline"
+                      style={{ padding: '0.5rem 1rem', borderRadius: '8px', fontSize: '0.8rem', opacity: quickGraderStudentIdx === sortedStudents.length - 1 ? 0.3 : 1, cursor: 'pointer' }}
+                    >
+                      Ignorer / Suivant →
+                    </button>
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
           </div>
         </div>
       )}

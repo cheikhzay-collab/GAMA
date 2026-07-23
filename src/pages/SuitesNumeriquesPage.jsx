@@ -41,29 +41,6 @@ export default function SuitesNumeriquesPage() {
   const [ansProb, setAnsProb] = useState('');
   const [checkResultProb, setCheckResultProb] = useState(null);
 
-  const isPremium = user?.role === 'admin' || user?.tier === 'premium';
-
-  if (!isPremium) {
-    return (
-      <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: '2rem', textAlign: 'center' }}>
-        <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(99,102,241,0.1)', color: 'var(--violet)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem', boxShadow: '0 8px 24px rgba(99,102,241,0.15)' }}>
-          <BookOpen size={36} color="var(--violet)" />
-        </div>
-        <h2 style={{ fontWeight: 800, marginBottom: '0.5rem', color: 'var(--text-main)' }}>Fiches de Cours Interactives Premium</h2>
-        <p style={{ color: 'var(--text-muted)', maxWidth: '460px', marginBottom: '2rem', lineHeight: 1.6 }}>
-          L'accès complet aux fiches de cours interactives, résumés de méthodes et exercices résolus est réservé aux abonnés Premium.
-        </p>
-        <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column', width: '100%', maxWidth: '280px', margin: '0 auto' }}>
-          <button onClick={() => navigate('/subscription')} className="btn" style={{ background: 'linear-gradient(135deg, var(--violet), #818cf8)' }}>
-            ✦ Devenir Premium
-          </button>
-          <button onClick={() => navigate('/dashboard')} className="btn-outline">
-            Retour au Dashboard
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   const handleCheckAnswersEx2 = (e) => {
     e.preventDefault();

@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
-import { Trophy, CheckCircle2, XCircle, Lightbulb, ArrowLeft, TrendingUp, Zap, Lock } from 'lucide-react';
+import React, { useState, useMemo, useCallback } from 'react';
+import { Trophy, CheckCircle2, XCircle, Lightbulb, ArrowLeft, TrendingUp, Zap, Lock, Share2, Download, Copy, Check } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { renderWithMath } from '../utils/mathRenderer';
+import { generateStudentReportHTML, openPrintWindow } from '../utils/generateExamPDF';
 import DiagnosticReport from './DiagnosticReport';
 
 const renderOptionText = (text) => renderWithMath(text);
@@ -10,6 +11,7 @@ const MockExamResults = React.memo(({ questions, answers, exam, onReturn, school
   const { user } = useAuth();
   const isPremium = user?.role === 'admin' || user?.tier === 'premium';
   const [tab, setTab] = useState('correction');
+  const [shareToast, setShareToast] = useState(null);
 
   const brand = useMemo(
     () => schoolBranding[exam.school] || { scoring: { correct: 1, wrong: -0.25, empty: 0 } },
@@ -41,8 +43,70 @@ const MockExamResults = React.memo(({ questions, answers, exam, onReturn, school
     return { score: pts, pct: computedPct, corrected: computedCorrected };
   }, [questions, answers, rules]);
 
+  // Share results via Web Share API or clipboard
+  const handleShare = useCallback(async () => {
+    const correctCount = corrected.filter(c => c.result === 'correct').length;
+    const totalCount = corrected.length;
+    const shareText = `🏆 Résultat L'CONQ — ${exam.name}\n\n📊 Score: ${score}/${totalCount} (${pct}%)\n✅ Correctes: ${correctCount}\n❌ Incorrectes: ${totalCount - correctCount}\n\n🎯 Prêt pour le concours ? Rejoins-moi sur L'CONQ !\n🔗 www.lconq.ma`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Résultat L'CONQ — ${exam.name}`,
+          text: shareText,
+        });
+        setShareToast('Partagé avec succès !');
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          // Fallback to clipboard
+          await navigator.clipboard.writeText(shareText);
+          setShareToast('Résultat copié !');
+        }
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareText);
+        setShareToast('Résultat copié dans le presse-papier !');
+      } catch {
+        setShareToast('Impossible de copier');
+      }
+    }
+    setTimeout(() => setShareToast(null), 3000);
+  }, [corrected, exam.name, score, pct]);
+
+  // Download PDF report
+  const handleDownloadPDF = useCallback(() => {
+    const scoreObj = { pts: score, total: questions.length };
+    const html = generateStudentReportHTML(exam, scoreObj, corrected, {});
+    openPrintWindow(html, `rapport-${exam.name}`);
+  }, [exam, score, questions.length, corrected]);
+
   return (
     <div className="mock-results-root animate-fade-in">
+
+      {/* ── Share Toast ──────────────────────────────────────────── */}
+      {shareToast && (
+        <div style={{
+          position: 'fixed',
+          top: '1.5rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 9999,
+          background: 'linear-gradient(135deg, #10B981, #059669)',
+          color: '#fff',
+          padding: '0.65rem 1.5rem',
+          borderRadius: '12px',
+          fontWeight: 700,
+          fontSize: '0.85rem',
+          boxShadow: '0 8px 30px rgba(16, 185, 129, 0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          animation: 'fadeIn 0.3s ease',
+        }}>
+          <Check size={16} /> {shareToast}
+        </div>
+      )}
 
       {/* ── Trophy / Score card ───────────────────────────────────── */}
       <div className="mock-results-header glass-panel">
@@ -77,10 +141,73 @@ const MockExamResults = React.memo(({ questions, answers, exam, onReturn, school
           <Zap size={13} /> {pct}% de réussite
         </div>
 
-        {/* Return button */}
-        <button className="btn mock-results-return-btn" onClick={onReturn}>
-          <ArrowLeft size={15} /> Retour au Dashboard
-        </button>
+        {/* ── Action Buttons (Share + PDF + Return) ── */}
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '0.6rem',
+          justifyContent: 'center',
+          marginTop: '0.5rem',
+          width: '100%',
+        }}>
+          <button
+            className="btn"
+            onClick={handleShare}
+            style={{
+              background: 'linear-gradient(135deg, #6366F1, #8B5CF6)',
+              border: 'none',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: '0.82rem',
+              padding: '0.55rem 1.1rem',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              boxShadow: '0 4px 15px rgba(99, 102, 241, 0.25)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              flex: '1 1 auto',
+              minWidth: '130px',
+              justifyContent: 'center',
+            }}
+          >
+            <Share2 size={15} /> Partager
+          </button>
+
+          <button
+            className="btn"
+            onClick={handleDownloadPDF}
+            style={{
+              background: 'linear-gradient(135deg, #10B981, #059669)',
+              border: 'none',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: '0.82rem',
+              padding: '0.55rem 1.1rem',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              boxShadow: '0 4px 15px rgba(16, 185, 129, 0.25)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              flex: '1 1 auto',
+              minWidth: '130px',
+              justifyContent: 'center',
+            }}
+          >
+            <Download size={15} /> Télécharger PDF
+          </button>
+
+          <button className="btn mock-results-return-btn" onClick={onReturn} style={{
+            flex: '1 1 auto',
+            minWidth: '130px',
+            justifyContent: 'center',
+          }}>
+            <ArrowLeft size={15} /> Retour
+          </button>
+        </div>
       </div>
 
       {/* ── Tab switcher ──────────────────────────────────────────── */}

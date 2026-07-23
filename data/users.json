@@ -1,0 +1,1309 @@
+[
+  {
+    "id": "1",
+    "name": "Youssef Alaoui",
+    "email": "youssef@massar.ma",
+    "role": "student",
+    "tier": "freemium",
+    "xp": 450,
+    "joined": "2026-07-12T17:11:40.177Z",
+    "school": "Lycée Qualifiant 18 Novembre",
+    "class_id": "1BACSEF-1"
+  },
+  {
+    "id": "2",
+    "name": "Sara Bennani",
+    "email": "premium@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 8450,
+    "joined": "2026-07-12T17:11:40.177Z",
+    "school": "Lycée Qualifiant Zellaqa"
+  },
+  {
+    "id": "3",
+    "name": "Aymane Idrissi",
+    "email": "free@lconq.ma",
+    "role": "student",
+    "tier": "freemium",
+    "xp": 120,
+    "joined": "2026-07-12T17:11:40.177Z",
+    "school": "Lycée Qualifiant Moulay Yacoub"
+  },
+  {
+    "id": "A167027509",
+    "uid": "A167027509",
+    "name": "الخياطي سكينة",
+    "email": "a167027509@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.692Z",
+    "updated_at": "2026-07-12T17:50:46.692Z",
+    "joined": "2026-07-12T17:50:46.699Z"
+  },
+  {
+    "id": "C160011655",
+    "uid": "C160011655",
+    "name": "النمر محمد",
+    "email": "c160011655@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.712Z",
+    "updated_at": "2026-07-12T17:50:46.712Z",
+    "joined": "2026-07-12T17:50:46.711Z"
+  },
+  {
+    "id": "C160018311",
+    "uid": "C160018311",
+    "name": "شرغو أحلام",
+    "email": "c160018311@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.723Z",
+    "updated_at": "2026-07-12T17:50:46.724Z",
+    "joined": "2026-07-12T17:50:46.718Z"
+  },
+  {
+    "id": "C162011294",
+    "uid": "C162011294",
+    "name": "العسيلي فاطمة الزهراء",
+    "email": "c162011294@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.729Z",
+    "updated_at": "2026-07-12T17:50:46.729Z",
+    "joined": "2026-07-12T17:50:46.726Z"
+  },
+  {
+    "id": "C162018364",
+    "uid": "C162018364",
+    "name": "ربوز حليمة",
+    "email": "c162018364@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.739Z",
+    "updated_at": "2026-07-12T17:50:46.739Z",
+    "joined": "2026-07-12T17:50:46.737Z"
+  },
+  {
+    "id": "C163011677",
+    "uid": "C163011677",
+    "name": "الزهري عبدالعلي",
+    "email": "c163011677@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.756Z",
+    "updated_at": "2026-07-12T17:50:46.756Z",
+    "joined": "2026-07-12T17:50:46.754Z"
+  },
+  {
+    "id": "C163067664",
+    "uid": "C163067664",
+    "name": "اقجاجو كريم",
+    "email": "c163067664@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.772Z",
+    "updated_at": "2026-07-12T17:50:46.772Z",
+    "joined": "2026-07-12T17:50:46.772Z"
+  },
+  {
+    "id": "C164045846",
+    "uid": "C164045846",
+    "name": "إدريسي ملياني خديجة",
+    "email": "c164045846@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.794Z",
+    "updated_at": "2026-07-12T17:50:46.794Z",
+    "joined": "2026-07-12T17:50:46.794Z"
+  },
+  {
+    "id": "C164071338",
+    "uid": "C164071338",
+    "name": "الحوضي مريم",
+    "email": "c164071338@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.806Z",
+    "updated_at": "2026-07-12T17:50:46.806Z",
+    "joined": "2026-07-12T17:50:46.800Z"
+  },
+  {
+    "id": "C166011583",
+    "uid": "C166011583",
+    "name": "مستقيم فاطمة الزهراء",
+    "email": "c166011583@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.810Z",
+    "updated_at": "2026-07-12T17:50:46.810Z",
+    "joined": "2026-07-12T17:50:46.804Z"
+  },
+  {
+    "id": "C168011578",
+    "uid": "C168011578",
+    "name": "عريبة فاطمة الزهراء",
+    "email": "c168011578@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.814Z",
+    "updated_at": "2026-07-12T17:50:46.814Z",
+    "joined": "2026-07-12T17:50:46.812Z"
+  },
+  {
+    "id": "C168011596",
+    "uid": "C168011596",
+    "name": "الزيني هيبة",
+    "email": "c168011596@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.827Z",
+    "updated_at": "2026-07-12T17:50:46.827Z",
+    "joined": "2026-07-12T17:50:46.824Z"
+  },
+  {
+    "id": "C168022286",
+    "uid": "C168022286",
+    "name": "سفيان هناء",
+    "email": "c168022286@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.839Z",
+    "updated_at": "2026-07-12T17:50:46.839Z",
+    "joined": "2026-07-12T17:50:46.837Z"
+  },
+  {
+    "id": "C168025954",
+    "uid": "C168025954",
+    "name": "غولالــــــي يحيــــى",
+    "email": "c168025954@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.847Z",
+    "updated_at": "2026-07-12T17:50:46.847Z",
+    "joined": "2026-07-12T17:50:46.846Z"
+  },
+  {
+    "id": "N147088899",
+    "uid": "N147088899",
+    "name": "إدريسي ملياني زكرياء",
+    "email": "n147088899@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.860Z",
+    "updated_at": "2026-07-12T17:50:46.860Z",
+    "joined": "2026-07-12T17:50:46.858Z"
+  },
+  {
+    "id": "N148092981",
+    "uid": "N148092981",
+    "name": "زينون اشرف",
+    "email": "n148092981@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.873Z",
+    "updated_at": "2026-07-12T17:50:46.873Z",
+    "joined": "2026-07-12T17:50:46.870Z"
+  },
+  {
+    "id": "N154008473",
+    "uid": "N154008473",
+    "name": "الخلابي أنس",
+    "email": "n154008473@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.887Z",
+    "updated_at": "2026-07-12T17:50:46.887Z",
+    "joined": "2026-07-12T17:50:46.885Z"
+  },
+  {
+    "id": "N155008520",
+    "uid": "N155008520",
+    "name": "لكحل فاطمة",
+    "email": "n155008520@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.903Z",
+    "updated_at": "2026-07-12T17:50:46.903Z",
+    "joined": "2026-07-12T17:50:46.901Z"
+  },
+  {
+    "id": "N155024316",
+    "uid": "N155024316",
+    "name": "نحناحي بدر",
+    "email": "n155024316@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.914Z",
+    "updated_at": "2026-07-12T17:50:46.914Z",
+    "joined": "2026-07-12T17:50:46.912Z"
+  },
+  {
+    "id": "N155028819",
+    "uid": "N155028819",
+    "name": "بونافع دعاء",
+    "email": "n155028819@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.927Z",
+    "updated_at": "2026-07-12T17:50:46.927Z",
+    "joined": "2026-07-12T17:50:46.924Z"
+  },
+  {
+    "id": "N157008392",
+    "uid": "N157008392",
+    "name": "رشام مريم",
+    "email": "n157008392@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.940Z",
+    "updated_at": "2026-07-12T17:50:46.940Z",
+    "joined": "2026-07-12T17:50:46.937Z"
+  },
+  {
+    "id": "N159014345",
+    "uid": "N159014345",
+    "name": "بوكوزة زكرياء",
+    "email": "n159014345@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.949Z",
+    "updated_at": "2026-07-12T17:50:46.949Z",
+    "joined": "2026-07-12T17:50:46.948Z"
+  },
+  {
+    "id": "C164061266",
+    "uid": "C164061266",
+    "name": "الشاوني خولة",
+    "email": "c164061266@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.961Z",
+    "updated_at": "2026-07-12T17:50:46.961Z",
+    "joined": "2026-07-12T17:50:46.957Z"
+  },
+  {
+    "id": "C161011621",
+    "uid": "C161011621",
+    "name": "زينون هناء",
+    "email": "c161011621@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCS-1",
+    "created_at": "2026-07-12T17:50:46.972Z",
+    "updated_at": "2026-07-12T17:50:46.972Z",
+    "joined": "2026-07-12T17:50:46.970Z"
+  },
+  {
+    "id": "N152008459",
+    "uid": "N152008459",
+    "name": "EL BALGHI OUMAYMA",
+    "email": "n152008459@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:05.990Z",
+    "updated_at": "2026-07-16T09:51:05.990Z",
+    "joined": "2026-07-16T09:51:06.036Z"
+  },
+  {
+    "id": "H156028102",
+    "uid": "H156028102",
+    "name": "Drajou Ayoub",
+    "email": "h156028102@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.059Z",
+    "updated_at": "2026-07-16T09:51:06.059Z",
+    "joined": "2026-07-16T09:51:06.065Z"
+  },
+  {
+    "id": "M157009199",
+    "uid": "M157009199",
+    "name": "ELALAMI HAFSA",
+    "email": "m157009199@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.087Z",
+    "updated_at": "2026-07-16T09:51:06.087Z",
+    "joined": "2026-07-16T09:51:06.093Z"
+  },
+  {
+    "id": "N150003772",
+    "uid": "N150003772",
+    "name": "ESSADEQ FATIMA-ZOHRA",
+    "email": "n150003772@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.104Z",
+    "updated_at": "2026-07-16T09:51:06.104Z",
+    "joined": "2026-07-16T09:51:06.109Z"
+  },
+  {
+    "id": "N150008405",
+    "uid": "N150008405",
+    "name": "EL HADDADI YASMINE",
+    "email": "n150008405@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.118Z",
+    "updated_at": "2026-07-16T09:51:06.118Z",
+    "joined": "2026-07-16T09:51:06.127Z"
+  },
+  {
+    "id": "N150008414",
+    "uid": "N150008414",
+    "name": "CHAHBOUN KAOUTAR",
+    "email": "n150008414@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.133Z",
+    "updated_at": "2026-07-16T09:51:06.133Z",
+    "joined": "2026-07-16T09:51:06.144Z"
+  },
+  {
+    "id": "N151028626",
+    "uid": "N151028626",
+    "name": "BOUSSAIF SARA",
+    "email": "n151028626@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.149Z",
+    "updated_at": "2026-07-16T09:51:06.149Z",
+    "joined": "2026-07-16T09:51:06.157Z"
+  },
+  {
+    "id": "N152008436",
+    "uid": "N152008436",
+    "name": "LABIOUI MALAK",
+    "email": "n152008436@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.164Z",
+    "updated_at": "2026-07-16T09:51:06.164Z",
+    "joined": "2026-07-16T09:51:06.169Z"
+  },
+  {
+    "id": "N152008452",
+    "uid": "N152008452",
+    "name": "CHAHBOUNE FATIMA ZAHRAE",
+    "email": "n152008452@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.181Z",
+    "updated_at": "2026-07-16T09:51:06.181Z",
+    "joined": "2026-07-16T09:51:06.185Z"
+  },
+  {
+    "id": "N153008498",
+    "uid": "N153008498",
+    "name": "ZIHI OMAIMA",
+    "email": "n153008498@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.194Z",
+    "updated_at": "2026-07-16T09:51:06.194Z",
+    "joined": "2026-07-16T09:51:06.196Z"
+  },
+  {
+    "id": "N153008499",
+    "uid": "N153008499",
+    "name": "EL OUARDANI IKHLAS",
+    "email": "n153008499@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.198Z",
+    "updated_at": "2026-07-16T09:51:06.198Z",
+    "joined": "2026-07-16T09:51:06.208Z"
+  },
+  {
+    "id": "N153008501",
+    "uid": "N153008501",
+    "name": "CHAKOUH KHADIJA",
+    "email": "n153008501@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.214Z",
+    "updated_at": "2026-07-16T09:51:06.214Z",
+    "joined": "2026-07-16T09:51:06.218Z"
+  },
+  {
+    "id": "N153008503",
+    "uid": "N153008503",
+    "name": "BOUBKIRI AOUATIF",
+    "email": "n153008503@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.243Z",
+    "updated_at": "2026-07-16T09:51:06.243Z",
+    "joined": "2026-07-16T09:51:06.248Z"
+  },
+  {
+    "id": "N153015802",
+    "uid": "N153015802",
+    "name": "arrache nada",
+    "email": "n153015802@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.259Z",
+    "updated_at": "2026-07-16T09:51:06.259Z",
+    "joined": "2026-07-16T09:51:06.263Z"
+  },
+  {
+    "id": "N154008477",
+    "uid": "N154008477",
+    "name": "BAKKALI CHEMS EDDINE",
+    "email": "n154008477@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.277Z",
+    "updated_at": "2026-07-16T09:51:06.277Z",
+    "joined": "2026-07-16T09:51:06.281Z"
+  },
+  {
+    "id": "N154008488",
+    "uid": "N154008488",
+    "name": "CHKILIBA OTHMANE",
+    "email": "n154008488@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.291Z",
+    "updated_at": "2026-07-16T09:51:06.291Z",
+    "joined": "2026-07-16T09:51:06.298Z"
+  },
+  {
+    "id": "N155008518",
+    "uid": "N155008518",
+    "name": "ESSEDDYQ TARIK",
+    "email": "n155008518@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.304Z",
+    "updated_at": "2026-07-16T09:51:06.304Z",
+    "joined": "2026-07-16T09:51:06.309Z"
+  },
+  {
+    "id": "N155008541",
+    "uid": "N155008541",
+    "name": "IRACHE MERYEM",
+    "email": "n155008541@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.313Z",
+    "updated_at": "2026-07-16T09:51:06.313Z",
+    "joined": "2026-07-16T09:51:06.314Z"
+  },
+  {
+    "id": "N156014463",
+    "uid": "N156014463",
+    "name": "HABIB OUISSAL",
+    "email": "n156014463@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.317Z",
+    "updated_at": "2026-07-16T09:51:06.317Z",
+    "joined": "2026-07-16T09:51:06.319Z"
+  },
+  {
+    "id": "N156028636",
+    "uid": "N156028636",
+    "name": "BENSAID MALAK",
+    "email": "n156028636@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.431Z",
+    "updated_at": "2026-07-16T09:51:06.431Z",
+    "joined": "2026-07-16T09:51:06.440Z"
+  },
+  {
+    "id": "N156029457",
+    "uid": "N156029457",
+    "name": "hannouch el mehdi",
+    "email": "n156029457@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.466Z",
+    "updated_at": "2026-07-16T09:51:06.466Z",
+    "joined": "2026-07-16T09:51:06.476Z"
+  },
+  {
+    "id": "N157008389",
+    "uid": "N157008389",
+    "name": "YAKHLEF CHAYMAE",
+    "email": "n157008389@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.510Z",
+    "updated_at": "2026-07-16T09:51:06.510Z",
+    "joined": "2026-07-16T09:51:06.515Z"
+  },
+  {
+    "id": "N157008399",
+    "uid": "N157008399",
+    "name": "TOUATI ACHRAF",
+    "email": "n157008399@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.528Z",
+    "updated_at": "2026-07-16T09:51:06.528Z",
+    "joined": "2026-07-16T09:51:06.535Z"
+  },
+  {
+    "id": "N157027058",
+    "uid": "N157027058",
+    "name": "HSSAYANE YOUSSEF",
+    "email": "n157027058@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.578Z",
+    "updated_at": "2026-07-16T09:51:06.578Z",
+    "joined": "2026-07-16T09:51:06.585Z"
+  },
+  {
+    "id": "N157036623",
+    "uid": "N157036623",
+    "name": "ES-SAQY ILYASS",
+    "email": "n157036623@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.605Z",
+    "updated_at": "2026-07-16T09:51:06.605Z",
+    "joined": "2026-07-16T09:51:06.611Z"
+  },
+  {
+    "id": "S149082902",
+    "uid": "S149082902",
+    "name": "irach ghizlan",
+    "email": "s149082902@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.618Z",
+    "updated_at": "2026-07-16T09:51:06.618Z",
+    "joined": "2026-07-16T09:51:06.625Z"
+  },
+  {
+    "id": "S150037886",
+    "uid": "S150037886",
+    "name": "LAGHLIMI Ayoub",
+    "email": "s150037886@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.686Z",
+    "updated_at": "2026-07-16T09:51:06.686Z",
+    "joined": "2026-07-16T09:51:06.695Z"
+  },
+  {
+    "id": "S151002573",
+    "uid": "S151002573",
+    "name": "ELFAHSI FARAH",
+    "email": "s151002573@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.725Z",
+    "updated_at": "2026-07-16T09:51:06.725Z",
+    "joined": "2026-07-16T09:51:06.729Z"
+  },
+  {
+    "id": "S153013782",
+    "uid": "S153013782",
+    "name": "EL BOUKHARY MIRIAM",
+    "email": "s153013782@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.731Z",
+    "updated_at": "2026-07-16T09:51:06.731Z",
+    "joined": "2026-07-16T09:51:06.732Z"
+  },
+  {
+    "id": "S154034486",
+    "uid": "S154034486",
+    "name": "EL-HARAJ yassmine",
+    "email": "s154034486@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.735Z",
+    "updated_at": "2026-07-16T09:51:06.735Z",
+    "joined": "2026-07-16T09:51:06.737Z"
+  },
+  {
+    "id": "S155034487",
+    "uid": "S155034487",
+    "name": "EL-HARAJ oumayma",
+    "email": "s155034487@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.761Z",
+    "updated_at": "2026-07-16T09:51:06.761Z",
+    "joined": "2026-07-16T09:51:06.766Z"
+  },
+  {
+    "id": "M159045820",
+    "uid": "M159045820",
+    "name": "Kahlaoui Fatima Ezzahrae",
+    "email": "m159045820@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.802Z",
+    "updated_at": "2026-07-16T09:51:06.802Z",
+    "joined": "2026-07-16T09:51:06.812Z"
+  },
+  {
+    "id": "N159024066",
+    "uid": "N159024066",
+    "name": "ES-SALMI DOUAA",
+    "email": "n159024066@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.825Z",
+    "updated_at": "2026-07-16T09:51:06.825Z",
+    "joined": "2026-07-16T09:51:06.828Z"
+  },
+  {
+    "id": "S146093269",
+    "uid": "S146093269",
+    "name": "ET- TOUATY KHADIJA",
+    "email": "s146093269@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-07-16T09:51:06.833Z",
+    "updated_at": "2026-07-16T09:51:06.833Z",
+    "joined": "2026-07-16T09:51:06.834Z"
+  }
+]

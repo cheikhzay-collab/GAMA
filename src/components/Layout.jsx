@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import BottomNav from './BottomNav';
 import { useAuth } from '../context/AuthContext';
 import WhatsAppButton from './WhatsAppButton';
+import CommandPalette from './CommandPalette';
 import { Crown, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 function useIsMobile() {
@@ -449,6 +450,7 @@ export default function Layout() {
           </div>
         </div>
       )}
+      <CommandPalette />
     </div>
   );
 }

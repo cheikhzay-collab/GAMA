@@ -13,7 +13,22 @@ function parseQRData(dataStr) {
   if (!dataStr) return null;
   const trimmed = dataStr.trim();
   if (trimmed.startsWith('LCQ:')) {
-    return { examId: trimmed.slice(4) };
+    const rawContent = trimmed.slice(4);
+    const parts = rawContent.split(':');
+    const examId = parts[0] || '';
+    const massarCode = parts[1] || '';
+    let studentName = '';
+    try {
+      studentName = parts[2] ? decodeURIComponent(parts[2]) : '';
+    } catch {
+      studentName = parts[2] || '';
+    }
+    return {
+      examId,
+      massarCode,
+      studentName,
+      studentId: massarCode
+    };
   }
   try {
     return JSON.parse(trimmed);

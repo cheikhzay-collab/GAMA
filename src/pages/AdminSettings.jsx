@@ -1,14 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Plus, Trash2, Settings, School, KeyRound, Eye, EyeOff, CheckCircle2, Sparkles, Image, RefreshCw, Layers, MousePointerClick, Crown, Download, Sliders, FileText, Camera, MessageCircle, Volume2, BookOpen, Calendar, Palmtree } from 'lucide-react';
+import { Plus, Trash2, Settings, School, KeyRound, Eye, EyeOff, CheckCircle2, Sparkles, Image, RefreshCw, Layers, MousePointerClick, Crown, Download, Sliders, FileText, Camera, MessageCircle, Volume2, BookOpen, Calendar, Palmtree, Pencil, Upload, ExternalLink, ShieldCheck, Cpu, Zap, Globe, Lock } from 'lucide-react';
 import { getLandingArConfig, saveLandingArConfig } from '../services/schoolService';
 import { uploadAsset } from '../services/storageService';
+import { getAllClasses } from '../services/classService';
+
+const getSoftColorForClass = (className) => {
+  if (!className) return { bg: 'transparent', text: 'var(--text-main)' };
+  const colors = [
+    { bg: 'rgba(99, 102, 241, 0.12)', text: '#4f46e5' },
+    { bg: 'rgba(16, 185, 129, 0.12)', text: '#10b981' },
+    { bg: 'rgba(245, 158, 11, 0.12)', text: '#d97706' },
+    { bg: 'rgba(239, 68, 68, 0.12)', text: '#ef4444' },
+    { bg: 'rgba(6, 182, 212, 0.12)', text: '#0891b2' },
+    { bg: 'rgba(236, 72, 153, 0.12)', text: '#db2777' },
+    { bg: 'rgba(139, 92, 246, 0.12)', text: '#7c3aed' },
+    { bg: 'rgba(249, 115, 22, 0.12)', text: '#ea580c' }
+  ];
+  let hash = 0;
+  for (let i = 0; i < className.length; i++) {
+    hash = className.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % colors.length;
+  return colors[index];
+};
 
 export default function AdminSettings() {
   const { 
-    schools, addSchool, removeSchool, 
-    plans, addPlan, removePlan, updatePlan, 
-    activationCodes, generateActivationCodes,
+    schools, addSchool, removeSchool,
     profName: initialProfName,
     profPhone: initialProfPhone,
     profSite: initialProfSite,
@@ -25,42 +44,77 @@ export default function AdminSettings() {
   } = useAuth();
   const [newSchool, setNewSchool] = useState('');
   const [activeTab, setActiveTab] = useState('general');
+  const [classes, setClasses] = useState([]);
 
-  // Voucher states
-  const [voucherPlanId, setVoucherPlanId] = useState(() => (plans && plans.length > 0) ? plans[0].id : '');
-  const [voucherCount, setVoucherCount] = useState('10');
-  const [voucherBatchName, setVoucherBatchName] = useState('');
-  const [copiedCode, setCopiedCode] = useState('');
-  const [voucherFilter, setVoucherFilter] = useState('all');
+  // Tab active indicator animation
+  const tabBarRef = useRef(null);
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0, top: 0, height: 0, opacity: 0 });
 
-  // Subscription plan states
-  const [newPlanName, setNewPlanName] = useState('');
-  const [newPlanPrice, setNewPlanPrice] = useState('');
-  const [newPlanDuration, setNewPlanDuration] = useState('365');
-  const [newPlanSchools, setNewPlanSchools] = useState([]);
-  const [newPlanDescription, setNewPlanDescription] = useState('');
-  const [newPlanIsRecommended, setNewPlanIsRecommended] = useState(false);
-  const [newPlanFeatures, setNewPlanFeatures] = useState('');
+  useEffect(() => {
+    if (!tabBarRef.current) return;
+    const timeoutId = setTimeout(() => {
+      const activeBtn = tabBarRef.current.querySelector('.modern-tab-btn.active');
+      if (activeBtn) {
+        setIndicatorStyle({
+          left: activeBtn.offsetLeft,
+          width: activeBtn.offsetWidth,
+          top: activeBtn.offsetTop,
+          height: activeBtn.offsetHeight,
+          opacity: 1
+        });
+      }
+    }, 50);
+    return () => clearTimeout(timeoutId);
+  }, [activeTab]);
+
+  useEffect(() => {
+    getAllClasses().then(data => setClasses(data || []));
+  }, []);
+
+  // Voucher states (removed)
+  // Subscription plan states (removed)
 
   // Claude API Key
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('claudeApiKey') || '');
   const [showKey, setShowKey] = useState(false);
   const [proxyUrl, setProxyUrl] = useState(() => localStorage.getItem('claudeProxyUrl') || '');
   const [keySaved, setKeySaved] = useState(false);
+  const [claudeSolveSolutions, setClaudeSolveSolutions] = useState(() => localStorage.getItem('claude_solve_solutions') !== 'false');
 
   // Gemini API Key
   const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('geminiApiKey') || '');
   const [showGeminiKey, setShowGeminiKey] = useState(false);
   const [geminiKeySaved, setGeminiKeySaved] = useState(false);
+  const [geminiSolveSolutions, setGeminiSolveSolutions] = useState(() => localStorage.getItem('gemini_solve_solutions') !== 'false');
 
   // DeepSeek API Key
   const [deepseekKey, setDeepseekKey] = useState(() => localStorage.getItem('deepseekApiKey') || '');
   const [deepseekUrl, setDeepseekUrl] = useState(() => localStorage.getItem('deepseekApiUrl') || 'https://api.deepseek.com');
   const [showDeepseekKey, setShowDeepseekKey] = useState(false);
   const [deepseekKeySaved, setDeepseekKeySaved] = useState(false);
+  const [deepseekSolveSolutions, setDeepseekSolveSolutions] = useState(() => localStorage.getItem('deepseek_solve_solutions') !== 'false');
+
+  // Groq API Key
+  const [groqKey, setGroqKey] = useState(() => localStorage.getItem('groqApiKey') || '');
+  const [showGroqKey, setShowGroqKey] = useState(false);
+  const [groqKeySaved, setGroqKeySaved] = useState(false);
+
+  // OpenAI API Key
+  const [openaiKey, setOpenaiKey] = useState(() => localStorage.getItem('openaiApiKey') || '');
+  const [showOpenaiKey, setShowOpenaiKey] = useState(false);
+  const [openaiKeySaved, setOpenaiKeySaved] = useState(false);
+
+  const saveApiKey = () => {
+    localStorage.setItem('claudeApiKey', apiKey.trim());
+    localStorage.setItem('claudeProxyUrl', proxyUrl.trim());
+    localStorage.setItem('claude_solve_solutions', String(claudeSolveSolutions));
+    setKeySaved(true);
+    setTimeout(() => setKeySaved(false), 2500);
+  };
 
   const saveGeminiKey = () => {
     localStorage.setItem('geminiApiKey', geminiKey.trim());
+    localStorage.setItem('gemini_solve_solutions', String(geminiSolveSolutions));
     setGeminiKeySaved(true);
     setTimeout(() => setGeminiKeySaved(false), 2500);
   };
@@ -68,11 +122,67 @@ export default function AdminSettings() {
   const saveDeepseekKey = () => {
     localStorage.setItem('deepseekApiKey', deepseekKey.trim());
     localStorage.setItem('deepseekApiUrl', deepseekUrl.trim() || 'https://api.deepseek.com');
+    localStorage.setItem('deepseek_solve_solutions', String(deepseekSolveSolutions));
     setDeepseekKeySaved(true);
     setTimeout(() => setDeepseekKeySaved(false), 2500);
   };
 
+  const saveGroqKey = () => {
+    localStorage.setItem('groqApiKey', groqKey.trim());
+    setGroqKeySaved(true);
+    setTimeout(() => setGroqKeySaved(false), 2500);
+  };
 
+  const saveOpenaiKey = () => {
+    localStorage.setItem('openaiApiKey', openaiKey.trim());
+    setOpenaiKeySaved(true);
+    setTimeout(() => setOpenaiKeySaved(false), 2500);
+  };
+
+  // ── Database Backup & Restore ──────────────────────────────────────────────
+  const handleExportBackup = () => {
+    const backupData = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key) {
+        backupData[key] = localStorage.getItem(key);
+      }
+    }
+    const jsonStr = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `LCONQ_Platform_Backup_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportBackup = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const importedData = JSON.parse(event.target.result);
+        if (typeof importedData !== 'object') throw new Error('Format de sauvegarde invalide');
+        let count = 0;
+        Object.entries(importedData).forEach(([key, val]) => {
+          if (typeof val === 'string') {
+            localStorage.setItem(key, val);
+            count++;
+          }
+        });
+        alert(`✅ تم استعادة النسخة الاحتياطية بنجاح! تم استرجاع ${count} عنصراً. سيتم تحديث الصفحة الآن.`);
+        window.location.reload();
+      } catch (err) {
+        alert('❌ خطأ في قراءة ملف النسخة الاحتياطية: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  };
 
   // ── Card Display Settings ──────────────────────────────────────────────────
   const [cardFlip,   setCardFlip]   = useState(() => localStorage.getItem('card_flip_animation') !== 'false');
@@ -102,14 +212,23 @@ export default function AdminSettings() {
     setTimeout(() => setCardSaved(false), 2500);
   };
 
+  const decodeHtmlEntities = (str) => {
+    if (!str) return '';
+    return str.replace(/&#x27;/g, "'")
+              .replace(/&amp;/g, "&")
+              .replace(/&quot;/g, '"')
+              .replace(/&lt;/g, '<')
+              .replace(/&gt;/g, '>');
+  };
+
   // Branding / Identity
-  const [profName, setProfName] = useState(initialProfName || '');
-  const [profPhone, setProfPhone] = useState(initialProfPhone || '');
-  const [profSite, setProfSite] = useState(initialProfSite || 'www.lconq.ma');
-  const [bankName, setBankName] = useState(initialBankName || 'CIH Bank (Maroc)');
-  const [bankRIB, setBankRIB] = useState(initialBankRIB || '230 780 4567890123 0001 89');
-  const [bankBeneficiary, setBankBeneficiary] = useState(initialBankBeneficiary || "L'CONQ SARL");
-  const [fbPixelId, setFbPixelId] = useState(initialFacebookPixelId || '');
+  const [profName, setProfName] = useState(() => decodeHtmlEntities(initialProfName || ''));
+  const [profPhone, setProfPhone] = useState(() => decodeHtmlEntities(initialProfPhone || ''));
+  const [profSite, setProfSite] = useState(() => decodeHtmlEntities(initialProfSite || 'www.lconq.ma'));
+  const [bankName, setBankName] = useState(() => decodeHtmlEntities(initialBankName || 'CIH Bank (Maroc)'));
+  const [bankRIB, setBankRIB] = useState(() => decodeHtmlEntities(initialBankRIB || '230 780 4567890123 0001 89'));
+  const [bankBeneficiary, setBankBeneficiary] = useState(() => decodeHtmlEntities(initialBankBeneficiary || "L'CONQ SARL"));
+  const [fbPixelId, setFbPixelId] = useState(() => decodeHtmlEntities(initialFacebookPixelId || ''));
   const [brandSaved, setBrandSaved] = useState(false);
 
   // OMR Scanner Settings
@@ -124,7 +243,7 @@ export default function AdminSettings() {
   const [waTooltip, setWaTooltip] = useState('');
   const [waSaved, setWaSaved] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (whatsappSettings) {
       setWaEnabled(!!whatsappSettings.enabled);
       setWaPhone(whatsappSettings.phoneNumber || '');
@@ -146,15 +265,15 @@ export default function AdminSettings() {
     setTimeout(() => setWaSaved(false), 2500);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     Promise.resolve().then(() => {
-      if (initialProfName !== undefined) setProfName(initialProfName);
-      if (initialProfPhone !== undefined) setProfPhone(initialProfPhone);
-      if (initialProfSite !== undefined) setProfSite(initialProfSite);
-      if (initialBankName !== undefined) setBankName(initialBankName);
-      if (initialBankRIB !== undefined) setBankRIB(initialBankRIB);
-      if (initialBankBeneficiary !== undefined) setBankBeneficiary(initialBankBeneficiary);
-      if (initialFacebookPixelId !== undefined) setFbPixelId(initialFacebookPixelId);
+      if (initialProfName !== undefined) setProfName(decodeHtmlEntities(initialProfName));
+      if (initialProfPhone !== undefined) setProfPhone(decodeHtmlEntities(initialProfPhone));
+      if (initialProfSite !== undefined) setProfSite(decodeHtmlEntities(initialProfSite));
+      if (initialBankName !== undefined) setBankName(decodeHtmlEntities(initialBankName));
+      if (initialBankRIB !== undefined) setBankRIB(decodeHtmlEntities(initialBankRIB));
+      if (initialBankBeneficiary !== undefined) setBankBeneficiary(decodeHtmlEntities(initialBankBeneficiary));
+      if (initialFacebookPixelId !== undefined) setFbPixelId(decodeHtmlEntities(initialFacebookPixelId));
     });
   }, [initialProfName, initialProfPhone, initialProfSite, initialBankName, initialBankRIB, initialBankBeneficiary, initialFacebookPixelId]);
 
@@ -307,12 +426,7 @@ export default function AdminSettings() {
     if (newSchool.trim()) { addSchool(newSchool.trim()); setNewSchool(''); }
   };
 
-  const saveApiKey = () => {
-    localStorage.setItem('claudeApiKey', apiKey.trim());
-    localStorage.setItem('claudeProxyUrl', proxyUrl.trim());
-    setKeySaved(true);
-    setTimeout(() => setKeySaved(false), 2500);
-  };
+
 
   // ── Logbook / Timetable / Holidays Settings ──────────────────────────────────
   const WEEKDAYS = [
@@ -325,8 +439,14 @@ export default function AdminSettings() {
   ];
 
   const TIME_SLOTS = [
-    '08:00 - 10:00', '10:00 - 12:00', '12:00 - 14:00',
-    '14:00 - 16:00', '16:00 - 18:00'
+    { id: '08-09', label: '08:00 - 09:00' },
+    { id: '09-10', label: '09:00 - 10:00' },
+    { id: '10-11', label: '10:00 - 11:00' },
+    { id: '11-12', label: '11:00 - 12:00' },
+    { id: '14-15', label: '14:00 - 15:00' },
+    { id: '15-16', label: '15:00 - 16:00' },
+    { id: '16-17', label: '16:00 - 17:00' },
+    { id: '17-18', label: '17:00 - 18:00' }
   ];
 
   const [logbookSchedule, setLogbookSchedule] = useState(() => {
@@ -353,8 +473,19 @@ export default function AdminSettings() {
   const [newHolStart, setNewHolStart] = useState('');
   const [newHolEnd, setNewHolEnd] = useState('');
 
+  // States for inline editing holiday
+  const [editingHolId, setEditingHolId] = useState(null);
+  const [editingHolLabel, setEditingHolLabel] = useState('');
+  const [editingHolStart, setEditingHolStart] = useState('');
+  const [editingHolEnd, setEditingHolEnd] = useState('');
+
   const [logbookSaved, setLogbookSaved] = useState(false);
   const [logbookSubTab, setLogbookSubTab] = useState('timetable'); // 'timetable' | 'holidays' | 'style'
+
+  // Auto-save holidays to localStorage on state changes
+  useEffect(() => {
+    localStorage.setItem('school_holidays', JSON.stringify(logbookHolidays));
+  }, [logbookHolidays]);
 
   const handleLogbookScheduleChange = (slotKey, field, value) => {
     setLogbookSchedule(prev => ({
@@ -370,7 +501,139 @@ export default function AdminSettings() {
     setNewHolLabel(''); setNewHolStart(''); setNewHolEnd('');
   };
 
-  const removeHoliday = (id) => setLogbookHolidays(prev => prev.filter(h => h.id !== id));
+  const removeHoliday = (id) => {
+    setLogbookHolidays(prev => prev.filter(h => h.id !== id));
+    if (editingHolId === id) setEditingHolId(null);
+  };
+
+  const isArabicText = (text) => {
+    if (!text) return false;
+    const arabicRange = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+    return arabicRange.test(text);
+  };
+
+  const parseICS = (icsText) => {
+    const events = [];
+    const lines = icsText.split(/\r?\n/);
+    let currentEvent = null;
+    let isAllDayStart = false;
+    let isAllDayEnd = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i].trim();
+      
+      // Handle folded lines (lines starting with space or tab are continuation of previous line)
+      while (i + 1 < lines.length && (lines[i + 1].startsWith(' ') || lines[i + 1].startsWith('\t'))) {
+        line += lines[i + 1].substring(1);
+        i++;
+      }
+
+      if (line === 'BEGIN:VEVENT') {
+        currentEvent = {};
+        isAllDayStart = false;
+        isAllDayEnd = false;
+      } else if (line === 'END:VEVENT') {
+        if (currentEvent && currentEvent.summary && currentEvent.start) {
+          let startDate = currentEvent.start;
+          let endDate = currentEvent.end || currentEvent.start;
+
+          // Standard iCal exclusive end-date adjustment for all-day events
+          if (isAllDayStart && isAllDayEnd && startDate && endDate) {
+            const sDate = new Date(startDate);
+            const eDate = new Date(endDate);
+            if (eDate > sDate) {
+              eDate.setDate(eDate.getDate() - 1);
+              const y = eDate.getFullYear();
+              const m = String(eDate.getMonth() + 1).padStart(2, '0');
+              const d = String(eDate.getDate()).padStart(2, '0');
+              endDate = `${y}-${m}-${d}`;
+            }
+          }
+
+          events.push({
+            id: `hol-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            label: currentEvent.summary,
+            startDate,
+            endDate
+          });
+        }
+        currentEvent = null;
+      } else if (currentEvent) {
+        if (line.startsWith('SUMMARY:')) {
+          currentEvent.summary = line.substring('SUMMARY:'.length).replace(/\\,/g, ',').replace(/\\;/g, ';');
+        } else if (line.startsWith('SUMMARY;')) {
+          const colonIdx = line.indexOf(':');
+          if (colonIdx !== -1) {
+            currentEvent.summary = line.substring(colonIdx + 1).replace(/\\,/g, ',').replace(/\\;/g, ';');
+          }
+        } else if (line.startsWith('DTSTART')) {
+          isAllDayStart = line.includes('VALUE=DATE') || !line.includes('T');
+          const colonIdx = line.indexOf(':');
+          if (colonIdx !== -1) {
+            const val = line.substring(colonIdx + 1).trim();
+            const match = val.match(/^(\d{4})(\d{2})(\d{2})/);
+            if (match) {
+              currentEvent.start = `${match[1]}-${match[2]}-${match[3]}`;
+            }
+          }
+        } else if (line.startsWith('DTEND')) {
+          isAllDayEnd = line.includes('VALUE=DATE') || !line.includes('T');
+          const colonIdx = line.indexOf(':');
+          if (colonIdx !== -1) {
+            const val = line.substring(colonIdx + 1).trim();
+            const match = val.match(/^(\d{4})(\d{2})(\d{2})/);
+            if (match) {
+              currentEvent.end = `${match[1]}-${match[2]}-${match[3]}`;
+            }
+          }
+        }
+      }
+    }
+    return events;
+  };
+
+  const handleIcsUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result;
+      if (typeof text !== 'string') return;
+
+      try {
+        const parsedHols = parseICS(text);
+        if (parsedHols.length === 0) {
+          alert('Aucun événement valide n\'a été trouvé dans le fichier ICS.');
+          return;
+        }
+
+        // Avoid adding duplicate holidays (based on label & dates)
+        setLogbookHolidays(prev => {
+          const updated = [...prev];
+          let importedCount = 0;
+          parsedHols.forEach(newHol => {
+            const exists = updated.some(h => 
+              h.label.toLowerCase() === newHol.label.toLowerCase() && 
+              h.startDate === newHol.startDate
+            );
+            if (!exists) {
+              updated.push(newHol);
+              importedCount++;
+            }
+          });
+          alert(`${importedCount} vacances scolaires importées avec succès !`);
+          return updated;
+        });
+      } catch (err) {
+        console.error('Error parsing ICS file:', err);
+        alert('Erreur lors de la lecture du fichier ICS.');
+      }
+    };
+    reader.readAsText(file);
+    // Reset file input
+    e.target.value = '';
+  };
 
   const saveLogbookSettings = () => {
     localStorage.setItem('teacher_schedule_current', JSON.stringify(logbookSchedule));
@@ -388,2183 +651,2906 @@ export default function AdminSettings() {
   };
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '1100px', margin: '0 auto' }}>
+    <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto' }}>
       
       <style>{`
-         /* ═══ 2026 DESIGN SYSTEM ═══ */
-         .settings-aurora-bg {
-           position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
-         }
-         .settings-aurora-bg::before, .settings-aurora-bg::after {
-           content: ''; position: absolute; border-radius: 50%; filter: blur(140px);
-           opacity: 0.25; animation: auroraDrift 22s ease-in-out infinite;
-         }
-         .settings-aurora-bg::before {
-           width: 600px; height: 600px; top: -200px; left: -150px;
-           background: radial-gradient(circle, var(--violet) 0%, transparent 70%);
-         }
-         .settings-aurora-bg::after {
-           width: 500px; height: 500px; bottom: -150px; right: -120px;
-           background: radial-gradient(circle, var(--emerald) 0%, transparent 70%);
-           animation-delay: -11s; animation-direction: reverse;
-         }
-         @keyframes auroraDrift {
-           0%, 100% { transform: translate(0,0) scale(1); }
-           33%      { transform: translate(50px, -40px) scale(1.15); }
-           66%      { transform: translate(-30px, 45px) scale(0.9); }
-         }
-
-         .settings-container {
-           display: grid;
-           grid-template-columns: 260px 1fr;
-           gap: 2rem;
-           align-items: start;
-         }
-
-         .settings-tabs {
+         /* ─── 2026 HORIZONTAL & SIDEBAR TOP NAVIGATION DESIGN SYSTEM ─── */
+         .settings-layout {
            display: flex;
            flex-direction: column;
-           gap: 0.3rem;
+           gap: 1.75rem;
+           margin-top: 1.5rem;
+           width: 100%;
+         }
+
+         .settings-tab-bar {
+           display: flex;
+           align-items: center;
+           gap: 0.4rem;
+           padding: 0.45rem;
+           background: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(243, 244, 246, 0.3) 100%) !important;
+           backdrop-filter: blur(25px) !important;
+           -webkit-backdrop-filter: blur(25px) !important;
+           border: 1px solid rgba(255, 255, 255, 0.45) !important;
+           border-radius: 16px;
+           overflow-x: auto;
+           scrollbar-width: none;
+           -ms-overflow-style: none;
            position: sticky;
            top: 1rem;
-           padding: 1.25rem;
-           background: var(--bg-card);
-           backdrop-filter: blur(24px);
-           border: 1px solid var(--border);
-           border-radius: 20px;
-           box-shadow: var(--shadow-card);
+           z-index: 10;
+           box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
          }
-         .settings-tab-btn {
+         
+         body.dark-theme .settings-tab-bar {
+           background: linear-gradient(135deg, rgba(20, 20, 25, 0.5) 0%, rgba(30, 30, 35, 0.3) 100%) !important;
+           border-color: rgba(255, 255, 255, 0.06) !important;
+           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+         }
+         
+         .settings-tab-bar::-webkit-scrollbar {
+           display: none;
+         }
+
+         /* Gliding background indicator */
+         .tab-active-indicator {
+           position: absolute;
+           pointer-events: none;
+           transition: all 0.38s cubic-bezier(0.25, 1, 0.5, 1);
+           border-radius: 12px;
+           background: linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%);
+           box-shadow: 0 4px 15px rgba(79, 70, 229, 0.22);
+           z-index: 0;
+         }
+         body.dark-theme .tab-active-indicator {
+           background: linear-gradient(135deg, var(--violet) 0%, #4F46E5 100%);
+           box-shadow: 0 4px 15px var(--violet-glow);
+         }
+
+         .modern-tab-btn {
            display: flex;
            align-items: center;
            gap: 0.75rem;
-           padding: 0.65rem 0.85rem;
-           border-radius: 10px;
+           padding: 0.65rem 1.1rem;
+           border-radius: 12px;
+           background: transparent;
+           color: #71717a !important; /* Inactive contrast */
+           font-weight: 700;
            border: 1px solid transparent;
            cursor: pointer;
-           background: transparent;
-           text-align: left;
-           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-           width: 100%;
+           transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+           white-space: nowrap;
+           flex-shrink: 0;
            position: relative;
-           font-family: inherit;
+           z-index: 1;
          }
-         .settings-tab-btn:hover { background: var(--bg-hover); }
-         .settings-tab-btn.active {
-           background: linear-gradient(135deg, var(--violet-soft) 0%, var(--emerald-soft) 100%);
-           border-color: var(--border-hover);
-           box-shadow: inset 0 0 0 1px rgba(99,102,241,0.1);
+         body.dark-theme .modern-tab-btn {
+           color: #a1a1aa !important;
          }
-         .settings-tab-btn.active::before {
-           content: '';
-           position: absolute;
-           left: -1.25rem; top: 50%;
-           transform: translateY(-50%);
-           width: 3px; height: 55%;
-           background: linear-gradient(180deg, var(--violet), var(--emerald));
-           border-radius: 0 3px 3px 0;
-           box-shadow: 0 0 8px rgba(99,102,241,0.4);
+         
+         .modern-tab-btn:hover {
+           color: var(--violet) !important;
          }
-         .settings-tab-icon {
-           width: 32px; height: 32px;
+         body.dark-theme .modern-tab-btn:hover {
+           color: #fff !important;
+         }
+         
+         .modern-tab-btn.active {
+           color: #fff !important;
+           background: transparent !important;
+           border-color: transparent !important;
+           box-shadow: none !important;
+         }
+
+         .tab-badge {
+           width: 30px; height: 30px;
            border-radius: 8px;
            display: flex; align-items: center; justify-content: center;
-           background: var(--bg-glass);
-           border: 1px solid var(--border);
-           color: var(--text-muted);
-           transition: all 0.2s ease;
+           background: rgba(0, 0, 0, 0.03);
+           border: 1px solid rgba(0, 0, 0, 0.04);
+           color: #71717a;
+           transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
            flex-shrink: 0;
          }
-         .settings-tab-btn:hover .settings-tab-icon {
+         body.dark-theme .tab-badge {
+           background: rgba(255, 255, 255, 0.04);
+           border: 1px solid rgba(255, 255, 255, 0.06);
+           color: #a1a1aa;
+         }
+         .modern-tab-btn:hover .tab-badge {
+           background: rgba(139, 92, 246, 0.08);
+           border-color: rgba(139, 92, 246, 0.15);
            color: var(--violet);
-           border-color: var(--border-hover);
          }
-         .settings-tab-btn.active .settings-tab-icon {
-           background: linear-gradient(135deg, var(--violet), #818cf8);
+         body.dark-theme .modern-tab-btn:hover .tab-badge {
+           background: rgba(255, 255, 255, 0.08);
+           border-color: rgba(255, 255, 255, 0.1);
            color: #fff;
-           border-color: transparent;
-           box-shadow: 0 4px 12px rgba(99,102,241,0.3);
          }
-         .settings-tab-title {
-           font-weight: 700; font-size: 0.85rem;
-           color: var(--text-muted); transition: color 0.2s;
+         .modern-tab-btn.active .tab-badge {
+           background: rgba(255, 255, 255, 0.18) !important;
+           border-color: transparent !important;
+           color: #fff !important;
          }
-         .settings-tab-btn.active .settings-tab-title { color: var(--text-main); }
-         .settings-tab-desc {
-           font-size: 0.67rem; color: var(--text-subtle);
-           margin-top: 1px; transition: color 0.2s;
-         }
-         .settings-tab-btn.active .settings-tab-desc { color: var(--violet); }
 
-         .settings-hero {
-           position: relative; margin-bottom: 2rem; padding: 1.5rem 2rem;
-           border-radius: 20px; background: var(--bg-card);
-           backdrop-filter: blur(24px);
-           border: 1px solid var(--border); box-shadow: var(--shadow-card);
-           overflow: hidden;
-         }
-         .settings-hero::before {
-           content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-           background: linear-gradient(90deg, transparent, rgba(113,109,242,0.4), rgba(16,185,129,0.4), transparent);
-         }
-         .settings-hero::after {
-           content: ''; position: absolute; top: -50%; right: -10%;
-           width: 380px; height: 380px;
-           background: radial-gradient(circle, var(--violet-glow) 0%, transparent 60%);
-           filter: blur(40px); pointer-events: none;
-         }
-         .settings-hero-icon {
-           width: 52px; height: 52px; border-radius: 14px;
-           background: linear-gradient(135deg, var(--violet), var(--emerald));
-           display: flex; align-items: center; justify-content: center;
-           box-shadow: 0 10px 28px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+         .tab-badge-placeholder-dummy {
+           color: inherit;
+           transition: all 0.25s;
            flex-shrink: 0;
          }
-         .settings-hero-title {
-           font-size: 1.75rem; font-weight: 800;
-           letter-spacing: -0.025em; margin: 0;
-         }
-         .settings-hero-subtitle {
-           color: var(--text-muted); font-size: 0.92rem; margin: 0.25rem 0 0;
-         }
-         .settings-hero-stat {
-           display: flex; flex-direction: column; padding: 0.7rem 1.1rem;
-           background: var(--bg-glass); border: 1px solid var(--border);
-           border-radius: 12px; min-width: 90px;
-         }
-         .settings-hero-stat-value {
-           font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em;
-         }
-         .settings-hero-stat-label {
-           font-size: 0.68rem; color: var(--text-subtle);
-           font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+         
+         .modern-tab-btn.active .tab-badge {
+           background: rgba(255, 255, 255, 0.2);
+           border-color: transparent;
+           color: #fff;
          }
 
-         .glass-panel.col-span-12[style*="display: block"] {
-           animation: panelSlideIn 0.45s cubic-bezier(0.22,1,0.36,1) both;
+         .tab-text {
+           display: flex;
+           flex-direction: column;
+           align-items: flex-start;
+           gap: 0.1rem;
+           text-align: left;
          }
-         @keyframes panelSlideIn {
+
+         .tab-title {
+           font-weight: 750;
+           font-size: 0.85rem;
+           line-height: 1.2;
+         }
+
+         .tab-desc {
+           font-size: 0.68rem;
+           color: var(--text-subtle);
+           display: none;
+           font-weight: 500;
+         }
+
+         .modern-tab-btn.active .tab-desc {
+           color: rgba(255, 255, 255, 0.75);
+         }
+
+         .settings-content {
+           display: flex;
+           flex-direction: column;
+           gap: 1.5rem;
+           width: 100%;
+           min-width: 0;
+         }
+
+         /* Premium Bento Card Styling */
+         .bento-card {
+           background: var(--bg-card);
+           border: 1px solid var(--border);
+           border-radius: 24px;
+           padding: 2.5rem;
+           box-shadow: var(--shadow-card);
+           position: relative;
+           overflow: hidden;
+           animation: cardFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+         }
+
+         /* Subtle decorative grid effect on bento-card */
+         .bento-card::before {
+           content: '';
+           position: absolute;
+           top: 0; left: 0; right: 0; height: 1px;
+           background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+           pointer-events: none;
+         }
+
+         @keyframes cardFadeIn {
            from { opacity: 0; transform: translateY(12px); }
            to   { opacity: 1; transform: translateY(0); }
          }
 
-         @media (max-width: 768px) {
-           .settings-container {
-             grid-template-columns: 1fr !important;
-             gap: 1.25rem !important;
-           }
-           .settings-tabs {
-             position: static !important;
-             flex-direction: row !important;
-             overflow-x: auto;
-             gap: 0.5rem;
-           }
-           .settings-tabs .settings-tab-btn {
-             flex-shrink: 0;
-             min-width: 170px;
-           }
-           .settings-tab-btn.active::before { display: none; }
-           .settings-hero { padding: 1.2rem; }
-           .settings-hero-title { font-size: 1.4rem; }
+         /* Modern Settings Field & Controls */
+         .settings-field {
+           display: flex;
+           flex-direction: column;
+           gap: 0.45rem;
          }
-       `}</style>
 
-       <div className="settings-aurora-bg" aria-hidden="true" />
+         .settings-label {
+           font-size: 0.72rem;
+           font-weight: 800;
+           text-transform: uppercase;
+           letter-spacing: 0.08em;
+           color: var(--text-subtle);
+           display: flex;
+           align-items: center;
+           gap: 0.35rem;
+         }
 
-       <div className="settings-hero" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem' }}>
-         <div style={{ display: 'flex', alignItems: 'center', gap: '1.15rem', position: 'relative', zIndex: 1 }}>
-           <div className="settings-hero-icon">
-             <Settings size={26} color="#fff" />
-           </div>
-           <div>
-             <h1 className="settings-hero-title">Paramètres</h1>
-             <p className="settings-hero-subtitle">Gérez les options globales de la plateforme.</p>
-           </div>
-         </div>
-         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
-           <div className="settings-hero-stat">
-             <span className="settings-hero-stat-value">{(plans || []).length}</span>
-             <span className="settings-hero-stat-label">Plans</span>
-           </div>
-           <div className="settings-hero-stat">
-             <span className="settings-hero-stat-value">{(activationCodes || []).length}</span>
-             <span className="settings-hero-stat-label">Codes</span>
-           </div>
-           <div className="settings-hero-stat">
-             <span className="settings-hero-stat-value">{(schools || []).length}</span>
-             <span className="settings-hero-stat-label">Écoles</span>
-           </div>
-         </div>
-       </div>
+         .settings-title {
+           font-size: 1.25rem;
+           font-weight: 900;
+           color: var(--text-main);
+           margin: 0 0 0.5rem 0;
+           display: flex;
+           align-items: center;
+           gap: 0.65rem;
+         }
 
-       <div className="settings-container">
-         <div className="settings-tabs">
-           {[
-             { id: 'general', label: 'Général & Branding', icon: Sliders, desc: 'Identité PDF & Écoles' },
-             { id: 'whatsapp', label: 'Support WhatsApp', icon: MessageCircle, desc: 'Bouton flottant & message' },
-             { id: 'pdf', label: 'Design & Impression PDF', icon: FileText, desc: 'Marges, polices & sauts' },
-             { id: 'flashcards', label: 'Méthode Flashcards', icon: Layers, desc: 'Animations & Révélation' },
-             { id: 'apis', label: 'Clés API & IA', icon: KeyRound, desc: 'Claude, Gemini' },
-             { id: 'landing_editor', label: 'Page de vente (AR)', icon: Image, desc: 'Modifier images & sections' },
-             { id: 'subscriptions', label: 'Baqat & Vouchers', icon: Crown, desc: 'Tarifs & Activation' },
-             { id: 'logbook', label: 'دفتر النصوص', icon: BookOpen, desc: 'جدول الحصص، العطل والتصميم' },
-           ].map(tab => {
-             const isActive = activeTab === tab.id;
-             return (
-               <button
-                 key={tab.id}
-                 type="button"
-                 onClick={() => setActiveTab(tab.id)}
-                 className={`settings-tab-btn ${isActive ? 'active' : ''}`}
-               >
-                 <tab.icon size={16} className="settings-tab-icon" />
-                 <div>
-                   <div className="settings-tab-title">{tab.label}</div>
-                   <div className="settings-tab-desc">{tab.desc}</div>
-                 </div>
-               </button>
-             );
-           })}
-         </div>
+         .settings-desc {
+           font-size: 0.82rem;
+           color: var(--text-muted);
+           line-height: 1.6;
+           margin: 0 0 1.75rem 0;
+         }
 
-        {/* Right Content Column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%', minWidth: 0 }}>
+         /* Inputs & Controls */
+         .input-control {
+           background: rgba(255, 255, 255, 0.015) !important;
+           backdrop-filter: blur(4px);
+           border: 1px solid var(--border) !important;
+           border-radius: 12px !important;
+           padding: 0.75rem 1rem !important;
+           font-size: 0.85rem !important;
+           color: var(--text-main) !important;
+           transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+           outline: none !important;
+           width: 100%;
+           box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+         }
+         .input-control:focus {
+           border-color: var(--violet) !important;
+           background: rgba(139, 92, 246, 0.015) !important;
+           box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02), 0 0 0 3px rgba(139, 92, 246, 0.15) !important;
+         }
 
-        {/* ── WhatsApp Floating Button Settings ── */}
-        <div className="col-span-12 glass-panel" style={{ display: activeTab === 'whatsapp' ? 'block' : 'none' }}>
-          <h3 style={{ marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <MessageCircle size={20} style={{ color: '#25D366' }} /> Paramètres du Bouton Flottant WhatsApp
-          </h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.88rem' }}>
-            Activez et configurez un bouton WhatsApp flottant pour permettre aux élèves de vous contacter directement pour du support ou des questions.
-          </p>
+         /* Switches styling */
+         .modern-switch-row {
+           display: flex;
+           align-items: center;
+           justify-content: space-between;
+           padding: 1.15rem 1.5rem;
+           border-radius: 16px;
+           background: var(--bg-glass);
+           border: 1px solid var(--border);
+           transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+         }
+         .modern-switch-row:hover {
+           background: var(--bg-hover);
+           border-color: var(--border-hover);
+           box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+         }
+         .modern-switch {
+           width: 46px; height: 26px; border-radius: 99px;
+           border: none; cursor: pointer; position: relative;
+           background: var(--border);
+           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+           flex-shrink: 0;
+         }
+         .modern-switch.active {
+           background: var(--violet);
+           box-shadow: 0 0 14px var(--violet-glow);
+         }
+         .modern-switch-knob {
+           width: 20px; height: 20px; border-radius: 50%;
+           background: #fff; position: absolute; top: 3px;
+           left: 3px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+           box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+         }
+         .modern-switch.active .modern-switch-knob {
+           left: 23px;
+         }
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            
-            {/* Toggle Switch */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.8rem 1rem', borderRadius: 12, background: 'var(--bg-glass)', border: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <MessageCircle size={18} style={{ color: '#25D366' }} />
-                <div>
-                  <p style={{ fontWeight: 700, fontSize: '0.88rem', margin: 0 }}>Afficher le bouton WhatsApp</p>
-                  <p style={{ fontSize: '0.73rem', color: 'var(--text-subtle)', margin: 0 }}>Rendre le bouton flottant visible sur le tableau de bord et la page d'accueil</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setWaEnabled(v => !v)}
-                style={{
-                  width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer',
-                  background: waEnabled ? '#25D366' : 'var(--bg-card)',
-                  position: 'relative', transition: 'background 0.2s',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-                }}
-              >
-                <div style={{
-                  width: 20, height: 20, borderRadius: '50%', background: '#fff',
-                  position: 'absolute', top: 3, transition: 'left 0.2s',
-                  left: waEnabled ? 25 : 3,
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                }} />
-              </button>
-            </div>
+         /* Premium Cards list */
+         .premium-plan-card {
+           background: var(--bg-glass);
+           border: 1px solid var(--border);
+           border-radius: 20px;
+           padding: 1.75rem;
+           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+         }
+         .premium-plan-card:hover {
+           border-color: var(--violet);
+           background: var(--bg-hover);
+           transform: translateY(-2px);
+           box-shadow: 0 8px 30px rgba(139, 92, 246, 0.08);
+         }
 
-            {/* Inputs Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', opacity: waEnabled ? 1 : 0.5, transition: 'opacity 0.2s' }}>
-              
-              {/* Phone number */}
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                  Numéro de Téléphone WhatsApp
-                </label>
-                <input
-                  type="text"
-                  disabled={!waEnabled}
-                  className="input-control"
-                  placeholder={profPhone ? `${profPhone} (Téléphone général)` : "+212 600-000000"}
-                  value={waPhone}
-                  onChange={e => setWaPhone(e.target.value)}
-                />
-                <p style={{ marginTop: '0.35rem', fontSize: '0.72rem', color: 'var(--text-subtle)', lineHeight: 1.3 }}>
-                  Laissez vide pour utiliser par défaut le numéro de téléphone général de l'identité : <strong>{profPhone || 'Non configuré'}</strong>.
-                </p>
-              </div>
+         .holiday-card {
+           background: var(--bg-glass);
+           border: 1px solid var(--border);
+           border-radius: 16px;
+           padding: 1.15rem 1.35rem;
+           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           gap: 1.25rem;
+         }
+         .holiday-card:hover {
+           border-color: rgba(139, 92, 246, 0.3);
+           background: var(--bg-hover);
+           transform: translateY(-2px);
+           box-shadow: 0 6px 20px rgba(139, 92, 246, 0.05);
+         }
 
-              {/* Tooltip Text */}
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                  Texte de l'infobulle (Tooltip)
-                </label>
-                <input
-                  type="text"
-                  disabled={!waEnabled}
-                  className="input-control"
-                  placeholder="Besoin d'aide ?"
-                  value={waTooltip}
-                  onChange={e => setWaTooltip(e.target.value)}
-                />
-                <p style={{ marginTop: '0.35rem', fontSize: '0.72rem', color: 'var(--text-subtle)', lineHeight: 1.3 }}>
-                  Le message court affiché à côté du bouton au survol (ex: "Besoin d'aide ?", "Support client").
-                </p>
-              </div>
-
-              {/* Position */}
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                  Position sur l'écran
-                </label>
-                <select
-                  disabled={!waEnabled}
-                  value={waPosition}
-                  onChange={e => setWaPosition(e.target.value)}
-                  className="input-control"
-                >
-                  <option value="right">En bas à Droite (Recommandé)</option>
-                  <option value="left">En bas à Gauche</option>
-                </select>
-                <p style={{ marginTop: '0.35rem', fontSize: '0.72rem', color: 'var(--text-subtle)', lineHeight: 1.3 }}>
-                  Choisissez de quel côté le bouton flottant s'affichera à l'écran.
-                </p>
-              </div>
-
-            </div>
-
-            {/* Default pre-filled message */}
-            <div style={{ opacity: waEnabled ? 1 : 0.5, transition: 'opacity 0.2s' }}>
-              <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                Message prédéfini par défaut
-              </label>
-              <textarea
-                disabled={!waEnabled}
-                className="input-control"
-                placeholder="Bonjour, j'ai une question concernant la plateforme Gima."
-                rows={3}
-                value={waMessage}
-                onChange={e => setWaMessage(e.target.value)}
-                style={{ fontFamily: 'inherit', resize: 'vertical' }}
-              />
-              <p style={{ marginTop: '0.35rem', fontSize: '0.72rem', color: 'var(--text-subtle)', lineHeight: 1.3 }}>
-                Le texte qui sera pré-rempli dans l'application WhatsApp de l'utilisateur lorsqu'il clique sur le bouton.
-              </p>
-            </div>
-
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
-            <button
-              onClick={saveWhatsAppSettings}
-              className="btn"
-              style={{
-                padding: '0.75rem 2rem',
-                background: waSaved ? 'linear-gradient(135deg,var(--emerald),#34d399)' : undefined,
-                boxShadow: waSaved ? '0 4px 16px rgba(16,185,129,0.35)' : undefined,
-                transition: 'all 0.3s'
-              }}
-            >
-              {waSaved ? <><CheckCircle2 size={16} /> Enregistré !</> : 'Enregistrer les paramètres'}
-            </button>
-          </div>
-        </div>
-
-        {/* ── PDF Page Layout Settings ── */}
-        <div className="col-span-12 glass-panel" style={{ display: activeTab === 'pdf' ? 'block' : 'none' }}>
-          <h3 style={{ marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <FileText size={20} /> Paramètres de Mise en Page & Design PDF
-          </h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.88rem' }}>
-            Configurez l&apos;affichage de vos documents PDF générés (Sujets, Corrigés, E-Books) pour un rendu professionnel.
-          </p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            
-            {/* Margins & Font Size & Font Family Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', flexWrap: 'wrap' }}>
-              
-              {/* Page Margins */}
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                  Marges de page (Marges intérieures)
-                </label>
-                <select
-                  value={pdfPageMargins}
-                  onChange={e => setPdfPageMargins(e.target.value)}
-                  className="input-control"
-                  style={{ fontSize: '0.85rem' }}
-                >
-                  <option value="standard">Standard (Marge équilibrée - A4 classique)</option>
-                  <option value="compact">Compacte (Marge étroite pour économiser des pages)</option>
-                  <option value="wide">Large (Rendu très aéré de type livre d&apos;art)</option>
-                </select>
-              </div>
-
-              {/* Font Size */}
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                  Taille de la police de base
-                </label>
-                <select
-                  value={pdfFontSize}
-                  onChange={e => setPdfFontSize(e.target.value)}
-                  className="input-control"
-                  style={{ fontSize: '0.85rem' }}
-                >
-                  <option value="10pt">Petit (10pt)</option>
-                  <option value="11pt">Normal (11pt - recommandé)</option>
-                  <option value="12pt">Grand (12pt)</option>
-                </select>
-              </div>
-
-              {/* Font Family */}
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                  Police typographique
-                </label>
-                <select
-                  value={pdfFontFamily}
-                  onChange={e => setPdfFontFamily(e.target.value)}
-                  className="input-control"
-                  style={{ fontSize: '0.85rem' }}
-                >
-                  <option value="Computer Modern Serif">Computer Modern Serif (Scientifique & académique)</option>
-                  <option value="STIX Two Text">STIX Two Text (Littéraire avec empattement)</option>
-                  <option value="Times New Roman">Times New Roman (Classique d&apos;examen national)</option>
-                  <option value="Inter">Inter (Moderne, épurée et sans empattement)</option>
-                </select>
-              </div>
-
-              {/* Layout Template Style */}
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                  Modèle de mise en page (Template)
-                </label>
-                <select
-                  value={pdfTemplateStyle}
-                  onChange={e => setPdfTemplateStyle(e.target.value)}
-                  className="input-control"
-                  style={{ fontSize: '0.85rem' }}
-                >
-                  <option value="classic_latex">Classique LaTeX (Éléments structurés, sobres et académiques)</option>
-                  <option value="modern_minimalist">Moderne épuré (Design frais, aéré avec touches de couleur)</option>
-                  <option value="premium_royal">Royal Institutionnel (En-tête officiel, luxueux avec rubans)</option>
-                  <option value="compact_eco">Économique & Compact (Sans page de garde, ultra compact pour impression)</option>
-                </select>
-              </div>
-
-            </div>
-
-            {/* Avoid page breaks inside cards */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.8rem 1rem', borderRadius: 12, background: 'var(--bg-glass)', border: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <FileText size={18} style={{ color: 'var(--violet)' }} />
-                <div>
-                  <p style={{ fontWeight: 700, fontSize: '0.88rem', margin: 0 }}>Sauts de page intelligents</p>
-                  <p style={{ fontSize: '0.73rem', color: 'var(--text-subtle)', margin: 0 }}>Éviter de couper les énoncés et options d&apos;une question sur deux pages différentes</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setPdfAvoidPageBreaks(v => !v)}
-                style={{
-                  width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer',
-                  background: pdfAvoidPageBreaks ? 'var(--violet)' : 'var(--bg-card)',
-                  position: 'relative', transition: 'background 0.2s',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-                }}
-              >
-                <div style={{
-                  width: 20, height: 20, borderRadius: '50%', background: '#fff',
-                  position: 'absolute', top: 3, transition: 'left 0.2s',
-                  left: pdfAvoidPageBreaks ? 25 : 3,
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                }} />
-              </button>
-            </div>
-
-            {/* Preserve background colors */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.8rem 1rem', borderRadius: 12, background: 'var(--bg-glass)', border: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <Sparkles size={18} style={{ color: 'var(--emerald)' }} />
-                <div>
-                  <p style={{ fontWeight: 700, fontSize: '0.88rem', margin: 0 }}>Impression couleur & arrière-plans</p>
-                  <p style={{ fontSize: '0.73rem', color: 'var(--text-subtle)', margin: 0 }}>Forcer la préservation des couleurs de fond, des badges et des bulles OMR lors de la génération</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setPdfForcePrintColors(v => !v)}
-                style={{
-                  width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer',
-                  background: pdfForcePrintColors ? 'var(--emerald)' : 'var(--bg-card)',
-                  position: 'relative', transition: 'background 0.2s',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-                }}
-              >
-                <div style={{
-                  width: 20, height: 20, borderRadius: '50%', background: '#fff',
-                  position: 'absolute', top: 3, transition: 'left 0.2s',
-                  left: pdfForcePrintColors ? 25 : 3,
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                }} />
-              </button>
-            </div>
-
-            {/* Show/Hide Sidebar */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.8rem 1rem', borderRadius: 12, background: 'var(--bg-glass)', border: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <FileText size={18} style={{ color: 'var(--violet)' }} />
-                <div>
-                  <p style={{ fontWeight: 700, fontSize: '0.88rem', margin: 0 }}>Bandeau latéral (Sidebar)</p>
-                  <p style={{ fontSize: '0.73rem', color: 'var(--text-subtle)', margin: 0 }}>Afficher la barre latérale verticale des écoles sur les fichiers PDF générés</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setPdfShowSidebar(v => !v)}
-                style={{
-                  width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer',
-                  background: pdfShowSidebar ? 'var(--violet)' : 'var(--bg-card)',
-                  position: 'relative', transition: 'background 0.2s',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-                }}
-              >
-                <div style={{
-                  width: 20, height: 20, borderRadius: '50%', background: '#fff',
-                  position: 'absolute', top: 3, transition: 'left 0.2s',
-                  left: pdfShowSidebar ? 25 : 3,
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                }} />
-              </button>
-            </div>
-
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
-            <button
-              onClick={savePdfSettings}
-              className="btn"
-              style={{
-                padding: '0.75rem 2rem',
-                background: pdfSaved ? 'linear-gradient(135deg,var(--emerald),#34d399)' : undefined,
-                boxShadow: pdfSaved ? '0 4px 16px rgba(16,185,129,0.35)' : undefined,
-                transition: 'all 0.3s'
-              }}
-            >
-              {pdfSaved ? <><CheckCircle2 size={16} /> Enregistré !</> : 'Enregistrer le style PDF'}
-            </button>
-          </div>
-        </div>
-
-        {/* ── Flashcard Review Settings ── */}
-        <div className="col-span-12 glass-panel" style={{ display: activeTab === 'flashcards' ? 'block' : 'none' }}>
-          <h3 style={{ marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Layers size={20} /> Paramètres des Flashcards
-          </h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.88rem' }}>
-            Personnalisez l&apos;animation, le mode de révélation et les gestes des cartes de révision.
-          </p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-
-            {/* Reveal Mode */}
-            <div>
-              <p style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Layers size={14} /> Mode de révélation de la réponse
-              </p>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                {[
-                  { id: 'flip',    icon: '🔄', label: 'Retournement 3D',  desc: 'Animation de rotation (défaut)' },
-                  { id: 'fade',    icon: '✨', label: 'Fondu enchaîné',   desc: 'Transition douce sans rotation' },
-                  { id: 'instant', icon: '⚡', label: 'Instantané',       desc: 'Mode calme — boutons uniquement, sans glissement' },
-                ].map(({ id, icon, label, desc }) => (
-                  <button
-                    key={id}
-                    onClick={() => { setCardReveal(id); if (id !== 'flip') setCardFlip(false); else setCardFlip(true); }}
-                    style={{
-                      flex: '1 1 170px',
-                      padding: '0.8rem 1rem',
-                      borderRadius: 12,
-                      cursor: 'pointer',
-                      background: cardReveal === id ? 'rgba(99,102,241,0.1)' : 'var(--bg-glass)',
-                      border: `2px solid ${cardReveal === id ? 'var(--violet)' : 'var(--border)'}`,
-                      textAlign: 'left',
-                      transition: 'all 0.2s',
-                      boxShadow: cardReveal === id ? '0 4px 16px rgba(99,102,241,0.15)' : 'none',
-                    }}
-                  >
-                    <div style={{ fontSize: '1.3rem', marginBottom: '0.3rem' }}>{icon}</div>
-                    <div style={{ fontWeight: 700, fontSize: '0.85rem', color: cardReveal === id ? 'var(--violet)' : 'var(--text-main)', marginBottom: '0.15rem' }}>{label}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)' }}>{desc}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Flip Animation toggle (only relevant for flip mode) */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.8rem 1rem', borderRadius: 12, background: 'var(--bg-glass)', border: '1px solid var(--border)', opacity: cardReveal === 'flip' ? 1 : 0.4 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <RefreshCw size={18} style={{ color: 'var(--violet)' }} />
-                <div>
-                  <p style={{ fontWeight: 700, fontSize: '0.88rem', margin: 0 }}>Animation de rotation 3D</p>
-                  <p style={{ fontSize: '0.73rem', color: 'var(--text-subtle)', margin: 0 }}>Actif uniquement en mode « Retournement »</p>
-                </div>
-              </div>
-              <button
-                disabled={cardReveal !== 'flip'}
-                onClick={() => setCardFlip(v => !v)}
-                style={{
-                  width: 48, height: 26, borderRadius: 13, border: 'none', cursor: cardReveal !== 'flip' ? 'not-allowed' : 'pointer',
-                  background: cardFlip && cardReveal === 'flip' ? 'var(--violet)' : 'var(--bg-card)',
-                  position: 'relative', transition: 'background 0.2s',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-                }}
-              >
-                <div style={{
-                  width: 20, height: 20, borderRadius: '50%', background: '#fff',
-                  position: 'absolute', top: 3, transition: 'left 0.2s',
-                  left: cardFlip && cardReveal === 'flip' ? 25 : 3,
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                }} />
-              </button>
-            </div>
-
-            {/* Swipe gesture toggle */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.8rem 1rem', borderRadius: 12, background: 'var(--bg-glass)', border: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <MousePointerClick size={18} style={{ color: 'var(--emerald)' }} />
-                <div>
-                  <p style={{ fontWeight: 700, fontSize: '0.88rem', margin: 0 }}>Geste de glissement (Swipe)</p>
-                  <p style={{ fontSize: '0.73rem', color: 'var(--text-subtle)', margin: 0 }}>Glisser à droite = Facile, à gauche = À revoir</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setCardSwipe(v => !v)}
-                style={{
-                  width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer',
-                  background: cardSwipe ? 'var(--emerald)' : 'var(--bg-card)',
-                  position: 'relative', transition: 'background 0.2s',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-                }}
-              >
-                <div style={{
-                  width: 20, height: 20, borderRadius: '50%', background: '#fff',
-                  position: 'absolute', top: 3, transition: 'left 0.2s',
-                  left: cardSwipe ? 25 : 3,
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                }} />
-              </button>
-            </div>
-
-            {/* Sound effects toggle */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.8rem 1rem', borderRadius: 12, background: 'var(--bg-glass)', border: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <Volume2 size={18} style={{ color: 'var(--violet)' }} />
-                <div>
-                  <p style={{ fontWeight: 700, fontSize: '0.88rem', margin: 0 }}>Effets sonores (Sons)</p>
-                  <p style={{ fontSize: '0.73rem', color: 'var(--text-subtle)', margin: 0 }}>Jouer un son court lors de la validation d'une réponse (correcte / incorrecte)</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setCardSound(v => !v)}
-                style={{
-                  width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer',
-                  background: cardSound ? 'var(--violet)' : 'var(--bg-card)',
-                  position: 'relative', transition: 'background 0.2s',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-                }}
-              >
-                <div style={{
-                  width: 20, height: 20, borderRadius: '50%', background: '#fff',
-                  position: 'absolute', top: 3, transition: 'left 0.2s',
-                  left: cardSound ? 25 : 3,
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                }} />
-              </button>
-            </div>
-
-            {/* Card Typography Configurations */}
-            <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
-              <p style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Sliders size={15} /> Personnalisation de la typographie des cartes
-              </p>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                {/* Font Family */}
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-subtle)' }}>
-                    Police typographique des cartes
-                  </label>
-                  <select
-                    value={cardFontFamily}
-                    onChange={e => setCardFontFamily(e.target.value)}
-                    className="input-control"
-                    style={{ fontSize: '0.85rem' }}
-                  >
-                    <option value="Computer Modern Serif">Computer Modern Serif (Scientifique)</option>
-                    <option value="STIX Two Text">STIX Two Text (Littéraire Serif)</option>
-                    <option value="Times New Roman">Times New Roman (Classique)</option>
-                    <option value="Inter">Inter (Moderne Sans-Serif)</option>
-                  </select>
-                </div>
-
-                {/* Font Size */}
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-subtle)' }}>
-                    Taille de la police
-                  </label>
-                  <select
-                    value={cardFontSize}
-                    onChange={e => setCardFontSize(e.target.value)}
-                    className="input-control"
-                    style={{ fontSize: '0.85rem' }}
-                  >
-                    <option value="0.82rem">Petite (0.82rem)</option>
-                    <option value="0.9rem">Compacte (0.9rem)</option>
-                    <option value="1rem">Normale (1rem — défaut)</option>
-                    <option value="1.08rem">Grande (1.08rem)</option>
-                    <option value="1.18rem">Très grande (1.18rem)</option>
-                  </select>
-                </div>
-
-                {/* Question Weight */}
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-subtle)' }}>
-                    Épaisseur du texte des Questions
-                  </label>
-                  <select
-                    value={cardQuestionWeight}
-                    onChange={e => setCardQuestionWeight(e.target.value)}
-                    className="input-control"
-                    style={{ fontSize: '0.85rem' }}
-                  >
-                    <option value="400">Normal (400)</option>
-                    <option value="500">Moyen (500)</option>
-                    <option value="600">Demi-gras (600)</option>
-                    <option value="700">Gras (700)</option>
-                  </select>
-                </div>
-
-                {/* Options Weight */}
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-subtle)' }}>
-                    Épaisseur du texte des Options
-                  </label>
-                  <select
-                    value={cardOptionsWeight}
-                    onChange={e => setCardOptionsWeight(e.target.value)}
-                    className="input-control"
-                    style={{ fontSize: '0.85rem' }}
-                  >
-                    <option value="400">Normal (400)</option>
-                    <option value="500">Moyen (500)</option>
-                    <option value="600">Demi-gras (600)</option>
-                    <option value="700">Gras (700)</option>
-                  </select>
-                </div>
-
-                {/* Astuce Weight */}
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-subtle)' }}>
-                    Épaisseur du texte des Astuces / Solutions
-                  </label>
-                  <select
-                    value={cardAstuceWeight}
-                    onChange={e => setCardAstuceWeight(e.target.value)}
-                    className="input-control"
-                    style={{ fontSize: '0.85rem' }}
-                  >
-                    <option value="400">Normal (400)</option>
-                    <option value="500">Moyen (500)</option>
-                    <option value="600">Demi-gras (600)</option>
-                    <option value="700">Gras (700)</option>
-                  </select>
-                </div>
-
-              </div>
-            </div>
-
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
-            <button
-              onClick={saveCardSettings}
-              className="btn"
-              style={{
-                padding: '0.75rem 2rem',
-                background: cardSaved ? 'linear-gradient(135deg,var(--emerald),#34d399)' : undefined,
-                boxShadow: cardSaved ? '0 4px 16px rgba(16,185,129,0.35)' : undefined,
-                transition: 'all 0.3s'
-              }}
-            >
-              {cardSaved ? <><CheckCircle2 size={16} /> Sauvegardé !</> : 'Enregistrer les paramètres'}
-            </button>
-          </div>
-        </div>
-
-        {/* ── Claude API Key ── */}
-        <div className="col-span-12 glass-panel" style={{ display: activeTab === 'apis' ? 'block' : 'none' }}>
-          <h3 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <KeyRound size={20} /> Clé API Claude (Anthropic)
-          </h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-            Utilisée pour l'import IA automatique de PDF. Obtenez votre clé sur{' '}
-            <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" className="text-violet">console.anthropic.com</a>.
-            Elle est stockée uniquement dans ce navigateur.
-          </p>
-
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <div style={{ flex: 1, position: 'relative' }}>
-              <input
-                type={showKey ? 'text' : 'password'}
-                className="input-control"
-                placeholder="sk-ant-api03-..."
-                value={apiKey}
-                onChange={e => setApiKey(e.target.value)}
-                style={{ paddingRight: '3rem', fontFamily: apiKey && !showKey ? 'monospace' : 'inherit' }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowKey(v => !v)}
-                style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex' }}
-              >
-                {showKey ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-            <button
-              onClick={saveApiKey}
-              className="btn"
-              style={{
-                padding: '0.75rem 1.5rem', whiteSpace: 'nowrap',
-                background: keySaved ? 'linear-gradient(135deg,var(--emerald),#34d399)' : undefined,
-                boxShadow: keySaved ? '0 4px 16px rgba(16,185,129,0.35)' : undefined,
-                transition: 'all 0.3s'
-              }}
-            >
-              {keySaved ? <><CheckCircle2 size={16} /> Sauvegardé !</> : 'Sauvegarder'}
-            </button>
-          </div>
-
-          <div style={{ marginTop: '1.25rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-              URL du Proxy Serveur (Optionnel - Pour la production)
-            </label>
-            <input
-              type="text"
-              className="input-control"
-              placeholder="https://votre-proxy.workers.dev/api/v1/messages"
-              value={proxyUrl}
-              onChange={e => setProxyUrl(e.target.value)}
-              style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
-            />
-            <p style={{ marginTop: '0.4rem', fontSize: '0.73rem', color: 'var(--text-muted)' }}>
-              💡 Si configurée, les requêtes d'importation IA transiteront par ce serveur pour masquer votre clé API en production.
-            </p>
-          </div>
-
-          {apiKey && (
-            <p style={{ marginTop: '0.75rem', fontSize: '0.78rem', color: 'var(--emerald)' }}>
-              ✓ Clé configurée — {apiKey.slice(0, 14)}...
-            </p>
-          )}
-        </div>
-
-        {/* ── Gemini API Key ── */}
-        <div className="col-span-12 glass-panel" style={{ display: activeTab === 'apis' ? 'block' : 'none', borderColor: 'rgba(66,133,244,0.25)', background: 'linear-gradient(135deg, rgba(66,133,244,0.04) 0%, rgba(234,67,53,0.02) 100%)' }}>
-          <h3 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <div style={{ width: 28, height: 28, borderRadius: '8px', background: 'linear-gradient(135deg,#4285F4,#EA4335,#FBBC05,#34A853)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Image size={14} color="#fff" />
-            </div>
-            Clé API Google Gemini <span style={{ fontSize: '0.7rem', fontWeight: 600, padding: '0.2rem 0.5rem', borderRadius: '99px', background: 'rgba(66,133,244,0.12)', color: '#4285F4', marginLeft: '0.25rem' }}>Imagen 3 — Génération d'images</span>
-          </h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-            Utilisée pour générer des visuels marketing avec <strong>Google Imagen 3</strong>. Obtenez votre clé gratuitement sur{' '}
-            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style={{ color: '#4285F4', fontWeight: 600 }}>aistudio.google.com</a>.
-            Elle est stockée uniquement dans ce navigateur.
-          </p>
-
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <div style={{ flex: 1, position: 'relative' }}>
-              <input
-                type={showGeminiKey ? 'text' : 'password'}
-                className="input-control"
-                placeholder="AIzaSy..."
-                value={geminiKey}
-                onChange={e => setGeminiKey(e.target.value)}
-                style={{ paddingRight: '3rem', fontFamily: geminiKey && !showGeminiKey ? 'monospace' : 'inherit', borderColor: geminiKey ? 'rgba(52,168,83,0.4)' : undefined }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowGeminiKey(v => !v)}
-                style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex' }}
-              >
-                {showGeminiKey ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-            <button
-              onClick={saveGeminiKey}
-              className="btn"
-              style={{
-                padding: '0.75rem 1.5rem', whiteSpace: 'nowrap',
-                background: geminiKeySaved ? 'linear-gradient(135deg,var(--emerald),#34d399)' : 'linear-gradient(135deg,#4285F4,#0F9D58)',
-                boxShadow: geminiKeySaved ? '0 4px 16px rgba(16,185,129,0.35)' : '0 4px 16px rgba(66,133,244,0.3)',
-                transition: 'all 0.3s'
-              }}
-            >
-              {geminiKeySaved ? <><CheckCircle2 size={16} /> Sauvegardé !</> : 'Sauvegarder'}
-            </button>
-          </div>
-
-          {geminiKey && (
-            <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.78rem', color: '#34A853' }}>✓ Clé Gemini configurée — {geminiKey.slice(0, 10)}...</span>
-              <span style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem', borderRadius: '99px', background: 'rgba(52,168,83,0.12)', color: '#34A853', fontWeight: 600 }}>Imagen 3 activé ✨</span>
-            </div>
-          )}
-        </div>
-
-        {/* ── DeepSeek API Key ── */}
-        <div className="col-span-12 glass-panel" style={{ display: activeTab === 'apis' ? 'block' : 'none', borderColor: 'rgba(0,186,124,0.25)', background: 'linear-gradient(135deg, rgba(0,186,124,0.04) 0%, rgba(99,102,241,0.02) 100%)', marginTop: '1.5rem' }}>
-          <h3 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <KeyRound size={20} style={{ color: '#00BA7C' }} /> Clé API DeepSeek (Modèle Chinois Économique)
-          </h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-            Utilisée pour l'import IA à coût minime (DeepSeek-V3) ou avec réflexion scientifique avancée (DeepSeek-R1). 
-            Obtenez votre clé sur{' '}
-            <a href="https://platform.deepseek.com" target="_blank" rel="noopener noreferrer" style={{ color: '#00BA7C', fontWeight: 600 }}>platform.deepseek.com</a> ou utilisez un fournisseur compatible OpenAI (ex: SiliconFlow).
-          </p>
-
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <div style={{ flex: 1, position: 'relative' }}>
-              <input
-                type={showDeepseekKey ? 'text' : 'password'}
-                className="input-control"
-                placeholder="sk-..."
-                value={deepseekKey}
-                onChange={e => setDeepseekKey(e.target.value)}
-                style={{ paddingRight: '3rem', fontFamily: deepseekKey && !showDeepseekKey ? 'monospace' : 'inherit', borderColor: deepseekKey ? 'rgba(0,186,124,0.4)' : undefined }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowDeepseekKey(v => !v)}
-                style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex' }}
-              >
-                {showDeepseekKey ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-            <button
-              onClick={saveDeepseekKey}
-              className="btn"
-              style={{
-                padding: '0.75rem 1.5rem', whiteSpace: 'nowrap',
-                background: deepseekKeySaved ? 'linear-gradient(135deg,var(--emerald),#34d399)' : 'linear-gradient(135deg,#00BA7C,#4f46e5)',
-                boxShadow: deepseekKeySaved ? '0 4px 16px rgba(16,185,129,0.35)' : '0 4px 16px rgba(0,186,124,0.3)',
-                transition: 'all 0.3s'
-              }}
-            >
-              {deepseekKeySaved ? <><CheckCircle2 size={16} /> Sauvegardé !</> : 'Sauvegarder'}
-            </button>
-          </div>
-
-          <div style={{ marginTop: '1.25rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-              URL de l'API DeepSeek (Endpoint)
-            </label>
-            <input
-              type="text"
-              className="input-control"
-              placeholder="https://api.deepseek.com"
-              value={deepseekUrl}
-              onChange={e => setDeepseekUrl(e.target.value)}
-              style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
-            />
-            <p style={{ marginTop: '0.4rem', fontSize: '0.73rem', color: 'var(--text-muted)' }}>
-              💡 Par défaut : <code>https://api.deepseek.com</code>. Vous pouvez la remplacer par celle de SiliconFlow (<code>https://api.siliconflow.cn</code>) pour profiter de l'offre gratuite.
-            </p>
-          </div>
-
-          {deepseekKey && (
-            <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.78rem', color: '#00BA7C' }}>✓ Clé DeepSeek configurée — {deepseekKey.slice(0, 10)}...</span>
-              <span style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem', borderRadius: '99px', background: 'rgba(0,186,124,0.12)', color: '#00BA7C', fontWeight: 600 }}>DeepSeek disponible 🚀</span>
-            </div>
-          )}
-        </div>
-
-
-
-        {/* ── Branding / Identity ── */}
-        <div className="col-span-12 glass-panel" style={{ display: activeTab === 'general' ? 'block' : 'none' }}>
-          <h3 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            🎨 Identité, Branding & Facebook Pixel
-          </h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-            Ces informations configurent l'identité visuelle de votre plateforme, de vos exports PDF et le Pixel de suivi publicitaire.
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Nom du Professeur</label>
-              <input className="input-control" placeholder="Prof. Ahmed Benali" value={profName} onChange={e => setProfName(e.target.value)} />
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Téléphone / WhatsApp</label>
-              <input className="input-control" placeholder="+212 6XX XXX XXX" value={profPhone} onChange={e => setProfPhone(e.target.value)} />
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Site web / URL QR</label>
-              <input className="input-control" placeholder="www.lconq.ma" value={profSite} onChange={e => setProfSite(e.target.value)} />
-            </div>
-          </div>
-          <div style={{ marginTop: '1rem', borderTop: '1px dashed var(--border)', paddingTop: '1rem', marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.45rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>ID du Pixel Facebook (Facebook Pixel ID)</label>
-            <input 
-              type="text" 
-              className="input-control" 
-              placeholder="Ex: 123456789012345" 
-              value={fbPixelId} 
-              onChange={e => setFbPixelId(e.target.value)} 
-              style={{ fontFamily: 'monospace', maxWidth: '380px' }}
-            />
-            <p style={{ marginTop: '0.35rem', fontSize: '0.73rem', color: 'var(--text-subtle)', lineHeight: 1.3 }}>
-              💡 Permet de suivre les visites et les conversions de vos étudiants (ex: le trafic d'inscription) pour optimiser vos campagnes publicitaires Facebook Ads.
-            </p>
-          </div>
+         /* Timetable Styling */
+          .timetable-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 2px;
+            font-size: 10px;
+            position: relative;
+          }
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem', marginTop: '1rem', borderTop: '1px dashed var(--border)', paddingTop: '1rem' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Banque (Virement/Cash)</label>
-              <input className="input-control" placeholder="CIH Bank (Maroc)" value={bankName} onChange={e => setBankName(e.target.value)} />
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>RIB du Compte</label>
-              <input className="input-control" placeholder="230 780 ..." value={bankRIB} onChange={e => setBankRIB(e.target.value)} style={{ fontFamily: 'monospace' }} />
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Bénéficiaire</label>
-              <input className="input-control" placeholder="L'CONQ SARL" value={bankBeneficiary} onChange={e => setBankBeneficiary(e.target.value)} />
-            </div>
+          .timetable-hdr {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            padding: 0.45rem 0.35rem;
+            text-align: center;
+            color: #09090b !important;
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            font-weight: 900 !important;
+            font-size: 0.72rem;
+            border-bottom: 0.5px solid var(--border);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          }
+          body.dark-theme .timetable-hdr {
+            background: rgba(17, 17, 21, 0.85) !important;
+            color: #fff !important;
+          }
+          
+          .timetable-top-left-hdr {
+            position: sticky;
+            top: 0;
+            left: 0;
+            z-index: 6;
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: #09090b !important;
+            font-weight: 900 !important;
+            font-size: 0.72rem;
+            border-bottom: 0.5px solid var(--border);
+            border-right: 0.5px solid var(--border);
+            text-align: center;
+          }
+          body.dark-theme .timetable-top-left-hdr {
+            background: rgba(17, 17, 21, 0.95) !important;
+            color: #fff !important;
+          }
+
+          .timetable-time-cell {
+            position: sticky;
+            left: 0;
+            z-index: 4;
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-right: 0.5px solid var(--border);
+            color: #09090b !important;
+            font-weight: 900 !important;
+            font-size: 0.72rem;
+            white-space: nowrap;
+            text-align: center;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.02);
+            padding: 0.45rem 0.35rem;
+            border-radius: 6px;
+          }
+          body.dark-theme .timetable-time-cell {
+            background: rgba(24, 24, 30, 0.9) !important;
+            color: #fff !important;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.2);
+          }
+
+          .timetable-slot-cell {
+            vertical-align: middle;
+            min-width: 95px;
+          }
+          
+          .timetable-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            padding: 0.25rem 0.35rem;
+            border-radius: 8px;
+            background: var(--bg-card);
+            border: 0.5px solid var(--border);
+            transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+            position: relative;
+            min-height: 38px;
+            justify-content: center;
+          }
+          
+          .timetable-card:hover {
+            transform: translateY(-1px);
+            border-color: var(--border-hover);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+          }
+
+          .timetable-card.free {
+            border: 0.5px dashed var(--border);
+            background: transparent;
+            opacity: 0.4;
+          }
+          .timetable-card.free:hover {
+            opacity: 1;
+            border-style: solid;
+            border-color: var(--violet);
+            background: var(--bg-hover);
+          }
+
+          .timetable-card.active {
+            border: 0.5px solid var(--violet);
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.06) 0%, rgba(79, 70, 229, 0.01) 100%) !important;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.04);
+          }
+          body.dark-theme .timetable-card.active {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0.02) 100%) !important;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.04);
+          }
+
+          .timetable-select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 0.5px solid var(--border);
+            border-radius: 4px;
+            padding: 0.2rem 0.3rem;
+            font-size: 9px;
+            font-weight: 800;
+            color: var(--text-main);
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s ease;
+          }
+          
+          .timetable-free-hover-trigger {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+          }
+          .timetable-plus-icon {
+            color: var(--text-muted);
+            opacity: 0.6;
+            transition: all 0.2s;
+          }
+          .timetable-card.free:hover .timetable-plus-icon {
+            opacity: 0;
+          }
+          
+          .timetable-select-free {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+          }
+          .timetable-card.free:hover .timetable-select-free {
+            opacity: 1;
+            padding: 0.25rem 0.35rem;
+            font-size: 9px;
+            font-weight: 800;
+            color: var(--text-main);
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 0.5px solid var(--violet);
+          }
+
+          .timetable-input-container {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: rgba(255, 255, 255, 0.01);
+            border: 0.5px solid var(--border);
+            border-radius: 4px;
+            padding: 0.15rem 0.3rem;
+            transition: all 0.2s ease;
+          }
+
+          .timetable-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 9px;
+            color: var(--text-main);
+            padding: 0;
+            margin: 0;
+          }
+
+          .timetable-delete-btn {
+            position: absolute;
+            top: 0.2rem;
+            right: 0.2rem;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(239, 68, 68, 0.08);
+            color: var(--danger);
+            border: 0.5px solid rgba(239, 68, 68, 0.12);
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.2s ease;
+            z-index: 10;
+          }
+          .timetable-card:hover .timetable-delete-btn {
+            opacity: 1;
+          }
+          .timetable-delete-btn:hover {
+            background: var(--danger);
+            color: #fff;
+          }
+
+          /* Subtabs bar (Timetable/Holidays/Style) - Segmented Control */
+          .logbook-subtabs-bar {
+            display: inline-flex;
+            gap: 2px;
+            padding: 0.25rem;
+            background: rgba(0, 0, 0, 0.03) !important;
+            border: 0.5px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 1.75rem;
+          }
+          body.dark-theme .logbook-subtabs-bar {
+            background: rgba(255, 255, 255, 0.02) !important;
+          }
+
+          .logbook-subtab-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.45rem 1rem;
+            border-radius: 9px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-muted) !important;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            background: transparent;
+          }
+          
+          .logbook-subtab-btn:hover {
+            color: var(--text-main) !important;
+            background: rgba(0, 0, 0, 0.01);
+          }
+          body.dark-theme .logbook-subtab-btn:hover {
+            background: rgba(255, 255, 255, 0.01);
+          }
+          
+          .logbook-subtab-btn.active {
+            color: #09090b !important;
+            background: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+          }
+          body.dark-theme .logbook-subtab-btn.active {
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+          }
+          
+          body.light-theme .logbook-subtabs-bar {
+            background: rgba(0, 0, 0, 0.03) !important;
+            border-color: rgba(0, 0, 0, 0.06) !important;
+          }
+          body.light-theme .logbook-subtab-btn.active {
+            color: #09090b !important;
+            background: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+          }
+
+          /* Credit Card Style */
+         .credit-card-preview {
+           background: linear-gradient(135deg, #101014 0%, #1e1b4b 100%);
+           border-radius: 16px;
+           padding: 1.25rem;
+           color: #fff;
+           position: relative;
+           overflow: hidden;
+           box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+           border: 0.5px solid rgba(255, 255, 255, 0.1);
+           aspect-ratio: 1.75 / 1;
+           display: flex;
+           flex-direction: column;
+           justify-content: space-between;
+         }
+         body.light-theme .credit-card-preview {
+           background: linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%);
+           box-shadow: 0 10px 25px rgba(79, 70, 229, 0.15);
+           border-color: rgba(255, 255, 255, 0.2);
+         }
+         .card-chip {
+           width: 32px;
+           height: 24px;
+           background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+           border-radius: 4px;
+           position: relative;
+         }
+         .card-bank-name {
+           font-size: 0.72rem;
+           font-weight: 800;
+           letter-spacing: 0.05em;
+           text-transform: uppercase;
+           opacity: 0.85;
+           position: absolute;
+           top: 1.25rem;
+           right: 1.25rem;
+         }
+         .card-rib-number {
+           font-family: 'Courier New', monospace;
+           font-size: 0.82rem;
+           font-weight: bold;
+           letter-spacing: 0.05em;
+           margin: 1.25rem 0 0.5rem 0;
+           text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+         }
+         .card-holder-label {
+           font-size: 0.55rem;
+           text-transform: uppercase;
+           letter-spacing: 0.1em;
+           opacity: 0.6;
+           margin-bottom: 0.1rem;
+         }
+         .card-holder-name {
+           font-size: 0.82rem;
+           font-weight: 800;
+           letter-spacing: 0.02em;
+           text-transform: uppercase;
+         }
+
+         /* OMR control card styling */
+         .omr-control-card {
+           background: var(--bg-glass);
+           border: 0.5px solid var(--border);
+           border-radius: 16px;
+           padding: 1rem 1.25rem;
+           min-width: 300px;
+           position: relative;
+           box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+         }
+         .omr-status-indicator {
+           width: 8px; height: 8px; border-radius: 50%;
+           background: var(--border);
+           transition: all 0.3s;
+         }
+         .omr-status-indicator.active {
+           background: var(--emerald);
+           box-shadow: 0 0 8px var(--emerald);
+         }
+         .omr-feedback-toast {
+           position: absolute;
+           bottom: -24px; left: 50%; transform: translateX(-50%);
+           background: var(--emerald);
+           color: #fff; font-size: 10px; font-weight: 800;
+           padding: 0.2rem 0.6rem; border-radius: 4px;
+           box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+           animation: slideUpFade 0.2s ease-out;
+         }
+         @keyframes slideUpFade {
+           from { transform: translate(-50%, 4px); opacity: 0; }
+           to { transform: translate(-50%, 0); opacity: 1; }
+         }
+      `}</style>
+
+      {/* Header Panel */}
+      <div className="flex justify-between items-center flex-wrap gap-4 pb-6 border-b border-[var(--border)]">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[var(--violet-soft)] border border-[var(--violet)] flex items-center justify-center text-[var(--violet)]">
+            <Settings size={20} />
           </div>
-          <button onClick={saveBranding} className="btn"
-            style={{ background: brandSaved ? 'linear-gradient(135deg,var(--emerald),#34d399)' : undefined, boxShadow: brandSaved ? '0 4px 16px rgba(16,185,129,0.35)' : undefined, transition: 'all 0.3s' }}>
-            {brandSaved ? <><CheckCircle2 size={16} /> Sauvegardé !</> : 'Sauvegarder l\'identité'}
-          </button>
+          <div>
+            <h1 className="text-2xl font-black tracking-tight text-[var(--text-main)]">Paramètres</h1>
+            <p className="text-sm text-[var(--text-muted)]">Ajustez et modifiez la configuration globale de Gima.</p>
+          </div>
         </div>
+        <div className="flex gap-2">
+          <div className="flex flex-col items-center px-4 py-2 bg-[var(--bg-card)] border border-[var(--border)] rounded-xl min-w-[75px]">
+            <span className="text-lg font-black text-[var(--text-main)]">{(classes || []).length}</span>
+            <span className="text-[10px] text-[var(--text-subtle)] font-bold uppercase tracking-wider">Classes</span>
+          </div>
+        </div>
+      </div>
 
-        {/* ── OMR Scanner Settings ── */}
-        <div className="col-span-12 glass-panel" style={{ display: activeTab === 'general' ? 'block' : 'none' }}>
-          <h3 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Camera size={20} /> Paramètres du Scanner OMR
-          </h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-            Configurez le comportement du scanner de feuilles de réponses OMR.
-          </p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.8rem 1rem', borderRadius: 12, background: 'var(--bg-glass)', border: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <Camera size={18} style={{ color: 'var(--violet)' }} />
-                <div>
-                  <p style={{ fontWeight: 700, fontSize: '0.88rem', margin: 0 }}>Tir direct par caméra (Tansouir Mobachir)</p>
-                  <p style={{ fontSize: '0.73rem', color: 'var(--text-subtle)', margin: 0 }}>Activer l'option de capture en direct avec la caméra pour scanner les feuilles de réponses</p>
-                </div>
-              </div>
+      <div className="settings-layout">
+        
+        {/* Navigation Horizontal Tab Bar */}
+        <div className="settings-tab-bar" ref={tabBarRef} style={{ position: 'relative' }}>
+          <div 
+            className="tab-active-indicator"
+            style={{
+              left: `${indicatorStyle.left}px`,
+              width: `${indicatorStyle.width}px`,
+              top: `${indicatorStyle.top}px`,
+              height: `${indicatorStyle.height}px`,
+              opacity: indicatorStyle.opacity
+            }}
+          />
+          {[
+            { id: 'general', label: 'Branding & Général', desc: 'Identité, RIB, Pixel FB', icon: Sliders },
+            { id: 'whatsapp', label: 'WhatsApp', desc: 'Bouton de support direct', icon: MessageCircle },
+            { id: 'pdf', label: 'Modèles PDF', desc: 'LaTeX, styles & polices', icon: FileText },
+            { id: 'flashcards', label: 'Flashcards', desc: 'Révélation & animations', icon: Layers },
+            { id: 'apis', label: 'Clés API & IA', desc: 'Claude, Gemini, OpenAI', icon: KeyRound },
+            { id: 'logbook', label: 'Cahier de Textes', desc: 'Emploi du temps & vacances', icon: BookOpen },
+          ].map(tab => {
+            const isActive = activeTab === tab.id;
+            return (
               <button
-                onClick={async () => {
-                  const newVal = !scannerDirectCapture;
-                  setScannerDirectCapture(newVal);
-                  await updateOmrScannerSettingsConfig({ scannerDirectCapture: newVal });
-                  setScannerSaved(true);
-                  setTimeout(() => setScannerSaved(false), 2000);
-                }}
-                style={{
-                  width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer',
-                  background: scannerDirectCapture ? 'var(--violet)' : 'var(--bg-card)',
-                  position: 'relative', transition: 'background 0.2s',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-                }}
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`modern-tab-btn ${isActive ? 'active' : ''}`}
               >
-                <div style={{
-                  width: 20, height: 20, borderRadius: '50%', background: '#fff',
-                  position: 'absolute', top: 3, transition: 'left 0.2s',
-                  left: scannerDirectCapture ? 25 : 3,
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                }} />
+                <div className="tab-badge">
+                  <tab.icon size={15} />
+                </div>
+                <div className="tab-text">
+                  <span className="tab-title">{tab.label}</span>
+                  <span className="tab-desc">{tab.desc}</span>
+                </div>
               </button>
-            </div>
-            
-            {scannerSaved && (
-              <p style={{ fontSize: '0.78rem', color: 'var(--emerald)', margin: '0.2rem 0 0 0', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                <CheckCircle2 size={14} /> Modifications enregistrées avec succès !
-              </p>
-            )}
-          </div>
+            );
+          })}
         </div>
 
-        {/* ── Landing Page Editor ── */}
-        <div className="col-span-12 glass-panel" style={{ display: activeTab === 'landing_editor' ? 'block' : 'none', direction: 'rtl', textAlign: 'right' }}>
-          <h3 style={{ marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Image size={20} /> تعديل الصفحة المبيعية باللغة العربية (Sales Page Editor)
-          </h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.88rem' }}>
-            يمكنك هنا تعديل محتويات الصفحة المبيعية باللغة العربية، تغيير النصوص والروابط وإضافة أو حذف الخصائص.
-          </p>
+        {/* Content Column */}
+        <div className="settings-content">
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {/* Hero Inputs */}
-            <div style={{ background: 'var(--bg-glass)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-              <h4 style={{ margin: '0 0 1rem 0', fontWeight: 800, color: 'var(--violet)' }}>قسم العنوان الرئيسي (Hero Section)</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)' }}>شارة الإعلان (Hero Badge)</label>
-                  <input type="text" className="input-control" value={heroBadgeAr} onChange={e => setHeroBadgeAr(e.target.value)} />
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)' }}>العنوان الجزء 1</label>
-                    <input type="text" className="input-control" value={heroTitlePart1Ar} onChange={e => setHeroTitlePart1Ar(e.target.value)} />
+          {/* ── WHATSAPP TAB ── */}
+          {activeTab === 'whatsapp' && (
+            <div className="bento-card">
+              <h2 className="settings-title">
+                <MessageCircle size={22} className="text-[#25D366]" /> Support WhatsApp
+              </h2>
+              <p className="settings-desc">
+                Activez et configurez un bouton WhatsApp flottant pour permettre aux élèves de vous contacter directement pour du support ou des questions.
+              </p>
+
+              <div className="flex flex-col gap-6">
+                
+                {/* Toggle Row */}
+                <div className="modern-switch-row">
+                  <div className="flex items-center gap-3">
+                    <MessageCircle size={20} className="text-[#25D366]" />
+                    <div>
+                      <p className="font-bold text-sm text-[var(--text-main)] m-0">Afficher le bouton WhatsApp</p>
+                      <p className="text-xs text-[var(--text-subtle)] m-0 mt-0.5">Rendre le bouton flottant visible sur l&apos;ensemble de la plateforme</p>
+                    </div>
                   </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)' }}>العنوان الجزء 2 (ملون)</label>
-                    <input type="text" className="input-control" value={heroTitlePart2Ar} onChange={e => setHeroTitlePart2Ar(e.target.value)} />
+                  <button
+                    type="button"
+                    onClick={() => setWaEnabled(v => !v)}
+                    className={`modern-switch ${waEnabled ? 'active' : ''}`}
+                  >
+                    <div className="modern-switch-knob" />
+                  </button>
+                </div>
+
+                {/* Grid Inputs */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ opacity: waEnabled ? 1 : 0.45, transition: 'opacity 0.2s' }}>
+                  
+                  {/* Phone */}
+                  <div className="settings-field">
+                    <label className="settings-label">Numéro de Téléphone WhatsApp</label>
+                    <input
+                      type="text"
+                      dir="auto"
+                      disabled={!waEnabled}
+                      className="input-control"
+                      placeholder={profPhone ? `${profPhone} (Général)` : "+212 600-000000"}
+                      value={waPhone}
+                      onChange={e => setWaPhone(e.target.value)}
+                    />
+                    <p className="text-[11px] text-[var(--text-subtle)] leading-snug">
+                      Laissez vide pour utiliser le numéro général de l&apos;identité : <strong>{profPhone || 'Non configuré'}</strong>.
+                    </p>
                   </div>
+
+                  {/* Tooltip */}
+                  <div className="settings-field">
+                    <label className="settings-label">Texte de l&apos;infobulle (Tooltip)</label>
+                    <input
+                      type="text"
+                      dir="auto"
+                      disabled={!waEnabled}
+                      className="input-control"
+                      placeholder="Besoin d'aide ?"
+                      value={waTooltip}
+                      onChange={e => setWaTooltip(e.target.value)}
+                    />
+                    <p className="text-[11px] text-[var(--text-subtle)] leading-snug">
+                      Texte court affiché à côté du bouton au survol (ex: "Besoin d'aide ?").
+                    </p>
+                  </div>
+
+                  {/* Position */}
+                  <div className="settings-field col-span-1 md:col-span-2">
+                    <label className="settings-label">Position sur l&apos;écran</label>
+                    <select
+                      disabled={!waEnabled}
+                      value={waPosition}
+                      onChange={e => setWaPosition(e.target.value)}
+                      className="input-control"
+                    >
+                      <option value="right">En bas à Droite (Recommandé)</option>
+                      <option value="left">En bas à Gauche</option>
+                    </select>
+                  </div>
+
                 </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)' }}>الوصف الفرعي (Subtitle)</label>
-                  <textarea className="input-control" rows={3} value={heroSubtitleAr} onChange={e => setHeroSubtitleAr(e.target.value)} style={{ fontFamily: 'inherit', resize: 'vertical' }} />
+
+                {/* Message */}
+                <div className="settings-field" style={{ opacity: waEnabled ? 1 : 0.45, transition: 'opacity 0.2s' }}>
+                  <label className="settings-label">Message prédéfini par défaut</label>
+                  <textarea
+                    disabled={!waEnabled}
+                    dir="auto"
+                    className="input-control"
+                    placeholder="Bonjour, j'ai une question concernant la plateforme Gima."
+                    rows={3}
+                    value={waMessage}
+                    onChange={e => setWaMessage(e.target.value)}
+                    style={{ resize: 'vertical' }}
+                  />
                 </div>
+
               </div>
-            </div>
 
-            {/* Features List Section */}
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <h4 style={{ margin: 0, fontWeight: 800, color: 'var(--violet)' }}>خصائص المنصة (Features & Screenshots)</h4>
+              {/* Action Save */}
+              <div className="flex justify-between items-center gap-4 mt-8 pt-6 border-t border-[var(--border)]">
+                <div>
+                  {waSaved && (
+                    <div className="save-badge">
+                      <CheckCircle2 size={14} /> Enregistré !
+                    </div>
+                  )}
+                </div>
                 <button
                   type="button"
-                  className="btn-outline"
-                  onClick={() => setFeaturesAr([...featuresAr, { title: "خاصية جديدة", desc: "وصف الخاصية الجديدة هنا بالتفصيل...", image: "/study_mockup.png", url: "lconq.ma/new-route", ctaText: "سجل وجرب الآن" }])}
-                  style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  onClick={saveWhatsAppSettings}
+                  className="btn"
+                  style={{ padding: '0.75rem 2rem' }}
                 >
-                  <Plus size={14} /> إضافة خاصية
+                  Enregistrer
                 </button>
               </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {featuresAr.map((feat, index) => (
-                  <div key={index} style={{ background: 'var(--bg-glass)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border)', position: 'relative' }}>
-                    
-                    {/* Delete & Reorder Buttons */}
-                    <div style={{ position: 'absolute', top: '1rem', left: '1rem', display: 'flex', gap: '0.35rem' }}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (index > 0) {
-                            const newArr = [...featuresAr];
-                            const temp = newArr[index - 1];
-                            newArr[index - 1] = newArr[index];
-                            newArr[index] = temp;
-                            setFeaturesAr(newArr);
-                          }
-                        }}
-                        disabled={index === 0}
-                        style={{ background: 'transparent', border: '1px solid var(--border)', padding: '4px 6px', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-main)', opacity: index === 0 ? 0.3 : 1 }}
-                        title="Move Up"
-                      >
-                        ▲
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (index < featuresAr.length - 1) {
-                            const newArr = [...featuresAr];
-                            const temp = newArr[index + 1];
-                            newArr[index + 1] = newArr[index];
-                            newArr[index] = temp;
-                            setFeaturesAr(newArr);
-                          }
-                        }}
-                        disabled={index === featuresAr.length - 1}
-                        style={{ background: 'transparent', border: '1px solid var(--border)', padding: '4px 6px', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-main)', opacity: index === featuresAr.length - 1 ? 0.3 : 1 }}
-                        title="Move Down"
-                      >
-                        ▼
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newArr = featuresAr.filter((_, i) => i !== index);
-                          setFeaturesAr(newArr);
-                        }}
-                        style={{ background: 'transparent', border: '1px solid rgba(239,68,68,0.3)', padding: '4px 6px', borderRadius: '4px', cursor: 'pointer', color: 'var(--rose)' }}
-                        title="Supprimer"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-
-                    <h5 style={{ margin: '0 0 1rem 0', fontWeight: 800 }}>الخاصية #{index + 1}: {feat.title}</h5>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div>
-                          <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>عنوان الخاصية</label>
-                          <input type="text" className="input-control" value={feat.title} onChange={e => {
-                            const newArr = [...featuresAr];
-                            newArr[index].title = e.target.value;
-                            setFeaturesAr(newArr);
-                          }} />
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>نص زر التسجيل المرافق</label>
-                          <input type="text" className="input-control" value={feat.ctaText} onChange={e => {
-                            const newArr = [...featuresAr];
-                            newArr[index].ctaText = e.target.value;
-                            setFeaturesAr(newArr);
-                          }} />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>الوصف</label>
-                        <textarea className="input-control" rows={2} value={feat.desc} onChange={e => {
-                          const newArr = [...featuresAr];
-                          newArr[index].desc = e.target.value;
-                          setFeaturesAr(newArr);
-                        }} style={{ fontFamily: 'inherit', resize: 'vertical' }} />
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div>
-                          <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>رابط المحاكاة (URL)</label>
-                          <input type="text" className="input-control" value={feat.url || ''} onChange={e => {
-                            const newArr = [...featuresAr];
-                            newArr[index].url = e.target.value;
-                            setFeaturesAr(newArr);
-                          }} />
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>صورة المعاينة (Screenshot URL)</label>
-                          <input type="text" className="input-control" value={feat.image} onChange={e => {
-                            const newArr = [...featuresAr];
-                            newArr[index].image = e.target.value;
-                            setFeaturesAr(newArr);
-                          }} />
-                          <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.3rem' }}>
-                            <span onClick={() => {
-                              const newArr = [...featuresAr];
-                              newArr[index].image = "/study_mockup.png";
-                              setFeaturesAr(newArr);
-                            }} style={{ fontSize: '0.65rem', padding: '2px 6px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-main)' }}>SRS Card</span>
-                            <span onClick={() => {
-                              const newArr = [...featuresAr];
-                              newArr[index].image = "/dashboard_mockup.png";
-                              setFeaturesAr(newArr);
-                            }} style={{ fontSize: '0.65rem', padding: '2px 6px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-main)' }}>Dashboard</span>
-                            <span onClick={() => {
-                              const newArr = [...featuresAr];
-                              newArr[index].image = "/ranking_mockup.png";
-                              setFeaturesAr(newArr);
-                            }} style={{ fontSize: '0.65rem', padding: '2px 6px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-main)' }}>Leaderboard</span>
-                          </div>
-
-                          {/* Custom File Upload Uploader */}
-                          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.5rem' }}>
-                            <input 
-                              type="file" 
-                              accept="image/*" 
-                              onChange={e => handleImageUpload(e, index)} 
-                              style={{ display: 'none' }} 
-                              id={`file-upload-${index}`}
-                            />
-                            <label 
-                              htmlFor={`file-upload-${index}`} 
-                              className="btn-outline" 
-                              style={{ 
-                                padding: '4px 8px', 
-                                fontSize: '0.72rem', 
-                                display: 'inline-flex', 
-                                alignItems: 'center', 
-                                gap: '4px', 
-                                cursor: 'pointer',
-                                margin: 0
-                              }}
-                            >
-                              <Camera size={12} />
-                              {uploadingFeat[index] ? 'جاري الرفع...' : 'رفع صورة مخصصة'}
-                            </label>
-                            {uploadingFeat[index] && (
-                              <span style={{ fontSize: '0.7rem', color: 'var(--violet)' }}>جاري الرفع...</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                    </div>
-
-                  </div>
-                ))}
-              </div>
             </div>
+          )}
 
-            {/* Section Visibility toggles */}
-            <div style={{ background: 'var(--bg-glass)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-              <h4 style={{ margin: '0 0 1rem 0', fontWeight: 800, color: 'var(--violet)' }}>إعدادات ظهور أقسام الصفحة (Section Visibility Settings)</h4>
-              <p style={{ color: 'var(--text-subtle)', fontSize: '0.8rem', marginBottom: '1.25rem' }}>
-                قم بتنشيط أو إخفاء الأقسام الثانوية في الصفحة المبيعية باللغة العربية للتحكم الكامل في طول الصفحة وتوجيه تركيز الزوار:
+          {/* ── PDF TAB ── */}
+          {activeTab === 'pdf' && (
+            <div className="bento-card">
+              <h2 className="settings-title">
+                <FileText size={22} className="text-[var(--violet)]" /> Style & Impression PDF
+              </h2>
+              <p className="settings-desc">
+                Configurez l&apos;affichage et la structure visuelle de vos documents PDF générés (sujets, corrigés, e-books) pour un rendu professionnel de type LaTeX.
               </p>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                  <div>
-                    <strong style={{ display: 'block', fontSize: '0.88rem' }}>مقارنة الباك والكونكور</strong>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--text-subtle)' }}>قسم المقارنة والـ Pain Points</span>
+
+              <div className="flex flex-col gap-6">
+                
+                {/* Selectors Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  
+                  {/* Margins */}
+                  <div className="settings-field">
+                    <label className="settings-label">Marges de page</label>
+                    <select
+                      value={pdfPageMargins}
+                      onChange={e => setPdfPageMargins(e.target.value)}
+                      className="input-control"
+                    >
+                      <option value="standard">Standard (Marge équilibrée - A4 classique)</option>
+                      <option value="compact">Compacte (Étroite pour économiser du papier)</option>
+                      <option value="wide">Large (Aéré - type livre d&apos;art)</option>
+                    </select>
                   </div>
-                  <input 
-                    type="checkbox" 
-                    checked={showPainPoints} 
-                    onChange={e => setShowPainPoints(e.target.checked)} 
-                    style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--violet)' }} 
-                  />
+
+                  {/* Font Size */}
+                  <div className="settings-field">
+                    <label className="settings-label">Taille de police de base</label>
+                    <select
+                      value={pdfFontSize}
+                      onChange={e => setPdfFontSize(e.target.value)}
+                      className="input-control"
+                    >
+                      <option value="10pt">Petit (10pt)</option>
+                      <option value="11pt">Normal (11pt - conseillé)</option>
+                      <option value="12pt">Grand (12pt)</option>
+                    </select>
+                  </div>
+
+                  {/* Font Family */}
+                  <div className="settings-field">
+                    <label className="settings-label">Police typographique</label>
+                    <select
+                      value={pdfFontFamily}
+                      onChange={e => setPdfFontFamily(e.target.value)}
+                      className="input-control"
+                    >
+                      <option value="Computer Modern Serif">Computer Modern Serif (Scientifique LaTeX)</option>
+                      <option value="STIX Two Text">STIX Two Text (Serif classique)</option>
+                      <option value="Times New Roman">Times New Roman (Format Examen)</option>
+                      <option value="Inter">Inter (Sans-Serif épurée)</option>
+                    </select>
+                  </div>
+
+                  {/* Template Style */}
+                  <div className="settings-field">
+                    <label className="settings-label">Modèle de mise en page (Template)</label>
+                    <select
+                      value={pdfTemplateStyle}
+                      onChange={e => setPdfTemplateStyle(e.target.value)}
+                      className="input-control"
+                    >
+                      <option value="classic_latex">Classique LaTeX (Sobre & Académique)</option>
+                      <option value="modern_minimalist">Moderne Épuré (Minimaliste contemporain)</option>
+                      <option value="premium_royal">Royal Institutionnel (Ruban & En-tête officiel)</option>
+                      <option value="compact_eco">Économique & Compact (Maximiser l&apos;espace)</option>
+                      <option value="super_eco">Super Économique (Sans en-tête, sans matière, avec numéro compact)</option>
+                    </select>
+                  </div>
+
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                  <div>
-                    <strong style={{ display: 'block', fontSize: '0.88rem' }}>طرق الدفع المحلية</strong>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--text-subtle)' }}>معلومات الحسابات البنكية والواتساب</span>
+                {/* Sauts de page Toggle */}
+                <div className="modern-switch-row">
+                  <div className="flex items-center gap-3">
+                    <FileText size={18} className="text-[var(--violet)]" />
+                    <div>
+                      <p className="font-bold text-sm text-[var(--text-main)] m-0">Sauts de page intelligents</p>
+                      <p className="text-xs text-[var(--text-subtle)] m-0 mt-0.5">Éviter de couper une question ou ses propositions sur deux pages distinctes</p>
+                    </div>
                   </div>
-                  <input 
-                    type="checkbox" 
-                    checked={showPayments} 
-                    onChange={e => setShowPayments(e.target.checked)} 
-                    style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--violet)' }} 
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setPdfAvoidPageBreaks(v => !v)}
+                    className={`modern-switch ${pdfAvoidPageBreaks ? 'active' : ''}`}
+                  >
+                    <div className="modern-switch-knob" />
+                  </button>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                  <div>
-                    <strong style={{ display: 'block', fontSize: '0.88rem' }}>باقات الاشتراك والأسعار</strong>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--text-subtle)' }}>جدول الباقات والاشتراكات</span>
+                {/* Colors Preserving Toggle */}
+                <div className="modern-switch-row">
+                  <div className="flex items-center gap-3">
+                    <Sparkles size={18} className="text-[var(--emerald)]" />
+                    <div>
+                      <p className="font-bold text-sm text-[var(--text-main)] m-0">Impression couleur & arrière-plans</p>
+                      <p className="text-xs text-[var(--text-subtle)] m-0 mt-0.5">Forcer la préservation des couleurs de fond, des badges et bulles OMR</p>
+                    </div>
                   </div>
-                  <input 
-                    type="checkbox" 
-                    checked={showPricing} 
-                    onChange={e => setShowPricing(e.target.checked)} 
-                    style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--violet)' }} 
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setPdfForcePrintColors(v => !v)}
+                    className={`modern-switch ${pdfForcePrintColors ? 'active' : ''}`}
+                  >
+                    <div className="modern-switch-knob" />
+                  </button>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                  <div>
-                    <strong style={{ display: 'block', fontSize: '0.88rem' }}>آراء وقصص نجاح الطلبة</strong>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--text-subtle)' }}>آراء المقبولين في كليات النخبة</span>
+                {/* Show Sidebar Toggle */}
+                <div className="modern-switch-row">
+                  <div className="flex items-center gap-3">
+                    <FileText size={18} className="text-[var(--violet)]" />
+                    <div>
+                      <p className="font-bold text-sm text-[var(--text-main)] m-0">Bandeau latéral des Écoles (Sidebar)</p>
+                      <p className="text-xs text-[var(--text-subtle)] m-0 mt-0.5">Afficher la bande latérale verticale des écoles sur les documents PDF générés</p>
+                    </div>
                   </div>
-                  <input 
-                    type="checkbox" 
-                    checked={showTestimonials} 
-                    onChange={e => setShowTestimonials(e.target.checked)} 
-                    style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--violet)' }} 
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setPdfShowSidebar(v => !v)}
+                    className={`modern-switch ${pdfShowSidebar ? 'active' : ''}`}
+                  >
+                    <div className="modern-switch-knob" />
+                  </button>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                  <div>
-                    <strong style={{ display: 'block', fontSize: '0.88rem' }}>الأسئلة الشائعة (FAQ)</strong>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--text-subtle)' }}>الأسئلة المطروحة بشكل متكرر</span>
-                  </div>
-                  <input 
-                    type="checkbox" 
-                    checked={showFaqs} 
-                    onChange={e => setShowFaqs(e.target.checked)} 
-                    style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--violet)' }} 
-                  />
+              </div>
+
+              {/* Action Save */}
+              <div className="flex justify-between items-center gap-4 mt-8 pt-6 border-t border-[var(--border)]">
+                <div>
+                  {pdfSaved && (
+                    <div className="save-badge">
+                      <CheckCircle2 size={14} /> Enregistré !
+                    </div>
+                  )}
                 </div>
+                <button
+                  type="button"
+                  onClick={savePdfSettings}
+                  className="btn"
+                  style={{ padding: '0.75rem 2rem' }}
+                >
+                  Enregistrer
+                </button>
               </div>
             </div>
+          )}
 
-          </div>
+          {/* ── FLASHCARDS TAB ── */}
+          {activeTab === 'flashcards' && (
+            <div className="bento-card">
+              <h2 className="settings-title">
+                <Layers size={22} className="text-[var(--violet)]" /> Révélation & Animations Flashcards
+              </h2>
+              <p className="settings-desc">
+                Personnalisez le mode d&apos;affichage, l&apos;animation de retournement, les effets sonores et la typographie des flashcards de révision active.
+              </p>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
-            <button
-              onClick={saveLandingConfig}
-              className="btn"
-              style={{
-                padding: '0.75rem 2rem',
-                background: landingSaved ? 'linear-gradient(135deg,var(--emerald),#34d399)' : undefined,
-                boxShadow: landingSaved ? '0 4px 16px rgba(16,185,129,0.35)' : undefined,
-                transition: 'all 0.3s'
-              }}
-            >
-              {landingSaved ? <><CheckCircle2 size={16} /> تم الحفظ بنجاح !</> : 'حفظ التعديلات'}
-            </button>
-          </div>
-        </div>
+              <div className="flex flex-col gap-6">
+                
+                {/* Mode Select Grid */}
+                <div>
+                  <label className="settings-label mb-3">
+                    <Layers size={14} /> Mode de révélation de la réponse
+                  </label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {[
+                      { id: 'flip',    icon: '🔄', label: 'Retournement 3D',  desc: 'Animation de rotation 3D' },
+                      { id: 'fade',    icon: '✨', label: 'Fondu doux',       desc: 'Révélation progressive' },
+                      { id: 'instant', icon: '⚡', label: 'Révélation rapide', desc: 'Affichage instantané' },
+                    ].map(({ id, icon, label, desc }) => (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => { setCardReveal(id); if (id !== 'flip') setCardFlip(false); else setCardFlip(true); }}
+                        style={{
+                          padding: '1.25rem 1rem',
+                          borderRadius: 16,
+                          cursor: 'pointer',
+                          background: cardReveal === id ? 'var(--violet-soft)' : 'var(--bg-glass)',
+                          border: `1.5px solid ${cardReveal === id ? 'var(--violet)' : 'var(--border)'}`,
+                          textAlign: 'left',
+                          transition: 'all 0.2s',
+                          boxShadow: cardReveal === id ? '0 4px 15px -3px var(--violet-glow)' : 'none',
+                        }}
+                      >
+                        <span className="text-xl block mb-2">{icon}</span>
+                        <strong className="text-sm block text-[var(--text-main)] mb-1">{label}</strong>
+                        <span className="text-xs block text-[var(--text-subtle)] leading-normal">{desc}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
+                {/* Commutateurs */}
+                <div className="modern-switch-row" style={{ opacity: cardReveal === 'flip' ? 1 : 0.45 }}>
+                  <div className="flex items-center gap-3">
+                    <RefreshCw size={18} className="text-[var(--violet)]" />
+                    <div>
+                      <p className="font-bold text-sm text-[var(--text-main)] m-0">Animation de rotation 3D</p>
+                      <p className="text-xs text-[var(--text-subtle)] m-0 mt-0.5">Actif uniquement en mode Retournement 3D</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={cardReveal !== 'flip'}
+                    onClick={() => setCardFlip(v => !v)}
+                    className={`modern-switch ${cardFlip && cardReveal === 'flip' ? 'active' : ''}`}
+                  >
+                    <div className="modern-switch-knob" />
+                  </button>
+                </div>
 
-        {/* ── Subscription Plans Configuration ── */}
-        <div className="col-span-12 glass-panel" style={{ display: activeTab === 'subscriptions' ? 'block' : 'none' }}>
-          <h3 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Crown size={20} color="var(--warning)" /> Configuration des Offres d'Abonnement (Baqat)
-          </h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-            Gérez les offres d'abonnement disponibles pour les élèves, configurez leurs tarifs, durées et les écoles associées.
-          </p>
+                <div className="modern-switch-row">
+                  <div className="flex items-center gap-3">
+                    <MousePointerClick size={18} className="text-[var(--emerald)]" />
+                    <div>
+                      <p className="font-bold text-sm text-[var(--text-main)] m-0">Geste de glissement (Swipe)</p>
+                      <p className="text-xs text-[var(--text-subtle)] m-0 mt-0.5">Glisser vers la droite pour valider (Facile) ou la gauche (À revoir)</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCardSwipe(v => !v)}
+                    className={`modern-switch ${cardSwipe ? 'active' : ''}`}
+                  >
+                    <div className="modern-switch-knob" />
+                  </button>
+                </div>
 
-          {/* List of existing plans */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
-            {plans.map(plan => {
-              return (
-                <div key={plan.id} style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)', borderRadius: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  
-                  {/* Name, Price & Expiration row */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-                    <div style={{ flex: 1, minWidth: '200px' }}>
-                      <input 
-                        type="text" 
-                        value={plan.name} 
-                        onChange={e => updatePlan(plan.id, { name: e.target.value })}
-                        style={{ background: 'transparent', border: 'none', borderBottom: '1px dashed var(--border)', color: 'var(--text-main)', fontSize: '1rem', fontWeight: 800, width: '100%', outline: 'none', paddingBottom: '2px' }}
+                <div className="modern-switch-row">
+                  <div className="flex items-center gap-3">
+                    <Volume2 size={18} className="text-[var(--violet)]" />
+                    <div>
+                      <p className="font-bold text-sm text-[var(--text-main)] m-0">Effets sonores (Sons)</p>
+                      <p className="text-xs text-[var(--text-subtle)] m-0 mt-0.5">Jouer un signal sonore lors de la validation d&apos;une réponse</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCardSound(v => !v)}
+                    className={`modern-switch ${cardSound ? 'active' : ''}`}
+                  >
+                    <div className="modern-switch-knob" />
+                  </button>
+                </div>
+
+                {/* Typography Settings */}
+                <div className="border-t border-[var(--border)] pt-6 mt-2">
+                  <h4 className="text-sm font-black text-[var(--text-main)] mb-4 flex items-center gap-2">
+                    <Sliders size={14} /> Typographie des cartes de révision
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    
+                    <div className="settings-field">
+                      <label className="settings-label">Police typographique</label>
+                      <select value={cardFontFamily} onChange={e => setCardFontFamily(e.target.value)} className="input-control">
+                        <option value="Computer Modern Serif">Computer Modern Serif</option>
+                        <option value="STIX Two Text">STIX Two Text</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Inter">Inter Sans-Serif</option>
+                      </select>
+                    </div>
+
+                    <div className="settings-field">
+                      <label className="settings-label">Taille du texte</label>
+                      <select value={cardFontSize} onChange={e => setCardFontSize(e.target.value)} className="input-control">
+                        <option value="0.82rem">Petite (0.82rem)</option>
+                        <option value="0.9rem">Compacte (0.9rem)</option>
+                        <option value="1rem">Standard (1rem)</option>
+                        <option value="1.08rem">Grande (1.08rem)</option>
+                        <option value="1.18rem">Très grande (1.18rem)</option>
+                      </select>
+                    </div>
+
+                    <div className="settings-field">
+                      <label className="settings-label">Épaisseur Question</label>
+                      <select value={cardQuestionWeight} onChange={e => setCardQuestionWeight(e.target.value)} className="input-control">
+                        <option value="400">Normal (400)</option>
+                        <option value="500">Moyen (500)</option>
+                        <option value="600">Demi-gras (600)</option>
+                        <option value="700">Gras (700)</option>
+                      </select>
+                    </div>
+
+                    <div className="settings-field">
+                      <label className="settings-label">Épaisseur Options</label>
+                      <select value={cardOptionsWeight} onChange={e => setCardOptionsWeight(e.target.value)} className="input-control">
+                        <option value="400">Normal (400)</option>
+                        <option value="500">Moyen (500)</option>
+                        <option value="600">Demi-gras (600)</option>
+                        <option value="700">Gras (700)</option>
+                      </select>
+                    </div>
+
+                    <div className="settings-field">
+                      <label className="settings-label">Épaisseur Solution / Astuce</label>
+                      <select value={cardAstuceWeight} onChange={e => setCardAstuceWeight(e.target.value)} className="input-control">
+                        <option value="400">Normal (400)</option>
+                        <option value="500">Moyen (500)</option>
+                        <option value="600">Demi-gras (600)</option>
+                        <option value="700">Gras (700)</option>
+                      </select>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Action Save */}
+              <div className="flex justify-between items-center gap-4 mt-8 pt-6 border-t border-[var(--border)]">
+                <div>
+                  {cardSaved && (
+                    <div className="save-badge">
+                      <CheckCircle2 size={14} /> Enregistré !
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={saveCardSettings}
+                  className="btn"
+                  style={{ padding: '0.75rem 2rem' }}
+                >
+                  Enregistrer
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── APIS TAB ── */}
+          {activeTab === 'apis' && (
+            <div className="flex flex-col gap-8">
+              
+              {/* Info & Security Header Card */}
+              <div className="bento-card" style={{
+                background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, rgba(168, 85, 247, 0.06) 50%, rgba(236, 72, 153, 0.06) 100%)',
+                border: '1px solid rgba(139, 92, 246, 0.2)',
+                padding: '1.75rem',
+                borderRadius: '1.25rem',
+                position: 'relative',
+                overflow: 'hidden',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.05)'
+              }}>
+                <div style={{
+                  position: 'absolute', top: '-60px', right: '-60px', width: '180px', height: '180px',
+                  background: 'radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%)',
+                  filter: 'blur(40px)', pointerEvents: 'none'
+                }} />
+                
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <Sparkles size={20} className="text-[var(--violet)] animate-pulse" />
+                      <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
+                        Gestionnaire des Clés API & Modèles IA
+                      </h3>
+                    </div>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.6, maxWidth: '750px' }}>
+                      Connectez vos moteurs d&apos;intelligence artificielle favoris (Google Gemini, DeepSeek, Anthropic Claude, Groq et OpenAI). Toutes vos clés sont enregistrées <strong style={{ color: 'var(--emerald)' }}>localement dans votre navigateur (localStorage)</strong> avec confidentialité maximale.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap" style={{ background: 'var(--bg-glass)', padding: '0.65rem 1rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
+                    <ShieldCheck size={18} style={{ color: 'var(--emerald)' }} />
+                    <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-main)' }}>Stockage Sécurisé 100% Local</span>
+                  </div>
+                </div>
+
+                {/* Quick Access Portal Toolbar */}
+                <div className="mt-5 pt-4 border-t border-[var(--border)] flex items-center gap-2 flex-wrap">
+                  <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-subtle)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Globe size={14} /> Accès Direct aux Consoles :
+                  </span>
+                  <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ fontSize: '0.72rem', padding: '0.3rem 0.65rem', borderRadius: '8px', gap: '0.3rem', color: '#4285F4', borderColor: 'rgba(66, 133, 244, 0.3)' }}>
+                    Google AI Studio <ExternalLink size={12} />
+                  </a>
+                  <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ fontSize: '0.72rem', padding: '0.3rem 0.65rem', borderRadius: '8px', gap: '0.3rem', color: '#00BA7C', borderColor: 'rgba(0, 186, 124, 0.3)' }}>
+                    DeepSeek Console <ExternalLink size={12} />
+                  </a>
+                  <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ fontSize: '0.72rem', padding: '0.3rem 0.65rem', borderRadius: '8px', gap: '0.3rem', color: '#D97706', borderColor: 'rgba(217, 119, 6, 0.3)' }}>
+                    Anthropic Console <ExternalLink size={12} />
+                  </a>
+                  <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ fontSize: '0.72rem', padding: '0.3rem 0.65rem', borderRadius: '8px', gap: '0.3rem', color: '#F97316', borderColor: 'rgba(249, 115, 22, 0.3)' }}>
+                    Groq Cloud <ExternalLink size={12} />
+                  </a>
+                  <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ fontSize: '0.72rem', padding: '0.3rem 0.65rem', borderRadius: '8px', gap: '0.3rem', color: '#8B5CF6', borderColor: 'rgba(139, 92, 246, 0.3)' }}>
+                    OpenAI Console <ExternalLink size={12} />
+                  </a>
+                </div>
+              </div>
+
+              {/* Grid of AI Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                {/* 1. Google Gemini */}
+                <div className="bento-card" style={{
+                  display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '430px',
+                  background: 'rgba(255, 255, 255, 0.01)',
+                  backdropFilter: 'blur(12px)',
+                  border: geminiKey ? '1.5px solid rgba(66, 133, 244, 0.4)' : '1px solid var(--border)',
+                  boxShadow: geminiKey ? '0 8px 30px rgba(66, 133, 244, 0.06)' : 'none',
+                  transition: 'all 0.3s ease',
+                  padding: '1.5rem',
+                  borderRadius: '1.25rem'
+                }}>
+                  <div>
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-3">
+                        <div style={{
+                          width: '42px', height: '42px', borderRadius: '12px',
+                          background: 'linear-gradient(135deg, rgba(66, 133, 244, 0.15) 0%, rgba(26, 115, 232, 0.25) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#4285F4', border: '1px solid rgba(66, 133, 244, 0.3)'
+                        }}>
+                          <Sparkles size={22} />
+                        </div>
+                        <div>
+                          <h4 style={{ fontWeight: 800, fontSize: '0.98rem', margin: 0, color: 'var(--text-main)' }}>Google Gemini</h4>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Moteur Général & Imagen 3</span>
+                        </div>
+                      </div>
+                      <span style={{
+                        fontSize: '0.68rem', fontWeight: 700, padding: '0.2rem 0.65rem', borderRadius: '2rem',
+                        background: geminiKey ? 'rgba(66, 133, 244, 0.12)' : 'rgba(255, 255, 255, 0.05)',
+                        color: geminiKey ? '#4285F4' : 'var(--text-muted)',
+                        border: geminiKey ? '1px solid rgba(66, 133, 244, 0.3)' : '1px solid var(--border)',
+                        display: 'flex', alignItems: 'center', gap: '0.3rem'
+                      }}>
+                        {geminiKey && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#4285F4' }} className="animate-ping" />}
+                        {geminiKey ? 'Configuré' : 'Non actif'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 flex-wrap mb-3">
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '6px', background: 'rgba(66,133,244,0.1)', color: '#4285F4' }}>Gemini 2.5 Flash</span>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '6px', background: 'rgba(66,133,244,0.1)', color: '#4285F4' }}>Thinking</span>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '6px', background: 'rgba(66,133,244,0.1)', color: '#4285F4' }}>Imagen 3</span>
+                    </div>
+
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '1.25rem' }}>
+                      Utilisé pour la génération des cours, résolutions pas-à-pas et la création de couvertures visuelles artistiques via Imagen 3.
+                    </p>
+
+                    {/* Direct Key Link Button */}
+                    <a
+                      href="https://aistudio.google.com/app/apikey"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', justifyBetween: 'center', gap: '0.4rem',
+                        width: '100%', padding: '0.5rem 0.75rem', borderRadius: '10px', fontSize: '0.76rem', fontWeight: 700,
+                        background: 'rgba(66, 133, 244, 0.06)', color: '#4285F4', border: '1px solid rgba(66, 133, 244, 0.25)',
+                        marginBottom: '1rem', textDecoration: 'none', transition: 'all 0.2s ease'
+                      }}
+                      className="hover:bg-[rgba(66,133,244,0.12)]"
+                    >
+                      <ExternalLink size={14} /> Obtenir une clé sur Google AI Studio (Gratuit)
+                    </a>
+
+                    <div className="settings-field" style={{ marginBottom: '1rem' }}>
+                      <label className="settings-label" style={{ fontSize: '0.74rem', color: 'var(--text-subtle)' }}>Clé API Gemini</label>
+                      <div className="relative">
+                        <input
+                          type={showGeminiKey ? 'text' : 'password'}
+                          className="input-control"
+                          placeholder="AIzaSy..."
+                          value={geminiKey}
+                          onChange={e => setGeminiKey(e.target.value)}
+                          style={{
+                            paddingRight: '2.75rem', fontSize: '0.82rem', borderRadius: '10px',
+                            fontFamily: geminiKey && !showGeminiKey ? 'monospace' : 'inherit',
+                            borderColor: geminiKey ? 'rgba(66, 133, 244, 0.35)' : undefined
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowGeminiKey(v => !v)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-subtle)] hover:text-[var(--text-main)] cursor-pointer bg-none border-none flex"
+                        >
+                          {showGeminiKey ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.65rem 0.75rem', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
+                      <div>
+                        <span style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-main)', display: 'block' }}>Résoudre les exercices</span>
+                        <span style={{ fontSize: '0.66rem', color: 'var(--text-subtle)' }}>Calcul automatique des solutions</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={geminiSolveSolutions}
+                        onChange={e => setGeminiSolveSolutions(e.target.checked)}
+                        style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#4285F4' }}
                       />
                     </div>
-                    
-                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'rgba(255,255,255,0.02)', padding: '0.3rem 0.6rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                        <input 
-                          type="number" 
-                          value={plan.price} 
-                          onChange={e => updatePlan(plan.id, { price: parseFloat(e.target.value) || 0 })}
-                          style={{ background: 'transparent', border: 'none', color: 'var(--emerald)', fontSize: '0.85rem', fontWeight: 700, width: '60px', outline: 'none', textAlign: 'right' }}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={saveGeminiKey}
+                    className="btn"
+                    style={{
+                      width: '100%', marginTop: '1.25rem', padding: '0.65rem', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700,
+                      background: geminiKeySaved ? '#10B981' : 'linear-gradient(135deg, #4285F4 0%, #1D4ED8 100%)',
+                      color: '#fff', border: 'none', boxShadow: 'none'
+                    }}
+                  >
+                    {geminiKeySaved ? '✅ Configuration Enregistrée' : 'Enregistrer la clé Gemini'}
+                  </button>
+                </div>
+
+                {/* 2. DeepSeek */}
+                <div className="bento-card" style={{
+                  display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '430px',
+                  background: 'rgba(255, 255, 255, 0.01)',
+                  backdropFilter: 'blur(12px)',
+                  border: deepseekKey ? '1.5px solid rgba(0, 186, 124, 0.4)' : '1px solid var(--border)',
+                  boxShadow: deepseekKey ? '0 8px 30px rgba(0, 186, 124, 0.06)' : 'none',
+                  transition: 'all 0.3s ease',
+                  padding: '1.5rem',
+                  borderRadius: '1.25rem'
+                }}>
+                  <div>
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-3">
+                        <div style={{
+                          width: '42px', height: '42px', borderRadius: '12px',
+                          background: 'linear-gradient(135deg, rgba(0, 186, 124, 0.15) 0%, rgba(5, 150, 105, 0.25) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#00BA7C', border: '1px solid rgba(0, 186, 124, 0.3)'
+                        }}>
+                          <Cpu size={22} />
+                        </div>
+                        <div>
+                          <h4 style={{ fontWeight: 800, fontSize: '0.98rem', margin: 0, color: 'var(--text-main)' }}>DeepSeek API</h4>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Moteur Raisonnement (R1) & V3</span>
+                        </div>
+                      </div>
+                      <span style={{
+                        fontSize: '0.68rem', fontWeight: 700, padding: '0.2rem 0.65rem', borderRadius: '2rem',
+                        background: deepseekKey ? 'rgba(0, 186, 124, 0.12)' : 'rgba(255, 255, 255, 0.05)',
+                        color: deepseekKey ? '#00BA7C' : 'var(--text-muted)',
+                        border: deepseekKey ? '1px solid rgba(0, 186, 124, 0.3)' : '1px solid var(--border)',
+                        display: 'flex', alignItems: 'center', gap: '0.3rem'
+                      }}>
+                        {deepseekKey && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00BA7C' }} className="animate-ping" />}
+                        {deepseekKey ? 'Configuré' : 'Non actif'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 flex-wrap mb-3">
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '6px', background: 'rgba(0,186,124,0.1)', color: '#00BA7C' }}>DeepSeek-V3</span>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '6px', background: 'rgba(0,186,124,0.1)', color: '#00BA7C' }}>Reasoner R1</span>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '6px', background: 'rgba(0,186,124,0.1)', color: '#00BA7C' }}>Ultra-Économique</span>
+                    </div>
+
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '1.25rem' }}>
+                      Moteur haute performance et ultra-économique pour l&apos;importation automatique de sujets de concours et raisonnement poussé.
+                    </p>
+
+                    {/* Direct Key Link Button */}
+                    <a
+                      href="https://platform.deepseek.com/api_keys"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+                        width: '100%', padding: '0.5rem 0.75rem', borderRadius: '10px', fontSize: '0.76rem', fontWeight: 700,
+                        background: 'rgba(0, 186, 124, 0.06)', color: '#00BA7C', border: '1px solid rgba(0, 186, 124, 0.25)',
+                        marginBottom: '1rem', textDecoration: 'none', transition: 'all 0.2s ease'
+                      }}
+                      className="hover:bg-[rgba(0,186,124,0.12)]"
+                    >
+                      <ExternalLink size={14} /> Obtenir une clé sur DeepSeek Platform
+                    </a>
+
+                    <div className="settings-field" style={{ marginBottom: '0.75rem' }}>
+                      <label className="settings-label" style={{ fontSize: '0.74rem', color: 'var(--text-subtle)' }}>Clé API DeepSeek</label>
+                      <div className="relative">
+                        <input
+                          type={showDeepseekKey ? 'text' : 'password'}
+                          className="input-control"
+                          placeholder="sk-..."
+                          value={deepseekKey}
+                          onChange={e => setDeepseekKey(e.target.value)}
+                          style={{
+                            paddingRight: '2.75rem', fontSize: '0.82rem', borderRadius: '10px',
+                            fontFamily: deepseekKey && !showDeepseekKey ? 'monospace' : 'inherit',
+                            borderColor: deepseekKey ? 'rgba(0, 186, 124, 0.35)' : undefined
+                          }}
                         />
-                        <span style={{ fontSize: '0.85rem', color: 'var(--emerald)', fontWeight: 700 }}>DH</span>
+                        <button
+                          type="button"
+                          onClick={() => setShowDeepseekKey(v => !v)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-subtle)] hover:text-[var(--text-main)] cursor-pointer bg-none border-none flex"
+                        >
+                          {showDeepseekKey ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="settings-field" style={{ marginBottom: '0.75rem' }}>
+                      <label className="settings-label" style={{ fontSize: '0.74rem', color: 'var(--text-subtle)' }}>Base URL (Endpoint)</label>
+                      <input
+                        type="text"
+                        className="input-control"
+                        placeholder="https://api.deepseek.com"
+                        value={deepseekUrl}
+                        onChange={e => setDeepseekUrl(e.target.value)}
+                        style={{ fontFamily: 'monospace', fontSize: '0.82rem', borderRadius: '10px' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.65rem 0.75rem', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
+                      <div>
+                        <span style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-main)', display: 'block' }}>Résoudre les exercices</span>
+                        <span style={{ fontSize: '0.66rem', color: 'var(--text-subtle)' }}>Activer le raisonnement automatique</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={deepseekSolveSolutions}
+                        onChange={e => setDeepseekSolveSolutions(e.target.checked)}
+                        style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#00BA7C' }}
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={saveDeepseekKey}
+                    className="btn"
+                    style={{
+                      width: '100%', marginTop: '1.25rem', padding: '0.65rem', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700,
+                      background: deepseekKeySaved ? '#10B981' : 'linear-gradient(135deg, #00BA7C 0%, #059669 100%)',
+                      color: '#fff', border: 'none', boxShadow: 'none'
+                    }}
+                  >
+                    {deepseekKeySaved ? '✅ Configuration Enregistrée' : 'Enregistrer la clé DeepSeek'}
+                  </button>
+                </div>
+
+                {/* 3. Anthropic Claude */}
+                <div className="bento-card" style={{
+                  display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '430px',
+                  background: 'rgba(255, 255, 255, 0.01)',
+                  backdropFilter: 'blur(12px)',
+                  border: apiKey ? '1.5px solid rgba(217, 119, 6, 0.4)' : '1px solid var(--border)',
+                  boxShadow: apiKey ? '0 8px 30px rgba(217, 119, 6, 0.06)' : 'none',
+                  transition: 'all 0.3s ease',
+                  padding: '1.5rem',
+                  borderRadius: '1.25rem'
+                }}>
+                  <div>
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-3">
+                        <div style={{
+                          width: '42px', height: '42px', borderRadius: '12px',
+                          background: 'linear-gradient(135deg, rgba(217, 119, 6, 0.15) 0%, rgba(180, 83, 9, 0.25) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#D97706', border: '1px solid rgba(217, 119, 6, 0.3)'
+                        }}>
+                          <KeyRound size={22} />
+                        </div>
+                        <div>
+                          <h4 style={{ fontWeight: 800, fontSize: '0.98rem', margin: 0, color: 'var(--text-main)' }}>Anthropic Claude</h4>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Extraction Visuelle OCR & QCM</span>
+                        </div>
+                      </div>
+                      <span style={{
+                        fontSize: '0.68rem', fontWeight: 700, padding: '0.2rem 0.65rem', borderRadius: '2rem',
+                        background: apiKey ? 'rgba(217, 119, 6, 0.12)' : 'rgba(255, 255, 255, 0.05)',
+                        color: apiKey ? '#D97706' : 'var(--text-muted)',
+                        border: apiKey ? '1px solid rgba(217, 119, 6, 0.3)' : '1px solid var(--border)',
+                        display: 'flex', alignItems: 'center', gap: '0.3rem'
+                      }}>
+                        {apiKey && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#D97706' }} className="animate-ping" />}
+                        {apiKey ? 'Configuré' : 'Non actif'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 flex-wrap mb-3">
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '6px', background: 'rgba(217,119,6,0.1)', color: '#D97706' }}>Claude 3.5 Sonnet</span>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '6px', background: 'rgba(217,119,6,0.1)', color: '#D97706' }}>Opus</span>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '6px', background: 'rgba(217,119,6,0.1)', color: '#D97706' }}>Vision OCR</span>
+                    </div>
+
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '1.25rem' }}>
+                      Moteur pour le découpage et l&apos;analyse intelligente des sujets de concours PDF et conversion en questions QCM.
+                    </p>
+
+                    {/* Direct Key Link Button */}
+                    <a
+                      href="https://console.anthropic.com/settings/keys"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+                        width: '100%', padding: '0.5rem 0.75rem', borderRadius: '10px', fontSize: '0.76rem', fontWeight: 700,
+                        background: 'rgba(217, 119, 6, 0.06)', color: '#D97706', border: '1px solid rgba(217, 119, 6, 0.25)',
+                        marginBottom: '1rem', textDecoration: 'none', transition: 'all 0.2s ease'
+                      }}
+                      className="hover:bg-[rgba(217,119,6,0.12)]"
+                    >
+                      <ExternalLink size={14} /> Obtenir une clé sur Anthropic Console
+                    </a>
+
+                    <div className="settings-field" style={{ marginBottom: '0.75rem' }}>
+                      <label className="settings-label" style={{ fontSize: '0.74rem', color: 'var(--text-subtle)' }}>Clé API Claude</label>
+                      <div className="relative">
+                        <input
+                          type={showKey ? 'text' : 'password'}
+                          className="input-control"
+                          placeholder="sk-ant-api03-..."
+                          value={apiKey}
+                          onChange={e => setApiKey(e.target.value)}
+                          style={{
+                            paddingRight: '2.75rem', fontSize: '0.82rem', borderRadius: '10px',
+                            fontFamily: apiKey && !showKey ? 'monospace' : 'inherit',
+                            borderColor: apiKey ? 'rgba(217, 119, 6, 0.35)' : undefined
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowKey(v => !v)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-subtle)] hover:text-[var(--text-main)] cursor-pointer bg-none border-none flex"
+                        >
+                          {showKey ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="settings-field" style={{ marginBottom: '0.75rem' }}>
+                      <label className="settings-label" style={{ fontSize: '0.74rem', color: 'var(--text-subtle)' }}>Proxy Server (Optionnel)</label>
+                      <input
+                        type="text"
+                        className="input-control"
+                        placeholder="https://proxy.example.com"
+                        value={proxyUrl}
+                        onChange={e => setProxyUrl(e.target.value)}
+                        style={{ fontFamily: 'monospace', fontSize: '0.82rem', borderRadius: '10px' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.65rem 0.75rem', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
+                      <div>
+                        <span style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-main)', display: 'block' }}>Résoudre les exercices</span>
+                        <span style={{ fontSize: '0.66rem', color: 'var(--text-subtle)' }}>Génération automatique de corriger</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={claudeSolveSolutions}
+                        onChange={e => setClaudeSolveSolutions(e.target.checked)}
+                        style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#D97706' }}
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={saveApiKey}
+                    className="btn"
+                    style={{
+                      width: '100%', marginTop: '1.25rem', padding: '0.65rem', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700,
+                      background: keySaved ? '#10B981' : 'linear-gradient(135deg, #D97706 0%, #B45309 100%)',
+                      color: '#fff', border: 'none', boxShadow: 'none'
+                    }}
+                  >
+                    {keySaved ? '✅ Configuration Enregistrée' : 'Enregistrer la clé Claude'}
+                  </button>
+                </div>
+
+                {/* 4. Groq AI */}
+                <div className="bento-card" style={{
+                  display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '430px',
+                  background: 'rgba(255, 255, 255, 0.01)',
+                  backdropFilter: 'blur(12px)',
+                  border: groqKey ? '1.5px solid rgba(249, 115, 22, 0.4)' : '1px solid var(--border)',
+                  boxShadow: groqKey ? '0 8px 30px rgba(249, 115, 22, 0.06)' : 'none',
+                  transition: 'all 0.3s ease',
+                  padding: '1.5rem',
+                  borderRadius: '1.25rem'
+                }}>
+                  <div>
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-3">
+                        <div style={{
+                          width: '42px', height: '42px', borderRadius: '12px',
+                          background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(194, 65, 12, 0.25) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#F97316', border: '1px solid rgba(249, 115, 22, 0.3)'
+                        }}>
+                          <Zap size={22} />
+                        </div>
+                        <div>
+                          <h4 style={{ fontWeight: 800, fontSize: '0.98rem', margin: 0, color: 'var(--text-main)' }}>Groq Cloud</h4>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Inférence Ultra-Rapide</span>
+                        </div>
+                      </div>
+                      <span style={{
+                        fontSize: '0.68rem', fontWeight: 700, padding: '0.2rem 0.65rem', borderRadius: '2rem',
+                        background: groqKey ? 'rgba(249, 115, 22, 0.12)' : 'rgba(255, 255, 255, 0.05)',
+                        color: groqKey ? '#F97316' : 'var(--text-muted)',
+                        border: groqKey ? '1px solid rgba(249, 115, 22, 0.3)' : '1px solid var(--border)',
+                        display: 'flex', alignItems: 'center', gap: '0.3rem'
+                      }}>
+                        {groqKey && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#F97316' }} className="animate-ping" />}
+                        {groqKey ? 'Configuré' : 'Non actif'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 flex-wrap mb-3">
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '6px', background: 'rgba(249,115,22,0.1)', color: '#F97316' }}>Llama 3.3 70B</span>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '6px', background: 'rgba(249,115,22,0.1)', color: '#F97316' }}>DeepSeek-R1 Distill</span>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '6px', background: 'rgba(249,115,22,0.1)', color: '#F97316' }}>800 t/s</span>
+                    </div>
+
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '1.25rem' }}>
+                      Serveur d&apos;inférence ultra-rapide permettant de générer des QCM et des quiz en moins d&apos;une seconde.
+                    </p>
+
+                    {/* Direct Key Link Button */}
+                    <a
+                      href="https://console.groq.com/keys"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+                        width: '100%', padding: '0.5rem 0.75rem', borderRadius: '10px', fontSize: '0.76rem', fontWeight: 700,
+                        background: 'rgba(249, 115, 22, 0.06)', color: '#F97316', border: '1px solid rgba(249, 115, 22, 0.25)',
+                        marginBottom: '1rem', textDecoration: 'none', transition: 'all 0.2s ease'
+                      }}
+                      className="hover:bg-[rgba(249,115,22,0.12)]"
+                    >
+                      <ExternalLink size={14} /> Obtenir une clé sur Groq Console (Gratuit)
+                    </a>
+
+                    <div className="settings-field" style={{ marginBottom: '1rem' }}>
+                      <label className="settings-label" style={{ fontSize: '0.74rem', color: 'var(--text-subtle)' }}>Clé API Groq</label>
+                      <div className="relative">
+                        <input
+                          type={showGroqKey ? 'text' : 'password'}
+                          className="input-control"
+                          placeholder="gsk_..."
+                          value={groqKey}
+                          onChange={e => setGroqKey(e.target.value)}
+                          style={{
+                            paddingRight: '2.75rem', fontSize: '0.82rem', borderRadius: '10px',
+                            fontFamily: groqKey && !showGroqKey ? 'monospace' : 'inherit',
+                            borderColor: groqKey ? 'rgba(249, 115, 22, 0.35)' : undefined
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowGroqKey(v => !v)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-subtle)] hover:text-[var(--text-main)] cursor-pointer bg-none border-none flex"
+                        >
+                          {showGroqKey ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={saveGroqKey}
+                    className="btn"
+                    style={{
+                      width: '100%', marginTop: '1.25rem', padding: '0.65rem', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700,
+                      background: groqKeySaved ? '#10B981' : 'linear-gradient(135deg, #F97316 0%, #C2410C 100%)',
+                      color: '#fff', border: 'none', boxShadow: 'none'
+                    }}
+                  >
+                    {groqKeySaved ? '✅ Configuration Enregistrée' : 'Enregistrer la clé Groq'}
+                  </button>
+                </div>
+
+                {/* 5. OpenAI */}
+                <div className="bento-card" style={{
+                  display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '430px',
+                  background: 'rgba(255, 255, 255, 0.01)',
+                  backdropFilter: 'blur(12px)',
+                  border: openaiKey ? '1.5px solid rgba(139, 92, 246, 0.4)' : '1px solid var(--border)',
+                  boxShadow: openaiKey ? '0 8px 30px rgba(139, 92, 246, 0.06)' : 'none',
+                  transition: 'all 0.3s ease',
+                  padding: '1.5rem',
+                  borderRadius: '1.25rem'
+                }}>
+                  <div>
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-3">
+                        <div style={{
+                          width: '42px', height: '42px', borderRadius: '12px',
+                          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(109, 40, 217, 0.25) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#8B5CF6', border: '1px solid rgba(139, 92, 246, 0.3)'
+                        }}>
+                          <KeyRound size={22} />
+                        </div>
+                        <div>
+                          <h4 style={{ fontWeight: 800, fontSize: '0.98rem', margin: 0, color: 'var(--text-main)' }}>OpenAI Platform</h4>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>ChatGPT / GPT-4o & Vision</span>
+                        </div>
+                      </div>
+                      <span style={{
+                        fontSize: '0.68rem', fontWeight: 700, padding: '0.2rem 0.65rem', borderRadius: '2rem',
+                        background: openaiKey ? 'rgba(139, 92, 246, 0.12)' : 'rgba(255, 255, 255, 0.05)',
+                        color: openaiKey ? '#8B5CF6' : 'var(--text-muted)',
+                        border: openaiKey ? '1px solid rgba(139, 92, 246, 0.3)' : '1px solid var(--border)',
+                        display: 'flex', alignItems: 'center', gap: '0.3rem'
+                      }}>
+                        {openaiKey && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#8B5CF6' }} className="animate-ping" />}
+                        {openaiKey ? 'Configuré' : 'Non actif'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 flex-wrap mb-3">
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '6px', background: 'rgba(139,92,246,0.1)', color: '#8B5CF6' }}>GPT-4o</span>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '6px', background: 'rgba(139,92,246,0.1)', color: '#8B5CF6' }}>GPT-4o-mini</span>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '6px', background: 'rgba(139,92,246,0.1)', color: '#8B5CF6' }}>Vision</span>
+                    </div>
+
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '1.25rem' }}>
+                      Modèles de référence pour l&apos;analyse textuelle, l&apos;explication pédagogique et la synthèse de cours.
+                    </p>
+
+                    {/* Direct Key Link Button */}
+                    <a
+                      href="https://platform.openai.com/api-keys"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+                        width: '100%', padding: '0.5rem 0.75rem', borderRadius: '10px', fontSize: '0.76rem', fontWeight: 700,
+                        background: 'rgba(139, 92, 246, 0.06)', color: '#8B5CF6', border: '1px solid rgba(139, 92, 246, 0.25)',
+                        marginBottom: '1rem', textDecoration: 'none', transition: 'all 0.2s ease'
+                      }}
+                      className="hover:bg-[rgba(139,92,246,0.12)]"
+                    >
+                      <ExternalLink size={14} /> Obtenir une clé sur OpenAI Platform
+                    </a>
+
+                    <div className="settings-field" style={{ marginBottom: '1rem' }}>
+                      <label className="settings-label" style={{ fontSize: '0.74rem', color: 'var(--text-subtle)' }}>Clé API OpenAI</label>
+                      <div className="relative">
+                        <input
+                          type={showOpenaiKey ? 'text' : 'password'}
+                          className="input-control"
+                          placeholder="sk-proj-..."
+                          value={openaiKey}
+                          onChange={e => setOpenaiKey(e.target.value)}
+                          style={{
+                            paddingRight: '2.75rem', fontSize: '0.82rem', borderRadius: '10px',
+                            fontFamily: openaiKey && !showOpenaiKey ? 'monospace' : 'inherit',
+                            borderColor: openaiKey ? 'rgba(139, 92, 246, 0.35)' : undefined
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowOpenaiKey(v => !v)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-subtle)] hover:text-[var(--text-main)] cursor-pointer bg-none border-none flex"
+                        >
+                          {showOpenaiKey ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={saveOpenaiKey}
+                    className="btn"
+                    style={{
+                      width: '100%', marginTop: '1.25rem', padding: '0.65rem', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700,
+                      background: openaiKeySaved ? '#10B981' : 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
+                      color: '#fff', border: 'none', boxShadow: 'none'
+                    }}
+                  >
+                    {openaiKeySaved ? '✅ Configuration Enregistrée' : 'Enregistrer la clé OpenAI'}
+                  </button>
+                </div>
+
+              </div>
+
+            </div>
+          )}
+
+          {/* ── GENERAL TAB ── */}
+          {activeTab === 'general' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              {/* Profile Card (Identité & Branding) - spans 2 columns on desktop */}
+              <div className="bento-card lg:col-span-2 flex flex-col justify-between">
+                <div>
+                  <h2 className="settings-title">
+                    🎨 Identité & Branding
+                  </h2>
+                  <p className="settings-desc">
+                    Personnalisez votre profil enseignant et l&apos;identité visuelle de votre plateforme.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">
+                    <div className="settings-field">
+                      <label className="settings-label">Nom du professeur</label>
+                      <input className="input-control" dir="auto" placeholder="Prof. Ahmed Benali" value={profName} onChange={e => setProfName(e.target.value)} />
+                    </div>
+                    <div className="settings-field">
+                      <label className="settings-label">Téléphone / WhatsApp</label>
+                      <input className="input-control" dir="auto" placeholder="+212 6XX XXX XXX" value={profPhone} onChange={e => setProfPhone(e.target.value)} />
+                    </div>
+                    <div className="settings-field md:col-span-2">
+                      <label className="settings-label">Site web officiel</label>
+                      <input className="input-control" dir="auto" placeholder="www.lconq.ma" value={profSite} onChange={e => setProfSite(e.target.value)} />
+                    </div>
+                    <div className="settings-field md:col-span-2">
+                      <label className="settings-label">ID du Pixel Facebook (Facebook Pixel ID)</label>
+                      <input
+                        type="text"
+                        dir="auto"
+                        className="input-control"
+                        placeholder="Ex: 123456789012345"
+                        value={fbPixelId}
+                        onChange={e => setFbPixelId(e.target.value)}
+                        style={{ fontFamily: 'monospace' }}
+                      />
+                      <p className="text-[11px] text-[var(--text-subtle)] leading-snug">
+                        Permet de suivre et d&apos;optimiser le suivi publicitaire Facebook Ads de vos campagnes d&apos;inscription d&apos;élèves.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center gap-4 mt-8 pt-6 border-t border-[var(--border)]">
+                  <div>
+                    {brandSaved && (
+                      <div className="save-badge">
+                        <CheckCircle2 size={14} /> Enregistré !
+                      </div>
+                    )}
+                  </div>
+                  <button type="button" onClick={saveBranding} className="btn" style={{ padding: '0.65rem 1.75rem', borderRadius: '12px' }}>
+                    Enregistrer l&apos;identité
+                  </button>
+                </div>
+              </div>
+
+              {/* Backup & Restore Data Card */}
+              <div className="bento-card flex flex-col justify-between" style={{ border: '1px solid rgba(16, 185, 129, 0.3)', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.03) 0%, rgba(6, 182, 212, 0.03) 100%)' }}>
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Download size={20} className="text-[var(--emerald)]" />
+                    <h2 className="settings-title" style={{ margin: 0 }}>
+                      النسخ الاحتياطي واسترجاع البيانات
+                    </h2>
+                  </div>
+                  <p className="settings-desc">
+                    احفظ نسخة كاملة من بيانات جميع الأقسام، النقط، الفروض، المفاتيح، والدروس في ملف واحد، أو استرجعها في أي وقت بضغطة زر.
+                  </p>
+
+                  <div className="flex flex-col gap-3 mt-4">
+                    <button
+                      type="button"
+                      onClick={handleExportBackup}
+                      className="btn"
+                      style={{
+                        padding: '0.65rem 1rem', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700,
+                        background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                        color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+                      }}
+                    >
+                      <Download size={16} /> تصدير نسخة احتياطية شاملة (.json)
+                    </button>
+
+                    <label
+                      style={{
+                        padding: '0.65rem 1rem', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700,
+                        background: 'var(--bg-glass)', color: 'var(--text-main)', border: '1px solid var(--border)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer'
+                      }}
+                    >
+                      <Upload size={16} /> استرجاع نسخة احتياطية من ملف (.json)
+                      <input type="file" accept=".json" onChange={handleImportBackup} style={{ display: 'none' }} />
+                    </label>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '1.5rem', padding: '0.6rem 0.75rem', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', fontSize: '0.7rem', color: 'var(--text-subtle)' }}>
+                  🛡️ حفظ شامل: يتضمن الحفظ كل الأقسام، التلاميذ، النقط، والمفاتيح في ملف مشفر بترميز نقي.
+                </div>
+              </div>
+
+
+
+              {/* OMR Scanner - prominent card below */}
+              <div className="bento-card lg:col-span-3">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                  <div className="flex-1">
+                    <h2 className="settings-title">
+                      📷 Scanner OMR Intelligent
+                    </h2>
+                    <p className="settings-desc" style={{ margin: 0 }}>
+                      Activez le mode continu pour capturer automatiquement les feuilles QCM dès qu&apos;elles sont détectées par la caméra, sans clic manuel.
+                    </p>
+                  </div>
+                  
+                  <div className="omr-control-card">
+                    <div className="flex items-center justify-between gap-6">
+                      <div className="flex items-center gap-3">
+                        <div className={`omr-status-indicator ${scannerDirectCapture ? 'active' : ''}`}></div>
+                        <div>
+                          <p className="font-bold text-sm text-[var(--text-main)] m-0">Tir direct par caméra</p>
+                          <p className="text-xs text-[var(--text-subtle)] m-0">Capture continue sans clic</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const newVal = !scannerDirectCapture;
+                          setScannerDirectCapture(newVal);
+                          await updateOmrScannerSettingsConfig({ scannerDirectCapture: newVal });
+                          setScannerSaved(true);
+                          setTimeout(() => setScannerSaved(false), 2000);
+                        }}
+                        className={`modern-switch ${scannerDirectCapture ? 'active' : ''}`}
+                      >
+                        <div className="modern-switch-knob" />
+                      </button>
+                    </div>
+                    {scannerSaved && (
+                      <div className="omr-feedback-toast">
+                        Configuration OMR mise à jour
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* ── SUBSCRIPTIONS & VOUCHERS TAB ── */}
+          {activeTab === 'subscriptions' && (
+            <div className="flex flex-col gap-6">
+              
+              {/* Pricing Plans */}
+              <div className="bento-card">
+                <h2 className="settings-title">
+                  <Crown size={22} className="text-[var(--warning)]" /> Offres d&apos;Abonnement (Baqat)
+                </h2>
+                <p className="settings-desc">
+                  Configurez les plans d&apos;abonnement, les tarifs, la durée de validité et les accès autorisés par école.
+                </p>
+
+                <div className="flex flex-col gap-4 mb-8">
+                  {plans.map(plan => (
+                    <div key={plan.id} className="premium-plan-card flex flex-col gap-4">
+                      
+                      {/* Top Bar */}
+                      <div className="flex justify-between items-start flex-wrap gap-3">
+                        <div className="flex-1 min-w-[200px]">
+                          <input 
+                            type="text" 
+                            dir="auto"
+                            value={plan.name} 
+                            onChange={e => updatePlan(plan.id, { name: e.target.value })}
+                            className="text-base font-black bg-transparent border-none border-b border-dashed border-[var(--border)] text-[var(--text-main)] w-full outline-none pb-0.5 focus:border-[var(--violet)]"
+                          />
+                        </div>
+                        
+                        <div className="flex gap-2 items-center">
+                          <div className="flex items-center gap-1.5 bg-[var(--bg-card)] border border-[var(--border)] px-3 py-1.5 rounded-lg">
+                            <input 
+                              type="number" 
+                              value={plan.price} 
+                              onChange={e => updatePlan(plan.id, { price: parseFloat(e.target.value) || 0 })}
+                              className="bg-transparent border-none text-[var(--emerald)] text-xs font-bold w-12 text-right outline-none"
+                            />
+                            <span className="text-[11px] text-[var(--emerald)] font-bold">DH</span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 bg-[var(--bg-card)] border border-[var(--border)] px-3 py-1.5 rounded-lg">
+                            <input 
+                              type="number" 
+                              value={plan.durationDays} 
+                              onChange={e => updatePlan(plan.id, { durationDays: parseInt(e.target.value) || 365 })}
+                              className="bg-transparent border-none text-[var(--violet)] text-xs font-bold w-10 text-right outline-none"
+                            />
+                            <span className="text-[11px] text-[var(--violet)] font-bold">Jrs</span>
+                          </div>
+
+                          <button 
+                            type="button"
+                            onClick={() => removePlan(plan.id)}
+                            className="p-1.5 text-[var(--danger)] hover:bg-[var(--danger-soft)] rounded-lg border-none bg-transparent cursor-pointer flex transition-colors"
+                            title="Supprimer la formule"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </div>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'rgba(255,255,255,0.02)', padding: '0.3rem 0.6rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                      {/* Description & Recommended */}
+                      <div className="flex items-center gap-4 flex-wrap">
+                        <div className="flex-1 min-w-[200px] settings-field">
+                          <label className="settings-label">Description de l&apos;offre</label>
+                          <input 
+                            type="text" 
+                            dir="auto"
+                            className="input-control"
+                            value={plan.description || ''}
+                            onChange={e => updatePlan(plan.id, { description: e.target.value })}
+                          />
+                        </div>
+                        <div className="flex items-center gap-2 mt-4">
+                          <input 
+                            type="checkbox"
+                            id={`plan-recom-${plan.id}`}
+                            checked={!!plan.isRecommended}
+                            onChange={e => updatePlan(plan.id, { isRecommended: e.target.checked })}
+                            className="w-4 h-4 cursor-pointer accent-[var(--warning)]"
+                          />
+                          <label htmlFor={`plan-recom-${plan.id}`} className="text-xs font-bold text-[var(--warning)] cursor-pointer">
+                            ✦ Recommandé
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Features */}
+                      <div className="settings-field">
+                        <label className="settings-label">Fonctionnalités incluses (une par ligne)</label>
+                        <textarea 
+                          className="input-control"
+                          dir="auto"
+                          rows={3}
+                          value={plan.features ? plan.features.join('\n') : ''}
+                          onChange={e => updatePlan(plan.id, { features: e.target.value.split('\n').filter(Boolean) })}
+                          style={{ resize: 'vertical' }}
+                        />
+                      </div>
+
+                      {/* Allowed schools */}
+                      <div className="settings-field">
+                        <label className="settings-label">Écoles et concours inclus</label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {schools.map(school => {
+                            const isAllowed = plan.allowedSchools.includes(school);
+                            return (
+                              <button
+                                key={school}
+                                type="button"
+                                onClick={() => {
+                                  const updatedSchools = isAllowed
+                                    ? plan.allowedSchools.filter(s => s !== school)
+                                    : [...plan.allowedSchools, school];
+                                  updatePlan(plan.id, { allowedSchools: updatedSchools });
+                                }}
+                                style={{
+                                  padding: '0.25rem 0.6rem',
+                                  borderRadius: '8px',
+                                  border: '1px solid',
+                                  borderColor: isAllowed ? 'rgba(113,109,242,0.25)' : 'var(--border)',
+                                  background: isAllowed ? 'var(--violet-soft)' : 'transparent',
+                                  color: isAllowed ? 'var(--violet)' : 'var(--text-muted)',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  transition: 'all 0.15s'
+                                }}
+                              >
+                                {isAllowed ? '✓' : '+'} {school}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add Offer Form */}
+                <div className="border-t border-[var(--border)] pt-6">
+                  <h3 className="text-sm font-black text-[var(--text-main)] mb-4">Ajouter une nouvelle offre d&apos;abonnement</h3>
+                  
+                  <div className="flex flex-col gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="settings-field col-span-2">
+                        <label className="settings-label">Nom de l&apos;offre</label>
+                        <input 
+                          type="text" 
+                          dir="auto"
+                          placeholder="Ex: Pack Spécial Médecine & ENSA" 
+                          className="input-control"
+                          value={newPlanName}
+                          onChange={e => setNewPlanName(e.target.value)}
+                        />
+                      </div>
+                      <div className="settings-field">
+                        <label className="settings-label">Tarif (DH)</label>
                         <input 
                           type="number" 
-                          value={plan.durationDays} 
-                          onChange={e => updatePlan(plan.id, { durationDays: parseInt(e.target.value) || 365 })}
-                          style={{ background: 'transparent', border: 'none', color: 'var(--violet)', fontSize: '0.85rem', fontWeight: 700, width: '50px', outline: 'none', textAlign: 'right' }}
+                          placeholder="299" 
+                          className="input-control"
+                          value={newPlanPrice}
+                          onChange={e => setNewPlanPrice(e.target.value)}
                         />
-                        <span style={{ fontSize: '0.85rem', color: 'var(--violet)', fontWeight: 700 }}>Jours</span>
+                      </div>
+                      <div className="settings-field">
+                        <label className="settings-label">Durée (Jours)</label>
+                        <input 
+                          type="number" 
+                          placeholder="365" 
+                          className="input-control"
+                          value={newPlanDuration}
+                          onChange={e => setNewPlanDuration(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                      <div className="settings-field col-span-2">
+                        <label className="settings-label">Description</label>
+                        <input 
+                          type="text" 
+                          dir="auto"
+                          placeholder="Ex: Formule d&apos;accès complet." 
+                          className="input-control"
+                          value={newPlanDescription}
+                          onChange={e => setNewPlanDescription(e.target.value)}
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 mt-4">
+                        <input 
+                          type="checkbox"
+                          id="newPlanIsRecommended"
+                          checked={newPlanIsRecommended}
+                          onChange={e => setNewPlanIsRecommended(e.target.checked)}
+                          className="w-4 h-4 cursor-pointer accent-[var(--warning)]"
+                        />
+                        <label htmlFor="newPlanIsRecommended" className="text-xs font-bold text-[var(--warning)] cursor-pointer">
+                          ✦ Recommandé par défaut
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="settings-field">
+                      <label className="settings-label">Matières et caractéristiques incluses (une par ligne)</label>
+                      <textarea 
+                        placeholder="Ex: Accès complet (2010–2025)&#10;Astuces IA exclusives pour chaque QCM" 
+                        className="input-control"
+                        dir="auto"
+                        rows={3}
+                        value={newPlanFeatures}
+                        onChange={e => setNewPlanFeatures(e.target.value)}
+                        style={{ resize: 'vertical' }}
+                      />
+                    </div>
+
+                    <div className="settings-field">
+                      <label className="settings-label">Écoles et concours autorisés :</label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {schools.map(school => {
+                          const isSelected = newPlanSchools.includes(school);
+                          return (
+                            <button
+                              key={school}
+                              type="button"
+                              onClick={() => {
+                                const updated = isSelected
+                                  ? newPlanSchools.filter(s => s !== school)
+                                  : [...newPlanSchools, school];
+                                setNewPlanSchools(updated);
+                              }}
+                              style={{
+                                padding: '0.25rem 0.6rem',
+                                borderRadius: '8px',
+                                border: '1px solid',
+                                borderColor: isSelected ? 'rgba(16,185,129,0.25)' : 'var(--border)',
+                                background: isSelected ? 'var(--emerald-soft)' : 'transparent',
+                                color: isSelected ? 'var(--emerald)' : 'var(--text-muted)',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                transition: 'all 0.15s'
+                              }}
+                            >
+                              {isSelected ? '✓' : '+'} {school}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        if (newPlanName.trim()) {
+                          const featuresArray = newPlanFeatures.split('\n').map(f => f.trim()).filter(Boolean);
+                          addPlan(
+                            newPlanName.trim(), 
+                            newPlanPrice, 
+                            newPlanDuration, 
+                            newPlanSchools, 
+                            newPlanDescription.trim(), 
+                            newPlanIsRecommended, 
+                            featuresArray
+                          );
+                          setNewPlanName('');
+                          setNewPlanPrice('');
+                          setNewPlanDuration('365');
+                          setNewPlanSchools([]);
+                          setNewPlanDescription('');
+                          setNewPlanIsRecommended(false);
+                          setNewPlanFeatures('');
+                        }
+                      }}
+                      className="btn w-fit self-end mt-2"
+                      style={{ padding: '0.65rem 1.5rem' }}
+                    >
+                      <Plus size={16} /> Ajouter l&apos;offre
+                    </button>
+
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Vouchers section */}
+              <div className="bento-card">
+                <h2 className="settings-title">
+                  <KeyRound size={22} className="text-[var(--violet)]" /> Codes d&apos;activation (Vouchers)
+                </h2>
+                <p className="settings-desc">
+                  Générez des codes de cartes physiques à gratter pour activer les abonnements sur place (librairies cibles).
+                </p>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  
+                  {/* Voucher generation */}
+                  <div>
+                    <h3 className="text-sm font-black text-[var(--text-main)] mb-4">Générer un nouveau lot</h3>
+                    
+                    <div className="flex flex-col gap-4">
+                      <div className="settings-field">
+                        <label className="settings-label">Offre associée (Baqat)</label>
+                        <select 
+                          value={voucherPlanId} 
+                          onChange={e => setVoucherPlanId(e.target.value)}
+                          className="input-control"
+                        >
+                          {plans.map(p => (
+                            <option key={p.id} value={p.id}>{p.name} ({p.price} DH)</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="settings-field col-span-1">
+                          <label className="settings-label">Quantité</label>
+                          <input 
+                            type="number" 
+                            min="1" 
+                            max="100"
+                            className="input-control"
+                            value={voucherCount}
+                            onChange={e => setVoucherCount(e.target.value)}
+                          />
+                        </div>
+                        <div className="settings-field col-span-2">
+                          <label className="settings-label">Nom du lot (Librairie...)</label>
+                          <input 
+                            type="text" 
+                            dir="auto"
+                            placeholder="Ex: Librairie Al-Jihad"
+                            className="input-control"
+                            value={voucherBatchName}
+                            onChange={e => setVoucherBatchName(e.target.value)}
+                          />
+                        </div>
                       </div>
 
                       <button 
-                        onClick={() => removePlan(plan.id)}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: '0.35rem', borderRadius: '6px', display: 'flex' }}
-                        title="Supprimer la baque"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Description & Recommended row */}
-                  <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <div style={{ flex: 1, minWidth: '200px' }}>
-                      <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.4rem' }}>
-                        Description de l'offre
-                      </label>
-                      <input 
-                        type="text" 
-                        className="input-control"
-                        placeholder="Ex: Le pack complet pour la réussite."
-                        value={plan.description || ''}
-                        onChange={e => updatePlan(plan.id, { description: e.target.value })}
-                        style={{ fontSize: '0.85rem', padding: '0.5rem 0.75rem' }}
-                      />
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1.25rem' }}>
-                      <input 
-                        type="checkbox"
-                        id={`recom-${plan.id}`}
-                        checked={!!plan.isRecommended}
-                        onChange={e => updatePlan(plan.id, { isRecommended: e.target.checked })}
-                        style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                      />
-                      <label htmlFor={`recom-${plan.id}`} style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--warning)', cursor: 'pointer' }}>
-                        ✦ Recommandé
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Features Textarea */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.4rem' }}>
-                      Fonctionnalités incluses (une par ligne) :
-                    </label>
-                    <textarea 
-                      className="input-control"
-                      placeholder="Ex: Accès à toutes les archives&#10;Astuces IA exclusives pour chaque QCM"
-                      rows={3}
-                      value={plan.features ? plan.features.join('\n') : ''}
-                      onChange={e => updatePlan(plan.id, { features: e.target.value.split('\n').filter(Boolean) })}
-                      style={{ fontSize: '0.85rem', padding: '0.5rem 0.75rem', fontFamily: 'inherit', resize: 'vertical' }}
-                    />
-                  </div>
-
-                  {/* Allowed schools selector */}
-                  <div>
-                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>
-                      Écoles et Facultés autorisées :
-                    </span>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                      {schools.map(school => {
-                        const isAllowed = plan.allowedSchools.includes(school);
-                        return (
-                          <button
-                            key={school}
-                            type="button"
-                            onClick={() => {
-                              const updatedSchools = isAllowed
-                                ? plan.allowedSchools.filter(s => s !== school)
-                                : [...plan.allowedSchools, school];
-                              updatePlan(plan.id, { allowedSchools: updatedSchools });
-                            }}
-                            style={{
-                              padding: '0.25rem 0.6rem',
-                              borderRadius: '6px',
-                              border: `1px solid ${isAllowed ? 'rgba(99,102,241,0.4)' : 'var(--border)'}`,
-                              background: isAllowed ? 'rgba(99,102,241,0.1)' : 'transparent',
-                              color: isAllowed ? 'var(--violet)' : 'var(--text-muted)',
-                              fontSize: '0.72rem',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              transition: 'all 0.15s'
-                            }}
-                          >
-                            {isAllowed ? '✓ ' : '+ '} {school}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Add Plan Form */}
-          <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
-            <h4 style={{ margin: '0 0 1rem 0', fontWeight: 800, fontSize: '0.95rem' }}>Ajouter une nouvelle offre</h4>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '1rem', flexWrap: 'wrap' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.4rem' }}>Nom de l'offre</label>
-                  <input 
-                    type="text" 
-                    placeholder="Ex: Pack Spécial ENSA & ENSAM" 
-                    className="input-control"
-                    value={newPlanName}
-                    onChange={e => setNewPlanName(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.4rem' }}>Tarif (DH)</label>
-                  <input 
-                    type="number" 
-                    placeholder="299" 
-                    className="input-control"
-                    value={newPlanPrice}
-                    onChange={e => setNewPlanPrice(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.4rem' }}>Durée (Jours)</label>
-                  <input 
-                    type="number" 
-                    placeholder="365" 
-                    className="input-control"
-                    value={newPlanDuration}
-                    onChange={e => setNewPlanDuration(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {/* Description & Recommended row for Add Form */}
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem', alignItems: 'center' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.4rem' }}>Description</label>
-                  <input 
-                    type="text" 
-                    placeholder="Ex: Le pack complet pour la réussite." 
-                    className="input-control"
-                    value={newPlanDescription}
-                    onChange={e => setNewPlanDescription(e.target.value)}
-                  />
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1.25rem' }}>
-                  <input 
-                    type="checkbox"
-                    id="newPlanIsRecommended"
-                    checked={newPlanIsRecommended}
-                    onChange={e => setNewPlanIsRecommended(e.target.checked)}
-                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                  />
-                  <label htmlFor="newPlanIsRecommended" style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--warning)', cursor: 'pointer' }}>
-                    ✦ Recommandé par défaut
-                  </label>
-                </div>
-              </div>
-
-              {/* Features List for Add Form */}
-              <div>
-                <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.4rem' }}>
-                  Fonctionnalités incluses (une par ligne) :
-                </label>
-                <textarea 
-                  placeholder="Ex: Accès à toutes les archives (2010–2025)&#10;Astuces IA exclusives pour chaque QCM&#10;Simulateur de concours chronométré" 
-                  className="input-control"
-                  rows={3}
-                  value={newPlanFeatures}
-                  onChange={e => setNewPlanFeatures(e.target.value)}
-                  style={{ fontFamily: 'inherit', resize: 'vertical' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.4rem' }}>
-                  Autoriser l'accès aux écoles suivantes :
-                </label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                  {schools.map(school => {
-                    const isSelected = newPlanSchools.includes(school);
-                    return (
-                      <button
-                        key={school}
                         type="button"
                         onClick={() => {
-                          const updated = isSelected
-                            ? newPlanSchools.filter(s => s !== school)
-                            : [...newPlanSchools, school];
-                          setNewPlanSchools(updated);
+                          if (voucherPlanId && voucherCount) {
+                            generateActivationCodes(voucherPlanId, parseInt(voucherCount), voucherBatchName.trim());
+                            setVoucherBatchName('');
+                          }
                         }}
-                        style={{
-                          padding: '0.25rem 0.6rem',
-                          borderRadius: '6px',
-                          border: `1px solid ${isSelected ? 'rgba(16,185,129,0.4)' : 'var(--border)'}`,
-                          background: isSelected ? 'rgba(16,185,129,0.1)' : 'transparent',
-                          color: isSelected ? 'var(--emerald)' : 'var(--text-muted)',
-                          fontSize: '0.72rem',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          transition: 'all 0.15s'
-                        }}
+                        className="btn w-fit self-end mt-2"
+                        style={{ padding: '0.65rem 1.5rem' }}
                       >
-                        {isSelected ? '✓ ' : '+ '} {school}
+                        <Sparkles size={15} /> Générer les codes
                       </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <button 
-                type="button" 
-                onClick={() => {
-                  if (newPlanName.trim()) {
-                    const featuresArray = newPlanFeatures.split('\n').map(f => f.trim()).filter(Boolean);
-                    addPlan(
-                      newPlanName.trim(), 
-                      newPlanPrice, 
-                      newPlanDuration, 
-                      newPlanSchools, 
-                      newPlanDescription.trim(), 
-                      newPlanIsRecommended, 
-                      featuresArray
-                    );
-                    setNewPlanName('');
-                    setNewPlanPrice('');
-                    setNewPlanDuration('365');
-                    setNewPlanSchools([]);
-                    setNewPlanDescription('');
-                    setNewPlanIsRecommended(false);
-                    setNewPlanFeatures('');
-                  }
-                }}
-                className="btn"
-                style={{ width: 'fit-content', padding: '0.65rem 1.5rem', alignSelf: 'flex-end' }}
-              >
-                <Plus size={16} /> Ajouter l'offre d'abonnement
-              </button>
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* ── Schools ── */}
-        <div className="col-span-12 glass-panel" style={{ display: activeTab === 'general' ? 'block' : 'none' }}>
-          <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <School size={20} /> Gestion des Écoles Cibles
-          </h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '0.9rem' }}>
-            Ces écoles apparaîtront dans le menu déroulant lors de l'upload d'un nouveau concours.
-          </p>
-
-          <form onSubmit={handleAdd} style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-            <input
-              type="text"
-              className="input-control"
-              placeholder="Nom de l'école (ex: ISCAE)"
-              value={newSchool}
-              onChange={e => setNewSchool(e.target.value)}
-              style={{ flex: 1 }}
-            />
-            <button type="submit" className="btn" style={{ padding: '0.75rem 2rem' }}>
-              <Plus size={20} /> Ajouter
-            </button>
-          </form>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
-            {schools.map(school => (
-              <div key={school} className="glass-panel" style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-glass)', borderRadius: '1rem' }}>
-                <span style={{ fontWeight: 600 }}>{school}</span>
-                <button onClick={() => removeSchool(school)} style={{ background: 'transparent', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: '0.4rem', borderRadius: '0.5rem', transition: 'background 0.2s' }} title="Supprimer">
-                  <Trash2 size={18} />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Activation Codes (Vouchers) ── */}
-        <div className="col-span-12 glass-panel" style={{ display: activeTab === 'subscriptions' ? 'block' : 'none' }}>
-          <h3 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <KeyRound size={20} color="var(--violet)" /> Gestion des Codes d'Activation (Vouchers)
-          </h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-            Générez des codes uniques pour vos baquettes d'abonnement. Exportez-les en CSV pour les distribuer aux librairies ou étudiants.
-          </p>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
-            {/* Generate form */}
-            <div style={{ borderRight: '1px solid var(--border)', paddingRight: '2rem' }}>
-              <h4 style={{ margin: '0 0 1rem 0', fontWeight: 800, fontSize: '0.95rem' }}>Générer de nouveaux codes</h4>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.4rem' }}>
-                    Sélectionner l'offre associée
-                  </label>
-                  <select 
-                    value={voucherPlanId} 
-                    onChange={e => setVoucherPlanId(e.target.value)}
-                    style={{ 
-                      width: '100%', padding: '0.65rem 0.75rem', borderRadius: '10px', 
-                      border: '1px solid var(--border)', background: 'var(--bg-glass)', 
-                      color: 'var(--text-main)', fontSize: '0.85rem' 
-                    }}
-                  >
-                    {plans.map(p => (
-                      <option key={p.id} value={p.id}>{p.name} ({p.price} DH)</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.4rem' }}>
-                      Quantité
-                    </label>
-                    <input 
-                      type="number" 
-                      min="1" 
-                      max="100"
-                      className="input-control"
-                      value={voucherCount}
-                      onChange={e => setVoucherCount(e.target.value)}
-                      style={{ fontSize: '0.85rem' }}
-                    />
+                    </div>
                   </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.4rem' }}>
-                      Nom du lot (Optionnel)
-                    </label>
-                    <input 
-                      type="text" 
-                      placeholder="Ex: Librairie Al-Amal"
-                      className="input-control"
-                      value={voucherBatchName}
-                      onChange={e => setVoucherBatchName(e.target.value)}
-                      style={{ fontSize: '0.85rem' }}
-                    />
+
+                  {/* Vouchers list & action buttons */}
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+                      <h3 className="text-sm font-black text-[var(--text-main)] m-0">Codes existants</h3>
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          const header = "Code,Plan,Lot,Statut,Utilise Par,Date Utilisation,Date Creation\n";
+                          const rows = activationCodes.map(c => {
+                            const plan = plans.find(p => p.id === c.planId);
+                            const statusStr = c.isUsed ? "Utilise" : "Actif";
+                            const dateUsed = c.usedAt ? new Date(c.usedAt).toLocaleDateString('fr-FR') : "";
+                            const dateCreated = c.createdDate ? new Date(c.createdDate).toLocaleDateString('fr-FR') : "";
+                            return `"${c.code}","${plan?.name || 'Inconnu'}","${c.batchName}","${statusStr}","${c.usedBy || ''}","${dateUsed}","${dateCreated}"`;
+                          }).join("\n");
+                          
+                          const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+                          const url = URL.createObjectURL(blob);
+                          const link = document.createElement("a");
+                          link.setAttribute("href", url);
+                          link.setAttribute("download", `vouchers_lconq_${new Date().toISOString().split('T')[0]}.csv`);
+                          link.style.visibility = 'hidden';
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }}
+                        className="btn-outline flex items-center gap-1.5 py-1.5 px-3 text-xs"
+                      >
+                        <Download size={12} /> Exporter en CSV
+                      </button>
+                    </div>
+
+                    {/* Filter buttons */}
+                    <div className="flex gap-1.5 mb-3">
+                      {['all', 'active', 'used'].map(f => (
+                        <button
+                          key={f}
+                          type="button"
+                          onClick={() => setVoucherFilter(f)}
+                          style={{
+                            padding: '0.3rem 0.65rem',
+                            borderRadius: '8px',
+                            border: '1px solid',
+                            borderColor: voucherFilter === f ? 'rgba(113,109,242,0.25)' : 'var(--border)',
+                            background: voucherFilter === f ? 'var(--violet-soft)' : 'transparent',
+                            color: voucherFilter === f ? 'var(--violet)' : 'var(--text-muted)',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {f === 'all' ? 'Tous' : f === 'active' ? 'Actifs' : 'Utilisés'}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Scroll List */}
+                    <div style={{ maxHeight: '250px', overflowY: 'auto', border: '1px solid var(--border)', borderRadius: '12px', background: 'var(--bg-glass)' }}>
+                      {activationCodes
+                        .filter(c => {
+                          if (voucherFilter === 'active') return !c.isUsed;
+                          if (voucherFilter === 'used') return c.isUsed;
+                          return true;
+                        })
+                        .map(c => {
+                          const plan = plans.find(p => p.id === c.planId);
+                          return (
+                            <div 
+                              key={c.code} 
+                              style={{ 
+                                padding: '0.75rem 1rem', 
+                                borderBottom: '1px solid var(--border)', 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                alignItems: 'center',
+                                fontSize: '0.82rem'
+                              }}
+                            >
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span 
+                                    className="font-mono font-bold cursor-pointer"
+                                    style={{ color: copiedCode === c.code ? 'var(--emerald)' : 'var(--text-main)' }}
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(c.code);
+                                      setCopiedCode(c.code);
+                                      setTimeout(() => setCopiedCode(''), 1500);
+                                    }}
+                                    title="Copier le code"
+                                  >
+                                    {c.code}
+                                  </span>
+                                  <span className="text-[10px] text-[var(--text-subtle)]">
+                                    ({plan?.name || 'Formule inconnue'})
+                                  </span>
+                                </div>
+                                <div className="text-[10px] text-[var(--text-subtle)] mt-1">
+                                  Lot: {c.batchName || 'Général'} · {new Date(c.createdDate || Date.now()).toLocaleDateString('fr-FR')}
+                                </div>
+                              </div>
+
+                              <div>
+                                {c.isUsed ? (
+                                  <span className="text-[10px] font-bold text-[var(--danger)] bg-[var(--danger-soft)] px-2 py-0.5 rounded-md" title={`Utilisé par ${c.usedBy} le ${new Date(c.usedAt).toLocaleDateString('fr-FR')}`}>
+                                    UTILISÉ
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] font-bold text-[var(--emerald)] bg-[var(--emerald-soft)] px-2 py-0.5 rounded-md">
+                                    ACTIF
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      {activationCodes.length === 0 && (
+                        <div className="text-center p-8 text-[var(--text-subtle)] text-xs">
+                          Aucun code d&apos;activation à afficher.
+                        </div>
+                      )}
+                    </div>
+
                   </div>
+
                 </div>
-
-                <button 
-                  type="button"
-                  onClick={() => {
-                    if (voucherPlanId && voucherCount) {
-                      generateActivationCodes(voucherPlanId, parseInt(voucherCount), voucherBatchName.trim());
-                      setVoucherBatchName('');
-                    }
-                  }}
-                  className="btn"
-                  style={{ width: 'fit-content', padding: '0.65rem 1.5rem', alignSelf: 'flex-end', marginTop: '0.5rem' }}
-                >
-                  <Sparkles size={16} /> Générer les codes
-                </button>
               </div>
+
             </div>
+          )}
 
-            {/* List and Actions */}
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h4 style={{ margin: 0, fontWeight: 800, fontSize: '0.95rem' }}>Codes Existants</h4>
-                <button 
-                  onClick={() => {
-                    const header = "Code,Plan,Lot,Statut,Utilise Par,Date Utilisation,Date Creation\n";
-                    const rows = activationCodes.map(c => {
-                      const plan = plans.find(p => p.id === c.planId);
-                      const statusStr = c.isUsed ? "Utilise" : "Actif";
-                      const dateUsed = c.usedAt ? new Date(c.usedAt).toLocaleDateString('fr-FR') : "";
-                      const dateCreated = c.createdDate ? new Date(c.createdDate).toLocaleDateString('fr-FR') : "";
-                      return `"${c.code}","${plan?.name || 'Inconnu'}","${c.batchName}","${statusStr}","${c.usedBy || ''}","${dateUsed}","${dateCreated}"`;
-                    }).join("\n");
-                    
-                    const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement("a");
-                    link.setAttribute("href", url);
-                    link.setAttribute("download", `vouchers_lconq_${new Date().toISOString().split('T')[0]}.csv`);
-                    link.style.visibility = 'hidden';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
-                  className="btn-outline"
-                  style={{ padding: '0.4rem 0.8rem', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-                >
-                  <Download size={13} /> Exporter CSV
-                </button>
-              </div>
+          {/* ── LOGBOOK TAB ── */}
+          {activeTab === 'logbook' && (
+            <div className="bento-card">
+              <h2 className="settings-title">
+                <BookOpen size={22} className="text-[var(--violet)]" /> Cahier de Textes
+              </h2>
+              <p className="settings-desc">
+                Configurez votre emploi du temps hebdomadaire, les vacances scolaires et le style d&apos;impression du cahier de textes.
+              </p>
 
-              {/* Filters */}
-              <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
-                {['all', 'active', 'used'].map(f => (
+              {/* Sub-tabs - Segmented Control style */}
+              <div className="logbook-subtabs-bar">
+                {[
+                  { id: 'timetable', label: 'Emploi du temps', icon: Calendar },
+                  { id: 'holidays',  label: 'Vacances scolaires', icon: Palmtree },
+                  { id: 'style',    label: 'Style du PDF', icon: Sliders },
+                ].map(st => (
                   <button
-                    key={f}
-                    onClick={() => setVoucherFilter(f)}
-                    style={{
-                      padding: '0.25rem 0.6rem',
-                      borderRadius: '6px',
-                      border: '1px solid var(--border)',
-                      background: voucherFilter === f ? 'rgba(99,102,241,0.1)' : 'transparent',
-                      color: voucherFilter === f ? 'var(--violet)' : 'var(--text-muted)',
-                      fontSize: '0.72rem',
-                      fontWeight: 700,
-                      cursor: 'pointer'
-                    }}
+                    key={st.id}
+                    type="button"
+                    onClick={() => setLogbookSubTab(st.id)}
+                    className={`logbook-subtab-btn ${logbookSubTab === st.id ? 'active' : ''}`}
                   >
-                    {f === 'all' ? 'Tous' : f === 'active' ? 'Actifs' : 'Utilisés'}
+                    <st.icon size={14} />
+                    <span>{st.label}</span>
                   </button>
                 ))}
               </div>
 
-              {/* List */}
-              <div style={{ maxHeight: '240px', overflowY: 'auto', border: '1px solid var(--border)', borderRadius: '10px', background: 'rgba(255,255,255,0.01)' }}>
-                {activationCodes
-                  .filter(c => {
-                    if (voucherFilter === 'active') return !c.isUsed;
-                    if (voucherFilter === 'used') return c.isUsed;
-                    return true;
-                  })
-                  .map(c => {
-                    const plan = plans.find(p => p.id === c.planId);
-                    return (
-                      <div 
-                        key={c.code} 
-                        style={{ 
-                          padding: '0.75rem 1rem', 
-                          borderBottom: '1px solid var(--border)', 
-                          display: 'flex', 
-                          justifyContent: 'space-between', 
-                          alignItems: 'center',
-                          fontSize: '0.85rem'
-                        }}
-                      >
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <span 
-                              style={{ 
-                                fontFamily: 'monospace', 
-                                fontWeight: 800, 
-                                color: copiedCode === c.code ? 'var(--emerald)' : 'var(--text-main)',
-                                cursor: 'pointer' 
-                              }}
-                              onClick={() => {
-                                navigator.clipboard.writeText(c.code);
-                                setCopiedCode(c.code);
-                                setTimeout(() => setCopiedCode(''), 1500);
-                              }}
-                              title="Cliquer pour copier"
-                            >
-                              {c.code}
-                            </span>
-                            <span style={{ fontSize: '0.7rem', color: 'var(--text-subtle)' }}>
-                              ({plan?.name || 'Plan inconnu'})
-                            </span>
-                          </div>
-                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>
-                            Lot: {c.batchName} · {new Date(c.createdDate).toLocaleDateString('fr-FR')}
-                          </div>
-                        </div>
-
-                        <div>
-                          {c.isUsed ? (
-                            <span 
-                              style={{ color: 'var(--danger)', fontSize: '0.72rem', fontWeight: 800 }}
-                              title={`Utilisé par ${c.usedBy} le ${new Date(c.usedAt).toLocaleDateString('fr-FR')}`}
-                            >
-                              UTILISÉ
-                            </span>
-                          ) : (
-                            <span style={{ color: 'var(--emerald)', fontSize: '0.72rem', fontWeight: 800 }}>
-                              ACTIF
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                {activationCodes.length === 0 && (
-                  <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                    Aucun code d'activation disponible
-                  </div>
-                )}
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        {/* ── Logbook / Timetable / Holidays Settings ── */}
-        <div className="col-span-12 glass-panel" style={{ display: activeTab === 'logbook' ? 'block' : 'none' }}>
-          <h3 style={{ marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <BookOpen size={20} style={{ color: 'var(--violet)' }} /> إعدادات دفتر النصوص
-          </h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.88rem' }}>
-            قم بإعداد جدول الحصص الأسبوعي، أيام العطل، وأسلوب طباعة دفتر النصوص PDF.
-          </p>
-
-          {/* Sub-tabs */}
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem', flexWrap: 'wrap' }}>
-            {[
-              { id: 'timetable', label: 'جدول الحصص', icon: '🗓️' },
-              { id: 'holidays',  label: 'العطل المدرسية', icon: '🌴' },
-              { id: 'style',    label: 'تصميم الطباعة', icon: '🎨' },
-            ].map(st => (
-              <button
-                key={st.id}
-                type="button"
-                onClick={() => setLogbookSubTab(st.id)}
-                style={{
-                  padding: '0.5rem 1.1rem', borderRadius: 10, border: '1px solid',
-                  borderColor: logbookSubTab === st.id ? 'var(--violet)' : 'var(--border)',
-                  background: logbookSubTab === st.id ? 'var(--violet-soft)' : 'var(--bg-glass)',
-                  color: logbookSubTab === st.id ? 'var(--violet)' : 'var(--text-muted)',
-                  fontWeight: logbookSubTab === st.id ? 700 : 500,
-                  fontSize: '0.83rem', cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit',
-                  display: 'flex', alignItems: 'center', gap: '0.4rem'
-                }}
-              >
-                <span>{st.icon}</span> {st.label}
-              </button>
-            ))}
-          </div>
-
-          {/* ── TIMETABLE TAB ── */}
-          {logbookSubTab === 'timetable' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-subtle)', marginBottom: '0.5rem' }}>
-                حدد مادة دراسية ووقت الحصة لكل يوم في الأسبوع. سيتم استخدام هذا الجدول لاقتراح الإدخالات التلقائية في دفتر النصوص.
-              </p>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
-                  <thead>
-                    <tr>
-                      <th style={{ padding: '0.5rem 0.75rem', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 700, borderBottom: '1px solid var(--border)', width: 100 }}>الوقت</th>
-                      {WEEKDAYS.map(d => (
-                        <th key={d.id} style={{ padding: '0.5rem 0.75rem', textAlign: 'center', color: 'var(--violet)', fontWeight: 700, borderBottom: '1px solid var(--border)' }}>{d.label}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {TIME_SLOTS.map(slot => (
-                      <tr key={slot}>
-                        <td style={{ padding: '0.5rem 0.75rem', color: 'var(--text-subtle)', fontWeight: 600, whiteSpace: 'nowrap', borderBottom: '1px solid var(--border)', background: 'var(--bg-glass)' }}>{slot}</td>
-                        {WEEKDAYS.map(d => {
-                          const key = `${d.id}_${slot}`;
-                          const cell = logbookSchedule[key] || {};
-                          return (
-                            <td key={d.id} style={{ padding: '0.35rem', borderBottom: '1px solid var(--border)', minWidth: 130 }}>
-                              <input
-                                type="text"
-                                className="input-control"
-                                placeholder="مادة..."
-                                value={cell.subject || ''}
-                                onChange={e => handleLogbookScheduleChange(key, 'subject', e.target.value)}
-                                style={{ fontSize: '0.78rem', padding: '0.35rem 0.55rem', marginBottom: '0.25rem' }}
-                              />
+              {/* Timetable Subtab */}
+              {logbookSubTab === 'timetable' && (
+                <div className="flex flex-col gap-3">
+                  <p className="text-xs text-[var(--text-subtle)] mb-2">
+                    Sélectionnez la classe et spécifiez la salle pour chaque créneau horaire afin de générer automatiquement les séances quotidiennes dans le cahier de textes :
+                  </p>
+                  <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-glass)] p-3" style={{ overflow: 'auto' }}>
+                    <table className="timetable-table">
+                      <thead>
+                        <tr>
+                          <th className="timetable-top-left-hdr" style={{ width: 110 }}>Jour</th>
+                          {TIME_SLOTS.map(slot => (
+                            <th key={slot.id} className="timetable-hdr">{slot.label}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {WEEKDAYS.map(d => (
+                          <tr key={d.id}>
+                            <td className="timetable-time-cell">
+                              {d.label}
                             </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+                            {TIME_SLOTS.map(slot => {
+                              const key = `${d.label}-${slot.id}`;
+                              const cell = logbookSchedule[key] || {};
+                              const isActive = !!cell.classId;
+                              
+                              const classColors = getSoftColorForClass(cell.classId);
 
-          {/* ── HOLIDAYS TAB ── */}
-          {logbookSubTab === 'holidays' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-subtle)' }}>
-                أضف أيام العطل الرسمية والأعياد. ستُستثنى هذه الفترات تلقائياً من حساب الحصص الفائتة.
-              </p>
-
-              {/* Add holiday form */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: '0.75rem', alignItems: 'flex-end', background: 'var(--bg-glass)', padding: '1rem', borderRadius: 12, border: '1px solid var(--border)' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)' }}>اسم العطلة</label>
-                  <input type="text" className="input-control" placeholder="مثال: عطلة نصف الفصل" value={newHolLabel} onChange={e => setNewHolLabel(e.target.value)} style={{ fontSize: '0.82rem' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)' }}>من</label>
-                  <input type="date" className="input-control" value={newHolStart} onChange={e => setNewHolStart(e.target.value)} style={{ fontSize: '0.82rem' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)' }}>إلى</label>
-                  <input type="date" className="input-control" value={newHolEnd} onChange={e => setNewHolEnd(e.target.value)} style={{ fontSize: '0.82rem' }} />
-                </div>
-                <button
-                  onClick={addHoliday}
-                  className="btn"
-                  style={{ padding: '0.5rem 1rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-                >
-                  <Plus size={15} /> إضافة
-                </button>
-              </div>
-
-              {/* Holiday list */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {logbookHolidays.length === 0 && (
-                  <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-subtle)', fontSize: '0.85rem' }}>
-                    🌴 لا توجد عطل مضافة بعد
+                              return (
+                                <td key={slot.id} className="timetable-slot-cell">
+                                  <div
+                                    className={`timetable-card ${isActive ? 'active' : 'free'}`}
+                                    style={isActive ? {
+                                      backgroundColor: classColors.bg,
+                                      borderColor: 'transparent',
+                                      color: classColors.text,
+                                      boxShadow: 'none'
+                                    } : {}}
+                                  >
+                                    {isActive ? (
+                                      <>
+                                        <button
+                                          type="button"
+                                          className="timetable-delete-btn"
+                                          onClick={() => {
+                                            handleLogbookScheduleChange(key, 'classId', '');
+                                            handleLogbookScheduleChange(key, 'room', '');
+                                          }}
+                                          title="Libérer ce créneau"
+                                          style={{
+                                            color: classColors.text,
+                                            background: 'transparent',
+                                            borderColor: 'transparent'
+                                          }}
+                                        >
+                                          <Trash2 size={10} />
+                                        </button>
+                                        
+                                        <select
+                                          className="timetable-select"
+                                          value={cell.classId || ''}
+                                          onChange={e => handleLogbookScheduleChange(key, 'classId', e.target.value)}
+                                          style={{
+                                            background: 'transparent',
+                                            border: 'none',
+                                            color: classColors.text,
+                                            padding: '0.2rem 0',
+                                            fontWeight: 800,
+                                            boxShadow: 'none'
+                                          }}
+                                        >
+                                          <option value="">-- Libre --</option>
+                                          {classes.map(c => (
+                                            <option key={c.id} value={c.name} style={{ color: 'var(--text-main)', background: 'var(--bg-card)' }}>{c.name}</option>
+                                          ))}
+                                        </select>
+                                      </>
+                                    ) : (
+                                      <div className="timetable-free-hover-trigger">
+                                        <div className="timetable-plus-icon">
+                                          <Plus size={14} />
+                                        </div>
+                                        <select
+                                          className="timetable-select-free"
+                                          value=""
+                                          onChange={e => handleLogbookScheduleChange(key, 'classId', e.target.value)}
+                                        >
+                                          <option value="">+ Ajouter</option>
+                                          {classes.map(c => (
+                                            <option key={c.id} value={c.name}>{c.name}</option>
+                                          ))}
+                                        </select>
+                                      </div>
+                                    )}
+                                  </div>
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                )}
-                {logbookHolidays.map(h => (
-                  <div key={h.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 1rem', borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <span style={{ fontSize: '1.2rem' }}>🌴</span>
-                      <div>
-                        <p style={{ margin: 0, fontWeight: 700, fontSize: '0.88rem' }}>{h.label}</p>
-                        <p style={{ margin: 0, fontSize: '0.73rem', color: 'var(--text-subtle)' }}>{h.startDate} → {h.endDate}</p>
-                      </div>
+                </div>
+              )}
+
+              {/* Holidays Subtab */}
+              {logbookSubTab === 'holidays' && (
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <p className="text-xs text-[var(--text-subtle)]">
+                      Enregistrez les vacances scolaires pour les exclure automatiquement des rapports de séances réalisées :
+                    </p>
+                    <label className="btn flex items-center gap-1.5 py-1.5 px-4 text-xs cursor-pointer bg-[var(--violet-soft)] text-[var(--violet)] border border-[var(--violet)] hover:bg-[var(--violet-soft)] transition-all duration-200 rounded-lg">
+                      <Upload size={14} />
+                      Importer ICS
+                      <input
+                        type="file"
+                        accept=".ics"
+                        style={{ display: 'none' }}
+                        onChange={handleIcsUpload}
+                      />
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-[var(--bg-glass)] p-4 rounded-xl border border-[var(--border)] items-end">
+                    <div className="settings-field">
+                      <label className="settings-label">Nom des vacances</label>
+                      <input type="text" dir="auto" className="input-control" placeholder="Ex: Vacances de fin de semestre" value={newHolLabel} onChange={e => setNewHolLabel(e.target.value)} />
+                    </div>
+                    <div className="settings-field">
+                      <label className="settings-label">Date de début</label>
+                      <input type="date" className="input-control" value={newHolStart} onChange={e => setNewHolStart(e.target.value)} style={{ direction: 'ltr', textAlign: 'center' }} />
+                    </div>
+                    <div className="settings-field">
+                      <label className="settings-label">Date de fin</label>
+                      <input type="date" className="input-control" value={newHolEnd} onChange={e => setNewHolEnd(e.target.value)} style={{ direction: 'ltr', textAlign: 'center' }} />
                     </div>
                     <button
-                      onClick={() => removeHoliday(h.id)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '0.25rem' }}
+                      type="button"
+                      onClick={addHoliday}
+                      className="btn flex items-center gap-1 py-3 px-6 whitespace-nowrap"
                     >
-                      <Trash2 size={16} />
+                      <Plus size={16} /> Ajouter
                     </button>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
 
-          {/* ── STYLE TAB ── */}
-          {logbookSubTab === 'style' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-subtle)' }}>
-                خصّص مظهر طباعة دفتر النصوص PDF: الخطوط، أحجام الكتابة، والألوان.
-              </p>
+                  <div className="flex flex-col gap-2 mt-2">
+                    {[...logbookHolidays]
+                      .sort((a, b) => a.startDate.localeCompare(b.startDate))
+                      .map(h => {
+                        const isArabic = isArabicText(h.label);
+                        const isEditing = editingHolId === h.id;
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-                {/* Arabic Font */}
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>خط العربية</label>
-                  <select className="input-control" value={logbookArFont} onChange={e => setLogbookArFont(e.target.value)} style={{ fontSize: '0.85rem' }}>
-                    <option value="UKIJ Merdane">UKIJ Merdane (كلاسيكي)</option>
-                    <option value="Noto Naskh Arabic">Noto Naskh Arabic</option>
-                    <option value="Amiri">Amiri (رسمي)</option>
-                    <option value="Tajawal">Tajawal (عصري)</option>
-                    <option value="Cairo">Cairo</option>
-                  </select>
+                        if (isEditing) {
+                          return (
+                            <div key={h.id} className="flex flex-col gap-3 p-4 rounded-xl border border-[var(--violet)] bg-[var(--bg-glass)] transition-all duration-200" style={{ marginBottom: '0.5rem' }}>
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div className="settings-field">
+                                  <label className="settings-label text-xs">Nom des vacances</label>
+                                  <input 
+                                    type="text" 
+                                    className="input-control" 
+                                    value={editingHolLabel} 
+                                    onChange={e => setEditingHolLabel(e.target.value)} 
+                                    dir={isArabicText(editingHolLabel) ? 'rtl' : 'ltr'}
+                                  />
+                                </div>
+                                <div className="settings-field">
+                                  <label className="settings-label text-xs">Date de début</label>
+                                  <input 
+                                    type="date" 
+                                    className="input-control" 
+                                    value={editingHolStart} 
+                                    onChange={e => setEditingHolStart(e.target.value)} 
+                                    style={{ direction: 'ltr', textAlign: 'center' }} 
+                                  />
+                                </div>
+                                <div className="settings-field">
+                                  <label className="settings-label text-xs">Date de fin</label>
+                                  <input 
+                                    type="date" 
+                                    className="input-control" 
+                                    value={editingHolEnd} 
+                                    onChange={e => setEditingHolEnd(e.target.value)} 
+                                    style={{ direction: 'ltr', textAlign: 'center' }} 
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex justify-end gap-2 mt-1">
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingHolId(null)}
+                                  className="btn bg-[var(--border)] text-[var(--text-main)] border border-[var(--border)] hover:bg-[var(--bg-glass)] py-1.5 px-4"
+                                  style={{ fontSize: '0.75rem' }}
+                                >
+                                  Annuler
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (!editingHolLabel || !editingHolStart || !editingHolEnd) return;
+                                    setLogbookHolidays(prev => prev.map(hol => hol.id === h.id ? { ...hol, label: editingHolLabel, startDate: editingHolStart, endDate: editingHolEnd } : hol));
+                                    setEditingHolId(null);
+                                  }}
+                                  className="btn py-1.5 px-4"
+                                  style={{ fontSize: '0.75rem' }}
+                                >
+                                  Enregistrer
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div key={h.id} className="flex justify-between items-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] transition-all duration-200" style={{ marginBottom: '0.5rem' }} dir={isArabic ? 'rtl' : 'ltr'}>
+                            <div className="flex items-center gap-3" style={{ flex: 1, minWidth: 0 }}>
+                              <div className="w-10 h-10 rounded-xl bg-[var(--violet-soft)] border border-[var(--violet)] flex items-center justify-center text-[var(--violet)] flex-shrink-0">
+                                <span className="text-lg">🌴</span>
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0, textAlign: isArabic ? 'right' : 'left' }}>
+                                <strong style={{ display: 'block', fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.25rem', whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                                  {h.label}
+                                </strong>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: 'var(--text-subtle)', flexWrap: 'wrap' }}>
+                                  <Calendar size={12} className="text-[var(--violet)]" />
+                                  {isArabic ? (
+                                    <span>من <strong>{h.startDate}</strong> إلى <strong>{h.endDate}</strong></span>
+                                  ) : (
+                                    <span>Du <strong>{h.startDate}</strong> au <strong>{h.endDate}</strong></span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2" style={{ marginLeft: isArabic ? '0' : '1rem', marginRight: isArabic ? '1rem' : '0', flexShrink: 0 }}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingHolId(h.id);
+                                  setEditingHolLabel(h.label);
+                                  setEditingHolStart(h.startDate);
+                                  setEditingHolEnd(h.endDate);
+                                }}
+                                className="timetable-delete-btn"
+                                style={{ position: 'static', opacity: 1, color: 'var(--violet)' }}
+                                title="Modifier"
+                              >
+                                <Pencil size={12} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeHoliday(h.id)}
+                                className="timetable-delete-btn"
+                                style={{ position: 'static', opacity: 1 }}
+                                title="Supprimer"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    {logbookHolidays.length === 0 && (
+                      <div className="text-center p-8 text-[var(--text-subtle)] text-xs">
+                        🌴 Aucune vacance scolaire enregistrée pour le moment.
+                      </div>
+                    )}
+                  </div>
                 </div>
+              )}
 
-                {/* French Font */}
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>خط الفرنسية</label>
-                  <select className="input-control" value={logbookFrFont} onChange={e => setLogbookFrFont(e.target.value)} style={{ fontSize: '0.85rem' }}>
-                    <option value="Outfit">Outfit (عصري)</option>
-                    <option value="Inter">Inter (واضح)</option>
-                    <option value="Computer Modern Serif">Computer Modern Serif (أكاديمي)</option>
-                    <option value="Times New Roman">Times New Roman (كلاسيكي)</option>
-                  </select>
-                </div>
+              {/* Style Subtab */}
+              {logbookSubTab === 'style' && (
+                <div className="flex flex-col gap-5">
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="settings-field">
+                      <label className="settings-label">Police de la langue arabe</label>
+                      <select className="input-control" value={logbookArFont} onChange={e => setLogbookArFont(e.target.value)}>
+                        <option value="UKIJ Merdane">UKIJ Merdane (classique)</option>
+                        <option value="Noto Naskh Arabic">Noto Naskh Arabic</option>
+                        <option value="Amiri">Amiri (académique)</option>
+                        <option value="Tajawal">Tajawal (moderne)</option>
+                        <option value="Cairo">Cairo</option>
+                      </select>
+                    </div>
 
-                {/* Font Size */}
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>حجم الخط الأساسي</label>
-                  <select className="input-control" value={logbookFontSize} onChange={e => setLogbookFontSize(e.target.value)} style={{ fontSize: '0.85rem' }}>
-                    <option value="0.7rem">صغير (0.7rem)</option>
-                    <option value="0.8rem">عادي (0.8rem)</option>
-                    <option value="0.9rem">كبير (0.9rem)</option>
-                    <option value="1rem">كبير جداً (1rem)</option>
-                  </select>
-                </div>
+                    <div className="settings-field">
+                      <label className="settings-label">Police de la langue française</label>
+                      <select className="input-control" value={logbookFrFont} onChange={e => setLogbookFrFont(e.target.value)}>
+                        <option value="Outfit">Outfit (moderne)</option>
+                        <option value="Inter">Inter (clair)</option>
+                        <option value="Computer Modern Serif">Computer Modern Serif</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                      </select>
+                    </div>
 
-                {/* Line Height */}
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>ارتفاع السطر (بالـ px)</label>
-                  <input
-                    type="number" min={12} max={40}
-                    className="input-control"
-                    value={logbookLineHeight}
-                    onChange={e => setLogbookLineHeight(parseInt(e.target.value, 10) || 20)}
-                    style={{ fontSize: '0.85rem' }}
-                  />
-                </div>
-              </div>
+                    <div className="settings-field">
+                      <label className="settings-label">Taille de police de base</label>
+                      <select className="input-control" value={logbookFontSize} onChange={e => setLogbookFontSize(e.target.value)}>
+                        <option value="0.7rem">Petit (0.7rem)</option>
+                        <option value="0.8rem">Normal (0.8rem)</option>
+                        <option value="0.9rem">Grand (0.9rem)</option>
+                        <option value="1rem">Très grand (1rem)</option>
+                      </select>
+                    </div>
 
-              {/* Color pickers */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                {[
-                  { label: 'لون النص الرئيسي', value: logbookColorInk, setter: setLogbookColorInk },
-                  { label: 'لون عنوان الفصل', value: logbookColorChapter, setter: setLogbookColorChapter },
-                  { label: 'لون عنوان المحور', value: logbookColorAxis, setter: setLogbookColorAxis },
-                  { label: 'لون التمارين', value: logbookColorExercise, setter: setLogbookColorExercise },
-                ].map(({ label, value, setter }) => (
-                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.6rem 0.9rem', background: 'var(--bg-glass)', borderRadius: 10, border: '1px solid var(--border)' }}>
-                    <input
-                      type="color"
-                      value={value}
-                      onChange={e => setter(e.target.value)}
-                      style={{ width: 36, height: 36, border: 'none', background: 'none', cursor: 'pointer', borderRadius: 6 }}
-                    />
-                    <div>
-                      <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 700 }}>{label}</p>
-                      <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--text-subtle)', fontFamily: 'monospace' }}>{value}</p>
+                    <div className="settings-field">
+                      <label className="settings-label">Hauteur de ligne (Line-height)</label>
+                      <input
+                        type="number" min={12} max={40}
+                        className="input-control"
+                        value={logbookLineHeight}
+                        onChange={e => setLogbookLineHeight(parseInt(e.target.value, 10) || 20)}
+                      />
                     </div>
                   </div>
-                ))}
+
+                  <div className="border-t border-[var(--border)] pt-5">
+                    <h4 className="text-sm font-black text-[var(--text-main)] mb-3">Couleurs du cahier de textes</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                      {[
+                        { label: 'Couleur du texte principal', value: logbookColorInk, setter: setLogbookColorInk },
+                        { label: 'Couleur des chapitres', value: logbookColorChapter, setter: setLogbookColorChapter },
+                        { label: 'Couleur des axes', value: logbookColorAxis, setter: setLogbookColorAxis },
+                        { label: 'Couleur des exercices', value: logbookColorExercise, setter: setLogbookColorExercise },
+                      ].map(({ label, value, setter }) => (
+                        <div key={label} className="flex items-center gap-3 p-3 bg-[var(--bg-glass)] border border-[var(--border)] rounded-xl">
+                          <input
+                            type="color"
+                            value={value}
+                            onChange={e => setter(e.target.value)}
+                            style={{ width: 34, height: 34, border: 'none', background: 'none', cursor: 'pointer', borderRadius: '6px' }}
+                          />
+                          <div>
+                            <strong className="block text-xs text-[var(--text-main)]">{label}</strong>
+                            <span className="block text-[10px] text-[var(--text-subtle)] font-mono">{value}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* Action Save */}
+              <div className="flex items-center gap-4 mt-8 pt-6 border-t border-[var(--border)]" style={{ justifyContent: 'flex-end' }}>
+                {logbookSaved && (
+                  <div className="save-badge">
+                    <CheckCircle2 size={14} /> Enregistré avec succès !
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={saveLogbookSettings}
+                  className="btn"
+                  style={{
+                    padding: '0.55rem 1.5rem',
+                    borderRadius: '10px',
+                    fontSize: '0.78rem',
+                    fontWeight: 700
+                  }}
+                >
+                  Enregistrer
+                </button>
               </div>
             </div>
           )}
 
-          {/* Save button */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.75rem' }}>
-            <button
-              onClick={saveLogbookSettings}
-              className="btn"
-              style={{
-                padding: '0.75rem 2rem',
-                background: logbookSaved ? 'linear-gradient(135deg,var(--emerald),#34d399)' : undefined,
-                boxShadow: logbookSaved ? '0 4px 16px rgba(16,185,129,0.35)' : undefined,
-                transition: 'all 0.3s'
-              }}
-            >
-              {logbookSaved ? <><CheckCircle2 size={16} /> تم الحفظ!</> : 'حفظ إعدادات دفتر النصوص'}
-            </button>
-          </div>
-        </div>
         </div>
       </div>
     </div>

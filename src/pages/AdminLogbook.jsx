@@ -1169,7 +1169,7 @@ export default function AdminLogbook() {
     ? SYSTEM_LEVELS.find(lvl => lvl.id === selectedClass.level)?.label || selectedClass.level
     : '';
 
-  const isArMode = selectedClass?.language === 'ar';
+  const isArMode = false;
 
   // Style properties are bound to React state variables
 
@@ -2591,7 +2591,7 @@ export default function AdminLogbook() {
               {/* Component Pills Selection */}
               <div className="input-group">
                 <label style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)', display: 'block', marginBottom: '0.45rem' }}>
-                  Composant(s) / المكون(ات)
+                  Composant(s)
                 </label>
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.35rem' }}>
                   {[
@@ -2631,7 +2631,7 @@ export default function AdminLogbook() {
               {/* Lesson Selection (Fiche de Cours) */}
               <div className="input-group">
                 <label style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)', display: 'block', marginBottom: '0.45rem' }}>
-                  Fiche de Cours Correspondante / درس القسم
+                  Fiche de Cours Correspondante
                 </label>
                 <select
                   className="modal-input"
@@ -2738,7 +2738,7 @@ export default function AdminLogbook() {
                   htmlFor="isHeaderSéance" 
                   style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-main)', cursor: 'pointer', userSelect: 'none', lineHeight: 1.35 }}
                 >
-                  Début de chapitre ou contrôle (Afficher un grand titre centré et élégant) / درس جديد أو فرض (عنوان كبير)
+                  Début de chapitre ou contrôle (Afficher un grand titre centré et élégant)
                 </label>
               </div>
 
@@ -2989,7 +2989,7 @@ export default function AdminLogbook() {
               {/* Nature of activities realized */}
               <div className="input-group">
                 <label style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)', display: 'block', marginBottom: '0.45rem' }}>
-                  Nature des activités réalisées (طبيعة الأنشطة المنجزة)
+                  Nature des activités réalisées
                 </label>
 
                 {/* Quick Insert Tooltip Bar */}

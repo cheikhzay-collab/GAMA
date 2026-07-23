@@ -69,7 +69,7 @@ export default function RankingPage() {
 
   // Integrate current logged in user to make sure they are in the dataset with real stats
   if (user && user.name && user.role !== 'admin' && user.name.toLowerCase() !== 'directeur') {
-    const userSchool = user.school || (user.tier === 'premium' ? 'Médecine / Pharmacie' : 'Général (Prépa)');
+    const userSchool = user.school || 'Général';
     mergedUsersMap.set(user.name.toLowerCase(), {
       name: user.name,
       baseXP: user.xp || 0,
@@ -120,7 +120,7 @@ export default function RankingPage() {
     const userRow = {
       rank: currentUserRank,
       name: user.name,
-      school: user.school || (user.tier === 'premium' ? 'Médecine / Pharmacie' : 'Général (Prépa)'),
+      school: user.school || 'Général',
       xp: currentUserXP,
       streak: currentUserStreak,
       isCurrentUser: true,
@@ -274,43 +274,6 @@ export default function RankingPage() {
         </div>
       )}
 
-      {user && user.tier !== 'premium' && user.role !== 'admin' && (
-        <div className="glass-panel" style={{
-          marginTop: '1rem',
-          marginBottom: '1rem',
-          padding: '1rem 1.25rem',
-          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%)',
-          border: '1px solid rgba(99, 102, 241, 0.2)',
-          borderRadius: '1.25rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1rem'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: '280px', flex: 1 }}>
-            <div style={{
-              width: 38, height: 38, borderRadius: '10px',
-              background: 'rgba(99, 102, 241, 0.1)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'var(--violet)', flexShrink: 0
-            }}>
-              <Crown size={18} />
-            </div>
-            <div>
-              <p style={{ margin: 0, fontWeight: 800, fontSize: '0.88rem', color: 'var(--text-main)' }}>
-                Les abonnés Premium s'exercent 3x plus ! ⚡
-              </p>
-              <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                Débloquez tous les examens, fiches de révision illimitées et astuces IA pour monter plus vite dans le classement.
-              </p>
-            </div>
-          </div>
-          <a href="/subscription" className="btn" style={{ padding: '0.5rem 1.25rem', fontSize: '0.82rem', fontWeight: 800, textDecoration: 'none', background: 'var(--violet)', boxShadow: '0 4px 12px var(--violet-glow)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-            Abonnement Pro <Zap size={12} fill="currentColor" />
-          </a>
-        </div>
-      )}
 
       {/* ── Podium Section (Top 3 Displays) ── */}
       {displayTopThree.length > 0 && searchQuery === '' && (() => {

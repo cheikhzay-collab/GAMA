@@ -3,24 +3,27 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Timer, ArrowLeft, CheckCircle2, Zap, ChevronLeft, ChevronRight, LayoutGrid, AlertTriangle } from 'lucide-react';
 
+const hasArabic = (str) => /[\u0600-\u06FF]/.test(str || '');
+
 import { renderWithMath } from '../utils/mathRenderer';
 import CircularTimer from '../components/CircularTimer';
 import MockExamResults from '../components/MockExamResults';
-import GuestResultGate from '../components/GuestResultGate';
+
 import { getExamById } from '../services/examService';
+import { mapLegacySchoolToLevel } from '../utils/levelHelpers';
 
 function renderOptionText(text) {
   return renderWithMath(text);
 }
 
 export default function MockExamMode() {
-  const { exams, saveMockExamResult, schoolBranding, isExamLocked, updateCardProgress, user, loading, loadExamQuestions } = useAuth();
+  const { exams, saveMockExamResult, schoolBranding, updateCardProgress, user, loading, loadExamQuestions } = useAuth();
   const [searchParams] = useSearchParams();
   const examId  = searchParams.get('exam');
   const isGuest = searchParams.get('guest') === 'true' || !user;
   const navigate = useNavigate();
   const location = useLocation();
-  const fromPath = location.state?.from || (user ? '/dashboard' : '/schools');
+  const fromPath = location.state?.from || (user ? '/dashboard' : '/levels');
 
   // Restore answers saved before Google OAuth redirect (guest flow)
   const [guestAnswersRestored, setGuestAnswersRestored] = useState(false);
@@ -124,7 +127,7 @@ export default function MockExamMode() {
     if (isFinished && !hasSavedResult.current && currentExam) {
       hasSavedResult.current = true;
 
-      const brand = schoolBranding[currentExam.school] || { scoring: { correct: 1, wrong: -0.25, empty: 0 } };
+      const brand = schoolBranding[currentExam.level || mapLegacySchoolToLevel(currentExam.school)] || { scoring: { correct: 1, wrong: -0.25, empty: 0 } };
       const rules = brand.scoring || { correct: 1, wrong: -0.25, empty: 0 };
 
       let pts = 0;
@@ -167,7 +170,7 @@ export default function MockExamMode() {
         saveMockExamResult({
           examId: currentExam.id,
           examName: currentExam.name,
-          school: currentExam.school,
+          school: currentExam.level || mapLegacySchoolToLevel(currentExam.school),
           score: pts,
           maxScore: questions.length,
           correctCount,
@@ -188,6 +191,12 @@ export default function MockExamMode() {
   const goPrev = useCallback(() => { if (currentIndex > 0) setCurrentIndex(i => i - 1); }, [currentIndex]);
 
   const currentQuestion = useMemo(() => questions[currentIndex], [questions, currentIndex]);
+  const isQuestionArabic = useMemo(() => {
+    if (!currentQuestion) return false;
+    return hasArabic(currentQuestion.question) ||
+      hasArabic(currentQuestion.context) ||
+      (currentQuestion.options || []).some(o => hasArabic(o.text));
+  }, [currentQuestion]);
   const progress = useMemo(() => questions.length > 0 ? ((currentIndex + 1) / questions.length) * 100 : 0, [currentIndex, questions.length]);
   const answered = useMemo(() => currentQuestion ? answers[currentQuestion.id] : undefined, [currentQuestion, answers]);
   const isCritical = useMemo(() => timeLeft <= 300, [timeLeft]);
@@ -248,56 +257,9 @@ export default function MockExamMode() {
     );
   }
 
-  // For guests, always allow exam access — gate happens AFTER at results screen
-  if (currentExam && !isGuest && isExamLocked(currentExam)) {
-    return (
-      <div className="focus-layout" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '2rem', textAlign: 'center' }}>
-        <div className="glass-panel" style={{ maxWidth: '520px', padding: '3rem' }}>
-          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(99,102,241,0.1)', color: 'var(--violet)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: '0 8px 24px rgba(99,102,241,0.15)' }}>
-            <Zap size={36} fill="currentColor" />
-          </div>
-          <h2 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>Concours Premium Verrouillé</h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', lineHeight: 1.6 }}>
-            L'examen <strong>{currentExam.name}</strong> fait partie de l'offre Premium. Abonnez-vous pour débloquer l'accès à tous les concours blancs et tester vos connaissances en conditions réelles.
-          </p>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-            <button onClick={() => navigate('/subscription')} className="btn" style={{ background: 'linear-gradient(135deg, var(--violet), #818cf8)' }}>
-              ✦ Voir les offres
-            </button>
-            <button onClick={onReturn} className="btn-outline">
-              Retour
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (isFinished) {
-    // Guest who hasn't logged in yet → show registration gate
-    if (isGuest && !user) {
-      const isPremiumExam = currentExam?.tier !== 'freemium';
-      return (
-        <GuestResultGate
-          answeredCount={Object.keys(answers).length}
-          totalCount={questions.length}
-          examId={examId}
-          answers={answers}
-          isPremiumExam={isPremiumExam}
-          score={guestResults?.score ?? 0}
-          correctCount={guestResults?.correctCount ?? 0}
-          wrongCount={guestResults?.wrongCount ?? 0}
-          emptyCount={guestResults?.emptyCount ?? 0}
-          pct={guestResults?.pct ?? 0}
-          onAuthSuccess={() => {
-            // For email/password: user state updates via AuthContext
-            // The guestAnswersRestored useEffect will detect user + sessionStorage and restore answers
-          }}
-        />
-      );
-    }
-
-    // Logged-in user (normal or post-guest-registration) → show full results
+    // Show full results for all authenticated users
     return (
       <div className="focus-layout results-layout">
         <MockExamResults
@@ -407,7 +369,9 @@ export default function MockExamMode() {
                 lineHeight: '1.65', 
                 color: 'var(--text-main)', 
                 paddingRight: '4px',
-                fontFamily: "'Computer Modern Serif', 'STIX Two Text', Georgia, serif"
+                fontFamily: isQuestionArabic ? "'UKIJMerdaneRegular', 'Cairo', sans-serif" : "'Computer Modern Serif', 'STIX Two Text', Georgia, serif",
+                direction: isQuestionArabic ? 'rtl' : 'ltr',
+                textAlign: isQuestionArabic ? 'right' : 'left'
               }}>
                 {renderWithMath(currentQuestion.context)}
                 {(currentQuestion.imagePosition === 'in_context' || currentQuestion.imagePosition === 'context') && currentQuestion.image && (
@@ -532,7 +496,9 @@ export default function MockExamMode() {
                     color: 'var(--text-main)',
                     letterSpacing: '-0.01em',
                     flex: 1,
-                    fontFamily: "'Computer Modern Serif', 'STIX Two Text', Georgia, serif"
+                    fontFamily: isQuestionArabic ? "'UKIJMerdaneRegular', 'Cairo', sans-serif" : "'Computer Modern Serif', 'STIX Two Text', Georgia, serif",
+                    direction: isQuestionArabic ? 'rtl' : 'ltr',
+                    textAlign: isQuestionArabic ? 'right' : 'left'
                   }}>
                     {renderWithMath(currentQuestion.question)}
                   </div>
@@ -556,7 +522,7 @@ export default function MockExamMode() {
                 );
               })()}
 
-              <div className="options-grid" style={{ gap: '0.5rem' }}>
+              <div className="options-grid" style={{ gap: '0.5rem', direction: isQuestionArabic ? 'rtl' : 'ltr' }}>
                 {currentQuestion.options.map((opt) => {
                   const isSelected = answered === opt.id;
                   return (
@@ -564,8 +530,13 @@ export default function MockExamMode() {
                       key={opt.id}
                       className={`option-btn ${isSelected ? 'selected' : ''}`}
                       onClick={() => handleSelect(opt.id)}
+                      style={isQuestionArabic ? {
+                        direction: 'rtl',
+                        textAlign: 'right',
+                        fontFamily: "'UKIJMerdaneRegular', 'Cairo', sans-serif"
+                      } : {}}
                     >
-                      <span className="option-letter">{opt.id}</span>
+                      <span className="option-letter" style={isQuestionArabic ? { marginLeft: '0.5rem', marginRight: '0' } : {}}>{opt.id}</span>
                       <span style={{ flex: 1 }}>{renderOptionText(opt.text)}</span>
                       {isSelected && <CheckCircle2 size={18} color="var(--violet)" style={{ flexShrink: 0 }} />}
                     </button>

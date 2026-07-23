@@ -10,6 +10,8 @@ import DiagnosticReport from '../components/DiagnosticReport';
 import { renderWithMath } from '../utils/mathRenderer';
 import SmartCameraScanner from '../components/SmartCameraScanner';
 import { generateStudentReportHTML, openPrintWindow } from '../utils/generateExamPDF';
+import { getAllClasses, recordStudentExamGrade } from '../services/classService';
+import { getAllUsers } from '../services/userService';
 
 const CHOICES = ['A', 'B', 'C', 'D', 'E'];
 
@@ -475,7 +477,7 @@ function ARCopyOverlay({ imagePreview, corrected }) {
 
 /* ── Main Global Scanner Page ────────────────────────────────────── */
 export default function OMRScannerPage() {
-  const { user, theme, mockExamHistory, updateCardProgress, saveMockExamResult, schoolBranding, exams, isExamLocked, profName, profPhone, profSite, loadExamQuestions } = useAuth();
+  const { user, theme, mockExamHistory, updateCardProgress, saveMockExamResult, schoolBranding, exams, profName, profPhone, profSite, loadExamQuestions } = useAuth();
   const navigate = useNavigate();
 
   const isDark = theme === 'dark';
@@ -491,6 +493,11 @@ export default function OMRScannerPage() {
   const emeraldSoftColor = isDark ? 'rgba(16, 185, 129, 0.08)' : 'rgba(5, 150, 105, 0.08)';
   const dangerSoftColor = isDark ? 'rgba(239, 68, 68, 0.08)' : 'rgba(220, 38, 38, 0.08)';
 
+  const isPremium = user?.isPremium || user?.role === 'admin' || user?.role === 'prof';
+  const omrScansCount = user?.omrScansCount || 0;
+  const scanLimit = 50;
+  const hasReachedLimit = !isPremium && omrScansCount >= scanLimit;
+
 
   const isDirectCaptureEnabled = localStorage.getItem('scanner_direct_capture_enabled') !== 'false';
   const [activeExam,   setActiveExam]   = useState(null);
@@ -503,6 +510,9 @@ export default function OMRScannerPage() {
   const [scanError,    setScanError]    = useState(null);
   const [scanStep,     setScanStep]     = useState(0);
   const [resultsTab,   setResultsTab]   = useState('list');
+  const [scannedStudent, setScannedStudent] = useState(null);
+  const [assignedClassName, setAssignedClassName] = useState(null);
+  const [autoScanNext, setAutoScanNext] = useState(false);
 
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -533,10 +543,6 @@ export default function OMRScannerPage() {
   const brand = (activeExam ? schoolBranding[activeExam.school] : null) || { scoring: { correct: 1, wrong: -0.25, empty: 0 } };
   const rules = brand.scoring || { correct: 1, wrong: -0.25, empty: 0 };
 
-  const isPremium = user?.role === 'admin' || user?.tier === 'premium';
-  const scanLimit = 3;
-  const omrScansCount = mockExamHistory ? mockExamHistory.filter(h => h.mode === 'omr').length : 0;
-  const hasReachedLimit = !isPremium && omrScansCount >= scanLimit;
 
   const handleFile = useCallback(async (file) => {
     if (!file || !file.type.startsWith('image/')) return;
@@ -559,6 +565,51 @@ export default function OMRScannerPage() {
         throw new Error("Code QR L'Match introuvable. Veuillez cadrer correctement le haut de la feuille avec une bonne luminosité.");
       }
 
+      if (qrPayload.massarCode || qrPayload.studentName) {
+        let foundName = qrPayload.studentName || '';
+        let foundClassName = '';
+        const massar = qrPayload.massarCode || '';
+        
+        if (massar) {
+          try {
+            const classes = await getAllClasses();
+            for (const cls of classes) {
+              const st = (cls.students || []).find(s => 
+                (s.massarCode && s.massarCode.toUpperCase() === massar.toUpperCase()) || 
+                (s.id && s.id.toUpperCase() === massar.toUpperCase())
+              );
+              if (st) {
+                foundName = st.name;
+                foundClassName = cls.name;
+                break;
+              }
+            }
+
+            if (!foundName) {
+              const users = await getAllUsers();
+              const u = (users || []).find(usr => 
+                (usr.massarCode && usr.massarCode.toUpperCase() === massar.toUpperCase()) ||
+                (usr.cne && usr.cne.toUpperCase() === massar.toUpperCase()) ||
+                (usr.id && usr.id.toUpperCase() === massar.toUpperCase())
+              );
+              if (u && u.name) {
+                foundName = u.name;
+              }
+            }
+          } catch (e) {
+            console.error('Error resolving student name:', e);
+          }
+        }
+
+        setScannedStudent({
+          massarCode: massar,
+          name: foundName || '',
+          className: foundClassName
+        });
+      } else {
+        setScannedStudent(null);
+      }
+
       // 2. Lookup exam metadata (supports starts-with for 8-char prefixes)
       const found = exams.find(e => 
         qrPayload.examId.length === 8 
@@ -567,9 +618,6 @@ export default function OMRScannerPage() {
       );
       if (!found) {
         throw new Error(`Examen introuvable dans la bibliothèque (ID : ${qrPayload.examId.slice(0, 8)})`);
-      }
-      if (isExamLocked(found)) {
-        throw new Error("Cet examen fait partie de l'offre Premium. Veuillez vous abonner pour scanner votre feuille de réponses et obtenir votre correction.");
       }
 
       // Load questions dynamically if they are not preloaded
@@ -585,7 +633,7 @@ export default function OMRScannerPage() {
       setScanError(e.message);
       setPhase('upload');
     }
-  }, [exams, isExamLocked, loadExamQuestions]);
+  }, [exams, loadExamQuestions]);
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -649,12 +697,59 @@ export default function OMRScannerPage() {
       mode: 'omr'
     });
 
+    // Auto-record grade to class if scannedStudent was identified via QR
+    if (scannedStudent && scannedStudent.massarCode) {
+      (async () => {
+        try {
+          const targetMassar = scannedStudent.massarCode.toUpperCase();
+          const allClasses = await getAllClasses();
+          let targetClass = null;
+
+          for (const cls of allClasses) {
+            const hasStudent = (cls.students || []).some(s => 
+              (s.massarCode && s.massarCode.toUpperCase() === targetMassar) || 
+              (s.id && s.id.toUpperCase() === targetMassar)
+            ) || (cls.grades && (cls.grades[targetMassar] !== undefined || cls.grades[scannedStudent.massarCode] !== undefined))
+              || (cls.competitionGrades && (cls.competitionGrades[targetMassar] !== undefined || cls.competitionGrades[scannedStudent.massarCode] !== undefined));
+
+            if (hasStudent) {
+              targetClass = cls;
+              break;
+            }
+          }
+
+          // Fallback to first class if no specific student match found in arrays
+          if (!targetClass && allClasses.length > 0) {
+            targetClass = allClasses[0];
+          }
+
+          if (targetClass) {
+            await recordStudentExamGrade(targetClass.id, scannedStudent.massarCode, activeExam.name, pts, Q);
+            setAssignedClassName(targetClass.name);
+          }
+        } catch (err) {
+          console.error('Grade auto-assignment error:', err);
+        }
+      })();
+    }
+
     setPhase('results');
+
+    if (autoScanNext) {
+      setTimeout(() => {
+        setPhase('upload');
+        setImagePreview(url => { if (url) URL.revokeObjectURL(url); return null; });
+        setScanned([]); setCorrected([]); setScore(null); setScanStep(0); setScanError(null); setResultsTab('list');
+        setScannedStudent(null); setAssignedClassName(null);
+        setScanMethod(localStorage.getItem('scanner_direct_capture_enabled') !== 'false' ? 'camera' : 'file');
+      }, 1500);
+    }
   };
 
   const reset = () => {
     setPhase('upload'); setActiveExam(null); setImagePreview(url => { if (url) URL.revokeObjectURL(url); return null; }); setScanned([]);
     setCorrected([]); setScore(null); setScanStep(0); setScanError(null); setResultsTab('list');
+    setScannedStudent(null); setAssignedClassName(null);
     setScanMethod(localStorage.getItem('scanner_direct_capture_enabled') !== 'false' ? 'camera' : 'file');
   };
 
@@ -889,64 +984,92 @@ export default function OMRScannerPage() {
               
                   {/* Premium Segmented Controller */}
                   {isDirectCaptureEnabled && (
-                    <div style={{ 
-                      display: 'flex', 
-                      background: 'rgba(255, 255, 255, 0.02)', 
-                      border: '1px solid var(--border)', 
-                      padding: '0.3rem', 
-                      borderRadius: '1.25rem', 
-                      width: '100%',
-                      marginBottom: '1.75rem'
-                    }}>
-                      <button 
-                        onClick={() => setScanMethod('camera')}
-                        style={{
-                          flex: 1,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '0.5rem',
-                          padding: '0.75rem 1rem',
-                          borderRadius: '1rem',
-                          border: 'none',
-                          fontWeight: 800,
-                          fontSize: '0.85rem',
-                          fontFamily: 'inherit',
-                          cursor: 'pointer',
-                          transition: 'all 0.25s',
-                          background: scanMethod === 'camera' ? 'var(--violet)' : 'transparent',
-                          color: scanMethod === 'camera' ? '#fff' : 'var(--text-muted)',
-                          boxShadow: scanMethod === 'camera' ? '0 4px 16px var(--violet-glow)' : 'none'
-                        }}
-                      >
-                        <Camera size={16} />
-                        Utiliser la caméra
-                      </button>
-                      <button 
-                        onClick={() => setScanMethod('file')}
-                        style={{
-                          flex: 1,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '0.5rem',
-                          padding: '0.75rem 1rem',
-                          borderRadius: '1rem',
-                          border: 'none',
-                          fontWeight: 800,
-                          fontSize: '0.85rem',
-                          fontFamily: 'inherit',
-                          cursor: 'pointer',
-                          transition: 'all 0.25s',
-                          background: scanMethod === 'file' ? 'var(--violet)' : 'transparent',
-                          color: scanMethod === 'file' ? '#fff' : 'var(--text-muted)',
-                          boxShadow: scanMethod === 'file' ? '0 4px 16px var(--violet-glow)' : 'none'
-                        }}
-                      >
-                        <Upload size={16} />
-                        Importer un fichier
-                      </button>
-                    </div>
+                    <>
+                      <div style={{ 
+                        display: 'flex', 
+                        background: 'rgba(255, 255, 255, 0.02)', 
+                        border: '1px solid var(--border)', 
+                        padding: '0.3rem', 
+                        borderRadius: '1.25rem', 
+                        width: '100%',
+                        marginBottom: '1.75rem'
+                      }}>
+                        <button 
+                          onClick={() => setScanMethod('camera')}
+                          style={{
+                            flex: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.5rem',
+                            padding: '0.75rem 1rem',
+                            borderRadius: '1rem',
+                            border: 'none',
+                            fontWeight: 800,
+                            fontSize: '0.85rem',
+                            fontFamily: 'inherit',
+                            cursor: 'pointer',
+                            transition: 'all 0.25s',
+                            background: scanMethod === 'camera' ? 'var(--violet)' : 'transparent',
+                            color: scanMethod === 'camera' ? '#fff' : 'var(--text-muted)',
+                            boxShadow: scanMethod === 'camera' ? '0 4px 16px var(--violet-glow)' : 'none'
+                          }}
+                        >
+                          <Camera size={16} />
+                          Utiliser la caméra
+                        </button>
+                        <button 
+                          onClick={() => setScanMethod('file')}
+                          style={{
+                            flex: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.5rem',
+                            padding: '0.75rem 1rem',
+                            borderRadius: '1rem',
+                            border: 'none',
+                            fontWeight: 800,
+                            fontSize: '0.85rem',
+                            fontFamily: 'inherit',
+                            cursor: 'pointer',
+                            transition: 'all 0.25s',
+                            background: scanMethod === 'file' ? 'var(--violet)' : 'transparent',
+                            color: scanMethod === 'file' ? '#fff' : 'var(--text-muted)',
+                            boxShadow: scanMethod === 'file' ? '0 4px 16px var(--violet-glow)' : 'none'
+                          }}
+                        >
+                          <Upload size={16} />
+                          Importer un fichier
+                        </button>
+                      </div>
+
+                      <label style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        padding: '0.65rem 1rem',
+                        borderRadius: '1rem',
+                        border: autoScanNext ? '1.5px solid var(--emerald)' : '1px solid var(--border)',
+                        background: autoScanNext ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255, 255, 255, 0.03)',
+                        color: autoScanNext ? 'var(--emerald)' : 'var(--text-muted)',
+                        cursor: 'pointer',
+                        fontWeight: 800,
+                        fontSize: '0.82rem',
+                        marginTop: '0.75rem',
+                        marginBottom: '1rem',
+                        transition: 'all 0.2s ease'
+                      }}>
+                        <input 
+                          type="checkbox" 
+                          checked={autoScanNext} 
+                          onChange={(e) => setAutoScanNext(e.target.checked)} 
+                          style={{ cursor: 'pointer', accentColor: 'var(--emerald)', width: 16, height: 16 }} 
+                        />
+                        <span>⚡ Mode Continu Auto-Next (Correction enchaînée de la classe)</span>
+                      </label>
+                    </>
                   )}
 
                   {scanMethod === 'camera' ? (
@@ -1123,6 +1246,54 @@ export default function OMRScannerPage() {
                 </div>
               </div>
 
+              {/* Student identification banner during verification */}
+              {scannedStudent && (
+                <div style={{
+                  background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(16, 185, 129, 0.12))',
+                  border: '1px solid rgba(124, 58, 237, 0.3)',
+                  borderRadius: '1.25rem',
+                  padding: '1.1rem 1.5rem',
+                  marginBottom: '1.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                  boxShadow: '0 8px 24px rgba(124, 58, 237, 0.08)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+                    <div style={{
+                      width: 46, height: 46, borderRadius: '50%',
+                      background: 'linear-gradient(135deg, var(--violet), var(--emerald))',
+                      color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontWeight: 900, fontSize: '1.25rem', boxShadow: '0 4px 12px var(--violet-glow)'
+                    }}>
+                      {(scannedStudent.name || 'E')[0]}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--violet)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Élève Identifié par QR Code (Attribution Automatique)
+                      </div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                        {(scannedStudent.name && !scannedStudent.name.startsWith('Élève (')) ? scannedStudent.name : 'Élève'} {scannedStudent.massarCode ? `(${scannedStudent.massarCode})` : ''}
+                      </div>
+                      {scannedStudent.className && (
+                        <div style={{ fontSize: '0.82rem', color: 'var(--emerald)', fontWeight: 700, marginTop: '0.15rem' }}>
+                          Classe : <strong>{scannedStudent.className}</strong>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <span style={{
+                    padding: '0.45rem 0.95rem', borderRadius: '20px',
+                    background: 'rgba(16, 185, 129, 0.15)', color: 'var(--emerald)',
+                    fontWeight: 800, fontSize: '0.85rem', border: '1px solid rgba(16, 185, 129, 0.3)',
+                    display: 'flex', alignItems: 'center', gap: '0.4rem'
+                  }}>
+                    <CheckCircle2 size={15} /> Élève Confirmé
+                  </span>
+                </div>
+              )}
+
               <VerifyGrid scanned={scanned} questions={questions} onChange={handleVerifyChange} isMobile={isMobile} />
 
               <div className="actions-row" style={{
@@ -1146,6 +1317,52 @@ export default function OMRScannerPage() {
           {phase === 'results' && score && activeExam && (
             <div style={{ maxWidth: 880, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
               
+              {/* Student identification banner */}
+              {scannedStudent && (
+                <div style={{
+                  background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(16, 185, 129, 0.12))',
+                  border: '1px solid rgba(124, 58, 237, 0.3)',
+                  borderRadius: '1.25rem',
+                  padding: '1.1rem 1.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                  boxShadow: '0 8px 24px rgba(124, 58, 237, 0.08)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+                    <div style={{
+                      width: 44, height: 44, borderRadius: '50%',
+                      background: 'linear-gradient(135deg, var(--violet), var(--emerald))',
+                      color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontWeight: 900, fontSize: '1.2rem', boxShadow: '0 4px 12px var(--violet-glow)'
+                    }}>
+                      {(scannedStudent.name || 'E')[0]}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--violet)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Élève identifié automatiquement par QR Code
+                      </div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                        {(scannedStudent.name && !scannedStudent.name.startsWith('Élève (')) ? scannedStudent.name : 'Élève'} {scannedStudent.massarCode ? `(${scannedStudent.massarCode})` : ''}
+                      </div>
+                      {assignedClassName && (
+                        <div style={{ fontSize: '0.82rem', color: 'var(--emerald)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.2rem' }}>
+                          <CheckCircle2 size={14} /> Note attribuée et enregistrée automatiquement dans le carnet de classe : <strong>{assignedClassName}</strong>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <span style={{
+                    padding: '0.4rem 0.85rem', borderRadius: '20px',
+                    background: 'rgba(16, 185, 129, 0.15)', color: 'var(--emerald)',
+                    fontWeight: 800, fontSize: '0.82rem', border: '1px solid rgba(16, 185, 129, 0.3)'
+                  }}>
+                    Attribution Automatique ✓
+                  </span>
+                </div>
+              )}
+
               {/* Bento Grid Scorecard */}
               <div className="scorecard-bento-grid">
                 

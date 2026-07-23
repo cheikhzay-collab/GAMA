@@ -622,10 +622,17 @@ export default function AdminLessonEdit() {
                       className="input-control"
                       value={sec.type}
                       onChange={e => handleUpdateSection(secIdx, 'type', e.target.value)}
-                      style={{ width: '100%' }}
+                      style={{ width: '100%', fontWeight: 700 }}
                     >
-                      <option value="content">Théorie (Cours)</option>
-                      <option value="exercise">Exercice / Corrigé</option>
+                      <option value="content">Théorie (Général)</option>
+                      <option value="definition">Définition (تعريف)</option>
+                      <option value="property">Propriété (خاصية)</option>
+                      <option value="theorem">Théorème (مبرهنة)</option>
+                      <option value="corollary">Corollaire (نتيجة)</option>
+                      <option value="example">Exemple (مثال)</option>
+                      <option value="remark">Remarque (ملاحظة)</option>
+                      <option value="activity">Activité / Application (تطبيق)</option>
+                      <option value="exercise">Exercice / Corrigé (تمرين)</option>
                     </select>
                   </div>
                 </div>
@@ -668,7 +675,7 @@ export default function AdminLessonEdit() {
                 </div>
 
                 {/* Type 1: Content Block Editor */}
-                {sec.type === 'content' && (
+                {sec.type !== 'exercise' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--violet)' }}>Éléments de texte</span>
@@ -691,6 +698,7 @@ export default function AdminLessonEdit() {
                             <option value="highlight_box">Formule (Encadré)</option>
                             <option value="notation_grid">Grille de Notations</option>
                             <option value="table">Tableau Comparatif</option>
+                            <option value="image">🖼️ Image</option>
                           </select>
                           
                           {/* Reordering content items inside section */}
@@ -801,6 +809,93 @@ export default function AdminLessonEdit() {
                                 rows={3}
                                 style={{ padding: '0.35rem', fontSize: '0.8rem' }}
                               />
+                            </div>
+                          </div>
+                        ) : item.type === 'image' ? (
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(255,255,255,0.01)', padding: '0.75rem', borderRadius: '8px', border: '1px dashed var(--border)' }}>
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                              <div style={{ fontSize: '1.5rem' }}>🖼️</div>
+                              <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)' }}>Insérer une image</label>
+                            </div>
+                            {/* URL input */}
+                            <div>
+                              <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>URL de l'image</label>
+                              <input
+                                type="url"
+                                className="input-control"
+                                placeholder="https://... ou coller une URL d'image"
+                                value={item.url || ''}
+                                onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'url', e.target.value)}
+                                style={{ padding: '0.35rem 0.5rem', fontSize: '0.8rem' }}
+                              />
+                            </div>
+                            {/* OR upload */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>— ou —</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                style={{ fontSize: '0.75rem', flex: 1 }}
+                                onChange={e => {
+                                  const file = e.target.files[0];
+                                  if (!file) return;
+                                  const reader = new FileReader();
+                                  reader.onload = ev => handleUpdateContentItem(secIdx, itemIdx, 'url', ev.target.result);
+                                  reader.readAsDataURL(file);
+                                }}
+                              />
+                            </div>
+                            {/* Preview */}
+                            {item.url && (
+                              <div style={{ textAlign: 'center', border: '1px solid var(--border)', borderRadius: '6px', padding: '0.5rem', background: 'rgba(255,255,255,0.02)' }}>
+                                <img
+                                  src={item.url}
+                                  alt={item.alt || ''}
+                                  style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'contain', borderRadius: '4px' }}
+                                  onError={e => { e.target.style.display = 'none'; }}
+                                />
+                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>Aperçu</div>
+                              </div>
+                            )}
+                            {/* Caption / Alt */}
+                            <div>
+                              <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Légende (optionnel)</label>
+                              <input
+                                type="text"
+                                className="input-control"
+                                placeholder="ex: Figure 1 — Construction du barycentre G"
+                                value={item.alt || ''}
+                                onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'alt', e.target.value)}
+                                style={{ padding: '0.35rem 0.5rem', fontSize: '0.8rem' }}
+                              />
+                            </div>
+                            {/* Align & Width */}
+                            <div style={{ display: 'flex', gap: '0.75rem' }}>
+                              <div style={{ flex: 1 }}>
+                                <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Alignement</label>
+                                <select
+                                  className="input-control"
+                                  value={item.align || 'center'}
+                                  onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'align', e.target.value)}
+                                  style={{ padding: '0.35rem', fontSize: '0.8rem' }}
+                                >
+                                  <option value="left">◀ Gauche</option>
+                                  <option value="center">▐ Centre</option>
+                                  <option value="right">▶ Droite</option>
+                                </select>
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Largeur (%)</label>
+                                <input
+                                  type="number"
+                                  className="input-control"
+                                  min={10}
+                                  max={100}
+                                  value={item.width_pct || 80}
+                                  onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'width_pct', Number(e.target.value))}
+                                  style={{ padding: '0.35rem', fontSize: '0.8rem' }}
+                                />
+                              </div>
                             </div>
                           </div>
                         ) : (

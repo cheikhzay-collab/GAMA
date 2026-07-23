@@ -2,50 +2,79 @@ import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
-import { initFacebookPixel, trackPixelEvent } from './utils/facebookPixel';
 
-// Core pages kept statically for instant initial render
-import LandingPage from './pages/LandingPage';
-import LandingPageAr from './pages/LandingPageAr';
+// Core pages — kept static for instant initial render
 import Login from './pages/Login';
 import Layout from './components/Layout';
 import StudentDashboard from './pages/StudentDashboard';
+import CommandPalette from './components/CommandPalette';
 
-// Secondary/Admin pages lazy-loaded to reduce main bundle size
-const StudyMode = lazy(() => import('./pages/StudyMode'));
-const AdminOverview = lazy(() => import('./pages/AdminOverview'));
-const AdminExams = lazy(() => import('./pages/AdminExams'));
-const AdminUsers = lazy(() => import('./pages/AdminUsers'));
-const AdminUpload = lazy(() => import('./pages/AdminUpload'));
-const AdminSettings = lazy(() => import('./pages/AdminSettings'));
-const MockExamMode = lazy(() => import('./pages/MockExamMode'));
-const SchoolsPage = lazy(() => import('./pages/SchoolsPage'));
-const SchoolExamsPage = lazy(() => import('./pages/SchoolExamsPage'));
+// Secondary/Admin pages — lazy-loaded to reduce main bundle size
+const StudyMode          = lazy(() => import('./pages/StudyMode'));
+const AdminOverview      = lazy(() => import('./pages/AdminOverview'));
+const AdminExams         = lazy(() => import('./pages/AdminExams'));
+const AdminUpload        = lazy(() => import('./pages/AdminUpload'));
+const AdminSettings      = lazy(() => import('./pages/AdminSettings'));
+const MockExamMode       = lazy(() => import('./pages/MockExamMode'));
 const AdminStudentDetail = lazy(() => import('./pages/AdminStudentDetail'));
-const AdminAIImport = lazy(() => import('./pages/AdminAIImport'));
-const AdminEbooks = lazy(() => import('./pages/AdminEbooks'));
-const AdminExamEdit = lazy(() => import('./pages/AdminExamEdit'));
+const AdminEbooks        = lazy(() => import('./pages/AdminEbooks'));
+const AdminExamEdit      = lazy(() => import('./pages/AdminExamEdit'));
 const SuitesNumeriquesPage = lazy(() => import('./pages/SuitesNumeriquesPage'));
-const AdminLessonsImport = lazy(() => import('./pages/AdminLessonsImport'));
-const AdminLessons = lazy(() => import('./pages/AdminLessons'));
-const AdminClasses = lazy(() => import('./pages/AdminClasses'));
-const AdminClassDetail = lazy(() => import('./pages/AdminClassDetail'));
-const LessonViewerPage = lazy(() => import('./pages/LessonViewerPage'));
-const AdminLessonEdit = lazy(() => import('./pages/AdminLessonEdit'));
-const AdminLogbook = lazy(() => import('./pages/AdminLogbook'));
-const LevelsPage = lazy(() => import('./pages/LevelsPage'));
-const OMRScannerPage = lazy(() => import('./pages/OMRScannerPage'));
-const SubscriptionPage = lazy(() => import('./pages/SubscriptionPage'));
-const RankingPage = lazy(() => import('./pages/RankingPage'));
-const AuthCallback = lazy(() => import('./pages/AuthCallback'));
-const PrintView = lazy(() => import('./pages/PrintView'));
+const AdminAIGenerator   = lazy(() => import('./pages/AdminAIGenerator'));
+const AdminLessons       = lazy(() => import('./pages/AdminLessons'));
+const AdminClasses       = lazy(() => import('./pages/AdminClasses'));
+const AdminClassDetail   = lazy(() => import('./pages/AdminClassDetail'));
+const LessonViewerPage   = lazy(() => import('./pages/LessonViewerPage'));
+const AdminLessonEdit    = lazy(() => import('./pages/AdminLessonEdit'));
+const AdminLogbook       = lazy(() => import('./pages/AdminLogbook'));
+const LevelsPage         = lazy(() => import('./pages/LevelsPage'));
+const OMRScannerPage     = lazy(() => import('./pages/OMRScannerPage'));
+const RankingPage        = lazy(() => import('./pages/RankingPage'));
+const AuthCallback       = lazy(() => import('./pages/AuthCallback'));
+const PrintView          = lazy(() => import('./pages/PrintView'));
+
+// ─── Route Guards ─────────────────────────────────────────────────────────────
+
+/**
+ * AdminRoute — protects all /admin/* routes.
+ * Redirects non-admin users to /dashboard.
+ */
+function AdminRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingFallback />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'admin') return <Navigate to="/dashboard" replace />;
+  return children;
+}
+
+/**
+ * PrivateRoute — protects all student routes.
+ * Redirects unauthenticated users to /login.
+ */
+function PrivateRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingFallback />;
+  if (!user) return <Navigate to="/login" replace />;
+  return children;
+}
+
+/**
+ * GuestRoute — prevents already-authenticated users from seeing /login.
+ * Redirects admins to /admin/dashboard, students to /dashboard.
+ */
+function GuestRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingFallback />;
+  if (user) {
+    return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/dashboard'} replace />;
+  }
+  return children;
+}
 
 /**
  * OAuthRedirectGuard — detects when Supabase redirected back with a hash-based
  * access_token (i.e. #access_token=...) and navigates to /dashboard once
  * the AuthContext has populated the user object.
- * This handles the case where the Supabase redirect URL in the dashboard is the
- * Site URL (e.g. lconq.vercel.app) rather than /auth/callback.
  */
 function OAuthRedirectGuard() {
   const navigate = useNavigate();
@@ -54,27 +83,25 @@ function OAuthRedirectGuard() {
   React.useEffect(() => {
     const hash = window.location.hash;
     if (hash && hash.includes('access_token=') && window.location.pathname !== '/auth/callback') {
-      // Clear the hash from the address bar (cosmetic + security)
       window.history.replaceState(null, '', window.location.pathname);
     }
   }, []);
 
   React.useEffect(() => {
-    // If we landed here with a hash token AND now the user is authenticated,
-    // redirect them to the dashboard
     const wasOAuthRedirect = sessionStorage.getItem('_oauth_in_progress') === '1';
-
     if (user && wasOAuthRedirect) {
       sessionStorage.removeItem('_oauth_in_progress');
       const pathname = window.location.pathname;
       if (pathname === '/' || pathname === '/login' || pathname === '/register') {
-        navigate('/dashboard', { replace: true });
+        navigate(user.role === 'admin' ? '/admin/dashboard' : '/dashboard', { replace: true });
       }
     }
   }, [user, navigate]);
 
   return null;
 }
+
+// ─── App Content ───────────────────────────────────────────────────────────────
 
 function AppContent() {
   const location = useLocation();
@@ -83,23 +110,12 @@ function AppContent() {
     const path = location.pathname;
     let title = "L'CONQ";
 
-    if (path === '/') {
-      title = "L'CONQ — Préparation aux Concours Grandes Écoles du Maroc";
-    } else if (path === '/ar') {
-      title = "L'CONQ — التحضير لمباريات المدارس العليا بالمغرب";
-    } else if (path === '/login') {
+    if (path === '/login' || path === '/') {
       title = "Connexion — L'CONQ";
     } else if (path === '/register') {
       title = "Inscription — L'CONQ";
     } else if (path === '/dashboard') {
       title = "Tableau de Bord — L'CONQ";
-    } else if (path === '/subscription') {
-      title = "Mon Abonnement — L'CONQ";
-    } else if (path === '/schools') {
-      title = "Choix des Écoles — L'CONQ";
-    } else if (path.startsWith('/schools/')) {
-      const school = decodeURIComponent(path.split('/')[2] || '');
-      title = school ? `${school} — L'CONQ` : "Concours — L'CONQ";
     } else if (path === '/study/suites-numeriques') {
       title = "Fiche Interactive : Suites Numériques — L'CONQ";
     } else if (path === '/study') {
@@ -109,27 +125,25 @@ function AppContent() {
     } else if (path === '/scanner') {
       title = "Scanner Intelligent OMR — L'CONQ";
     } else if (path === '/ranking') {
-      title = "Classement National — L'CONQ";
+      title = "Classement — L'CONQ";
     } else if (path === '/admin/dashboard') {
       title = "Admin : Vue d'ensemble — L'CONQ";
     } else if (path === '/admin/exams') {
-      title = "Admin : Bibliothèque Concours — L'CONQ";
+      title = "Admin : Bibliothèque Examens — L'CONQ";
     } else if (path.startsWith('/admin/exams/') && path.endsWith('/edit')) {
-      title = "Admin : Édition du Concours — L'CONQ";
+      title = "Admin : Édition de l'Examen — L'CONQ";
     } else if (path === '/admin/users') {
       title = "Admin : Gestion des Élèves — L'CONQ";
     } else if (path.startsWith('/admin/users/')) {
       title = "Admin : Dossier de l'Élève — L'CONQ";
     } else if (path === '/admin/upload') {
       title = "Admin : Upload de Sujets — L'CONQ";
-    } else if (path === '/admin/ai-import') {
-      title = "Admin : Importateur de Sujets IA — L'CONQ";
+    } else if (path === '/admin/ai-import' || path === '/admin/ai-lessons' || path === '/admin/ai-generator') {
+      title = "Admin : Générateur de Contenu IA — L'CONQ";
     } else if (path === '/admin/lessons') {
       title = "Admin : Fiches de Cours — L'CONQ";
     } else if (path === '/levels') {
       title = "Niveaux & Cours — L'CONQ";
-    } else if (path === '/admin/ai-lessons') {
-      title = "Admin : Générateur de Cours IA — L'CONQ";
     } else if (path.startsWith('/admin/lessons/') && path.endsWith('/edit')) {
       title = "Admin : Édition de la Fiche — L'CONQ";
     } else if (path.startsWith('/admin/lessons/')) {
@@ -140,33 +154,30 @@ function AppContent() {
       title = "Admin : Paramètres Système — L'CONQ";
     } else if (path === '/admin/logbook') {
       title = "Admin : Cahier de Textes — L'CONQ";
+    } else if (path === '/admin/classes') {
+      title = "Admin : Gestion des Classes — L'CONQ";
     }
 
     document.title = title;
-
-    // Track PageView on route change via Facebook Pixel
-    trackPixelEvent('PageView');
   }, [location]);
 
   return (
     <>
+      <CommandPalette />
       <OAuthRedirectGuard />
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/ar" element={<LandingPageAr />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Login />} />
+          {/* Public routes — redirect to login if already authenticated */}
+          <Route path="/" element={<GuestRoute><Login /></GuestRoute>} />
+          <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+          <Route path="/register" element={<GuestRoute><Login /></GuestRoute>} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/print" element={<PrintView />} />
-          
-          {/* Protected Routes inside Layout */}
-          <Route element={<Layout />}>
+
+          {/* Protected student routes inside Layout */}
+          <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
             {/* Student Routes */}
             <Route path="/dashboard" element={<StudentDashboard />} />
-            <Route path="/subscription" element={<SubscriptionPage />} />
-            <Route path="/schools" element={<SchoolsPage />} />
-            <Route path="/schools/:schoolName" element={<SchoolExamsPage />} />
             <Route path="/study" element={<StudyMode />} />
             <Route path="/study/suites-numeriques" element={<SuitesNumeriquesPage />} />
             <Route path="/exam" element={<MockExamMode />} />
@@ -174,32 +185,35 @@ function AppContent() {
             <Route path="/scanner" element={<OMRScannerPage />} />
             <Route path="/scan" element={<Navigate to="/scanner" replace />} />
             <Route path="/ranking" element={<RankingPage />} />
-            
-            {/* Admin Routes */}
-            <Route path="/admin/dashboard" element={<AdminOverview />} />
-            <Route path="/admin/exams" element={<AdminExams />} />
-            <Route path="/admin/exams/:id/edit" element={<AdminExamEdit />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/classes" element={<AdminClasses />} />
-            <Route path="/admin/classes/:id" element={<AdminClassDetail />} />
-            <Route path="/admin/users/:id" element={<AdminStudentDetail />} />
-            <Route path="/admin/upload" element={<AdminUpload />} />
-            <Route path="/admin/ai-import" element={<AdminAIImport />} />
-            <Route path="/admin/ai-lessons" element={<AdminLessonsImport />} />
-            <Route path="/admin/lessons" element={<AdminLessons />} />
-            <Route path="/admin/lessons/:id" element={<LessonViewerPage />} />
-            <Route path="/admin/lessons/:id/edit" element={<AdminLessonEdit />} />
-            <Route path="/admin/ebooks" element={<AdminEbooks />} />
-            <Route path="/admin/settings" element={<AdminSettings />} />
-            <Route path="/admin/logbook" element={<AdminLogbook />} />
+
+            {/* Admin-only Routes — wrapped with AdminRoute guard */}
+            <Route path="/admin/dashboard" element={<AdminRoute><AdminOverview /></AdminRoute>} />
+            <Route path="/admin/exams" element={<AdminRoute><AdminExams /></AdminRoute>} />
+            <Route path="/admin/exams/:id/edit" element={<AdminRoute><AdminExamEdit /></AdminRoute>} />
+            <Route path="/admin/classes" element={<AdminRoute><AdminClasses /></AdminRoute>} />
+            <Route path="/admin/classes/:id" element={<AdminRoute><AdminClassDetail /></AdminRoute>} />
+            <Route path="/admin/users/:id" element={<AdminRoute><AdminStudentDetail /></AdminRoute>} />
+            <Route path="/admin/upload" element={<AdminRoute><AdminUpload /></AdminRoute>} />
+            <Route path="/admin/ai-generator" element={<AdminRoute><AdminAIGenerator /></AdminRoute>} />
+            <Route path="/admin/ai-import" element={<AdminRoute><AdminAIGenerator /></AdminRoute>} />
+            <Route path="/admin/ai-lessons" element={<AdminRoute><AdminAIGenerator /></AdminRoute>} />
+            <Route path="/admin/lessons" element={<AdminRoute><AdminLessons /></AdminRoute>} />
+            <Route path="/admin/lessons/:id" element={<AdminRoute><LessonViewerPage /></AdminRoute>} />
+            <Route path="/admin/lessons/:id/edit" element={<AdminRoute><AdminLessonEdit /></AdminRoute>} />
+            <Route path="/admin/ebooks" element={<AdminRoute><AdminEbooks /></AdminRoute>} />
+            <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
+            <Route path="/admin/logbook" element={<AdminRoute><AdminLogbook /></AdminRoute>} />
           </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Fallback — redirect to login */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Suspense>
     </>
   );
 }
+
+// ─── Loading Fallback ──────────────────────────────────────────────────────────
 
 const LoadingFallback = () => (
   <div style={{
@@ -229,11 +243,9 @@ const LoadingFallback = () => (
   </div>
 );
 
-function App() {
-  React.useEffect(() => {
-    initFacebookPixel();
-  }, []);
+// ─── Root App ──────────────────────────────────────────────────────────────────
 
+function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>

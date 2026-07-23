@@ -1,0 +1,375 @@
+[
+  {
+    "id": "TCS-1",
+    "name": "TCS-1",
+    "level": "common_core_sci",
+    "studentCount": 24,
+    "controls": [
+      "الفرض الأول",
+      "الفرض الثاني",
+      "الفرض الثالث",
+      "Concours Médecine / Pharmacie 2024",
+      "QCM : المتتاليات الترجعية (20 Questions)"
+    ],
+    "grades": {
+      "A167027509": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 7,
+        "الفرض الثالث": 5
+      },
+      "C160011655": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 14.5,
+        "الفرض الثالث": 14
+      },
+      "C160018311": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 9.5,
+        "الفرض الثالث": 11
+      },
+      "C162011294": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 6,
+        "الفرض الثالث": 11
+      },
+      "C162018364": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 3.5,
+        "الفرض الثالث": 1.5
+      },
+      "C163011677": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 11,
+        "الفرض الثالث": 12.5
+      },
+      "C163067664": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 5.5,
+        "الفرض الثالث": 8
+      },
+      "C164045846": {
+        "الفرض الأول": 10.25,
+        "الفرض الثاني": 6,
+        "الفرض الثالث": 12.5
+      },
+      "C164071338": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 0,
+        "الفرض الثالث": 0
+      },
+      "C166011583": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 13,
+        "الفرض الثالث": 15.5
+      },
+      "C168011578": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 11.5,
+        "الفرض الثالث": 13
+      },
+      "C168011596": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 6,
+        "الفرض الثالث": 10
+      },
+      "C168022286": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 5.5,
+        "الفرض الثالث": 8
+      },
+      "C168025954": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 3.5,
+        "الفرض الثالث": 8
+      },
+      "N147088899": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 4.5,
+        "الفرض الثالث": 7
+      },
+      "N148092981": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 7.5,
+        "الفرض الثالث": 7
+      },
+      "N154008473": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 4.5,
+        "الفرض الثالث": 4
+      },
+      "N155008520": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 6.5,
+        "الفرض الثالث": 10
+      },
+      "N155024316": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 15.5,
+        "الفرض الثالث": 13.5
+      },
+      "N155028819": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 8,
+        "الفرض الثالث": 9.5
+      },
+      "N157008392": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 5.5,
+        "الفرض الثالث": 2.5
+      },
+      "N159014345": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 5.5,
+        "الفرض الثالث": 8.5
+      },
+      "C164061266": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 7.5,
+        "الفرض الثالث": 0
+      },
+      "C161011621": {
+        "الفرض الأول": null,
+        "الفرض الثاني": 7,
+        "الفرض الثالث": 8
+      },
+      "N152008459": {
+        "Concours Médecine / Pharmacie 2024": "-0.5/20"
+      },
+      "n152008459": {
+        "Concours Médecine / Pharmacie 2024": "-0.5/20"
+      }
+    },
+    "homework": {},
+    "language": "ar",
+    "program": [
+      {
+        "id": "prog_1784054934729_i01x5",
+        "type": "course",
+        "title": "Fiche 01 : Logique Mathématique",
+        "lessonId": "MOCK-TC-MATH-01"
+      }
+    ],
+    "createdAt": "2026-07-12T17:50:46.658Z",
+    "updatedAt": "2026-07-23T10:07:32.396Z",
+    "competitions": [
+      "Concours Médecine / Pharmacie 2024",
+      "QCM : المتتاليات الترجعية (20 Questions)"
+    ],
+    "competitionGrades": {
+      "N152008459": {
+        "Concours Médecine / Pharmacie 2024": "-0.5/20"
+      },
+      "n152008459": {
+        "Concours Médecine / Pharmacie 2024": "-0.5/20"
+      }
+    }
+  },
+  {
+    "id": "1BACSEF-1",
+    "name": "1BACSEF-1",
+    "level": "1bac_sci",
+    "studentCount": 34,
+    "controls": [
+      "Premier  contrôle",
+      "Deuxième  contrôle",
+      "Troisième contrôle",
+      "Concours Médecine / Pharmacie 2024",
+      "QCM : Généralités sur les fonctions numériques (20 Questions)",
+      "Concours Médecine / Pharmacie 2024 (Modèle B - Anti-Triche)"
+    ],
+    "grades": {
+      "N152008459": {
+        "Premier  contrôle": 7.75,
+        "Deuxième  contrôle": 8.75,
+        "Troisième contrôle": 13.5
+      },
+      "H156028102": {
+        "Premier  contrôle": 7.75,
+        "Deuxième  contrôle": 3.75,
+        "Troisième contrôle": 11
+      },
+      "M157009199": {
+        "Premier  contrôle": 17.75,
+        "Deuxième  contrôle": 19,
+        "Troisième contrôle": 19.5,
+        "Concours Médecine / Pharmacie 2024": "0/20"
+      },
+      "N150003772": {
+        "Premier  contrôle": 4,
+        "Deuxième  contrôle": 10.5,
+        "Troisième contrôle": 16
+      },
+      "N150008405": {
+        "Premier  contrôle": 13.5,
+        "Deuxième  contrôle": 15.25,
+        "Troisième contrôle": 18
+      },
+      "N150008414": {
+        "Premier  contrôle": 9.25,
+        "Deuxième  contrôle": 9,
+        "Troisième contrôle": 15.5
+      },
+      "N151028626": {
+        "Premier  contrôle": 12.5,
+        "Deuxième  contrôle": 13.25,
+        "Troisième contrôle": 16.5
+      },
+      "N152008436": {
+        "Premier  contrôle": 5.5,
+        "Deuxième  contrôle": 2.75,
+        "Troisième contrôle": 10.75
+      },
+      "N152008452": {
+        "Premier  contrôle": 9.75,
+        "Deuxième  contrôle": 11.25,
+        "Troisième contrôle": 16.75
+      },
+      "N153008498": {
+        "Premier  contrôle": 6,
+        "Deuxième  contrôle": 9,
+        "Troisième contrôle": 14.75
+      },
+      "N153008499": {
+        "Premier  contrôle": 6.75,
+        "Deuxième  contrôle": 5.25,
+        "Troisième contrôle": 15
+      },
+      "N153008501": {
+        "Premier  contrôle": 13.25,
+        "Deuxième  contrôle": 13.25,
+        "Troisième contrôle": 16.25
+      },
+      "N153008503": {
+        "Premier  contrôle": 13.25,
+        "Deuxième  contrôle": 16.75,
+        "Troisième contrôle": 19
+      },
+      "N153015802": {
+        "Premier  contrôle": 4,
+        "Deuxième  contrôle": 10.75,
+        "Troisième contrôle": 14.5
+      },
+      "N154008477": {
+        "Premier  contrôle": 18,
+        "Deuxième  contrôle": 19.75,
+        "Troisième contrôle": 19.5
+      },
+      "N154008488": {
+        "Premier  contrôle": 3.5,
+        "Deuxième  contrôle": 5.25,
+        "Troisième contrôle": 13.5
+      },
+      "N155008518": {
+        "Premier  contrôle": 4.5,
+        "Deuxième  contrôle": 5.25,
+        "Troisième contrôle": 13
+      },
+      "N155008541": {
+        "Premier  contrôle": 7.75,
+        "Deuxième  contrôle": 6.75,
+        "Troisième contrôle": 17.5
+      },
+      "N156014463": {
+        "Premier  contrôle": 13,
+        "Deuxième  contrôle": 13.75,
+        "Troisième contrôle": 16.5
+      },
+      "N156028636": {
+        "Premier  contrôle": 13,
+        "Deuxième  contrôle": 12.5,
+        "Troisième contrôle": 15.75
+      },
+      "N156029457": {
+        "Premier  contrôle": 9.5,
+        "Deuxième  contrôle": 8.75,
+        "Troisième contrôle": 13.5
+      },
+      "N157008389": {
+        "Premier  contrôle": 13.25,
+        "Deuxième  contrôle": 14,
+        "Troisième contrôle": 16.5
+      },
+      "N157008399": {
+        "Premier  contrôle": 8.5,
+        "Deuxième  contrôle": 13.5,
+        "Troisième contrôle": 14
+      },
+      "N157027058": {
+        "Premier  contrôle": 15,
+        "Deuxième  contrôle": 18.75,
+        "Troisième contrôle": 19.5
+      },
+      "N157036623": {
+        "Premier  contrôle": 12,
+        "Deuxième  contrôle": 12.5,
+        "Troisième contrôle": 13
+      },
+      "S149082902": {
+        "Premier  contrôle": 4.75,
+        "Deuxième  contrôle": 4.75,
+        "Troisième contrôle": 15
+      },
+      "S150037886": {
+        "Premier  contrôle": 6.75,
+        "Deuxième  contrôle": 3.25,
+        "Troisième contrôle": 12.5
+      },
+      "S151002573": {
+        "Premier  contrôle": 10.5,
+        "Deuxième  contrôle": 8.75,
+        "Troisième contrôle": 14.5
+      },
+      "S153013782": {
+        "Premier  contrôle": 5,
+        "Deuxième  contrôle": 11,
+        "Troisième contrôle": 15.5
+      },
+      "S154034486": {
+        "Premier  contrôle": 17,
+        "Deuxième  contrôle": 15.25,
+        "Troisième contrôle": 19.75
+      },
+      "S155034487": {
+        "Premier  contrôle": 17,
+        "Deuxième  contrôle": 18,
+        "Troisième contrôle": 19.25
+      },
+      "M159045820": {
+        "Premier  contrôle": 9.5,
+        "Deuxième  contrôle": 11.25,
+        "Troisième contrôle": 14
+      },
+      "N159024066": {
+        "Premier  contrôle": 10.75,
+        "Deuxième  contrôle": 12.75,
+        "Troisième contrôle": 16.5
+      },
+      "S146093269": {
+        "Premier  contrôle": 5,
+        "Deuxième  contrôle": 2.5,
+        "Troisième contrôle": 10
+      },
+      "m157009199": {
+        "Concours Médecine / Pharmacie 2024": "0/20"
+      }
+    },
+    "homework": {},
+    "language": "fr",
+    "program": [],
+    "createdAt": "2026-07-16T09:51:05.939Z",
+    "updatedAt": "2026-07-22T21:54:41.114Z",
+    "competitions": [
+      "Concours Médecine / Pharmacie 2024",
+      "QCM : Généralités sur les fonctions numériques (20 Questions)",
+      "Concours Médecine / Pharmacie 2024 (Modèle B - Anti-Triche)"
+    ],
+    "competitionGrades": {
+      "M157009199": {
+        "Concours Médecine / Pharmacie 2024": "0/20"
+      },
+      "m157009199": {
+        "Concours Médecine / Pharmacie 2024": "0/20"
+      }
+    }
+  }
+]

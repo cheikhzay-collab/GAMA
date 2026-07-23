@@ -5,11 +5,11 @@ import { useAuth } from '../context/AuthContext';
 import { getActiveLessons } from '../services/lessonService';
 import { 
   GraduationCap, Search, ArrowLeft, BookOpen, 
-  User, ChevronRight, Sparkles, BookOpenCheck, Lock, FolderOpen,
+  User, ChevronRight, Sparkles, BookOpenCheck, FolderOpen,
   FileDown, Play, Clock, BrainCircuit, Zap
 } from 'lucide-react';
 import { renderWithMath } from '../utils/mathRenderer';
-import { mapLegacySchoolToLevel } from './SchoolsPage';
+import { mapLegacySchoolToLevel } from '../utils/levelHelpers';
 import { generateSubjectHTML, generateCorrectionHTML, openPrintWindow } from '../utils/generateExamPDF';
 import { generateAnswerSheet } from '../utils/generateAnswerSheet';
 
@@ -141,7 +141,7 @@ const MAIN_LEVELS = [
 ];
 
 export default function LevelsPage() {
-  const { user, exams, schools, isExamLocked, loadExamQuestions, trackDownload } = useAuth();
+  const { user, exams, schools, loadExamQuestions, trackDownload } = useAuth();
   const navigate = useNavigate();
 
   // Navigation states:
@@ -252,7 +252,6 @@ export default function LevelsPage() {
     });
   }, [branchLessons, searchTerm, selectedSubject, activeTab]);
 
-  const isPremiumUser = user?.role === 'admin' || user?.tier === 'premium';
 
   const handleDownloadPDF = async (exam) => {
     let questions = exam.questions;
@@ -265,6 +264,50 @@ export default function LevelsPage() {
       }
     }
     await generateAnswerSheet({ id: exam.examId, name: exam.title, school: exam.title, questions }, user);
+  };
+
+  const handlePrintExam = async (exam, type) => {
+    if (type === 'sujet' && exam.pdfUrl) {
+      window.open(exam.pdfUrl, '_blank');
+      return;
+    }
+
+    const isMobile = window.innerWidth <= 768;
+    let win = null;
+    if (!isMobile) {
+      win = window.open('', '_blank');
+      if (win) {
+        win.document.write('<html><head><title>Génération du PDF...</title></head><body style="background:#09090b;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;margin:0;padding:20px;text-align:center;"><div><h3 style="margin:0 0 10px 0;">GAMA</h3><p style="margin:0;color:#a1a1aa;font-size:0.9rem;">Génération de votre document PDF en cours...</p></div></body></html>');
+      }
+    }
+
+    try {
+      let questions = exam.questions;
+      if (!questions || questions.length === 0) {
+        questions = await loadExamQuestions(exam.examId);
+      }
+      const schoolsList = schools && schools.length > 0 ? schools : Array.from(new Set((exams || []).map(e => e.school))).filter(Boolean);
+      
+      let html = '';
+      if (type === 'corrige') {
+        html = generateCorrectionHTML(exam.title, exam.title, exam.year, questions || [], { examId: exam.examId, schoolsList });
+      } else {
+        html = await generateSubjectHTML(exam.title, exam.title, exam.year, questions || [], { examId: exam.examId, schoolsList });
+      }
+
+      // Write to localStorage for PrintView / Mobile sync
+      localStorage.setItem('print_html', html);
+
+      if (isMobile) {
+        window.open(`/print?examId=${exam.examId}&type=${type}`, '_blank');
+      } else {
+        openPrintWindow(html, type, win);
+      }
+    } catch (err) {
+      console.error('Failed to generate PDF:', err);
+      if (win) win.close();
+      alert('Erreur lors de la génération du PDF. Veuillez réessayer.');
+    }
   };
 
   return (
@@ -350,7 +393,7 @@ export default function LevelsPage() {
               ) : (
                 <>
                   <GraduationCap size={28} className="text-violet" />
-                  Niveaux Scolaires & Classes
+                  Niveaux
                 </>
               )}
             </h1>
@@ -539,24 +582,26 @@ export default function LevelsPage() {
             </div>
 
             {/* Subject Filters */}
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {subjects.map(sub => (
-                <button
-                  key={sub}
-                  onClick={() => setSelectedSubject(sub)}
-                  style={{
-                    padding: '0.45rem 1rem', borderRadius: '99px', fontSize: '0.78rem', fontWeight: 700,
-                    cursor: 'pointer',
-                    border: selectedSubject === sub ? '1px solid var(--violet)' : '1px solid var(--border)',
-                    background: selectedSubject === sub ? 'var(--violet-soft)' : 'var(--bg-glass)',
-                    color: selectedSubject === sub ? 'var(--violet)' : 'var(--text-muted)',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  {sub === 'Tous' ? 'Toutes les matières' : sub}
-                </button>
-              ))}
-            </div>
+            {subjects.length > 2 && (
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {subjects.map(sub => (
+                  <button
+                    key={sub}
+                    onClick={() => setSelectedSubject(sub)}
+                    style={{
+                      padding: '0.45rem 1rem', borderRadius: '99px', fontSize: '0.78rem', fontWeight: 700,
+                      cursor: 'pointer',
+                      border: selectedSubject === sub ? '1px solid var(--violet)' : '1px solid var(--border)',
+                      background: selectedSubject === sub ? 'var(--violet-soft)' : 'var(--bg-glass)',
+                      color: selectedSubject === sub ? 'var(--violet)' : 'var(--text-muted)',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {sub === 'Tous' ? 'Toutes les matières' : sub}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Document Type Tabs */}
@@ -610,7 +655,7 @@ export default function LevelsPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
               {filteredLessons.map((exam, idx) => {
                 const qCount = exam.questions?.length || 0;
-                const locked = typeof isExamLocked === 'function' ? isExamLocked({ id: exam.examId, tier: exam.tier }) : (exam.tier === 'premium' && !isPremiumUser);
+                const locked = false; // All exams are freely accessible
                 const accent = selectedParent?.textColor || 'var(--violet)';
                 const accentSoft = selectedParent?.bgSoft || 'rgba(99, 102, 241, 0.08)';
 
@@ -651,9 +696,7 @@ export default function LevelsPage() {
                           <h3 style={{ fontWeight: 700, fontSize: '0.97rem', margin: 0, color: 'var(--text-main)', lineHeight: 1.35 }}>
                             {exam.title}
                           </h3>
-                          {exam.tier === 'premium' && (
-                            <span className="badge badge-pro" style={{ flexShrink: 0 }}><Zap size={9} /> PRO</span>
-                          )}
+
                         </div>
                         <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.76rem', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
@@ -673,11 +716,7 @@ export default function LevelsPage() {
                       <button
                         className="btn exam-action-btn srs-btn"
                         onClick={() => {
-                          if (locked) {
-                            navigate('/subscription');
-                          } else {
-                            navigate(`/study?exam=${exam.examId}`, { state: { from: window.location.pathname } });
-                          }
+                           navigate(`/study?exam=${exam.examId}`, { state: { from: window.location.pathname } });
                         }}
                         title="Mode révision SRS"
                         style={{ 
@@ -695,17 +734,13 @@ export default function LevelsPage() {
                           minHeight: '40px'
                         }}
                       >
-                        {locked ? <Lock size={14} /> : <BrainCircuit size={14} />} SRS
+                        <BrainCircuit size={14} /> SRS
                       </button>
                       
                       <button
                         className="btn-outline exam-action-btn blanc-btn"
                         onClick={() => {
-                          if (locked) {
-                            navigate('/subscription');
-                          } else {
-                            navigate(`/exam?exam=${exam.examId}`, { state: { from: window.location.pathname } });
-                          }
+                           navigate(`/exam?exam=${exam.examId}`, { state: { from: window.location.pathname } });
                         }}
                         title="Concours blanc chronométré"
                         style={{ 
@@ -732,7 +767,7 @@ export default function LevelsPage() {
                           e.currentTarget.style.background = 'transparent';
                         }}
                       >
-                        {locked ? <Lock size={14} /> : <Play size={14} />} Blanc
+                        <Play size={14} /> Blanc
                       </button>
 
                       <div style={{ height: '20px', width: '1px', background: 'var(--border)', margin: '0 0.25rem' }} />
@@ -740,18 +775,10 @@ export default function LevelsPage() {
                       <button
                         className="btn-outline exam-action-btn sujet-btn"
                         onClick={() => {
-                          if (locked) {
-                            navigate('/subscription');
-                            return;
-                          }
-                          if (typeof trackDownload === 'function') {
+                           if (typeof trackDownload === 'function') {
                             trackDownload({ type: 'sujet', id: exam.examId, title: `${exam.title} - Sujet` });
                           }
-                          if (exam.pdfUrl) {
-                            window.open(exam.pdfUrl, '_blank');
-                          } else {
-                            window.open(`/print?examId=${exam.examId}&type=sujet`, '_blank');
-                          }
+                          handlePrintExam(exam, 'sujet');
                         }}
                         title="Voir le sujet de l'examen"
                         style={{ 
@@ -776,20 +803,16 @@ export default function LevelsPage() {
                           e.currentTarget.style.color = 'var(--text-muted)';
                         }}
                       >
-                        {locked ? <Lock size={13} /> : <FileDown size={13} />} Sujet
+                        <FileDown size={13} /> Sujet
                       </button>
       
                       <button
                         className="btn-outline exam-action-btn corrige-btn"
-                        onClick={async () => {
-                          if (locked) {
-                            navigate('/subscription');
-                            return;
-                          }
-                          if (typeof trackDownload === 'function') {
+                        onClick={() => {
+                           if (typeof trackDownload === 'function') {
                             trackDownload({ type: 'corrige', id: exam.examId, title: `${exam.title} - Corrigé` });
                           }
-                          window.open(`/print?examId=${exam.examId}&type=corrige`, '_blank');
+                          handlePrintExam(exam, 'corrige');
                         }}
                         title="Voir le corrigé de l'examen"
                         style={{ 
@@ -814,17 +837,13 @@ export default function LevelsPage() {
                           e.currentTarget.style.color = 'var(--text-muted)';
                         }}
                       >
-                        {locked ? <Lock size={13} /> : <FileDown size={13} />} Corrigé
+                        <FileDown size={13} /> Corrigé
                       </button>
       
                       <button
                         className="btn-outline exam-action-btn grille-btn"
                         onClick={() => {
-                          if (locked) {
-                            navigate('/subscription');
-                            return;
-                          }
-                          if (typeof trackDownload === 'function') {
+                           if (typeof trackDownload === 'function') {
                             trackDownload({ type: 'grille', id: exam.examId, title: `${exam.title} - Grille OMR` });
                           }
                           handleDownloadPDF(exam);
@@ -852,7 +871,7 @@ export default function LevelsPage() {
                           e.currentTarget.style.color = 'var(--text-muted)';
                         }}
                       >
-                        {locked ? <Lock size={13} /> : <FileDown size={13} />} Grille
+                        <FileDown size={13} /> Grille
                       </button>
                     </div>
                   </div>
@@ -870,10 +889,7 @@ export default function LevelsPage() {
                   <div
                     key={l.id}
                     onClick={() => {
-                      const isLocked = !isPremiumUser && l.schools && l.schools.length > 0;
-                      if (isLocked) {
-                        navigate('/subscription');
-                      } else if (l.isExam) {
+                       if (l.isExam) {
                         navigate(`/study?exam=${l.examId}`, { state: { from: window.location.pathname } });
                       } else {
                         navigate(`/admin/lessons/${l.id}`);
@@ -921,15 +937,7 @@ export default function LevelsPage() {
                         </span>
                       </div>
                       
-                      {!isPremiumUser && l.schools && l.schools.length > 0 && (
-                        <div style={{ 
-                          display: 'flex', alignItems: 'center', gap: '0.25rem',
-                          background: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning)', 
-                          padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800 
-                        }} title="Abonnement Premium Requis">
-                          <Lock size={11} /> Premium
-                        </div>
-                      )}
+
                     </div>
 
                     <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', lineHeight: 1.45 }}>

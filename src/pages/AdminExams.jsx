@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Lock, Unlock, Library, Eye, EyeOff, Edit, X, FileText, Download, Search, BookOpen, Trash2, Archive } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { generateSubjectHTML, generateCorrectionHTML, generateEbookHTML, openPrintWindow } from '../utils/generateExamPDF';
-import { getLevelDisplayName, mapLegacySchoolToLevel } from './SchoolsPage';
+import { getLevelDisplayName, mapLegacySchoolToLevel } from '../utils/levelHelpers';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
@@ -262,15 +262,7 @@ export default function AdminExams() {
                     {exam.name}
                   </div>
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', flexShrink: 0 }}>
-                    {exam.tier === 'premium' ? (
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, color: 'var(--warning)', background: 'rgba(245,158,11,0.1)', padding: '0.15rem 0.5rem', borderRadius: '1rem', fontSize: '0.7rem', fontWeight: 700 }}>
-                        <Lock size={10} /> Pro
-                      </span>
-                    ) : (
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, color: 'var(--emerald)', background: 'rgba(16,185,129,0.1)', padding: '0.15rem 0.5rem', borderRadius: '1rem', fontSize: '0.7rem', fontWeight: 700 }}>
-                        <Unlock size={10} /> Free
-                      </span>
-                    )}
+
                     {exam.isActive === false && (
                       <span style={{ fontSize: '0.65rem', color: 'var(--danger)', padding: '0.1rem 0.35rem', border: '1px solid var(--danger)', borderRadius: 4, display: 'inline-block', fontWeight: 700 }}>Désactivé</span>
                     )}
@@ -467,10 +459,9 @@ export default function AdminExams() {
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
                   <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Concours</th>
-                  <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)' }}>École</th>
+                  <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)' }}>Niveau</th>
                   <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)' }}>Année</th>
                   <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)', textAlign: 'center' }}>Q</th>
-                  <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)' }}>Abonnement</th>
                   <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)', textAlign: 'right', whiteSpace: 'nowrap' }}>Actions</th>
                 </tr>
               </thead>
@@ -505,18 +496,7 @@ export default function AdminExams() {
                       </span>
                     </td>
 
-                    {/* Tier */}
-                    <td style={{ padding: '0.9rem 1rem', whiteSpace: 'nowrap' }}>
-                      {exam.tier === 'premium' ? (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--warning)', background: 'rgba(245,158,11,0.1)', padding: '0.2rem 0.65rem', borderRadius: '1rem', fontSize: '0.78rem', fontWeight: 700 }}>
-                          <Lock size={12} /> Premium
-                        </span>
-                      ) : (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--emerald)', background: 'rgba(16,185,129,0.1)', padding: '0.2rem 0.65rem', borderRadius: '1rem', fontSize: '0.78rem', fontWeight: 700 }}>
-                          <Unlock size={12} /> Free
-                        </span>
-                      )}
-                    </td>
+
 
                     {/* Actions */}
                     <td style={{ padding: '0.9rem 1rem', textAlign: 'right', whiteSpace: 'nowrap' }}>

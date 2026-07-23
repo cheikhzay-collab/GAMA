@@ -293,7 +293,7 @@ const getAcademicYear = () => {
 };
 
 export const generateLogbookHTML = (selectedClass, entries, profName, styleConfig = {}) => {
-  const isArMode = selectedClass.language === 'ar';
+  const isArMode = false;
   const academicYear = getAcademicYear();
   const dir = isArMode ? 'rtl' : 'ltr';
   const alignment = isArMode ? 'right' : 'left';

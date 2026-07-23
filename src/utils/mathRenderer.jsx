@@ -92,6 +92,25 @@ export const repairMathExpression = (latex) => {
   // Case D: number/var / number/var -> \frac{number/var}{number/var}
   repaired = repaired.replace(/(?<![a-zA-Z0-9\\_])([a-zA-Z0-9\\_]+)\s*\/\s*([a-zA-Z0-9\\_]+)(?![a-zA-Z0-9\\_])/g, '\\frac{$1}{$2}');
 
+  // 5. Repair common LaTeX symbols corrupted in JSON/extraction
+  repaired = repaired
+    .replace(/(?:ext\s*)?extgreater\s*=/gi, '\\geq')
+    .replace(/(?:text\s*)?textgreater\s*=/gi, '\\geq')
+    .replace(/(?:ext\s*)?extgreater/gi, '\\gt')
+    .replace(/(?:text\s*)?textgreater/gi, '\\gt')
+    .replace(/(?:ext\s*)?extless\s*=/gi, '\\leq')
+    .replace(/(?:text\s*)?textless\s*=/gi, '\\leq')
+    .replace(/(?:ext\s*)?extless/gi, '\\lt')
+    .replace(/(?:text\s*)?textless/gi, '\\lt');
+
+  // 6. Repair common sequence subscripts (e.g. un -> u_n, n0 -> n_0)
+  repaired = repaired
+    .replace(/\b([uvw])n\+1\b/g, '$1_{n+1}')
+    .replace(/\b([uvw])n\-1\b/g, '$1_{n-1}')
+    .replace(/\b([uvw])n\b/g, '$1_n')
+    .replace(/\b([uvwn])0\b/g, '$1_0')
+    .replace(/\b([uvw])p\b/g, '$1_p');
+
   return repaired;
 };
 
@@ -141,12 +160,13 @@ export function SafeInlineMath({ math }) {
 export function SafeBlockMath({ math }) {
   const html = renderBlockKatex(math);
   return (
-    <div
-      className="notranslate"
+    <span
+      className="notranslate inline-math-container"
       translate="no"
       style={{
-        display: 'block',
-        margin: '0.75em 0',
+        display: 'inline-block',
+        margin: '0.15em 0.35em',
+        verticalAlign: 'middle',
         overflowX: 'auto',
         overflowY: 'hidden',
         maxWidth: '100%',
@@ -466,11 +486,27 @@ const renderTableSegment = (segment, key) => {
 export function renderWithMath(text) {
   if (text === null || text === undefined) return null;
   
-  // Unify literal '\\n' and CRLF newlines first to split correctly
-  let rawText = String(text)
-    .replace(/\\n(?![a-zA-Z])/g, '\n')
+  let rawText = String(text);
+  
+  // Split by math blocks to safely replace literal \n outside math without corrupting LaTeX commands like \neq
+  const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
+  const processedParts = parts.map((part, idx) => {
+    if (idx % 2 === 1) {
+      // Inside math block: only replace literal \n if NOT followed by letters (e.g. KaTeX commands)
+      return part.replace(/\\n(?![a-zA-Z])/g, '\n');
+    } else {
+      // Outside math block: replace all literal \n with real newlines safely
+      return part.replace(/\\n/g, '\n');
+    }
+  });
+  rawText = processedParts.join('');
+
+  rawText = rawText
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n');
+
+  // Collapse colon followed by newline and math formula into a single line
+  rawText = rawText.replace(/(:\s*)\n+\s*(\$\$|\$)/g, ' : $2');
 
   const lines = rawText.split('\n');
   const mergedLines = [];
@@ -553,11 +589,11 @@ function renderWithMathInternal(text) {
   const normalised = normalisedTemp.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g)
     .map((part, idx) => {
       if (idx % 2 === 1) return part;
-      let cleanedPart = part.replace(/\\n(?![a-zA-Z])/g, '\n');
+      let cleanedPart = part.replace(/\\n/g, '\n');
       
-      // Force line break after period followed by space and uppercase letter/backslash/math delimiter
-      // NOTE: exclude when preceded by a digit (numbered list item like "1. Calculer")
-      cleanedPart = cleanedPart.replace(/(?<!\d|^|\n|\b\d\.[a-zA-Z]|\bex|\betc|\bvs)\.\s+([A-ZÀ-ÖØ-ß]|\\|\$)/g, '.\n$1');
+      // Force line break after period followed by space and uppercase letter
+      // NOTE: exclude when preceded by a digit (numbered list item like "1. Calculer") or single letter (like "A. Calculer")
+      cleanedPart = cleanedPart.replace(/(?<!\d|^|\n|\b\d\.[a-zA-Z]|\bex|\betc|\bvs|\b[a-zA-Z])\.\s+([A-ZÀ-ÖØ-ß])/g, '.\n$1');
 
       // Force line break before "Étape" / "Step" / "الخطوة" outside math blocks (case-insensitive)
       if (idx > 0) {

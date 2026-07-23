@@ -41,7 +41,7 @@ function groupCardsByContext(compiledCards, questionsPool) {
 }
 
 export default function StudyMode() {
-  const { user, exams, progress: allProgress, updateCardProgress, isExamLocked, loadExamQuestions, supabaseEnabled } = useAuth();
+  const { user, exams, progress: allProgress, updateCardProgress, loadExamQuestions, supabaseEnabled } = useAuth();
   const [searchParams] = useSearchParams();
   const examId = searchParams.get('exam');
   const topicId = searchParams.get('topic');
@@ -68,8 +68,8 @@ export default function StudyMode() {
   }, []);
 
   const activeExamsList = useMemo(() => {
-    return exams.filter(e => e.isActive !== false && e.isArchived !== true && !isExamLocked(e));
-  }, [exams, isExamLocked]);
+    return exams.filter(e => e.isActive !== false && e.isArchived !== true);
+  }, [exams]);
   const currentExam = examId ? exams.find(e => e.id === examId) : activeExamsList[0];
 
   const isParcours = !examId && !topicId;
@@ -605,28 +605,6 @@ export default function StudyMode() {
     );
   }
 
-  // ── Lock check ──
-  if (!isParcours && currentExam && isExamLocked(currentExam)) {
-    return (
-      <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: '2rem', textAlign: 'center' }}>
-        <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(99,102,241,0.1)', color: 'var(--violet)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem', boxShadow: '0 8px 24px rgba(99,102,241,0.15)' }}>
-          <Zap size={36} fill="currentColor" />
-        </div>
-        <h2 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>Contenu Premium Verrouillé</h2>
-        <p style={{ color: 'var(--text-muted)', maxWidth: '460px', marginBottom: '2rem', lineHeight: 1.6 }}>
-          L'examen <strong>{currentExam.name}</strong> fait partie de l'offre Premium. Abonnez-vous pour débloquer l'accès à tous les concours et corriger vos faiblesses avec l'IA.
-        </p>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button onClick={() => navigate(user ? '/subscription' : '/login')} className="btn" style={{ background: 'linear-gradient(135deg, var(--violet), #818cf8)' }}>
-            ✦ {user ? "Voir les offres d'abonnement" : "Se connecter pour débloquer"}
-          </button>
-          <button onClick={() => navigate(fromPath)} className="btn-outline">
-            Retour
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   // ── Loading state ──
   if ((!isParcours && !currentExam && !topicId) || sessionCards === null || loadingQuestions) {

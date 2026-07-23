@@ -2,12 +2,39 @@ import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
 
 /**
- * Generates a printable answer sheet PDF for an exam.
- * @param {Object} exam   - { id, name, school, year, questions }
- * @param {Object} user   - { name, email }
+ * Sanitizes strings for safe PDF filenames across OS and browsers.
  */
-export async function generateAnswerSheet(exam, user) {
-  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+const sanitizeFilename = (str) => {
+  if (!str) return 'file';
+  return String(str)
+    .replace(/[/\\?%*:|"<>\[\]]/g, '-')
+    .replace(/\s+/g, '-')
+    .replace(/--+/g, '-')
+    .trim();
+};
+
+/**
+ * Removes non-Latin / Arabic Unicode characters to prevent jsPDF font encoding corruption (Mojibake).
+ */
+const toLatinOnly = (str) => {
+  if (!str) return '';
+  return String(str)
+    .replace(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/g, '') // Strip Arabic range
+    .replace(/[^\x00-\x7F\u00C0-\u00FF]/g, '') // Strip non-Latin-1 characters
+    .replace(/\(\s*[-—]?\s*\)/g, '')
+    .replace(/\[\s*\]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+/**
+ * Renders a single page of an OMR answer sheet onto a jsPDF document.
+ * @param {jsPDF} doc
+ * @param {Object} exam     - { id, name, school, year, questions }
+ * @param {Object} student  - { name, massarCode, id }
+ * @param {Object} classObj - { id, name }
+ */
+export async function renderAnswerSheetPage(doc, exam, student = null, classObj = null) {
   const W = 210, H = 297;
   const margin = 14;
 
@@ -32,14 +59,16 @@ export async function generateAnswerSheet(exam, user) {
   drawSolidAnchorSquare(W - 8 - 7, H - 8 - 7); // Bottom-Right
 
   // ── QR Code Payload ──────────────────────────────────────────────
-  // Compact payload to ensure minimal QR version (Version 1, 21x21 modules)
-  // for maximum readability on low-end cameras.
-  const payload = `LCQ:${exam.id.slice(0, 8)}`;
+  // Ultra-compact payload (under 25 characters) to guarantee Version 1/2 QR Code
+  // with massive modules for lightning-fast camera scanning even on low-end devices.
+  const examPrefix = exam?.id ? String(exam.id).slice(0, 8) : 'EXAM';
+  const massar = student?.massarCode || student?.id || student?.cne || '';
+  const payload = massar ? `LCQ:${examPrefix}:${massar}` : `LCQ:${examPrefix}`;
 
   const qrDataUrl = await QRCode.toDataURL(payload, {
-    errorCorrectionLevel: 'H',
-    width: 200,
-    margin: 4,
+    errorCorrectionLevel: 'M',
+    width: 240,
+    margin: 1,
     color: { dark: '#000000', light: '#FFFFFF' },
   });
 
@@ -63,67 +92,86 @@ export async function generateAnswerSheet(exam, user) {
   doc.setTextColor(191, 196, 210);
   doc.text('Feuille de réponses officielle · Correction par Intelligence Artificielle', headerMargin + 6, 32);
 
-  // Exam name
+  // Exam name sanitized for jsPDF Latin-1 helvetica font
   doc.setFontSize(10.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
-  const examLabel = `${exam.school} — ${exam.name} ${exam.year || ''}`.trim();
+  
+  const rawSchool = exam?.school || 'L\'CONQ';
+  const rawName = exam?.name || 'Examen QCM';
+  const rawYear = exam?.year || '';
+
+  const cleanSchool = toLatinOnly(rawSchool) || 'L\'CONQ';
+  const cleanName = toLatinOnly(rawName) || 'Examen QCM';
+  const cleanYear = toLatinOnly(rawYear) || '';
+
+  const examLabel = `${cleanSchool} — ${cleanName} ${cleanYear}`.replace(/\s+—\s+$/, '').trim();
   doc.text(examLabel, headerMargin + 6, 41, { maxWidth: 130 });
 
-  // QR Code Image in Header (larger size 28x28mm for easier camera scanning)
+  // QR Code Image in Header
   doc.addImage(qrDataUrl, 'PNG', W - headerMargin - 30, 17, 28, 28);
 
-  // ── Student Info Cards (Rounded border panels) ───────────────────
+  // ── Student Info Cards ───────────────────────────────────────────
   const drawCard = (x, y, w, h, title, val) => {
     doc.setFillColor(255, 255, 255);
     doc.setDrawColor(...borderCol);
     doc.setLineWidth(0.3);
     doc.roundedRect(x, y, w, h, 2, 2, 'FD');
 
-    // Title label
     doc.setFontSize(7.5);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...mid);
     doc.text(title, x + 3, y + 5);
 
-    // Value
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...charcoal);
-    doc.text(val, x + 3, y + 10.5);
+    const latinVal = toLatinOnly(val) || String(val || '').slice(0, 26);
+    doc.text(latinVal.slice(0, 26), x + 3, y + 10.5);
   };
 
   const cardY = 51;
   const cardH = 14;
+  const className = classObj?.name || student?.className || 'N/A';
+  const studentName = student?.name || '';
 
-  drawCard(margin, cardY, 70, cardH, 'NOM & PRÉNOM DU CANDIDAT', user?.name || '___________________________');
-  drawCard(86, cardY, 35, cardH, 'DATE DE PASSAGE', new Date().toLocaleDateString('fr-MA'));
-  drawCard(123, cardY, 35, cardH, 'DURÉE', `${Math.ceil(exam.questions.length * 1.5)} minutes`);
+  drawCard(margin, cardY, 58, cardH, 'NOM & PRÉNOM DU CANDIDAT', studentName || '___________________________');
+  drawCard(margin + 60, cardY, 32, cardH, 'CODE MASSAR', massar || '__________');
+  drawCard(margin + 94, cardY, 30, cardH, 'CLASSE', className);
+  drawCard(margin + 126, cardY, 26, cardH, 'DATE', new Date().toLocaleDateString('fr-MA'));
 
-  // Score Card highlighted in soft green emerald border
-  const scoreCardX = 160;
-  doc.setFillColor(240, 253, 244); // light green #f0fdf4
+  // Score Card
+  let questions = exam?.questions || [];
+  if ((!questions || questions.length === 0) && (exam?.questionsCount || exam?.questions_count)) {
+    const qCount = exam.questionsCount || exam.questions_count || 20;
+    questions = Array.from({ length: qCount }, (_, i) => ({ question: `Q${i + 1}` }));
+  }
+  if (!questions || questions.length === 0) {
+    questions = Array.from({ length: 20 }, (_, i) => ({ question: `Q${i + 1}` }));
+  }
+
+  const scoreCardX = margin + 154;
+  doc.setFillColor(240, 253, 244);
   doc.setDrawColor(...emerald);
   doc.setLineWidth(0.4);
-  doc.roundedRect(scoreCardX, cardY, 36, cardH, 2, 2, 'FD');
+  doc.roundedRect(scoreCardX, cardY, 28, cardH, 2, 2, 'FD');
 
-  doc.setFontSize(7.5);
+  doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...emerald);
-  doc.text('SCORE FINAL', scoreCardX + 3.5, cardY + 5);
+  doc.text('SCORE FINAL', scoreCardX + 2.5, cardY + 5);
 
-  doc.setFontSize(9.5);
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...emerald);
-  doc.text(`____  /  ${exam.questions.length}`, scoreCardX + 3.5, cardY + 10.5);
+  doc.text(`__ / ${questions.length}`, scoreCardX + 2.5, cardY + 10.5);
 
-  // ── Instructions Panel with Purple Accent Bar ────────────────────
+  // ── Instructions Panel ───────────────────────────────────────────
   const instY = 69;
   const instH = 10;
-  doc.setFillColor(250, 245, 255); // light purple background #faf5ff
+  doc.setFillColor(250, 245, 255);
   doc.roundedRect(margin, instY, W - margin * 2, instH, 1.5, 1.5, 'F');
 
-  // Purple Left Accent Bar
   doc.setFillColor(...violet);
   doc.rect(margin, instY, 2.5, instH, 'F');
 
@@ -145,7 +193,7 @@ export async function generateAnswerSheet(exam, user) {
   doc.setTextColor(...mid);
   doc.text('EXEMPLES DE REMPLISSAGE :', margin, legendY + 3);
 
-  // Example: Filled (Correct)
+  // Example: Filled
   const cxOk = margin + 45;
   doc.setFillColor(...navy);
   doc.circle(cxOk, legendY + 2, 2.8, 'F');
@@ -159,7 +207,7 @@ export async function generateAnswerSheet(exam, user) {
   doc.setTextColor(...emerald);
   doc.text('Correct', cxOk + 4, legendY + 3);
 
-  // Example: Empty (Unselected)
+  // Example: Empty
   const cxNo = margin + 70;
   doc.setDrawColor(...mid);
   doc.setLineWidth(0.3);
@@ -175,17 +223,14 @@ export async function generateAnswerSheet(exam, user) {
   doc.text('Vide', cxNo + 4, legendY + 3);
 
   // ── OMR Grid Section ─────────────────────────────────────────────
-  const questions = exam.questions;
   const Q = questions.length;
-  const cols = 2;          // Two columns side by side
-  const rowH = 8.5;        // height per question row (keeps scanner aligned)
+  const cols = 2;
+  const rowH = 8.5;
   const colW = (W - margin * 2) / cols;
   const gridTop = 96;
 
-  // Draw Grid Column Headers
   for (let col = 0; col < cols; col++) {
     const xBase = margin + col * colW;
-    // Header background (Royal Purple)
     doc.setFillColor(...violet);
     doc.roundedRect(xBase, gridTop, colW - 2, 7, 1.5, 1.5, 'F');
 
@@ -199,52 +244,43 @@ export async function generateAnswerSheet(exam, user) {
     });
   }
 
-  // Draw central divider line to perfectly separate the two columns
   const half = Math.ceil(Q / cols);
   const totalGridH = 7 + half * rowH;
   doc.setDrawColor(...borderCol);
   doc.setLineWidth(0.3);
   doc.line(W / 2, gridTop, W / 2, gridTop + totalGridH);
 
-  // Draw Question Rows
   for (let q = 0; q < Q; q++) {
     const col    = q < half ? 0 : 1;
     const rowIdx = col === 0 ? q : q - half;
     const xBase  = margin + col * colW;
     const y      = gridTop + 7 + rowIdx * rowH;
 
-    // Draw Timing Track (2mm x 2mm solid black square) in side margins
     doc.setFillColor(0, 0, 0);
     doc.rect(col === 0 ? 8 : 200, y + rowH / 2 - 1, 2, 2, 'F');
 
-    // Alternating row background (Soft premium lavender #f8f7ff)
     if (rowIdx % 2 === 0) {
       doc.setFillColor(...softBg);
       doc.rect(xBase, y, colW - 2, rowH, 'F');
     }
 
-    // Row bottom borders for excellent geometric scanner reading
     doc.setDrawColor(...borderCol);
     doc.setLineWidth(0.15);
     doc.line(xBase, y + rowH, xBase + colW - 2, y + rowH);
 
-    // Question number
     doc.setFontSize(8.5);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...navy);
     doc.text(String(q + 1).padStart(2, '0'), xBase + 3, y + rowH / 2 + 1);
 
-    // Answer bubbles (keeping the EXACT coordinates for the OMR scanner)
     opts.forEach((o, i) => {
       const cx = xBase + 20 + i * 9;
       const cy = y + rowH / 2;
       
-      // Beautiful crisp circular bubble borders
       doc.setDrawColor(...mid);
       doc.setLineWidth(0.35);
       doc.circle(cx, cy, 2.9, 'S');
 
-      // Centered letter in bubble
       doc.setFontSize(6.2);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(...mid);
@@ -265,18 +301,48 @@ export async function generateAnswerSheet(exam, user) {
   doc.setTextColor(...mid);
   doc.text("Après avoir terminé, scannez cette feuille via l'application L'CONQ pour obtenir une correction instantanée.", margin, footerY + 5.5, { maxWidth: W - margin * 2 - 25 });
 
-  // Unique Exam ID Watermark (High-end styling)
   doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...navy);
-  doc.text(`EXAM ID: ${exam.id.slice(0, 8).toUpperCase()}`, W - margin, footerY + 5.5, { align: 'right' });
+  doc.text(`EXAM ID: ${examPrefix.toUpperCase()}`, W - margin, footerY + 5.5, { align: 'right' });
 
   doc.setFontSize(6);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...mid);
   doc.text('lconq.ma · IA OMR Engine v2.0', W - margin, footerY + 8.5, { align: 'right' });
+}
 
-  // ── Save/Download ────────────────────────────────────────────────
-  const filename = `feuille-reponses-${exam.school.replace(/\s+/g,'-')}-${exam.year || ''}-${exam.id.slice(0,6)}.pdf`;
+/**
+ * Generates a printable answer sheet PDF for an individual exam/user.
+ * @param {Object} exam   - { id, name, school, year, questions }
+ * @param {Object} user   - { name, email, massarCode, id }
+ */
+export async function generateAnswerSheet(exam, user) {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  await renderAnswerSheetPage(doc, exam, user);
+  const schoolName = sanitizeFilename(exam?.school || 'LCONQ');
+  const examIdPart = sanitizeFilename(String(exam?.id || 'EXAM').slice(0, 6));
+  const filename = `feuille-reponses-${schoolName}-${exam?.year || ''}-${examIdPart}.pdf`;
+  doc.save(filename);
+}
+
+/**
+ * Generates a multi-page PDF containing a personalized answer sheet for every student in a class.
+ * @param {Object} exam         - Exam object
+ * @param {Object} classObj     - Class object
+ * @param {Array}  studentsList - List of student objects { name, massarCode, id }
+ */
+export async function generateBatchAnswerSheets(exam, classObj, studentsList = []) {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  const list = studentsList.length > 0 ? studentsList : [{ name: '', massarCode: '' }];
+
+  for (let i = 0; i < list.length; i++) {
+    if (i > 0) doc.addPage();
+    await renderAnswerSheetPage(doc, exam, list[i], classObj);
+  }
+
+  const className = sanitizeFilename(classObj?.name || 'Classe');
+  const examName = sanitizeFilename(exam?.name || 'Examen');
+  const filename = `Grilles-OMR-${className}-${examName}.pdf`;
   doc.save(filename);
 }

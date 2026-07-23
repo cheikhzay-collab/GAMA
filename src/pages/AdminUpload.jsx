@@ -3,7 +3,7 @@ import Papa from 'papaparse';
 import { useAuth } from '../context/AuthContext';
 import { UploadCloud, CheckCircle2, Copy, Check, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { getLevelDisplayName } from './SchoolsPage';
+import { getLevelDisplayName } from '../utils/levelHelpers';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);

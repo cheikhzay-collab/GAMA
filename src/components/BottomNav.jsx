@@ -251,7 +251,6 @@ export default function BottomNav() {
                       gap: '0.875rem',
                     }}>
                       {[
-                        { label: 'Élèves', icon: Users, to: '/admin/users', color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.1)' },
                         { label: 'Upload PDF', icon: UploadCloud, to: '/admin/upload', color: '#10B981', bg: 'rgba(16, 185, 129, 0.1)' },
                         { label: 'Import IA', icon: Zap, to: '/admin/ai-import', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)' },
                         { label: 'Leçons', icon: BookOpen, to: '/admin/lessons', color: '#7C3AED', bg: 'rgba(124, 58, 237, 0.1)' },
@@ -343,26 +342,18 @@ export default function BottomNav() {
                         </p>
                       </div>
 
-                      {/* Tier badge */}
+                      {/* Role badge */}
                       <span 
-                        onClick={() => {
-                          if (isStudent) {
-                            navigate('/subscription');
-                            setShowSheet(false);
-                          }
-                        }}
                         style={{
                           padding: '0.28rem 0.7rem', borderRadius: 99,
                           fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em',
-                          background: user?.tier === 'premium' ? 'var(--violet-soft)' : 'var(--bg-glass)',
-                          color:      user?.tier === 'premium' ? 'var(--violet)'      : 'var(--text-muted)',
-                          border: `1px solid ${user?.tier === 'premium' ? 'rgba(99,102,241,0.3)' : 'var(--border)'}`,
+                          background: isAdmin ? 'rgba(16,185,129,0.1)' : 'var(--bg-glass)',
+                          color:      isAdmin ? 'var(--emerald)'        : 'var(--text-muted)',
+                          border: `1px solid ${isAdmin ? 'rgba(16,185,129,0.3)' : 'var(--border)'}`,
                           flexShrink: 0,
-                          cursor: isStudent ? 'pointer' : 'default'
                         }}
-                        title={isStudent ? "Gérer mon abonnement" : undefined}
                       >
-                        {user?.tier === 'premium' ? '⚡ Pro' : 'Free'}
+                        {isAdmin ? 'Professeur' : 'Élève'}
                       </span>
                     </div>
                   </>
@@ -370,47 +361,6 @@ export default function BottomNav() {
 
                 {/* ── Actions (Common to both student and admin) ── */}
                 <div style={{ padding: '0.875rem 1.25rem 0', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {isStudent && (
-                    <button
-                      onClick={() => { navigate('/subscription'); setShowSheet(false); }}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '0.875rem',
-                        padding: '0.75rem 0.875rem',
-                        background: 'var(--violet-soft)',
-                        border: '1px solid rgba(113, 109, 242, 0.22)',
-                        borderRadius: 'var(--radius-lg)',
-                        cursor: 'pointer', width: '100%',
-                        fontFamily: 'inherit', textAlign: 'left',
-                        transition: 'all 0.2s',
-                        marginBottom: '0.25rem'
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.background = 'rgba(113, 109, 242, 0.12)';
-                        e.currentTarget.style.borderColor = 'rgba(113, 109, 242, 0.4)';
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.background = 'var(--violet-soft)';
-                        e.currentTarget.style.borderColor = 'rgba(113, 109, 242, 0.22)';
-                      }}
-                    >
-                      <div style={{
-                        width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                        background: 'var(--violet)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: '0 4px 10px rgba(113, 109, 242, 0.25)',
-                      }}>
-                        <Zap size={18} color="#fff" />
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ fontWeight: 800, fontSize: '0.88rem', color: 'var(--text-main)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {user?.tier === 'premium' ? 'Gérer mon abonnement Pro' : 'Devenir Premium (Pro)'}
-                        </span>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', marginTop: '1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {user?.tier === 'premium' ? 'Accès illimité actif' : 'Débloquez tous les QCM et examens'}
-                        </span>
-                      </div>
-                    </button>
-                  )}
 
                   {/* Theme toggle */}
                   <button

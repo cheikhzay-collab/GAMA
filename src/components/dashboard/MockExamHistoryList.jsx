@@ -58,7 +58,7 @@ const ProgressTooltip = React.memo(({ active, payload }) => {
 });
 ProgressTooltip.displayName = 'ProgressTooltip';
 
-const MockExamHistoryList = React.memo(({ mockExamHistory = [], onDownloadReport, onNavigateToSchools, onNavigateToScanner }) => {
+const MockExamHistoryList = React.memo(({ mockExamHistory = [], onDownloadReport, onNavigateToLevels, onNavigateToScanner }) => {
   
   const chronologicalHistory = React.useMemo(() => {
     return [...mockExamHistory]
@@ -107,7 +107,7 @@ const MockExamHistoryList = React.memo(({ mockExamHistory = [], onDownloadReport
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
             <button 
               className="btn-outline" 
-              onClick={onNavigateToSchools}
+              onClick={onNavigateToLevels}
               style={{ fontSize: '0.8rem', fontWeight: 700 }}
             >
               Examen en ligne

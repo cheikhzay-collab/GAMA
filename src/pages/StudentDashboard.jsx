@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   Trophy, Flame, Target, BrainCircuit,
   Zap, Clock, Camera, LayoutDashboard,
-  CheckCircle2, FileText
+  CheckCircle2, FileText, Sparkles, BookOpen, GraduationCap, ChevronRight
 } from 'lucide-react';
 
 import StatCard from '../components/dashboard/StatCard';
@@ -106,11 +106,6 @@ export default function StudentDashboard() {
   }, [stats.dueToday, stats.masteredCards, stats.weakTopics]);
 
   const handleGenerateWeaknessPDF = useCallback(async () => {
-    if (user?.role !== 'admin' && user?.tier !== 'premium') {
-      alert("La génération de Cahiers d'Erreurs PDF est réservée aux abonnés Premium.");
-      navigate('/subscription');
-      return;
-    }
     const topicsToPrint = stats.weakTopics.map(t => t.name);
     if (topicsToPrint.length === 0) return;
 
@@ -158,7 +153,7 @@ export default function StudentDashboard() {
     const title = "Fascicule de Révision Personnalisé";
     const html = generateEbookHTML(title, questionsToPrint, s);
     openPrintWindow(html, `cahier-revision-points-faibles`);
-  }, [stats.weakTopics, exams, profName, profPhone, profSite, user, navigate, loadExamQuestions]);
+  }, [stats.weakTopics, exams, profName, profPhone, profSite, loadExamQuestions]);
 
   const handleDownloadReport = useCallback(async (item) => {
     // Open print preview window synchronously to bypass pop-up blockers on desktop
@@ -180,7 +175,7 @@ export default function StudentDashboard() {
         }
       }
 
-      // Fallback to a mock exam object if deleted or inaccessible, allowing report generation
+      // Fallback to a mock exam object if deleted or inaccessible
       if (!exam) {
         exam = {
           id: item.examId || 'fallback',
@@ -202,7 +197,6 @@ export default function StudentDashboard() {
           questions = await loadExamQuestions(exam.id);
         } catch (err) {
           console.error('Failed to load questions for student report:', err);
-          // Fallback questions array so it doesn't block printing
           questions = Array.from({ length: item.maxScore || 20 }, (_, i) => ({
             id: `q-${i + 1}`,
             question: `Question ${i + 1}`,
@@ -212,12 +206,9 @@ export default function StudentDashboard() {
         }
       }
       
-      // Deterministic pseudo-random distribution of correct/wrong/empty answers
-      // to match the count, so it doesn't look like a sequential bug.
       const totalQuestions = questions.length;
       const indices = Array.from({ length: totalQuestions }, (_, i) => i);
       
-      // Seeded pseudo-random shuffle of indices
       const seedStr = String(item.id || item.examId || 'fallback_seed');
       const seed = seedStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
       let currentSeed = seed;
@@ -273,8 +264,7 @@ export default function StudentDashboard() {
         });
       });
       
-      // FIX: compute negative score accurately based on school rules
-      const brand = schoolBranding?.[exam.school] || { scoring: { correct: 1, wrong: -0.25, empty: 0 } };
+      const brand = schoolBranding?.[exam.level] || { scoring: { correct: 1, wrong: -0.25, empty: 0 } };
       const rules = brand.scoring || { correct: 1, wrong: -0.25, empty: 0 };
       const wrongPenalty = Math.abs(rules.wrong || 0.25);
   
@@ -292,10 +282,7 @@ export default function StudentDashboard() {
       };
       
       const html = generateStudentReportHTML({ ...exam, questions }, scoreObj, corrected, settings);
-      
-      // Also write report to localStorage for backup PWA storage-sync
       localStorage.setItem('print_html', html);
-  
       openPrintWindow(html, `bulletin-${exam.name.toLowerCase().replace(/\s+/g, '-')}`, win);
   
       if (trackDownload) {
@@ -314,7 +301,7 @@ export default function StudentDashboard() {
     }
   }, [exams, profName, profPhone, profSite, loadExamQuestions, trackDownload, schoolBranding, supabaseEnabled]);
 
-  const onNavigateToSchools = useCallback(() => navigate('/schools'), [navigate]);
+  const onNavigateToLevels = useCallback(() => navigate('/levels'), [navigate]);
   const onNavigateToScanner = useCallback(() => navigate('/scanner'), [navigate]);
 
   if (authLoading && !user) {
@@ -322,250 +309,289 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className="animate-fade-in">
-      {/* ── Header ── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem' }}>
-            <div style={{ width: 40, height: 40, borderRadius: '12px', background: 'linear-gradient(135deg, var(--violet), var(--emerald))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <LayoutDashboard size={22} color="#fff" />
-            </div>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>
-              Bonjour, {user?.name}
-            </h1>
-          </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>
-            Prêt pour votre session de Spaced Repetition du jour ?
-          </p>
-        </div>
+    <div className="animate-fade-in" style={{ position: 'relative' }}>
+      
+      {/* Background glow blobs */}
+      <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: '350px', height: '350px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(113, 109, 242, 0.05) 0%, transparent 70%)', filter: 'blur(80px)', zIndex: 0, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '15%', right: '-5%', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(16, 185, 129, 0.04) 0%, transparent 70%)', filter: 'blur(90px)', zIndex: 0, pointerEvents: 'none' }} />
+
+      <div style={{ position: 'relative', zIndex: 1 }}>
         
-        {/* Quick Actions */}
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+        {/* ── HEADER ── */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1.5rem' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem' }}>
+              <div style={{ width: 44, height: 44, borderRadius: '14px', background: 'linear-gradient(135deg, var(--violet), var(--emerald))', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 20px rgba(113, 109, 242, 0.2)' }}>
+                <GraduationCap size={24} color="#fff" />
+              </div>
+              <h1 style={{ fontSize: '2rem', fontWeight: 850, letterSpacing: '-0.02em', margin: 0, color: 'var(--text-main)' }}>
+                Bonjour, {user?.name}
+              </h1>
+            </div>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>
+              Révisez vos cours de mathématiques et préparez vos prochains contrôles.
+            </p>
+          </div>
+          
+          {/* Quick Actions Header */}
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button 
+              className="btn"
+              onClick={() => navigate('/study')}
+              style={{ 
+                background: 'linear-gradient(135deg, var(--violet), #4f46e5)', 
+                border: 'none', 
+                fontWeight: 800, 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem',
+                padding: '0.75rem 1.5rem',
+                boxShadow: '0 8px 20px rgba(124, 58, 237, 0.25)',
+                color: '#fff'
+              }}
+            >
+              <BrainCircuit size={16} /> Révision Guidée
+              {stats.dueToday > 0 && (
+                <span style={{ 
+                  background: 'var(--danger)', 
+                  color: '#fff', 
+                  borderRadius: '99px', 
+                  padding: '0.1rem 0.5rem', 
+                  fontSize: '0.7rem', 
+                  fontWeight: 900,
+                  marginLeft: '0.25rem',
+                  boxShadow: '0 2px 8px rgba(239, 68, 68, 0.4)'
+                }}>
+                  {stats.dueToday}
+                </span>
+              )}
+            </button>
+
+            <button 
+              className="btn-outline"
+              onClick={onNavigateToScanner}
+              style={{ 
+                background: 'var(--bg-glass)', 
+                border: '1px solid var(--border)', 
+                fontWeight: 800, 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem',
+                padding: '0.75rem 1.5rem',
+                color: 'var(--text-main)'
+              }}
+            >
+              <Camera size={16} /> Scanner une Copie
+            </button>
+          </div>
+        </div>
+
+        {/* ── INTERACTIVE LESSONS RECOMMENDATION HUB WIDGET ── */}
+        <div className="glass-panel" style={{ 
+          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(124, 58, 237, 0.03) 100%)', 
+          border: '1.5px solid rgba(16, 185, 129, 0.2)', 
+          padding: '1.75rem 2rem', 
+          borderRadius: '20px', 
+          marginBottom: '2.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '1.5rem'
+        }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <Sparkles size={16} style={{ color: 'var(--emerald)' }} />
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--emerald)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Fiches Interactives IA</span>
+            </div>
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 850, color: '#fff', margin: '0 0 0.5rem 0', letterSpacing: '-0.01em' }}>
+              Fiches de Cours de Mathématiques
+            </h2>
+            <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: '1.5', maxWidth: '650px' }}>
+              Retrouvez les fiches de cours préparées par votre professeur : résumés, formules en LaTeX, exercices d'application corrigés et QCM interactifs pour chaque chapitre.
+            </p>
+          </div>
+
           <button 
+            onClick={onNavigateToLevels}
             className="btn"
-            onClick={() => navigate('/study')}
             style={{ 
-              background: 'linear-gradient(135deg, var(--violet), #4f46e5)', 
-              border: 'none', 
-              fontWeight: 800, 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.5rem',
-              padding: '0.75rem 1.5rem',
-              boxShadow: '0 10px 25px rgba(124, 58, 237, 0.25)',
-              transform: 'translateY(0)',
-              transition: 'all 0.2s ease',
-              color: '#fff'
+              background: 'linear-gradient(135deg, var(--emerald), #34d399)', 
+              color: '#fff',
+              fontWeight: 800,
+              fontSize: '0.82rem',
+              padding: '0.7rem 1.35rem',
+              borderRadius: '10px',
+              boxShadow: '0 6px 15px rgba(16, 185, 129, 0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem'
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 30px rgba(124, 58, 237, 0.35)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 25px rgba(124, 58, 237, 0.25)'; }}
           >
-            <BrainCircuit size={16} /> Révision Guidée Quotidienne
-            {stats.dueToday > 0 && (
-              <span style={{ 
-                background: 'var(--danger)', 
-                color: '#fff', 
-                borderRadius: '99px', 
-                padding: '0.1rem 0.5rem', 
-                fontSize: '0.7rem', 
-                fontWeight: 900,
-                marginLeft: '0.25rem',
-                boxShadow: '0 2px 8px rgba(239, 68, 68, 0.4)'
-              }}>
-                {stats.dueToday}
-              </span>
-            )}
-          </button>
-
-          <button 
-            className="btn-outline"
-            onClick={onNavigateToScanner}
-            style={{ 
-              background: 'var(--bg-glass)', 
-              border: '1px solid var(--border)', 
-              fontWeight: 800, 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.5rem',
-              padding: '0.75rem 1.5rem',
-              transform: 'translateY(0)',
-              transition: 'all 0.2s ease',
-              color: 'var(--text-main)'
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = 'var(--bg-glass)'; }}
-          >
-            <Camera size={16} /> Scanner une feuille OMR
+            <BookOpen size={15} /> Parcourir les fiches de cours
           </button>
         </div>
-      </div>
 
-      {/* ── Stats Bento ── */}
-      <div className="dashboard-grid stats-row" style={{ marginBottom: '1.5rem' }}>
-        <div className="col-span-3">
+        {/* ── BENTO STATS GRID ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
           <StatCard icon={Trophy} label="Classement National" value={`#${stats.rank} / ${stats.totalStudents}`} colorClass="violet" />
-        </div>
-        <div className="col-span-3">
-          <StatCard icon={Flame} label="Série Actuelle" value={`${stats.streak}j`} colorClass="warning" />
-        </div>
-        <div className="col-span-3">
-          <StatCard icon={Zap} label="Expérience (XP)" value={user?.xp ?? 0} colorClass="emerald" />
-        </div>
-        <div className="col-span-3">
+          <StatCard icon={Flame} label="Série de Jours (Streak)" value={`${stats.streak} jours`} colorClass="warning" />
+          <StatCard icon={Zap} label="Expérience Accumulée" value={`${user?.xp ?? 0} XP`} colorClass="emerald" />
           <StatCard icon={Target} label="Maîtrise Globale" value={`${stats.globalMasteryPct}%`} colorClass="danger" />
         </div>
-      </div>
 
-      {/* ── Main content grid ── */}
-      <div className="dashboard-grid">
-        <div className="col-span-8" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <MockExamHistoryList 
-            mockExamHistory={mockExamHistory} 
-            exams={exams} 
-            onDownloadReport={handleDownloadReport} 
-            onNavigateToSchools={onNavigateToSchools} 
-            onNavigateToScanner={onNavigateToScanner} 
-          />
-        </div>
+        {/* ── MAIN CONTENT GRID ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 992 ? '1fr' : '2fr 1fr', gap: '1.75rem' }}>
+          
+          {/* Left Column: Mock Exam History */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <MockExamHistoryList 
+              mockExamHistory={mockExamHistory} 
+              exams={exams} 
+              onDownloadReport={handleDownloadReport} 
+              onNavigateToLevels={onNavigateToLevels} 
+              onNavigateToScanner={onNavigateToScanner} 
+            />
+          </div>
 
-        {/* Right sidebar */}
-        <div className="col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <WeeklyActivityChart data={stats.weeklyActivity} />
-
-          {/* Weak topics */}
-          <div className="glass-panel">
-            <h3 style={{ fontWeight: 700, marginBottom: '1rem', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Target size={16} color="var(--warning)" /> Points Faibles
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-              {stats.weakTopics.length === 0 ? (
-                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', textAlign: 'center', padding: '1rem 0' }}>
-                  Aucun point faible détecté. Continuez vos révisions pour affiner l'analyse.
-                </p>
-              ) : (
-                stats.weakTopics.map(({ name, masteryPct }) => {
-                  const color = masteryPct < 30 ? 'var(--danger)' : masteryPct < 65 ? 'var(--warning)' : 'var(--violet)';
-                  return (
-                    <div key={name}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.83rem' }}>
-                        <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{name}</span>
-                        <span style={{ color, fontWeight: 700 }}>{masteryPct}% maîtrisé</span>
-                      </div>
-                      <div className="progress-track" style={{ height: 6, borderRadius: 99, background: 'var(--border)', overflow: 'hidden' }}>
-                        <div className="progress-fill" style={{ width: `${masteryPct}%`, background: color, height: '100%', borderRadius: 99 }} />
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
+          {/* Right Column: Sidebar Analytics & Advice */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             
-            <button
-              onClick={handleGenerateWeaknessPDF}
-              disabled={stats.weakTopics.length === 0}
-              style={{
-                marginTop: '1.25rem',
-                width: '100%',
-                background: stats.weakTopics.length === 0 
-                  ? 'var(--bg-glass)' 
-                  : (user?.role === 'admin' || user?.tier === 'premium' ? 'var(--violet-soft)' : 'linear-gradient(135deg, var(--violet-soft), rgba(16, 185, 129, 0.05))'),
-                border: stats.weakTopics.length === 0 ? '1px solid var(--border)' : '1px solid rgba(99, 102, 241, 0.25)',
-                fontWeight: 800,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                padding: '0.75rem 1.25rem',
-                borderRadius: 'var(--radius-lg)',
-                color: stats.weakTopics.length === 0 ? 'var(--text-subtle)' : 'var(--violet)',
-                cursor: stats.weakTopics.length === 0 ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: 'none'
+            {/* Weekly Activity */}
+            <div className="glass-panel" style={{ padding: '1.5rem' }}>
+              <WeeklyActivityChart data={stats.weeklyActivity} />
+            </div>
+
+            {/* Weak topics & PDF errors booklet generator */}
+            <div className="glass-panel" style={{ padding: '1.5rem' }}>
+              <h3 style={{ fontWeight: 800, margin: '0 0 1.25rem 0', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-main)' }}>
+                <Target size={18} color="var(--warning)" /> Analyse des Points Faibles
+              </h3>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+                {stats.weakTopics.length === 0 ? (
+                  <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', textAlign: 'center', padding: '1rem 0' }}>
+                    Aucun point faible détecté. Continuez vos exercices et examens pour générer l'analyse.
+                  </p>
+                ) : (
+                  stats.weakTopics.map(({ name, masteryPct }) => {
+                    const color = masteryPct < 30 ? 'var(--danger)' : masteryPct < 65 ? 'var(--warning)' : 'var(--violet)';
+                    return (
+                      <div key={name}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.83rem' }}>
+                          <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>{name}</span>
+                          <span style={{ color, fontWeight: 800 }}>{masteryPct}% maîtrisé</span>
+                        </div>
+                        <div className="progress-track" style={{ height: 6, borderRadius: 99, background: 'var(--border)', overflow: 'hidden' }}>
+                          <div className="progress-fill" style={{ width: `${masteryPct}%`, background: color, height: '100%', borderRadius: 99 }} />
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+              
+              <button
+                onClick={handleGenerateWeaknessPDF}
+                disabled={stats.weakTopics.length === 0}
+                style={{
+                  width: '100%',
+                  background: stats.weakTopics.length === 0 
+                    ? 'var(--bg-glass)' 
+                    : 'var(--violet-soft)',
+                  border: stats.weakTopics.length === 0 ? '1px solid var(--border)' : '1px solid rgba(99, 102, 241, 0.25)',
+                  fontWeight: 800,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  padding: '0.8rem 1.25rem',
+                  borderRadius: '12px',
+                  color: stats.weakTopics.length === 0 ? 'var(--text-subtle)' : 'var(--violet)',
+                  cursor: stats.weakTopics.length === 0 ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease',
+                  fontSize: '0.82rem'
+                }}
+                onMouseEnter={e => { 
+                  if (stats.weakTopics.length > 0) {
+                    e.currentTarget.style.transform = 'translateY(-2px)'; 
+                    e.currentTarget.style.background = 'var(--violet)';
+                    e.currentTarget.style.color = '#fff';
+                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.15)';
+                  }
+                }}
+                onMouseLeave={e => { 
+                  if (stats.weakTopics.length > 0) {
+                    e.currentTarget.style.transform = 'translateY(0)'; 
+                    e.currentTarget.style.background = stats.weakTopics.length === 0 
+                      ? 'var(--bg-glass)' 
+                      : 'var(--violet-soft)';
+                    e.currentTarget.style.color = 'var(--violet)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
+                }}
+              >
+                <FileText size={15} /> Générer mon Cahier d'Erreurs PDF
+              </button>
+            </div>
+
+            {/* Dynamic Pedagogical Advice Box */}
+            <div 
+              className="glass-panel" 
+              onClick={() => {
+                if (stats.dueToday > 0) navigate('/study');
               }}
-              onMouseEnter={e => { 
-                if (stats.weakTopics.length > 0) {
-                  e.currentTarget.style.transform = 'translateY(-2px)'; 
-                  e.currentTarget.style.background = 'var(--violet)';
-                  e.currentTarget.style.color = '#fff';
+              style={{ 
+                background: 'var(--violet-soft)', 
+                border: '1px solid rgba(99,102,241,0.2)',
+                cursor: stats.dueToday > 0 ? 'pointer' : 'default',
+                transform: 'translateY(0)',
+                transition: 'all 0.2s ease',
+                padding: '1.5rem'
+              }}
+              onMouseEnter={e => {
+                if (stats.dueToday > 0) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
                   e.currentTarget.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.15)';
                 }
               }}
-              onMouseLeave={e => { 
-                if (stats.weakTopics.length > 0) {
-                  e.currentTarget.style.transform = 'translateY(0)'; 
-                  e.currentTarget.style.background = stats.weakTopics.length === 0 
-                    ? 'var(--bg-glass)' 
-                    : (user?.role === 'admin' || user?.tier === 'premium' ? 'var(--violet-soft)' : 'linear-gradient(135deg, var(--violet-soft), rgba(16, 185, 129, 0.05))');
-                  e.currentTarget.style.color = 'var(--violet)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              {(user?.role === 'admin' || user?.tier === 'premium') ? (
-                <>
-                  <FileText size={16} /> Générer mon Cahier d'Erreurs PDF
-                </>
-              ) : (
-                <>
-                  <Zap size={16} /> Générer mon Cahier d'Erreurs (Premium)
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Dynamic Pedagogical Advice Box */}
-          <div 
-            className="glass-panel" 
-            onClick={() => {
-              if (stats.dueToday > 0) navigate('/study');
-            }}
-            style={{ 
-              background: 'var(--violet-soft)', 
-              border: '1px solid rgba(99,102,241,0.2)',
-              cursor: stats.dueToday > 0 ? 'pointer' : 'default',
-              transform: 'translateY(0)',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={e => {
-              if (stats.dueToday > 0) {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.15)';
-              }
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          >
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <tip.icon size={20} color={tip.color} style={{ flexShrink: 0, marginTop: 2 }} />
-              <div>
-                <p style={{ fontWeight: 800, fontSize: '0.85rem', marginBottom: '0.25rem', color: 'var(--text-main)' }}>
-                  {tip.title}
-                </p>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', lineHeight: 1.55, marginBottom: stats.dueToday > 0 ? '0.75rem' : 0 }}>
-                  {tip.desc}
-                </p>
-                {stats.dueToday > 0 && (
-                  <span style={{ 
-                    display: 'inline-flex', 
-                    alignItems: 'center', 
-                    gap: '0.35rem', 
-                    fontSize: '0.75rem', 
-                    fontWeight: 800, 
-                    color: 'var(--violet)',
-                    textDecoration: 'underline'
-                  }}>
-                    Lancer la révision globale →
-                  </span>
-                )}
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <tip.icon size={20} color={tip.color} style={{ flexShrink: 0, marginTop: 2 }} />
+                <div>
+                  <p style={{ fontWeight: 800, fontSize: '0.85rem', marginBottom: '0.25rem', color: 'var(--text-main)' }}>
+                    {tip.title}
+                  </p>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', lineHeight: 1.55, marginBottom: stats.dueToday > 0 ? '0.75rem' : 0 }}>
+                    {tip.desc}
+                  </p>
+                  {stats.dueToday > 0 && (
+                    <span style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '0.35rem', 
+                      fontSize: '0.75rem', 
+                      fontWeight: 800, 
+                      color: 'var(--violet)',
+                      textDecoration: 'underline'
+                    }}>
+                      Lancer la révision globale →
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
+            
           </div>
         </div>
+
       </div>
 
-      {/* ── Premium Toast Notification ── */}
+      {/* ── Toast Notification ── */}
       {toastMessage && (
         <div className="dashboard-toast" style={{
           position: 'fixed',

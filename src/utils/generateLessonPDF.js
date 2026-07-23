@@ -413,9 +413,22 @@ const renderTableSegmentHTML = (segment) => {
 const renderMath = (text) => {
   if (text === null || text === undefined) return '';
   
-  // Unify literal '\\n' and CRLF newlines first to split correctly
-  let rawText = String(text)
-    .replace(/\\n(?![a-zA-Z])/g, '\n')
+  let rawText = String(text);
+  
+  // Split by math blocks to safely replace literal \n outside math without corrupting LaTeX commands like \neq
+  const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
+  const processedParts = parts.map((part, idx) => {
+    if (idx % 2 === 1) {
+      // Inside math block: only replace literal \n if NOT followed by letters (e.g. KaTeX commands)
+      return part.replace(/\\n(?![a-zA-Z])/g, '\n');
+    } else {
+      // Outside math block: replace all literal \n with real newlines safely
+      return part.replace(/\\n/g, '\n');
+    }
+  });
+  rawText = processedParts.join('');
+
+  rawText = rawText
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n');
 
@@ -457,6 +470,153 @@ const renderMath = (text) => {
   }).join('');
 };
 
+const generateSignTableHtml = (altText) => {
+  const alt = (altText || '').toLowerCase();
+  
+  if (alt.includes('ax+b') || alt.includes('ax + b') || (alt.includes('signe') && (alt.includes('1er degré') || alt.includes('1er degre')))) {
+    return `<div style="margin:0.75rem 0;padding:0.75rem;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc">
+      <div style="font-weight:750;font-size:0.85rem;color:#7c3aed;margin-bottom:0.5rem">Tableaux de signe de f(x) = ax + b (a &ne; 0)</div>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+        <div style="flex:1;min-width:220px">
+          <div style="font-size:0.75rem;font-weight:700;color:#059669;margin-bottom:0.25rem">1er cas : a &gt; 0</div>
+          <table class="sheet-table" style="text-align:center;font-size:0.82rem">
+            <thead>
+              <tr style="background:#f1f5f9">
+                <th>${renderMath('$x$')}</th>
+                <th>${renderMath('$-\\infty$')}</th>
+                <th></th>
+                <th>${renderMath('$-\\frac{b}{a}$')}</th>
+                <th></th>
+                <th>${renderMath('$+\\infty$')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:700">${renderMath('$ax+b$')}</td>
+                <td></td>
+                <td style="color:#dc2626;font-weight:800">&minus;</td>
+                <td style="font-weight:800;background:#fef3c7">0</td>
+                <td style="color:#059669;font-weight:800">+</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="flex:1;min-width:220px">
+          <div style="font-size:0.75rem;font-weight:700;color:#d97706;margin-bottom:0.25rem">2ème cas : a &lt; 0</div>
+          <table class="sheet-table" style="text-align:center;font-size:0.82rem">
+            <thead>
+              <tr style="background:#f1f5f9">
+                <th>${renderMath('$x$')}</th>
+                <th>${renderMath('$-\\infty$')}</th>
+                <th></th>
+                <th>${renderMath('$-\\frac{b}{a}$')}</th>
+                <th></th>
+                <th>${renderMath('$+\\infty$')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:700">${renderMath('$ax+b$')}</td>
+                <td></td>
+                <td style="color:#059669;font-weight:800">+</td>
+                <td style="font-weight:800;background:#fef3c7">0</td>
+                <td style="color:#dc2626;font-weight:800">&minus;</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  if (alt.includes('ax^2') || alt.includes('ax2') || alt.includes('delta') || alt.includes('trinôme') || alt.includes('trinome') || alt.includes('2nd degré') || alt.includes('2ème degré')) {
+    return `<div style="margin:0.75rem 0;padding:0.75rem;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc">
+      <div style="font-weight:750;font-size:0.85rem;color:#059669;margin-bottom:0.5rem">Tableaux de signe du trinôme f(x) = ax&sup2; + bx + c (a &ne; 0)</div>
+      <div style="display:flex;flex-direction:column;gap:0.6rem">
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;color:#7c3aed;margin-bottom:0.2rem">${renderMath('1er cas : $\\Delta > 0$')}</div>
+          <table class="sheet-table" style="text-align:center;font-size:0.82rem">
+            <thead>
+              <tr style="background:#f1f5f9">
+                <th>${renderMath('$x$')}</th>
+                <th>${renderMath('$-\\infty$')}</th>
+                <th></th>
+                <th>${renderMath('$x_1$')}</th>
+                <th></th>
+                <th>${renderMath('$x_2$')}</th>
+                <th></th>
+                <th>${renderMath('$+\\infty$')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:700">${renderMath('$ax^2+bx+c$')}</td>
+                <td></td>
+                <td>Signe de ${renderMath('$a$')}</td>
+                <td style="font-weight:800;background:#fef3c7">0</td>
+                <td style="color:#7c3aed;font-weight:700">Signe de ${renderMath('$-a$')}</td>
+                <td style="font-weight:800;background:#fef3c7">0</td>
+                <td>Signe de ${renderMath('$a$')}</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;color:#059669;margin-bottom:0.2rem">${renderMath('2ème cas : $\\Delta = 0$ ($x_0 = -\\frac{b}{2a}$)')}</div>
+          <table class="sheet-table" style="text-align:center;font-size:0.82rem">
+            <thead>
+              <tr style="background:#f1f5f9">
+                <th>${renderMath('$x$')}</th>
+                <th>${renderMath('$-\\infty$')}</th>
+                <th></th>
+                <th>${renderMath('$x_0$')}</th>
+                <th></th>
+                <th>${renderMath('$+\\infty$')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:700">${renderMath('$ax^2+bx+c$')}</td>
+                <td></td>
+                <td>Signe de ${renderMath('$a$')}</td>
+                <td style="font-weight:800;background:#fef3c7">0</td>
+                <td>Signe de ${renderMath('$a$')}</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;color:#d97706;margin-bottom:0.2rem">${renderMath('3ème cas : $\\Delta < 0$')}</div>
+          <table class="sheet-table" style="text-align:center;font-size:0.82rem">
+            <thead>
+              <tr style="background:#f1f5f9">
+                <th>${renderMath('$x$')}</th>
+                <th>${renderMath('$-\\infty$')}</th>
+                <th></th>
+                <th>${renderMath('$+\\infty$')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:700">${renderMath('$ax^2+bx+c$')}</td>
+                <td></td>
+                <td>Signe de ${renderMath('$a$')} sur ${renderMath('$\\mathbb{R}$')} tout entier</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  return `<div style="text-align:center;margin:0.5rem 0;font-style:italic;color:#64748b">${renderMath(altText)}</div>`;
+};
+
 const renderMathInternal = (text) => {
   if (text === null || text === undefined) return '';
   const repaired = text;
@@ -479,11 +639,11 @@ const renderMathInternal = (text) => {
   normalised = normalised.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g)
     .map((part, idx) => {
       if (idx % 2 === 1) return part; // inside math — leave as-is
-      let p = part.replace(/\\n(?![a-zA-Z])/g, '\n');
+      let p = part.replace(/\\n/g, '\n');
       
       // Force line break after period followed by space and uppercase letter/backslash/math delimiter
-      // NOTE: exclude when preceded by a digit (numbered list item like "1. Calculer")
-      p = p.replace(/(?<!\d|^|\n|\b\d\.[a-zA-Z]|\bex|\betc|\bvs)\.\s+([A-ZÀ-ÖØ-ß]|\\|\$)/g, '.\n$1');
+      // NOTE: exclude when preceded by a digit (numbered list item like "1. Calculer") or single letter (like "A. Calculer")
+      p = p.replace(/(?<!\d|^|\n|\b\d\.[a-zA-Z]|\bex|\betc|\bvs|\b[a-zA-Z])\.\s+([A-ZÀ-ÖØ-ß]|\\|\$)/g, '.\n$1');
 
       // Force line break before Step / Response / Attention blocks
       if (idx > 0) p = p.replace(/^\s*(\*\*)?(étape|etape|step|الخطوة)\b/gi, '\n$1$2');
@@ -497,13 +657,7 @@ const renderMathInternal = (text) => {
 
   let lines = [[]];
   for (const tok of tokens) {
-    if (tok.type === 'block') {
-      if (lines[lines.length - 1].length > 0) {
-        lines.push([]);
-      }
-      lines[lines.length - 1].push(tok);
-      lines.push([]);
-    } else if (tok.type === 'inline') {
+    if (tok.type === 'block' || tok.type === 'inline') {
       lines[lines.length - 1].push(tok);
     } else {
       const parts = tok.content.split('\n');
@@ -545,6 +699,9 @@ const parseExerciseTitle = (title, fallbackIdx, isArabicMode = false) => {
   if (!title) return { number: String(fallbackIdx + 1), label: '' };
   let clean = title.trim();
 
+  // Strip markdown bold markers
+  clean = clean.replace(/\*\*/g, '').trim();
+
   // Handle Arabic titles: "تمرين 1" or "تمرين: 1"
   if (isArabicMode || /^\u062a\u0645\u0631\u064a\u0646/.test(clean)) {
     const arabicMatch = clean.match(/^\u062a\u0645\u0631\u064a\u0646[:\s]*([\d١-٩]+)\s*(.*)$/);
@@ -572,10 +729,23 @@ const parseExerciseTitle = (title, fallbackIdx, isArabicMode = false) => {
 const renderHomeworkBody = (text, isArabicMode) => {
   if (text === null || text === undefined) return '';
 
-  let rawText = String(text)
-    .replace(/\\n(?![a-zA-Z])/g, '\n')
-    .replace(/\r\n/g, '\n')
-    .replace(/\r/g, '\n');
+  let rawText = String(text);
+  
+  // Split by math blocks to safely replace literal \n outside math without corrupting LaTeX commands like \neq
+  const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
+  const processedParts = parts.map((part, idx) => {
+    if (idx % 2 === 1) {
+      // Inside math block: only replace literal \n if NOT followed by letters (e.g. KaTeX commands)
+      return part.replace(/\\n(?![a-zA-Z])/g, '\n');
+    } else {
+      // Outside math block: replace all literal \n with real newlines safely
+      return part.replace(/\\n/g, '\n');
+    }
+  });
+  rawText = processedParts.join('');
+
+  // Collapse colon followed by newline and math formula into a single line
+  rawText = rawText.replace(/(:\s*)\n+\s*(\$\$|\$)/g, ' : $2');
 
   const lines = rawText.split('\n');
   const mergedLines = [];
@@ -635,8 +805,22 @@ const renderHomeworkBody = (text, isArabicMode) => {
 const calculateTotalPoints = (text, isArabicMode) => {
   if (!text) return isArabicMode ? '0 ن' : '0 pts';
 
-  let rawText = String(text)
-    .replace(/\\n(?![a-zA-Z])/g, '\n')
+  let rawText = String(text);
+  
+  // Split by math blocks to safely replace literal \n outside math without corrupting LaTeX commands like \neq
+  const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
+  const processedParts = parts.map((part, idx) => {
+    if (idx % 2 === 1) {
+      // Inside math block: only replace literal \n if NOT followed by letters (e.g. KaTeX commands)
+      return part.replace(/\\n(?![a-zA-Z])/g, '\n');
+    } else {
+      // Outside math block: replace all literal \n with real newlines safely
+      return part.replace(/\\n/g, '\n');
+    }
+  });
+  rawText = processedParts.join('');
+
+  rawText = rawText
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n');
 
@@ -734,24 +918,27 @@ export const generateLessonHTML = (lesson, settings = {}) => {
   let prevSectionHeader = null;
 
   sections?.forEach((sec, idx) => {
-    const isTheory = sec.type === 'content';
+    const isTheory = sec.type !== 'exercise';
 
     // Section header row — shown only for theory/lesson docs, not exercise sheets
     if (!isExercises && sec.section_header && sec.section_header !== prevSectionHeader) {
       sectionsHtml += `
-        <div class="section-header-row" ${isArabic ? 'style="flex-direction:row"' : (idx > 0 ? 'style="margin-top:0.6rem"' : '')}>
-          <div class="section-badge">${sec.section_number || '1'}</div>
-          <div class="section-title-pill" ${isArabic ? `style="font-family:${arabicFontFamily};direction:rtl"` : ''}>${esc(sec.section_header)}</div>
+        <div style="text-align: center; margin: 0.7rem 0 0.3rem; page-break-after: avoid;">
+          <h2 style="font-size: 1.05rem; font-weight: 800; font-style: italic; color: #000; margin: 0; font-family: ${isArabic ? arabicFontFamily : 'inherit'}">
+            ${renderLineContent(sec.section_header || '')}
+          </h2>
         </div>`;
       prevSectionHeader = sec.section_header;
     }
 
     if (isTheory) {
       // Theory/content subsection
+      const hasImageItem = sec.items?.some(item => item.type === 'image');
       let itemsHtml = '';
-      sec.items?.forEach((item) => {
+      
+      const renderItemHtml = (item) => {
         if (item.type === 'highlight_box') {
-          itemsHtml += `<div class="highlight-box">${renderMath(item.text)}</div>`;
+          return `<div class="highlight-box">${renderMath(item.text)}</div>`;
         } else if (item.type === 'notation_grid') {
           let colsHtml = '';
           item.notation_columns?.forEach((col) => {
@@ -760,11 +947,11 @@ export const generateLessonHTML = (lesson, settings = {}) => {
               blocksHtml += `<div style="display:block;margin:0.2rem 0">${renderMath(block)}</div>`;
             });
             colsHtml += `<div class="notation-column">
-              <strong style="font-size:0.9rem;color:#005086">${esc(col.title)}</strong>
+              <strong style="font-size:0.85rem;color:#005086">${esc(col.title)}</strong>
               ${blocksHtml}
             </div>`;
           });
-          itemsHtml += `<div class="notation-grid">${colsHtml}</div>`;
+          return `<div class="notation-grid">${colsHtml}</div>`;
         } else if (item.type === 'table') {
           let headersHtml = '';
           item.table_data?.headers?.forEach(h => { headersHtml += `<th>${renderMath(h)}</th>`; });
@@ -774,12 +961,30 @@ export const generateLessonHTML = (lesson, settings = {}) => {
             row.forEach(cell => { cellsHtml += `<td>${renderMath(cell)}</td>`; });
             rowsHtml += `<tr>${cellsHtml}</tr>`;
           });
-          itemsHtml += `<div style="overflow-x:auto;width:100%;margin:0.5rem 0">
+          return `<div style="overflow-x:auto;width:100%;margin:0.4rem 0">
             <table class="sheet-table">
               <thead><tr>${headersHtml}</tr></thead>
               <tbody>${rowsHtml}</tbody>
             </table>
           </div>`;
+        } else if (item.type === 'image') {
+          const align = item.align || 'center';
+          const widthPct = item.width_pct || 80;
+          const textAlign = align;
+          const rawUrl = (item.url || '').trim();
+          const isInvalidUrl = !rawUrl || rawUrl.length < 5 || rawUrl.includes('placeholder') || rawUrl.includes('example.com') || rawUrl === 'none' || rawUrl === 'url' || rawUrl === 'image';
+          const isSignTable = (item.alt || rawUrl).toLowerCase().includes('signe') || (item.alt || rawUrl).toLowerCase().includes('tableau') || (item.alt || rawUrl).includes('ax+b') || (item.alt || rawUrl).includes('ax^2');
+
+          if (isInvalidUrl || isSignTable) {
+            return generateSignTableHtml(item.alt || item.url || '');
+          } else {
+            return `<div style="text-align:${textAlign};margin:0.5rem 0">
+              <img src="${esc(item.url)}" alt="${esc(item.alt || '')}"
+                style="width:${widthPct}%;max-width:100%;border-radius:6px;border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,0.07);object-fit:contain;"
+              />
+              ${item.alt ? `<div style="font-size:0.75rem;color:#64748b;font-style:italic;margin-top:0.2rem">${renderMath(item.alt)}</div>` : ''}
+            </div>`;
+          }
         } else {
           // bullet or text
           const bulletDot = item.type === 'bullet'
@@ -788,18 +993,126 @@ export const generateLessonHTML = (lesson, settings = {}) => {
           const bulletStyle = isArabic
             ? 'flex-direction:row;text-align:right;'
             : '';
-          itemsHtml += `<div class="bullet-item" style="${bulletStyle}">${bulletDot}<span style="flex:1;font-family:${isArabic ? arabicFontFamily : 'inherit'}">${renderMath(item.text)}</span></div>`;
+          return `<div class="bullet-item" style="${bulletStyle}">${bulletDot}<span style="flex:1;font-family:${isArabic ? arabicFontFamily : 'inherit'}">${renderMath(item.text)}</span></div>`;
         }
-      });
+      };
 
-      sectionsHtml += `
-        <div class="subsection-card" ${isArabic ? `style="font-family:${arabicFontFamily};direction:rtl"` : ''}>
-          <div class="subsection-header" ${isArabic ? 'style="flex-direction:row;text-align:right"' : ''}>
-            <span>${esc(sec.title || '')}</span>
-            ${sec.accent_text ? `<span class="accent-green">${esc(sec.accent_text)}</span>` : ''}
-          </div>
-          ${itemsHtml}
-        </div>`;
+      if (hasImageItem) {
+        const imageItem = sec.items.find(item => item.type === 'image');
+        const nonImageItems = sec.items.filter(item => item.type !== 'image');
+        
+        let nonImageHtml = '';
+        nonImageItems.forEach((item) => {
+          nonImageHtml += renderItemHtml(item);
+        });
+        
+        const rawUrl = (imageItem.url || '').trim();
+        const isInvalidUrl = !rawUrl || rawUrl.length < 5 || rawUrl.includes('placeholder') || rawUrl.includes('example.com') || rawUrl === 'none' || rawUrl === 'url' || rawUrl === 'image';
+        const isSignTable = (imageItem.alt || rawUrl).toLowerCase().includes('signe') || (imageItem.alt || rawUrl).toLowerCase().includes('tableau') || (imageItem.alt || rawUrl).includes('ax+b') || (imageItem.alt || rawUrl).includes('ax^2');
+        
+        let imgHtml = '';
+        if (isInvalidUrl || isSignTable) {
+          imgHtml = generateSignTableHtml(imageItem.alt || imageItem.url || '');
+        } else {
+          imgHtml = `
+            <div class="side-image-wrapper" style="min-width:180px; max-width:260px; flex-shrink:0; text-align:center;">
+              <img src="${esc(imageItem.url)}" alt="${esc(imageItem.alt || '')}"
+                style="width:100%; max-width:100%; border-radius:4px; border:1px solid #cbd5e1; object-fit:contain;"
+              />
+              ${imageItem.alt ? `<div style="font-size:0.75rem; color:#64748b; font-style:italic; margin-top:0.2rem">${renderMath(imageItem.alt)}</div>` : ''}
+            </div>`;
+        }
+        
+        const flexDir = isArabic ? 'row-reverse' : 'row';
+        itemsHtml = `
+          <div class="side-by-side-container" style="display:flex; flex-direction:${flexDir}; gap:1.2rem; align-items:center; width:100%; justify-content:space-between;">
+            <div style="flex:1; display:flex; flex-direction:column; gap:0.25rem;">
+              ${nonImageHtml}
+            </div>
+            ${imgHtml}
+          </div>`;
+      } else {
+        sec.items?.forEach((item) => {
+          itemsHtml += renderItemHtml(item);
+        });
+      }
+
+      const type = sec.type || 'content';
+      let cleanTitleText = (sec.title || '').trim();
+      const titleLower = cleanTitleText.toLowerCase();
+      const isDefinition = type === 'definition' || titleLower.includes('définition') || titleLower.includes('definition') || titleLower.includes('تعريف');
+      const isProperty = type === 'property' || titleLower.includes('propriété') || titleLower.includes('propriete') || titleLower.includes('خاصية');
+      const isTheorem = type === 'theorem' || titleLower.includes('théorème') || titleLower.includes('theoreme') || titleLower.includes('مبرهنة');
+      const isCorollary = type === 'corollary' || titleLower.includes('corollaire') || titleLower.includes('نتيجة');
+      const isExample = type === 'example' || titleLower.includes('exemple') || titleLower.includes('مثال');
+      const isRemark = type === 'remark' || titleLower.includes('remarque') || titleLower.includes('ملاحظة');
+      const isActivity = type === 'activity' || titleLower.includes('activité') || titleLower.includes('activite') || titleLower.includes('تطبيق');
+
+      // ── Prefix and title cleanup (matching reference images exactly) ──
+      let prefix = '';
+      const isBoxed = isDefinition || isProperty || isTheorem || isCorollary; // boxed = thin black frame
+      const isTechnique = type === 'technique' || (sec.title || '').toLowerCase().includes('technique');
+
+      if (isDefinition) {
+        prefix = '⬜⬜⬜<b><i>Définition :</i></b>';
+        if (isArabic) prefix = '⬜⬜⬜<b><i>تعريف :</i></b>';
+        cleanTitleText = cleanTitleText.replace(/^[0-9.\s]*(D[ée]finition|definition|تعريف)\s*[:\-]*\s*/i, '');
+      } else if (isProperty) {
+        prefix = '⬜⬜⬜<b><i>Propriété :</i></b>';
+        if (isArabic) prefix = '⬜⬜⬜<b><i>خاصية :</i></b>';
+        cleanTitleText = cleanTitleText.replace(/^[0-9.\s]*(Propri[ée]t[ée]|propriete|خاصية)\s*[:\-]*\s*/i, '');
+      } else if (isTheorem) {
+        prefix = '⬜⬜⬜<b><i>Théorème :</i></b>';
+        if (isArabic) prefix = '⬜⬜⬜<b><i>مبرهنة :</i></b>';
+        cleanTitleText = cleanTitleText.replace(/^[0-9.\s]*(Th[ée]or[èe]me|theoreme|مبرهنة)\s*[:\-]*\s*/i, '');
+      } else if (isCorollary) {
+        prefix = '⬜⬜<b><i>Corollaire :</i></b>';
+        if (isArabic) prefix = '⬜⬜<b><i>نتيجة :</i></b>';
+        cleanTitleText = cleanTitleText.replace(/^[0-9.\s]*(Corollaire|نتيجة)\s*[:\-]*\s*/i, '');
+      } else if (isExample) {
+        prefix = '<span style="color:#c00">○⬜</span><b style="color:#c00"><i>Exemple :</i></b>';
+        if (isArabic) prefix = '<span style="color:#c00">○⬜</span><b style="color:#c00"><i>مثال :</i></b>';
+        cleanTitleText = cleanTitleText.replace(/^[0-9.\s]*(Exemple|exemple|مثال)\s*[:\-]*\s*/i, '');
+      } else if (isRemark) {
+        prefix = '<span style="color:#c00">○</span> <b style="color:#c00"><i>Remarque :</i></b>';
+        if (isArabic) prefix = '<span style="color:#c00">○</span> <b style="color:#c00"><i>ملاحظة :</i></b>';
+        cleanTitleText = cleanTitleText.replace(/^[0-9.\s]*(Remarque|remarque|ملاحظة)\s*[:\-]*\s*/i, '');
+      } else if (isActivity) {
+        prefix = '⬜⬜<b><i>Activité :</i></b>';
+        if (isArabic) prefix = '⬜⬜<b><i>نشاط :</i></b>';
+        cleanTitleText = cleanTitleText.replace(/^[0-9.\s]*(Activit[ée]|activite|نشاط|تطبيق)\s*[:\-]*\s*/i, '');
+      } else if (isTechnique) {
+        prefix = '<span style="color:#c00">○</span> <b style="color:#c00"><i>Technique :</i></b>';
+        cleanTitleText = cleanTitleText.replace(/^[0-9.\s]*(Technique|technique)\s*[:\-]*\s*/i, '');
+      }
+
+      // ── Card and header styles: match reference exactly ──
+      let cardStyles = `margin-bottom: 0.35rem; padding: 0.3rem 0; display: flex; flex-direction: column; gap: 0.15rem; page-break-inside: avoid;`;
+      let headerStyles = `font-size: 0.92rem; font-weight: 800; margin-bottom: 0.1rem; text-decoration: underline; text-underline-offset: 2px;`;
+
+      if (isArabic) {
+        cardStyles += ` font-family: ${arabicFontFamily}; direction: rtl; text-align: right;`;
+      }
+
+      // Definitions/Properties/Theorems: content inside thin black frame (like reference image)
+      if (isBoxed) {
+        sectionsHtml += `
+          <div style="${cardStyles}">
+            <div style="${headerStyles}">${prefix}${cleanTitleText ? ' ' + renderLineContent(cleanTitleText) : ''}</div>
+            ${sec.accent_text ? `<div style="color:#009688;font-weight:700;font-style:italic;margin-bottom:0.1rem">${renderMath((sec.accent_text || '').replace(/\\n/g, '\n'))}</div>` : ''}
+            <div style="border: 1px solid #000; padding: 0.4rem 0.6rem; margin-top: 0.1rem;">
+              ${itemsHtml}
+            </div>
+          </div>`;
+      } else {
+        // Examples, Remarks, Activities, Technique: NO frame, just content flows below the title
+        sectionsHtml += `
+          <div style="${cardStyles}">
+            <div style="${headerStyles}">${prefix}${cleanTitleText ? ' ' + renderLineContent(cleanTitleText) : ''}</div>
+            ${sec.accent_text ? `<div style="color:#009688;font-weight:700;font-style:italic;margin-bottom:0.1rem">${renderMath((sec.accent_text || '').replace(/\\n/g, '\n'))}</div>` : ''}
+            ${itemsHtml}
+          </div>`;
+      }
 
     } else {
       // Exercise section
@@ -879,31 +1192,89 @@ export const generateLessonHTML = (lesson, settings = {}) => {
 
 @page {
   size: A4 portrait;
-  margin: ${isHomework ? '8mm 8mm 8mm 8mm' : '12mm 12mm 14mm 12mm'};
-  @bottom-center {
-    content: "— " counter(page) " —";
+  margin: 10mm;
+  @bottom-left {
+    content: "${esc(teacher || (isArabic ? 'زياتي محمد' : 'Pr. LATRACH ABDELKBIR'))}";
     font-family: 'Computer Modern Serif', 'STIX Two Text', 'Times New Roman', serif;
     font-size: 8pt;
-    color: #94a3b8;
+    color: #475569;
+  }
+  @bottom-right {
+    content: "Page | " counter(page);
+    font-family: 'Computer Modern Serif', 'STIX Two Text', 'Times New Roman', serif;
+    font-size: 8pt;
+    color: #475569;
+    font-weight: bold;
   }
 }
 
 @page :first {
-  @bottom-center { content: none; }
+  @bottom-left { content: none; }
+  @bottom-right { content: none; }
 }
 
 html {
-  font-size: ${isHomework ? '9.8pt' : '11pt'};
+  font-size: 9.5pt;
 }
 
 body {
   font-family: 'Computer Modern Serif', 'STIX Two Text', 'Times New Roman', serif;
   color: #1a202c;
   background: #ffffff;
-  line-height: ${isHomework ? '1.42' : '1.7'};
+  line-height: 1.45;
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
   font-feature-settings: 'liga' 1, 'kern' 1;
+}
+
+@media print {
+  body {
+    border: 1.5px solid #000000;
+    padding: 8mm;
+    min-height: 275mm;
+  }
+}
+
+/* Fiche pedagogique header grid — matching reference image exactly */
+.fiche-pedagogique-header {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1.5px solid #000;
+  margin-bottom: 0.5rem;
+  font-size: 8.5pt;
+  line-height: 1.35;
+  color: #000;
+  background-color: #ffffff;
+  font-family: inherit;
+}
+.fiche-pedagogique-header td {
+  border: 1.5px solid #000;
+  vertical-align: top;
+}
+.fiche-pedagogique-header .title-cell {
+  background-color: #dbeafe;
+  text-align: center;
+  font-weight: 900;
+  font-size: 13pt;
+  color: #1e3a8a;
+  padding: 8px 10px;
+}
+.fiche-pedagogique-header .header-section-title {
+  font-weight: 800;
+  text-align: center;
+  background-color: #f0f0f0;
+  border-bottom: 1.5px solid #000;
+  padding: 3px 6px;
+  font-size: 8pt;
+  color: #000;
+}
+.fiche-pedagogique-header .right-info-table td {
+  padding: 4px 6px;
+  font-size: 7.8pt;
+  border-bottom: 1.5px solid #000;
+}
+.fiche-pedagogique-header .right-info-table tr:last-child td {
+  border-bottom: none;
 }
 
 /* ═══════════════════════════════════════
@@ -953,6 +1324,17 @@ body {
 @media print {
   .print-hint { display: none !important; }
   body { padding-top: 0 !important; }
+}
+
+.katex-display {
+  display: inline-block !important;
+  margin: 0.15em 0.35em !important;
+  vertical-align: middle !important;
+  text-align: left !important;
+}
+.katex-display > .katex {
+  display: inline-block !important;
+  text-align: left !important;
 }
 
 @media screen {
@@ -1222,35 +1604,6 @@ body {
 }
 
 /* ═══════════════════════════════════════
-   SUBSECTION CARD (theory blocks)
-   ═══════════════════════════════════════ */
-.subsection-card {
-  border: 1.5px solid #005086;
-  border-radius: 6px;
-  padding: 0.6rem 0.8rem;
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  margin-bottom: 0.4rem;
-}
-.subsection-header {
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: #1a202c;
-  border-bottom: 1px dashed rgba(0,80,134,0.25);
-  padding-bottom: 0.2rem;
-  margin-bottom: 0.15rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-.accent-green {
-  color: #009688;
-  font-weight: 800;
-}
-
-/* ═══════════════════════════════════════
    BULLET ITEMS
    ═══════════════════════════════════════ */
 .bullet-item {
@@ -1258,7 +1611,7 @@ body {
   align-items: flex-start;
   gap: 0.35rem;
   line-height: 1.55;
-  margin-bottom: 0.15rem;
+  margin-bottom: 0.1rem;
 }
 .bullet-dot {
   color: #005086;
@@ -1269,15 +1622,17 @@ body {
 }
 
 /* ═══════════════════════════════════════
-   HIGHLIGHT BOX
+   HIGHLIGHT BOX (green tint like reference)
    ═══════════════════════════════════════ */
 .highlight-box {
-  background: rgba(0,80,134,0.04);
-  border: 1.5px solid #005086;
-  border-radius: 5px;
-  padding: 0.5rem 0.7rem;
-  margin: 0.2rem 0;
-  line-height: 1.6;
+  background: rgba(144, 238, 144, 0.25);
+  border: none;
+  padding: 0.3rem 0.6rem;
+  margin: 0.15rem 0;
+  line-height: 1.55;
+  text-align: center;
+  font-style: italic;
+  font-weight: 500;
 }
 
 /* ═══════════════════════════════════════
@@ -1288,17 +1643,16 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 0.6rem;
   margin: 0.2rem 0;
-  padding: 0.4rem;
-  background: #f8fafc;
-  border: 1px solid rgba(0,80,134,0.1);
-  border-radius: 5px;
+  padding: 0.2rem 0;
+  background: transparent;
+  border: none;
 }
 .notation-column {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-  border-left: 2px solid #005086;
-  padding-left: 0.8rem;
+  border-left: none;
+  padding-left: 0.5rem;
 }
 
 /* ═══════════════════════════════════════
@@ -1308,20 +1662,22 @@ body {
   width: 100%;
   border-collapse: collapse;
   margin-top: 0.4rem;
-  border: 1.5px solid #005086;
+  border: none;
   font-size: 0.92rem;
 }
 .sheet-table th,
 .sheet-table td {
-  border: 1px solid rgba(0,80,134,0.25);
-  padding: 0.55rem 0.8rem;
+  border: none;
+  border-bottom: 1px solid #cbd5e1;
+  padding: 0.45rem 0.6rem;
   text-align: center;
   color: #1a202c;
 }
 .sheet-table th {
-  background: rgba(0,80,134,0.06);
+  background: transparent;
   font-weight: 800;
   color: #005086;
+  border-bottom: 2px solid #005086;
 }
 
 /* ═══════════════════════════════════════
@@ -1370,13 +1726,9 @@ body {
   color: #1a202c;
 }
 .exercise-body {
-  border-left: 4px solid #005086;
-  background: rgba(0,80,134,0.02);
-  border-top: 1px solid rgba(0,80,134,0.1);
-  border-right: 1px solid rgba(0,80,134,0.1);
-  border-bottom: 1px solid rgba(0,80,134,0.1);
-  border-radius: 4px 6px 6px 4px;
-  padding: 0.6rem 0.8rem;
+  border: none;
+  background: transparent;
+  padding: 0.2rem 0;
   line-height: 1.6;
 }
 
@@ -1384,10 +1736,10 @@ body {
    SOLUTION BLOCK
    ═══════════════════════════════════════ */
 .solution-block {
-  background: rgba(16,185,129,0.03);
-  border: 1.5px solid rgba(16,185,129,0.2);
-  border-radius: 6px;
-  padding: 0.6rem 0.8rem;
+  background: transparent;
+  border: none;
+  border-top: 1px dashed rgba(16,185,129,0.3);
+  padding: 0.4rem 0;
   margin-top: 0.2rem;
 }
 .solution-title {
@@ -1411,18 +1763,18 @@ body {
    CALLOUTS (response / attention)
    ═══════════════════════════════════════ */
 .mfc-callout-response {
-  background: rgba(16,185,129,0.06);
-  border-left: 4px solid #009688;
-  padding: 0.5rem 0.8rem;
-  border-radius: 0 6px 6px 0;
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0;
   margin: 0.3rem 0;
+  color: #059669;
 }
 .mfc-callout-attention {
-  background: rgba(245,158,11,0.06);
-  border-left: 4px solid #d97706;
-  padding: 0.5rem 0.8rem;
-  border-radius: 0 6px 6px 0;
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0;
   margin: 0.3rem 0;
+  color: #d97706;
 }
 
 /* ═══════════════════════════════════════
@@ -1573,24 +1925,21 @@ html[dir="rtl"] .section-header-row {
 .homework-table {
   width: 100%;
   border-collapse: collapse;
-  border: 1.5px solid #005086;
-  border-radius: 6px;
-  overflow: hidden;
+  border: none;
   margin-bottom: 0.6rem;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
   page-break-inside: auto;
 }
 .homework-header-row {
   display: flex;
-  background: #005086;
-  color: #ffffff;
+  background: transparent;
+  color: #000;
   font-weight: 800;
-  border-bottom: 2px solid #005086;
+  border-bottom: 2px solid #000;
   align-items: stretch;
 }
 .homework-row {
   display: flex;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #cbd5e1;
   align-items: stretch;
 }
 .homework-row:last-child {
@@ -1608,14 +1957,14 @@ html[dir="rtl"] .section-header-row {
   font-weight: 700;
 }
 .homework-bareme-header {
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
-  border-right: 2px solid #ffffff;
+  background: transparent;
+  color: #000;
+  border-right: 1.5px solid #000;
 }
 .homework-bareme-cell {
-  background: rgba(0, 80, 134, 0.02);
+  background: transparent;
   color: #475569;
-  border-right: 2px solid #005086;
+  border-right: 1.5px solid #000;
   font-family: inherit;
 }
 .homework-content-cell, .homework-content-header {
@@ -1688,40 +2037,73 @@ html[dir="rtl"] .homework-bareme-header {
   </div>
   ` : `
   <!-- CLASSIC HEADER: lessons / courses -->
-  <div class="fiche-header-classic">
-    <div class="left-classic">
-      <span>${esc(prepTitle)}</span>
-      <span class="schools-classic">${esc(schools.join(' - '))}</span>
-    </div>
-    <div class="center-classic">
-      <span class="subject-label-classic">${esc(subject)}</span>
-      <span class="fiche-title-classic">${esc(title)}</span>
-    </div>
-    <div class="right-classic">
-      <span>${esc(teacher)}</span>
-      ${phone ? `<span class="phone-classic">${esc(phone)}</span>` : ''}
-    </div>
-  </div>
+  <table class="fiche-pedagogique-header">
+    <tr>
+      <!-- Left Side (73% width) -->
+      <td style="width: 73%; padding: 0;" rowspan="1">
+        <table style="width: 100%; border-collapse: collapse; height: 100%;">
+          <tr>
+            <td colspan="2" class="title-cell">
+              ${esc(title)}
+            </td>
+          </tr>
+          <tr>
+            <td style="width: 50%; padding: 0;">
+              <div class="header-section-title">${isArabic ? 'القدرات المنتظرة' : 'Les capacités attendues'}</div>
+              <div style="padding: 6px 10px; font-size: 8.2pt; min-height: 60px; font-family: ${isArabic ? arabicFontFamily : 'inherit'}">
+              </div>
+            </td>
+            <td style="width: 50%; padding: 0;">
+              <div class="header-section-title">${isArabic ? 'المحتويات' : 'Contenus'}</div>
+              <div style="padding: 6px 10px; font-size: 8.2pt; min-height: 60px; font-family: ${isArabic ? arabicFontFamily : 'inherit'}">
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" style="padding: 0;">
+              <div class="header-section-title">${isArabic ? 'المحتوى' : 'Le contenu'}</div>
+            </td>
+          </tr>
+        </table>
+      </td>
+      
+      <!-- Right Side (27% width) -->
+      <td style="width: 27%; padding: 0;">
+        <table class="right-info-table" style="width: 100%; border-collapse: collapse; height: 100%;">
+          <tr>
+            <td style="font-family: ${isArabic ? arabicFontFamily : 'inherit'}"><strong>${isArabic ? 'الأكاديمية' : 'Académie'} :</strong><br/>${isArabic ? 'فاس - مكناس' : 'FES-MEKNES'}</td>
+          </tr>
+          <tr>
+            <td style="font-family: ${isArabic ? arabicFontFamily : 'inherit'}"><strong>${isArabic ? 'المديرية الإقليمية' : 'Direction Provinciale'} :</strong><br/>${isArabic ? 'مكناس' : 'MY'}</td>
+          </tr>
+          <tr>
+            <td style="font-family: ${isArabic ? arabicFontFamily : 'inherit'}"><strong>${isArabic ? 'المؤسسة' : 'Etablissement'} :</strong><br/>${esc(schools[0] || (isArabic ? '18 نونبر' : '18 NOVEMBRE'))}</td>
+          </tr>
+          <tr>
+            <td style="font-family: ${isArabic ? arabicFontFamily : 'inherit'}">
+              <strong>${isArabic ? 'الأهمية' : "Degré d'importance"} :</strong><br/>
+              <span style="background-color: #fef08a; padding: 1px 5px; font-weight: 800; color: #854d0e; font-size: 8.5pt; display: inline-block; margin-top: 2px;">40%</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-family: ${isArabic ? arabicFontFamily : 'inherit'}; border-bottom: none;"><strong>${isArabic ? 'ملاحظات' : 'Remarques'}</strong></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
   `}
 
   <!-- BANNER: only for classic (non-exercise/non-homework) docs -->
-  ${(!isExercises && !isHomework) ? `
-  <div class="banner-wrapper">
-    <div class="banner-title">${esc(title)}</div>
-  </div>
-  ` : ''}
+  ${/* No duplicate banner — title is already in the header table */''}
 
   <!-- SECTIONS -->
   <div class="sections-container ${(lesson.docType === 'exercises' || lesson.content?.doc_type === 'exercises') ? 'exercises-two-columns' : ''}">
     ${sectionsHtml}
   </div>
 
-  <!-- FOOTER -->
-  <div class="fiche-footer">
-    © ${new Date().getFullYear()} L'CONQ — Plateforme de Préparation aux Concours d'Excellence
-    ${teacher ? ` · Préparé par : <strong>${esc(teacher)}</strong>` : ''}
-    ${phone ? ` · ${esc(phone)}` : ''}
-  </div>
+  <!-- FOOTER (teacher name left, page number right — handled by @page CSS) -->
+  <div class="fiche-footer" style="display:none"></div>
 </div>
 
 <script>

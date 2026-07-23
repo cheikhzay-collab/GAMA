@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { 
   getAllLessons, toggleLessonStatus, deleteLesson 
 } from '../services/lessonService';
+import { getAllClasses } from '../services/classService';
 import { 
   BookOpen, Sparkles, Search, Trash2, Eye, Edit,
   CheckCircle, XCircle, Library, PlusCircle, AlertCircle, Languages 
@@ -80,7 +81,7 @@ const getLevelLabel = (rawLevel) => {
 };
 
 export default function AdminLessons() {
-  const { user, loading, profName, profPhone } = useAuth();
+  const { user, loading, profName, profPhone, addExam } = useAuth();
   const navigate = useNavigate();
 
   // Role Guard
@@ -90,6 +91,7 @@ export default function AdminLessons() {
 
   // Component States
   const [lessons, setLessons] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [loadingLessons, setLoadingLessons] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('Tous');
@@ -98,7 +100,195 @@ export default function AdminLessons() {
   const [selectedLevelFilter, setSelectedLevelFilter] = useState('Tous');
   const [selectedDocTypeFilter, setSelectedDocTypeFilter] = useState('Tous');
   const [showConfirmDelete, setShowConfirmDelete] = useState(null); // id of lesson to delete
-  const [showTranslateModal, setShowTranslateModal] = useState(null); // lesson object to translate
+  const [showTranslateModal, setShowTranslateModal] = useState(null);
+  const [generatingQcmLessonId, setGeneratingQcmLessonId] = useState(null);
+
+  const handleGenerateQcmFromLesson = async (lesson) => {
+    const geminiKey = localStorage.getItem('geminiApiKey') || '';
+    if (!geminiKey) {
+      alert("Veuillez d'abord configurer votre clé API Google Gemini dans les paramètres de la plateforme (Espace Paramètres).");
+      navigate('/admin/settings');
+      return;
+    }
+
+    if (!window.confirm(`Voulez-vous générer un QCM de 20 questions de révision pour le cours "${lesson.title}" via l'IA ?`)) {
+      return;
+    }
+
+    setGeneratingQcmLessonId(lesson.id);
+    setError('');
+    setSuccess('');
+
+    try {
+      // 1. Extract plain text — THEORY ONLY (exclude exercises)
+      const sectionsContentText = (lesson.content?.sections || [])
+        .filter(sec => sec.type !== 'exercise') // Exclude exercise sections
+        .map(sec => {
+          const header = sec.section_header ? `[${sec.section_header}] ` : '';
+          const title = sec.title ? `${sec.title}\n` : '';
+          const itemsText = (sec.items || [])
+            .map(it => it.text || '')
+            .filter(Boolean)
+            .join('\n');
+          const bodyContent = sec.content ? `${sec.content}\n` : '';
+          return `${header}${title}${itemsText}\n${bodyContent}`;
+        })
+        .join('\n\n');
+
+      // 2. Call Gemini model
+      const storedModel = localStorage.getItem('geminiModel');
+      // Validate model name — only accept known valid Gemini models
+      const validModels = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+      const modelToUse = validModels.includes(storedModel) ? storedModel : 'gemini-2.5-flash';
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${geminiKey}`;
+
+      // 3. Detect lesson language (Arabic or French)
+      const arabicRegex = /[\u0600-\u06FF]/;
+      const lessonSample = (lesson.title || '') + sectionsContentText;
+      const isArabicLesson = arabicRegex.test(lessonSample);
+
+      const userText = isArabicLesson
+        ? `يجب عليك توليد 20 سؤالاً من نوع اختيار متعدد (QCM) للمراجعة النظرية للدرس التالي.
+عنوان الدرس: "${lesson.title}"
+المادة: الرياضيات
+المستوى: ${getLevelLabel(lesson.level)}
+
+════════════════════════════════════
+📖 المحتوى النظري للدرس (المصدر الحصري)
+════════════════════════════════════
+${sectionsContentText}
+════════════════════════════════════
+
+⚠️ قواعد صارمة للتوليد (يجب احترامها دون استثناء):
+
+1. النظرية فقط: يجب أن تتناول جميع الأسئلة العشرين حصراً التعريفات والخصائص والمبرهنات والصيغ والمفاهيم النظرية للدرس أعلاه.
+   ❌ محظور: أسئلة من نوع تمارين أو حسابات طويلة أو حل مسائل أو تطبيقات عددية معقدة.
+   ✅ مسموح: تحديد التعريف الصحيح، التعرف على صيغة رياضية، تطبيق مبرهنة أساسية، صح/خطأ على خاصية ما.
+
+2. يجب أن يحتوي كل سؤال على 4 خيارات بالضبط على شكل مصفوفة (مثال: ["أ) الخيار 1", "ب) الخيار 2", "ج) الخيار 3", "د) الخيار 4"]).
+
+3. حدد الإجابة الصحيحة بحرف واحد فقط من بين: "A" أو "B" أو "C" أو "D".
+
+4. اكتب شرح التصحيح (astuce) باللغة العربية كاملاً، مع كتابة جميع الصيغ الرياضية بتنسيق LaTeX القياسي ($...$ أو $$...$$).
+
+5. أعد النتيجة بصيغة JSON خالصة وفق مخطط الإخراج المطلوب — 20 عنصراً بالضبط في المصفوفة.`
+        : `Tu dois générer exactement 20 questions à choix multiples (QCM) de RÉVISION THÉORIQUE pour le cours suivant.
+Titre du cours : "${lesson.title}"
+Matière : Mathématiques
+Niveau : ${getLevelLabel(lesson.level)}
+
+════════════════════════════════════
+📖 CONTENU THÉORIQUE DU COURS (BASE EXCLUSIVE)
+════════════════════════════════════
+${sectionsContentText}
+════════════════════════════════════
+
+⚠️ RÈGLES STRICTES DE GÉNÉRATION (à respecter impérativement) :
+
+1. THÉORIE UNIQUEMENT : Toutes les 20 questions doivent porter EXCLUSIVEMENT sur les définitions, propriétés, théorèmes, formules et concepts théoriques du cours ci-dessus.
+   ❌ INTERDIT : questions de type exercice, calcul long, résolution de problème, ou application numérique complexe.
+   ✅ AUTORISÉ : identifier la bonne définition, reconnaître une formule, appliquer un théorème de base, vrai/faux sur une propriété.
+
+2. Chaque question doit comporter exactement 4 options sous forme de tableau (ex: ["A) option1", "B) option2", "C) option3", "D) option4"]).
+
+3. Indique la bonne réponse correcte : une seule lettre parmi "A", "B", "C", ou "D".
+
+4. Rédige l'astuce de correction (explication rédigée complète) en français avec toutes les équations mathématiques en LaTeX standard ($...$ ou $$...$$).
+
+5. Retourne le résultat au format JSON pur selon le schéma de sortie exigé — exactement 20 objets dans le tableau.`;
+
+      const promptSchema = {
+        type: "ARRAY",
+        items: {
+          type: "OBJECT",
+          properties: {
+            question_number: { type: "INTEGER" },
+            context: { type: "STRING" },
+            subject: { type: "STRING" },
+            question: { type: "STRING" },
+            options: {
+              type: "ARRAY",
+              items: { type: "STRING" }
+            },
+            correct_answer: { type: "STRING" },
+            astuce: { type: "STRING" },
+            trick: { type: "STRING" }
+          },
+          required: ["question_number", "context", "subject", "question", "options", "correct_answer", "astuce", "trick"]
+        }
+      };
+
+      const payload = {
+        contents: [
+          {
+            parts: [{ text: userText }]
+          }
+        ],
+        systemInstruction: {
+          parts: [{ text: isArabicLesson
+            ? "أنت مفتش تربوي مغربي متخصص في الرياضيات. مهمتك هي إنشاء أسئلة اختيار متعدد للمراجعة النظرية — يجب أن يختبر كل سؤال معرفة التعريفات والصيغ والمبرهنات والخصائص من الدرس. لا تولّد أبدًا تمارين حسابية أو مسائل. جميع الصيغ الرياضية تستخدم تنسيق LaTeX القياسي ($...$ أو $$...$$). مستوى اللغة هو مستوى مصحح الامتحانات الرسمية للبكالوريا المغربية. اللغة الوحيدة للأسئلة والخيارات والشرح هي اللغة العربية."
+            : "Tu es un inspecteur pédagogique de mathématiques marocain. Ta mission est de créer des QCM de RÉVISION THÉORIQUE — chaque question doit tester la connaissance des définitions, formules, théorèmes et propriétés du cours. Tu ne génères JAMAIS des exercices de calcul ou de résolution de problème. Toutes les formules utilisent la syntaxe LaTeX standard ($...$ ou $$...$$). Le niveau de langue est celui d'un correcteur officiel du Baccalauréat Marocain."
+          }]
+        },
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: promptSchema,
+          maxOutputTokens: 65536,
+          temperature: 0.2
+        }
+      };
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error?.message || `Erreur HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      let questions = [];
+      try {
+        questions = JSON.parse(rawText);
+      } catch (err) {
+        console.error("Failed to parse JSON:", rawText);
+        throw new Error("Le format de réponse de l'IA est invalide.");
+      }
+
+      if (!Array.isArray(questions) || questions.length === 0) {
+        throw new Error("L'IA n'a pas retourné de questions.");
+      }
+
+      // 3. Save Exam to Database
+      const examName = `QCM : ${lesson.title} (20 Questions)`;
+      
+      // Determine the level and first class name for the exam if any
+      const levelClasses = classes.filter(c => normalizeLevel(c.level) === normalizeLevel(lesson.level));
+      const targetSchool = levelClasses.length > 0 ? levelClasses[0].name : getLevelLabel(lesson.level);
+
+      const year = new Date().getFullYear().toString();
+      const tier = 'Moyen';
+
+      await addExam(examName, targetSchool, year, tier, questions, null, lesson.level);
+
+      setSuccess(`Le QCM de 20 questions pour "${lesson.title}" a été généré et enregistré !`);
+      setTimeout(() => {
+        setSuccess('');
+        navigate('/admin/exams');
+      }, 2000);
+
+    } catch (err) {
+      console.error("Failed to generate QCM:", err);
+      setError(`Erreur lors de la génération du QCM : ${err.message}`);
+    } finally {
+      setGeneratingQcmLessonId(null);
+    }
+  };
 
   // Fetch Lessons
   const fetchLessonsList = async () => {
@@ -114,8 +304,18 @@ export default function AdminLessons() {
     }
   };
 
+  const fetchClassesList = async () => {
+    try {
+      const data = await getAllClasses();
+      setClasses(data);
+    } catch (err) {
+      console.error('Erreur lors du chargement des classes:', err);
+    }
+  };
+
   useEffect(() => {
     fetchLessonsList();
+    fetchClassesList();
   }, []);
 
   // Handle Toggle Active/Inactive Status
@@ -166,7 +366,7 @@ export default function AdminLessons() {
   const totalCount = lessons.length;
   const activeCount = lessons.filter(l => l.isActive).length;
   const inactiveCount = totalCount - activeCount;
-  const uniqueSubjectsCount = new Set(lessons.map(l => l.subject).filter(Boolean)).size;
+  const uniqueLevelsCount = new Set(lessons.map(l => normalizeLevel(l.level)).filter(Boolean)).size;
 
   return (
     <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
@@ -261,8 +461,8 @@ export default function AdminLessons() {
               <Sparkles size={20} />
             </div>
             <div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Matières</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 900 }}>{uniqueSubjectsCount}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Niveaux Gérés</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 900 }}>{uniqueLevelsCount}</div>
             </div>
           </div>
         </div>
@@ -287,20 +487,22 @@ export default function AdminLessons() {
           </div>
 
           {/* Subject Filter Dropdown */}
-          <select
-            value={selectedSubject}
-            onChange={(e) => setSelectedSubject(e.target.value)}
-            className="input-control"
-            style={{
-              fontSize: '0.85rem', minWidth: '160px', flex: '1'
-            }}
-          >
-            {subjects.map(sub => (
-              <option key={sub} value={sub}>
-                {sub === 'Tous' ? 'Toutes les matières' : sub}
-              </option>
-            ))}
-          </select>
+          {subjects.length > 2 && (
+            <select
+              value={selectedSubject}
+              onChange={(e) => setSelectedSubject(e.target.value)}
+              className="input-control"
+              style={{
+                fontSize: '0.85rem', minWidth: '160px', flex: '1'
+              }}
+            >
+              {subjects.map(sub => (
+                <option key={sub} value={sub}>
+                  {sub === 'Tous' ? 'Toutes les matières' : sub}
+                </option>
+              ))}
+            </select>
+          )}
 
           {/* Level Filter Dropdown */}
           <select
@@ -363,7 +565,7 @@ export default function AdminLessons() {
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)' }}>
                     <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Fiche de Cours</th>
-                    <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Matière</th>
+                    <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Classe (القسم المسند إليه)</th>
                     <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Enseignant</th>
                     <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Statut</th>
                     <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Actions</th>
@@ -398,15 +600,49 @@ export default function AdminLessons() {
                         </div>
                       </td>
 
-                      {/* Subject */}
+                      {/* Classe */}
                       <td style={{ padding: '1.25rem 1.5rem' }}>
-                        <span style={{ 
-                          background: l.subject === 'Physique' || l.subject === 'Chimie' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(99, 102, 241, 0.08)',
-                          color: l.subject === 'Physique' || l.subject === 'Chimie' ? 'var(--emerald)' : 'var(--violet)',
-                          padding: '0.25rem 0.65rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800
-                        }}>
-                          {l.subject}
-                        </span>
+                        {(() => {
+                          const levelClasses = classes.filter(c => normalizeLevel(c.level) === normalizeLevel(l.level));
+                          if (levelClasses.length > 0) {
+                            return (
+                              <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+                                {levelClasses.map(c => (
+                                  <span 
+                                    key={c.id}
+                                    style={{ 
+                                      background: 'var(--violet-soft)',
+                                      color: 'var(--violet)',
+                                      padding: '0.25rem 0.65rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800
+                                    }}
+                                  >
+                                    {c.name}
+                                  </span>
+                                ))}
+                              </div>
+                            );
+                          }
+                          // Fallback to human-readable short level label
+                          const shortLabels = {
+                            'common_core_sci': 'TCS',
+                            'common_core_arts': 'TCA',
+                            '1bac_sci': '1Bac Sci',
+                            '1bac_arts': '1Bac Lettres',
+                            '2bac_sm': '2Bac SM',
+                            '2bac_pc_svt': '2Bac PC/SVT',
+                            '2bac_arts': '2Bac Lettres'
+                          };
+                          return (
+                            <span style={{ 
+                              background: 'rgba(255,255,255,0.04)',
+                              color: 'var(--text-subtle)',
+                              padding: '0.25rem 0.65rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800,
+                              border: '1px solid var(--border)'
+                            }}>
+                              {shortLabels[normalizeLevel(l.level)] || getLevelLabel(l.level)}
+                            </span>
+                          );
+                        })()}
                       </td>
 
                       {/* Teacher */}
@@ -484,6 +720,32 @@ export default function AdminLessons() {
                             <Languages size={15} />
                           </button>
                           
+                          {/* ── زر توليد QCM بالذكاء الاصطناعي ── */}
+                          <button
+                            onClick={() => handleGenerateQcmFromLesson(l)}
+                            className="btn-outline"
+                            title="Générer un QCM de 20 questions via l'IA"
+                            style={{
+                              padding: '0.45rem', borderRadius: '8px',
+                              border: '1px solid rgba(16,185,129,0.35)',
+                              color: 'var(--emerald)',
+                              background: 'rgba(16,185,129,0.04)',
+                              transition: 'all 0.2s',
+                            }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.borderColor = 'var(--emerald)';
+                              e.currentTarget.style.background = 'rgba(16,185,129,0.12)';
+                              e.currentTarget.style.transform = 'scale(1.05)';
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.borderColor = 'rgba(16,185,129,0.35)';
+                              e.currentTarget.style.background = 'rgba(16,185,129,0.04)';
+                              e.currentTarget.style.transform = 'scale(1)';
+                            }}
+                          >
+                            <Sparkles size={15} />
+                          </button>
+                          
                           <button
                             onClick={() => setShowConfirmDelete(l.id)}
                             className="btn-outline"
@@ -557,6 +819,21 @@ export default function AdminLessons() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {generatingQcmLessonId && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          background: 'rgba(9, 9, 11, 0.7)', backdropFilter: 'blur(5px)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          zIndex: 9999, color: 'white'
+        }}>
+          <div style={{ width: 60, height: 60, borderRadius: '50%', border: '4px solid rgba(16, 185, 129, 0.1)', borderTop: '4px solid var(--emerald)', animation: 'spinList 1s linear infinite', marginBottom: '1.5rem' }} />
+          <h3 style={{ margin: 0, fontWeight: 800 }}>Génération du QCM de 20 questions par l'IA...</h3>
+          <p style={{ margin: '0.5rem 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', maxWidth: '400px', textAlign: 'center' }}>
+            L'IA analyse le contenu de la fiche de cours pour formuler des questions à choix multiples de haute qualité avec corrections détaillées en LaTeX. Cela peut prendre environ 30 secondes.
+          </p>
         </div>
       )}
 

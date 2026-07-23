@@ -164,7 +164,14 @@ async function callGemini(prompt, geminiKey, model = 'gemini-2.5-flash') {
         topK: 40,
         topP: 0.95,
         maxOutputTokens: 65536,
-      }
+        responseMimeType: "application/json"
+      },
+      safetySettings: [
+        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+      ]
     })
   });
 
@@ -186,25 +193,30 @@ async function callDeepSeek(prompt, deepseekKey, deepseekUrl, model = 'deepseek-
   const baseUrl = (deepseekUrl || 'https://api.deepseek.com').replace(/\/$/, '');
   const endpoint = `${baseUrl}/v1/chat/completions`;
 
+  const payload = {
+    model,
+    messages: [
+      {
+        role: 'system',
+        content: 'أنت مترجم ومتخصص في المحتوى البيداغوجي والرياضي المغربي. تُرجع دائماً JSON نقياً صالحاً بدون أي تعليقات أو نص إضافي.'
+      },
+      { role: 'user', content: prompt }
+    ],
+    temperature: 0.1,
+    max_tokens: 32000,
+  };
+
+  if (model === 'deepseek-chat') {
+    payload.response_format = { type: 'json_object' };
+  }
+
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${deepseekKey}`,
     },
-    body: JSON.stringify({
-      model,
-      messages: [
-        {
-          role: 'system',
-          content: 'أنت مترجم متخصص في المحتوى الرياضي المغربي. تُرجع دائماً JSON نقياً صالحاً بدون أي تعليقات أو نص إضافي.'
-        },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.1,
-      max_tokens: 32000,
-      response_format: { type: 'json_object' }, // يُجبر DeepSeek على إرجاع JSON نقي
-    })
+    body: JSON.stringify(payload)
   });
 
   if (!response.ok) {
@@ -213,8 +225,13 @@ async function callDeepSeek(prompt, deepseekKey, deepseekUrl, model = 'deepseek-
   }
 
   const data = await response.json();
-  const text = data?.choices?.[0]?.message?.content;
+  let text = data?.choices?.[0]?.message?.content;
   if (!text) throw new Error('لم يُرجع DeepSeek أي نص');
+
+  if (text.includes('</think>')) {
+    text = text.split('</think>').pop().trim();
+  }
+
   return text;
 }
 
@@ -233,37 +250,178 @@ function cleanJsonOutput(raw) {
 }
 
 /**
+ * استدعاء Anthropic Claude API
+ */
+async function callClaude(prompt, claudeKey, proxyUrl = '') {
+  const baseUrl = proxyUrl ? proxyUrl.replace(/\/$/, '') : 'https://api.anthropic.com';
+  const endpoint = `${baseUrl}/v1/messages`;
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': claudeKey,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 8192,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `Claude HTTP ${response.status}`);
+  }
+
+  const data = await response.json();
+  const text = data?.content?.[0]?.text;
+  if (!text) throw new Error('لم يُرجع Claude أي نص');
+  return text;
+}
+
+/**
+ * استدعاء Groq API (Inference super rapide)
+ */
+async function callGroq(prompt, groqKey, model = 'llama-3.3-70b-versatile') {
+  const endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${groqKey}`
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: 'system', content: 'أنت مساعد ذكي متخصص في تحليل وترجمة الدروس والتمارين الرياضية البيداغوجية. أرجع فقط JSON صالحاً.' },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.1,
+      response_format: { type: 'json_object' }
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `Groq HTTP ${response.status}`);
+  }
+
+  const data = await response.json();
+  const text = data?.choices?.[0]?.message?.content;
+  if (!text) throw new Error('لم يُرجع Groq أي نص');
+  return text;
+}
+
+/**
+ * استدعاء OpenAI API (GPT-4o)
+ */
+async function callOpenAI(prompt, openaiKey, model = 'gpt-4o-mini') {
+  const endpoint = 'https://api.openai.com/v1/chat/completions';
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${openaiKey}`
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: 'system', content: 'أنت مساعد ذكي للرياضيات والفيزياء البيداغوجية. أرجع دائماً ناتج JSON صالح.' },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.1,
+      response_format: { type: 'json_object' }
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `OpenAI HTTP ${response.status}`);
+  }
+
+  const data = await response.json();
+  const text = data?.choices?.[0]?.message?.content;
+  if (!text) throw new Error('لم يُرجع OpenAI أي نص');
+  return text;
+}
+
+/**
+ * دالة التبديل التلقائي الذكي بين المزودين (Automatic AI Failover Engine)
+ */
+export async function callAIWithFailover(prompt, options = {}) {
+  const preferredProvider = options.provider || 'gemini';
+  
+  const providers = [preferredProvider];
+  ['gemini', 'deepseek', 'groq', 'openai', 'claude'].forEach(p => {
+    if (!providers.includes(p)) providers.push(p);
+  });
+
+  const errors = [];
+
+  for (const prov of providers) {
+    try {
+      if (prov === 'gemini') {
+        const key = options.geminiKey || localStorage.getItem('geminiApiKey') || '';
+        if (!key) continue;
+        const model = options.geminiModel || localStorage.getItem('geminiModel') || 'gemini-2.5-flash';
+        console.log(`[AI Failover] Attemping generation with Gemini (${model})...`);
+        const text = await callGemini(prompt, key, model);
+        return { text, provider: 'gemini' };
+      }
+
+      if (prov === 'deepseek') {
+        const key = options.deepseekKey || localStorage.getItem('deepseekApiKey') || '';
+        if (!key) continue;
+        const url = options.deepseekUrl || localStorage.getItem('deepseekApiUrl') || 'https://api.deepseek.com';
+        const model = options.deepseekModel || 'deepseek-chat';
+        console.log(`[AI Failover] Attemping generation with DeepSeek (${model})...`);
+        const text = await callDeepSeek(prompt, key, url, model);
+        return { text, provider: 'deepseek' };
+      }
+
+      if (prov === 'groq') {
+        const key = options.groqKey || localStorage.getItem('groqApiKey') || '';
+        if (!key) continue;
+        console.log(`[AI Failover] Attemping generation with Groq Cloud...`);
+        const text = await callGroq(prompt, key);
+        return { text, provider: 'groq' };
+      }
+
+      if (prov === 'openai') {
+        const key = options.openaiKey || localStorage.getItem('openaiApiKey') || '';
+        if (!key) continue;
+        console.log(`[AI Failover] Attemping generation with OpenAI...`);
+        const text = await callOpenAI(prompt, key);
+        return { text, provider: 'openai' };
+      }
+
+      if (prov === 'claude') {
+        const key = options.claudeKey || localStorage.getItem('claudeApiKey') || '';
+        if (!key) continue;
+        const proxy = options.proxyUrl || localStorage.getItem('claudeProxyUrl') || '';
+        console.log(`[AI Failover] Attemping generation with Anthropic Claude...`);
+        const text = await callClaude(prompt, key, proxy);
+        return { text, provider: 'claude' };
+      }
+    } catch (err) {
+      console.warn(`[AI Failover] Provider ${prov} failed:`, err.message);
+      errors.push(`${prov}: ${err.message}`);
+    }
+  }
+
+  throw new Error(`تعذر الاتصال بجميع خدمات الذكاء الاصطناعي المُهيأة. يرجى التأكد من إضافة مفتاح API واحد على الأقل في صفحة الإعدادات.\nالأخطاء المسجلة:\n${errors.join('\n')}`);
+}
+
+/**
  * ترجمة درس كامل بالذكاء الاصطناعي
- * @param {Object} lesson — كائن الدرس المُحمَّل من lessonService
- * @param {string} targetLang — 'ar' | 'fr' | 'en'
- * @param {Object} options — { provider, geminiKey, geminiModel, deepseekKey, deepseekUrl, deepseekModel }
- * @returns {Promise<Object>} — درس مترجم جاهز للحفظ
  */
 export async function translateLesson(lesson, targetLang, options = {}) {
-  const provider = options.provider || 'gemini';
   const prompt = buildTranslationPrompt(lesson, targetLang);
-
-  let rawOutput;
-
-  if (provider === 'deepseek') {
-    const deepseekKey = options.deepseekKey || localStorage.getItem('deepseekApiKey') || '';
-    const deepseekUrl = options.deepseekUrl || localStorage.getItem('deepseekApiUrl') || 'https://api.deepseek.com';
-    const deepseekModel = options.deepseekModel || 'deepseek-chat';
-
-    if (!deepseekKey) {
-      throw new Error('مفتاح DeepSeek API غير موجود. أضفه في صفحة الإعدادات.');
-    }
-    rawOutput = await callDeepSeek(prompt, deepseekKey, deepseekUrl, deepseekModel);
-  } else {
-    // Gemini (افتراضي)
-    const geminiKey = options.geminiKey || localStorage.getItem('geminiApiKey') || '';
-    const geminiModel = options.geminiModel || localStorage.getItem('geminiModel') || 'gemini-2.5-flash';
-
-    if (!geminiKey) {
-      throw new Error('مفتاح Gemini API غير موجود. أضفه في إعدادات الاستيراد بالذكاء الاصطناعي.');
-    }
-    rawOutput = await callGemini(prompt, geminiKey, geminiModel);
-  }
+  const { text: rawOutput, provider: usedProvider } = await callAIWithFailover(prompt, options);
 
   const cleanedJson = cleanJsonOutput(rawOutput);
 
@@ -272,10 +430,9 @@ export async function translateLesson(lesson, targetLang, options = {}) {
     translatedContent = JSON.parse(cleanedJson);
   } catch (e) {
     console.error('[translationService] JSON parse error:', e, '\nRaw:', cleanedJson.substring(0, 500));
-    throw new Error(`فشل تحليل JSON المُرجَع من ${provider === 'deepseek' ? 'DeepSeek' : 'Gemini'}. حاول مرة أخرى.`, { cause: e });
+    throw new Error(`فشل تحليل JSON المُرجَع من ${usedProvider}. حاول مرة أخرى.`, { cause: e });
   }
 
-  // بناء الدرس المترجم
   const langSuffix = {
     ar: '(نسخة عربية)',
     en: '(English Version)',
@@ -284,7 +441,7 @@ export async function translateLesson(lesson, targetLang, options = {}) {
 
   const translatedLesson = {
     ...lesson,
-    id: undefined, // سيُنشأ id جديد عند الحفظ
+    id: undefined,
     title: `${translatedContent?.header?.fiche_title || lesson.title} ${langSuffix}`.trim(),
     content: {
       ...translatedContent,
@@ -295,7 +452,7 @@ export async function translateLesson(lesson, targetLang, options = {}) {
         language: targetLang,
         dir: targetLang === 'ar' ? 'rtl' : 'ltr',
         translatedAt: new Date().toISOString(),
-        translatedBy: provider,
+        translatedBy: usedProvider,
       }
     },
     isActive: false,

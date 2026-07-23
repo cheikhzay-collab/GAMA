@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { BrainCircuit, AlertCircle } from 'lucide-react';
 import { sanitizeInputString, validatePhoneNumber } from '../../utils/security';
 
+import { getLevelDisplayName } from '../../utils/levelHelpers';
+
 const MOROCCAN_CITIES = [
   "Casablanca", "Rabat", "Marrakech", "Fès", "Tanger", "Salé", "Meknès", "Agadir", 
   "Oujda", "Kénitra", "Tétouan", "Safi", "Témara", "Mohammédia", "El Jadida", 
@@ -11,13 +13,13 @@ const MOROCCAN_CITIES = [
 ];
 
 const SCHOOLS_LIST = [
-  "Médecine / Pharmacie",
-  "ENSA",
-  "ENSAM",
-  "ENCG",
-  "INPT",
-  "INSEA",
-  "Général (Prépa)"
+  "common_core_sci",
+  "common_core_arts",
+  "1bac_sci",
+  "1bac_arts",
+  "2bac_sm",
+  "2bac_pc_svt",
+  "2bac_arts"
 ];
 
 const OnboardingModal = React.memo(({ initialPhone = '', initialCity = '', initialSchool = '', onSubmit }) => {
@@ -191,7 +193,7 @@ const OnboardingModal = React.memo(({ initialPhone = '', initialCity = '', initi
 
           <div>
             <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.4rem' }}>
-              Votre école cible
+              Votre niveau d'études
             </label>
             <select
               className="input-control"
@@ -201,9 +203,9 @@ const OnboardingModal = React.memo(({ initialPhone = '', initialCity = '', initi
               required
               style={{ width: '100%', borderRadius: '10px', background: 'var(--bg-card)', color: 'var(--text-main)' }}
             >
-              <option value="">Sélectionnez votre école cible...</option>
+              <option value="">Sélectionnez votre niveau d'études...</option>
               {SCHOOLS_LIST.map(s => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s}>{getLevelDisplayName(s)}</option>
               ))}
             </select>
           </div>

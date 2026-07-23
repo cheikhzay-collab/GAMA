@@ -1,6 +1,8 @@
 import katex from 'katex';
 import QRCode from 'qrcode';
 
+const hasArabic = (str) => /[\u0600-\u06FF]/.test(str || '');
+
 /* ── PDF Template Settings configuration (book design expert options) ── */
 const getPdfSettings = (settings = {}) => {
   if (typeof window === 'undefined' || !window.localStorage) {
@@ -131,6 +133,48 @@ const getTemplateStyles = (style) => {
       .ch-right { display: flex; gap: 8px; font-size: 8pt; }
       .ch-pill { background: #e2e8f0; color: #334155; padding: 4px 10px; border-radius: 99px; font-weight: 600; white-space: nowrap; }
       .compact-divider { border: 0; border-top: 1.5px solid #475569; margin: 0 1.3cm 0.4cm 1.3cm; }
+    `;
+  }
+  if (style === 'super_eco') {
+    return `
+      /* === SUPER ECO OVERRIDES === */
+      @page { margin: 0.5cm 0 0.7cm 0 !important; }
+      body { font-size: 9.5pt !important; line-height: 1.45 !important; }
+      .cover { display: none !important; }
+      .omr-page { display: none !important; }
+      .qcard { border: none; border-bottom: 1px dashed #cbd5e1; padding: 8px 0; margin-bottom: 12px; }
+      .opts { gap: 6px 16px !important; }
+      .opt { padding: 3px 6px; }
+      .opt-badge { width: 20px; height: 20px; font-size: 7.5pt; }
+      .subj-section { margin-bottom: 15px; }
+      .section-hdr { font-size: 0.95rem; padding: 4px 8px; background: #64748b; }
+      .rule-box, .trick-box { padding: 8px 12px; margin-top: 8px; font-size: 9pt; }
+      .rule-title, .trick-title { font-size: 8pt; margin-bottom: 3px; }
+      
+      /* Hide elements requested by user */
+      .ws-ex-pill { display: none !important; }
+      .ws-ans-tag-subject { display: none !important; }
+      
+      /* Style for the inline question number box */
+      .super-eco-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1.5px solid #005086;
+        border-radius: 4px;
+        width: 22px;
+        height: 22px;
+        font-weight: 800;
+        font-size: 9pt;
+        color: #005086;
+        margin-right: 8px;
+        vertical-align: middle;
+        background: #ffffff;
+      }
+      html[dir="rtl"] .super-eco-num {
+        margin-right: 0 !important;
+        margin-left: 8px !important;
+      }
     `;
   }
   return `
@@ -308,6 +352,25 @@ const repairMathExpression = (latex) => {
   
   // Case D: number/var / number/var -> \frac{number/var}{number/var}
   repaired = repaired.replace(/(?<![a-zA-Z0-9\\_])([a-zA-Z0-9\\_]+)\s*\/\s*([a-zA-Z0-9\\_]+)(?![a-zA-Z0-9\\_])/g, '\\frac{$1}{$2}');
+
+  // 5. Repair common LaTeX symbols corrupted in JSON/extraction
+  repaired = repaired
+    .replace(/(?:ext\s*)?extgreater\s*=/gi, '\\geq')
+    .replace(/(?:text\s*)?textgreater\s*=/gi, '\\geq')
+    .replace(/(?:ext\s*)?extgreater/gi, '\\gt')
+    .replace(/(?:text\s*)?textgreater/gi, '\\gt')
+    .replace(/(?:ext\s*)?extless\s*=/gi, '\\leq')
+    .replace(/(?:text\s*)?textless\s*=/gi, '\\leq')
+    .replace(/(?:ext\s*)?extless/gi, '\\lt')
+    .replace(/(?:text\s*)?textless/gi, '\\lt');
+
+  // 6. Repair common sequence subscripts (e.g. un -> u_n, n0 -> n_0)
+  repaired = repaired
+    .replace(/\b([uvw])n\+1\b/g, '$1_{n+1}')
+    .replace(/\b([uvw])n\-1\b/g, '$1_{n-1}')
+    .replace(/\b([uvw])n\b/g, '$1_n')
+    .replace(/\b([uvwn])0\b/g, '$1_0')
+    .replace(/\b([uvw])p\b/g, '$1_p');
 
   return repaired;
 };
@@ -538,10 +601,11 @@ const renderMathInternal = (text) => {
   const normalised = normalisedTemp.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g)
     .map((part, idx) => {
       if (idx % 2 === 1) return part;
-      let cleanedPart = part.replace(/\\n(?![a-zA-Z])/g, '\n');
+      let cleanedPart = part.replace(/\\n/g, '\n');
       
       // Force line break after period followed by space and uppercase letter/backslash/math delimiter
-      cleanedPart = cleanedPart.replace(/(?<!^|\n|\b\d\.[a-zA-Z]|\bex|\betc|\bvs)\.\s+([A-ZÀ-ÖØ-ß]|\\|\$)/g, '.\n$1');
+      // NOTE: exclude when preceded by a digit (numbered list item like "1. Calculer") or single letter (like "A. Calculer")
+      cleanedPart = cleanedPart.replace(/(?<!\d|^|\n|\b\d\.[a-zA-Z]|\bex|\betc|\bvs|\b[a-zA-Z])\.\s+([A-ZÀ-ÖØ-ß]|\\|\$)/g, '.\n$1');
 
       // Force line break before "Étape" / "Step" / "الخطوة" outside math blocks (case-insensitive)
       if (idx > 0) {
@@ -680,6 +744,7 @@ const getOptionsLayoutClass = (options) => {
    1. SUJET BLANC — Exam Paper
    ═══════════════════════════════════════════════ */
 export const generateSubjectHTML = async (examTitle, school, year, questions, settings = {}) => {
+  const isArabic = hasArabic(examTitle) || questions.some(q => hasArabic(q.question) || hasArabic(q.context) || (q.options || []).some(o => hasArabic(typeof o === 'string' ? o : (o?.text || ''))));
   const pdfConf = getPdfSettings(settings);
   const marginCSS = getMarginStyle(pdfConf.pageMargins);
   const fontFamilyCSS = getFontFamilyStyle(pdfConf.fontFamily);
@@ -695,7 +760,7 @@ export const generateSubjectHTML = async (examTitle, school, year, questions, se
 
   const templateStyle = pdfConf.templateStyle || 'classic_latex';
   const templateCSS = getTemplateStyles(templateStyle);
-  const shouldShowCover = templateStyle === 'compact_eco' ? false : showCover;
+  const shouldShowCover = (templateStyle === 'compact_eco' || templateStyle === 'super_eco') ? false : showCover;
 
   let schools = settings.schoolsList || ['ENSA', 'ENSAM', 'ENCG', 'Médecine / Pharmacie', 'INPT', 'INSEA'];
   if (school && !schools.some(s => s.toLowerCase() === school.toLowerCase())) {
@@ -861,6 +926,8 @@ export const generateSubjectHTML = async (examTitle, school, year, questions, se
       </div>`;
     }).join('');
 
+    const qnumHtml = templateStyle === 'super_eco' ? `<span class="super-eco-num">${num}</span>` : '';
+
     return `
     <div class="ws-section ${themeClass}">
       <div class="ws-exercise">
@@ -869,12 +936,12 @@ export const generateSubjectHTML = async (examTitle, school, year, questions, se
             <span class="ws-ex-pill-label">Question N°</span>
             <span class="ws-ex-num">${num}</span>
           </div>
-          <span class="ws-ans-tag">${subject.toUpperCase()}</span>
+          <span class="ws-ans-tag ws-ans-tag-subject">${subject.toUpperCase()}</span>
         </div>
         <div class="ws-ex-body">
-          ${q.context ? `<div class="ctx-box" style="margin-bottom: 8px;">📋 ${renderMath(q.context)} ${renderQuestionImageHTML(q, 'context')}</div>` : ''}
+          ${q.context ? `<div class="ctx-box" style="margin-bottom: 8px;">${qnumHtml}📋 ${renderMath(q.context)} ${renderQuestionImageHTML(q, 'context')}</div>` : ''}
           ${renderQuestionImageHTML(q, 'above')}
-          <div class="ws-qtext">${renderQuestionImageHTML(q, 'side')}${renderMath(q.question || '')}</div>
+          <div class="ws-qtext">${renderQuestionImageHTML(q, 'side')}${q.context ? '' : qnumHtml}${renderMath(q.question || '')}</div>
           ${renderQuestionImageHTML(q, 'below')}
           <div class="ws-opts ${getOptionsLayoutClass(q.options)}">${optionsHtml}</div>
           ${renderQuestionImageHTML(q, 'options')}
@@ -883,11 +950,51 @@ export const generateSubjectHTML = async (examTitle, school, year, questions, se
     </div>`;
   }).join('');
 
-  return `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+  return `<!DOCTYPE html><html lang="${isArabic ? 'ar' : 'fr'}" dir="${isArabic ? 'rtl' : 'ltr'}"><head><meta charset="UTF-8">
 <title>${examTitle} — Sujet</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
 ${getFontImportLinks()}
 <style>
+@font-face {
+  font-family: 'UKIJMerdaneRegular';
+  src: url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+html[dir="rtl"] body {
+  font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif !important;
+  direction: rtl !important;
+  text-align: right !important;
+}
+html[dir="rtl"] .cover-instructions {
+  text-align: right !important;
+}
+html[dir="rtl"] .cover-instructions ul {
+  padding-left: 0 !important;
+  padding-right: 1.2rem !important;
+}
+html[dir="rtl"] .ws-ex-header {
+  flex-direction: row-reverse !important;
+}
+html[dir="rtl"] .ws-ex-pill {
+  flex-direction: row-reverse !important;
+}
+html[dir="rtl"] .ws-ex-num {
+  margin-left: 0 !important;
+  margin-right: 0.35rem !important;
+}
+html[dir="rtl"] .ws-opt {
+  flex-direction: row !important;
+}
+html[dir="rtl"] .ws-opt-letter {
+  margin-right: 0 !important;
+  margin-left: 10px !important;
+}
+html[dir="rtl"] .katex, html[dir="rtl"] .katex-display {
+  direction: ltr !important;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
 *{box-decoration-break:clone;-webkit-box-decoration-break:clone;box-sizing:border-box;margin:0;padding:0}
 body{
   font-family: ${fontFamilyCSS};
@@ -1866,6 +1973,7 @@ printWhenReady();
 </script>
 </body></html>`;
 };export const generateCorrectionHTML = (examTitle, school, year, questions, settings = {}) => {
+  const isArabic = hasArabic(examTitle) || questions.some(q => hasArabic(q.question) || hasArabic(q.context) || (q.options || []).some(o => hasArabic(typeof o === 'string' ? o : (o?.text || ''))));
   const pdfConf = getPdfSettings(settings);
   const marginCSS = getMarginStyle(pdfConf.pageMargins);
   const fontFamilyCSS = getFontFamilyStyle(pdfConf.fontFamily);
@@ -1881,7 +1989,7 @@ printWhenReady();
 
   const templateStyle = pdfConf.templateStyle || 'classic_latex';
   const templateCSS = getTemplateStyles(templateStyle);
-  const shouldShowCover = templateStyle === 'compact_eco' ? false : showCover;
+  const shouldShowCover = (templateStyle === 'compact_eco' || templateStyle === 'super_eco') ? false : showCover;
 
   let schools = settings.schoolsList || ['ENSA', 'ENSAM', 'ENCG', 'Médecine / Pharmacie', 'INPT', 'INSEA'];
   if (school && !schools.some(s => s.toLowerCase() === school.toLowerCase())) {
@@ -1974,6 +2082,8 @@ printWhenReady();
       </div>`;
     }).join('');
 
+    const qnumHtml = templateStyle === 'super_eco' ? `<span class="super-eco-num">${num}</span>` : '';
+
     return `
     <div class="ws-section ${themeClass}">
       <div class="ws-exercise">
@@ -1985,9 +2095,9 @@ printWhenReady();
           <span class="ws-ans-tag">👁️ Réponse : <strong>${q.correct_answer || '?'}</strong></span>
         </div>
         <div class="ws-ex-body">
-          ${q.context ? `<div class="ctx-box" style="margin-bottom: 8px;">📋 ${renderMath(q.context)} ${renderQuestionImageHTML(q, 'context')}</div>` : ''}
+          ${q.context ? `<div class="ctx-box" style="margin-bottom: 8px;">${qnumHtml}📋 ${renderMath(q.context)} ${renderQuestionImageHTML(q, 'context')}</div>` : ''}
           ${renderQuestionImageHTML(q, 'above')}
-          <div class="ws-qtext">${renderQuestionImageHTML(q, 'side')}${renderMath(q.question || '')}</div>
+          <div class="ws-qtext">${renderQuestionImageHTML(q, 'side')}${q.context ? '' : qnumHtml}${renderMath(q.question || '')}</div>
           ${renderQuestionImageHTML(q, 'below')}
           <div class="ws-opts ${getOptionsLayoutClass(q.options)}">${optionsHtml}</div>
           ${renderQuestionImageHTML(q, 'options')}
@@ -2015,13 +2125,68 @@ printWhenReady();
     </div>`;
   }).join('');
 
-  return `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+  return `<!DOCTYPE html><html lang="${isArabic ? 'ar' : 'fr'}" dir="${isArabic ? 'rtl' : 'ltr'}"><head><meta charset="UTF-8">
 <title>${examTitle} — Correction</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/dreampulse/computer-modern-web-font@master/fonts.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
 <style>
+@font-face {
+  font-family: 'UKIJMerdaneRegular';
+  src: url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+html[dir="rtl"] body {
+  font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif !important;
+  direction: rtl !important;
+  text-align: right !important;
+}
+html[dir="rtl"] .cover-instructions {
+  text-align: right !important;
+}
+html[dir="rtl"] .cover-instructions ul {
+  padding-left: 0 !important;
+  padding-right: 1.2rem !important;
+}
+html[dir="rtl"] .ws-ex-header {
+  flex-direction: row-reverse !important;
+}
+html[dir="rtl"] .ws-ex-pill {
+  flex-direction: row-reverse !important;
+}
+html[dir="rtl"] .ws-ex-num {
+  margin-left: 0 !important;
+  margin-right: 0.35rem !important;
+}
+html[dir="rtl"] .ws-opt {
+  flex-direction: row !important;
+}
+html[dir="rtl"] .ws-opt-letter {
+  margin-right: 0 !important;
+  margin-left: 10px !important;
+}
+html[dir="rtl"] .ws-tip-header, html[dir="rtl"] .ws-trick-header {
+  flex-direction: row-reverse !important;
+}
+html[dir="rtl"] .ws-tip-title, html[dir="rtl"] .ws-trick-title {
+  margin-left: auto !important;
+  margin-right: 8px !important;
+}
+html[dir="rtl"] .ws-tip-accent, html[dir="rtl"] .ws-trick-accent {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+html[dir="rtl"] .ws-check {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+html[dir="rtl"] .katex, html[dir="rtl"] .katex-display {
+  direction: ltr !important;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
 *{box-decoration-break:clone;-webkit-box-decoration-break:clone;box-sizing:border-box;margin:0;padding:0}
 body{
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -2670,9 +2835,9 @@ printWhenReady();
 
   const templateStyle = pdfConf.templateStyle || 'classic_latex';
   const templateCSS = getTemplateStyles(templateStyle);
-  const shouldShowCover = templateStyle === 'compact_eco' ? false : showCover;
+  const shouldShowCover = (templateStyle === 'compact_eco' || templateStyle === 'super_eco') ? false : showCover;
 
-  const compactHeaderHtml = templateStyle === 'compact_eco' ? `
+  const compactHeaderHtml = (templateStyle === 'compact_eco' || templateStyle === 'super_eco') ? `
 <div class="compact-header-box">
   <div class="ch-left">
     <div class="ch-school">E-BOOK DE PRÉPARATION</div>
