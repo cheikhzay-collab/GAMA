@@ -1,6 +1,0 @@
-Context,Topic,Question,Options,Réponse,Astuce,Trick
-"نعتبر الدالة $f(x) = x^2$ معرّفة على $\mathbb{R}$","Analyse","ما هي مشتقة الدالة $f$؟","A) $2x$, B) $x^2$, C) $1$, D) $2$","A","مشتقة $x^n$ هي $n \cdot x^{n-1}$. إذن مشتقة $x^2$ هي $2x$.","⚡ القاعدة السريعة: الأس ينزل ويُضرب، ثم يُنقص الأس بـ1."
-,"Suites","Soit $U_{n+1} = \sqrt{2 + U_n}$ avec $U_0=1$. Quelle est la limite ?","A) $\sqrt{2}$, B) $1+\sqrt{2}$, C) $2$, D) divergente","C","Résoudre $L = \sqrt{2+L}$ ⟹ $L^2 - L - 2 = 0$ ⟹ $L = 2$ (limite positive).",""
-,"Limites","$\lim_{x \to 0} \dfrac{\sin x}{x} = ?$","A) $0$, B) $1$, C) $-1$, D) $+\infty$","B","Limite fondamentale classique. À retenir comme un réflexe.","⚡ Élimination rapide : C et D impossibles — la fonction est paire et bornée près de 0."
-,"Intégration","Calculer $I = \int_{0}^{\pi} |\cos x|\, dx$","A) $0$, B) $1$, C) $2$, D) $\pi$","C","$|\cos x|$ est $\pi$-périodique. L'intégrale sur une période vaut toujours 2 — pas besoin de calculer !","⚡ Astuce du temps : si les options contiennent $0$ et que l'intégrande est positive, éliminer $0$ immédiatement."
-,"Probabilité","img:https://upload.wikimedia.org/wikipedia/commons/4/4c/Standard_Normal_Distribution.png","A) $\frac{1}{2}$, B) $\frac{1}{3}$, C) $0$, D) $1$","A","Par symétrie de la loi normale centrée réduite autour de 0.",""

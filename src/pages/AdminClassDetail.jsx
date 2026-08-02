@@ -26,50 +26,7 @@ const SYSTEM_LEVELS = [
   { id: '2bac_arts', label: '2ème Bac Lettres & Sciences Humaines' }
 ];
 
-const normalizeLevel = (rawLevel) => {
-  if (!rawLevel) return '2bac_pc_svt';
-  const normalized = rawLevel.toLowerCase().trim();
-  
-  if (normalized.includes('common_core_sci') || normalized.includes('common-core-sci')) return 'common_core_sci';
-  if (normalized.includes('common_core_arts') || normalized.includes('common-core-arts')) return 'common_core_arts';
-  if (normalized.includes('1bac_sci') || normalized.includes('1bac-sci')) return '1bac_sci';
-  if (normalized.includes('1bac_arts') || normalized.includes('1bac-arts')) return '1bac_arts';
-  if (normalized.includes('2bac_sm') || normalized.includes('2bac-sm')) return '2bac_sm';
-  if (normalized.includes('2bac_pc_svt') || normalized.includes('2bac-pc-svt') || normalized.includes('2bac_pc/svt')) return '2bac_pc_svt';
-  if (normalized.includes('2bac_arts') || normalized.includes('2bac-arts')) return '2bac_arts';
-
-  if (normalized.includes('sm') || normalized.includes('math') || normalized.includes('رياضية')) {
-    return '2bac_sm';
-  }
-  if (normalized.includes('pc') || normalized.includes('svt') || normalized.includes('تجريبية')) {
-    return '2bac_pc_svt';
-  }
-  if (normalized.includes('2bac') || normalized.includes('ثانية باك')) {
-    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
-      return '2bac_arts';
-    }
-    return '2bac_pc_svt';
-  }
-  if (normalized.includes('1bac') || normalized.includes('أولى باك') || normalized.includes('1ère bac') || normalized.includes('première bac')) {
-    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
-      return '1bac_arts';
-    }
-    return '1bac_sci';
-  }
-  if (normalized.includes('commun') || normalized.includes('tc') || normalized.includes('مشترك')) {
-    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
-      return 'common_core_arts';
-    }
-    return 'common_core_sci';
-  }
-  
-  const validKeys = ['common_core_sci', 'common_core_arts', '1bac_sci', '1bac_arts', '2bac_sm', '2bac_pc_svt', '2bac_arts'];
-  if (validKeys.includes(rawLevel)) {
-    return rawLevel;
-  }
-  
-  return '2bac_pc_svt';
-};
+import { normalizeLevel } from '../utils/levelHelpers';
 
 export default function AdminClassDetail() {
   const { id } = useParams();
@@ -382,9 +339,27 @@ export default function AdminClassDetail() {
       const clsStudents = allUsers.filter(u => u.role === 'student' && u.classId === id);
       setStudents(clsStudents);
 
-      // Fetch all active lessons
+      // Fetch all active lessons & exams
       const activeLessons = await getActiveLessons();
-      setLessons(activeLessons);
+      const examsList = await getAllExams().catch(() => []);
+      const mappedExams = (examsList || []).map(ex => ({
+        id: `exam_${ex.id}`,
+        title: ex.name || ex.title || 'Examen',
+        subject: ex.subject || 'Mathématiques',
+        level: ex.level || 'common_core_sci',
+        docType: 'homework',
+        isExam: true,
+        content: {
+          sections: (ex.questions || []).map((q, idx) => ({
+            id: `q_${q.id || idx}`,
+            title: `Question ${idx + 1}: ${q.question || ''}`,
+            type: 'exercise',
+            content: q.question,
+            solution: q.astuce || ''
+          }))
+        }
+      }));
+      setLessons([...(activeLessons || []), ...mappedExams]);
       // Fetch logbook entries for the class
       const entries = await getLogbookEntries(id);
       setLogbookEntries(entries);
@@ -2135,16 +2110,49 @@ export default function AdminClassDetail() {
                     }}
                     style={{ width: '100%', fontSize: '0.85rem' }}
                   >
-                    <option value="">-- Choisir un cours / série --</option>
-                    {lessons
-                      .filter(l => normalizeLevel(l.level) === classObj.level)
-                      .map(l => (
-                        <option key={l.id} value={l.id}>
-                          {l.docType === 'exercises' ? '📝 ' : l.docType === 'homework' ? '📑 ' : '📖 '} 
-                          {l.title} ({l.subject})
-                        </option>
-                      ))
-                    }
+                    <option value="">-- Choisir une document (Cours, Série ou Devoir) --</option>
+                    {(() => {
+                      const levelMatchedDocs = lessons.filter(l => {
+                        const targetLevel = normalizeLevel(classObj?.level);
+                        const lessonLevel = normalizeLevel(l.level);
+                        return (
+                          lessonLevel === targetLevel ||
+                          lessonLevel === 'all' ||
+                          l.level === classObj?.level ||
+                          (Array.isArray(classObj?.assignedLessons) && classObj.assignedLessons.includes(l.id))
+                        );
+                      });
+
+                      const courses = levelMatchedDocs.filter(l => l.docType === 'course' || (!l.docType && !l.isExam));
+                      const series = levelMatchedDocs.filter(l => l.docType === 'exercises' || l.docType === 'series');
+                      const homeworks = levelMatchedDocs.filter(l => l.docType === 'homework' || l.docType === 'exam' || l.docType === 'control' || l.isExam);
+
+                      return (
+                        <>
+                          {courses.length > 0 && (
+                            <optgroup label="📖 Cours & Chapitres du programme (الدروس والمقررات)">
+                              {courses.map(l => (
+                                <option key={l.id} value={l.id}>📖 {l.title} {l.subject ? `(${l.subject})` : ''}</option>
+                              ))}
+                            </optgroup>
+                          )}
+                          {series.length > 0 && (
+                            <optgroup label="📝 Séries d'exercices & Fiches TD (سلاسل التمارين)">
+                              {series.map(l => (
+                                <option key={l.id} value={l.id}>📝 {l.title} {l.subject ? `(${l.subject})` : ''}</option>
+                              ))}
+                            </optgroup>
+                          )}
+                          {homeworks.length > 0 && (
+                            <optgroup label="📑 Devoirs surveillés & Contrôles (الفروض والامتحانات)">
+                              {homeworks.map(l => (
+                                <option key={l.id} value={l.id}>📑 {l.title} {l.subject ? `(${l.subject})` : ''}</option>
+                              ))}
+                            </optgroup>
+                          )}
+                        </>
+                      );
+                    })()}
                   </select>
                 </div>
 

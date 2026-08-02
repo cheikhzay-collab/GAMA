@@ -8,11 +8,13 @@ import {
 } from 'lucide-react';
 import { getAllClasses } from '../services/classService';
 import { getActiveLessons } from '../services/lessonService';
+import { getAllExams } from '../services/examService';
 import { 
   getLogbookEntries, addLogbookEntry, updateLogbookEntry, deleteLogbookEntry 
 } from '../services/logbookService';
 import { renderWithMath } from '../utils/mathRenderer';
 import { openLogbookPrintWindow } from '../utils/generateLogbookPDF';
+import { normalizeLevel, getLevelDisplayName } from '../utils/levelHelpers';
 
 
 // Convert **bold** markdown to React strong elements
@@ -209,57 +211,29 @@ const checkTimeOverlap = (t1, t2) => {
   return false;
 };
 
-const normalizeLevel = (rawLevel) => {
-  if (!rawLevel) return '2bac_pc_svt';
-  const normalized = rawLevel.toLowerCase().trim();
-  
-  if (normalized.includes('common_core_sci') || normalized.includes('common-core-sci')) return 'common_core_sci';
-  if (normalized.includes('common_core_arts') || normalized.includes('common-core-arts')) return 'common_core_arts';
-  if (normalized.includes('1bac_sci') || normalized.includes('1bac-sci')) return '1bac_sci';
-  if (normalized.includes('1bac_arts') || normalized.includes('1bac-arts')) return '1bac_arts';
-  if (normalized.includes('2bac_sm') || normalized.includes('2bac-sm')) return '2bac_sm';
-  if (normalized.includes('2bac_pc_svt') || normalized.includes('2bac-pc-svt') || normalized.includes('2bac_pc/svt')) return '2bac_pc_svt';
-  if (normalized.includes('2bac_arts') || normalized.includes('2bac-arts')) return '2bac_arts';
-
-  if (normalized.includes('sm') || normalized.includes('math') || normalized.includes('رياضية')) {
-    return '2bac_sm';
-  }
-  if (normalized.includes('pc') || normalized.includes('svt') || normalized.includes('تجريبية')) {
-    return '2bac_pc_svt';
-  }
-  if (normalized.includes('2bac') || normalized.includes('ثانية باك')) {
-    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
-      return '2bac_arts';
-    }
-    return '2bac_pc_svt';
-  }
-  if (normalized.includes('1bac') || normalized.includes('أولى باك') || normalized.includes('1ère bac') || normalized.includes('première bac')) {
-    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
-      return '1bac_arts';
-    }
-    return '1bac_sci';
-  }
-  if (normalized.includes('commun') || normalized.includes('tc') || normalized.includes('مشترك')) {
-    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
-      return 'common_core_arts';
-    }
-    return 'common_core_sci';
-  }
-  
-  const validKeys = ['common_core_sci', 'common_core_arts', '1bac_sci', '1bac_arts', '2bac_sm', '2bac_pc_svt', '2bac_arts'];
-  if (validKeys.includes(rawLevel)) {
-    return rawLevel;
-  }
-  
-  return '2bac_pc_svt';
-};
+// Import normalizeLevel from utils/levelHelpers
 
 export default function AdminLogbook() {
-  const { profName } = useAuth();
+  const { profName, profAcademy, profSchool } = useAuth();
   
   // State
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
+  const [manualLanguage, setManualLanguage] = useState(null); // null = auto, 'ar', 'fr'
+
+  // Automatic RTL / Arabic mode detection with manual override option
+  const isArMode = useMemo(() => {
+    if (manualLanguage) return manualLanguage === 'ar';
+    if (!selectedClass) return false;
+    const lang = String(selectedClass.language || selectedClass.lang || selectedClass.option || '').toLowerCase();
+    if (lang === 'ar' || lang === 'arabic' || lang === 'arabe' || lang.includes('عرب')) return true;
+    if (selectedClass.isArabic || selectedClass.isAr) return true;
+    const name = String(selectedClass.name || '').toLowerCase();
+    if (name.includes('عرب') || name.includes('عام') || name.includes('(ar)') || name.includes(' ar')) return true;
+    const level = String(selectedClass.level || '').toLowerCase();
+    if (level.includes('arts') || level.includes('lettres') || level.includes('آداب')) return true;
+    return false;
+  }, [selectedClass, manualLanguage]);
   const [entries, setEntries] = useState([]);
   const [lessons, setLessons] = useState([]);
   const [levelLessons, setLevelLessons] = useState([]);
@@ -485,7 +459,7 @@ export default function AdminLogbook() {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
-  // Load classes and all lessons on mount
+  // Load classes, lessons, and exams on mount
   useEffect(() => {
     const initData = async () => {
       try {
@@ -493,7 +467,27 @@ export default function AdminLogbook() {
         setClasses(cls || []);
         
         const lsns = await getActiveLessons();
-        setLessons(lsns || []);
+        const examsList = await getAllExams().catch(() => []);
+        
+        const mappedExams = (examsList || []).map(ex => ({
+          id: `exam_${ex.id}`,
+          title: ex.name || ex.title || 'Examen',
+          subject: ex.subject || 'Mathématiques',
+          level: ex.level || 'common_core_sci',
+          docType: 'homework',
+          isExam: true,
+          content: {
+            sections: (ex.questions || []).map((q, idx) => ({
+              id: `q_${q.id || idx}`,
+              title: `Question ${idx + 1}: ${q.question || ''}`,
+              type: 'exercise',
+              content: q.question,
+              solution: q.astuce || ''
+            }))
+          }
+        }));
+
+        setLessons([...(lsns || []), ...mappedExams]);
       } catch (err) {
         console.error("Error loading data:", err);
       }
@@ -865,7 +859,18 @@ export default function AdminLogbook() {
       };
       loadEntries();
       
-      const filtered = lessons.filter(l => normalizeLevel(l.level) === selectedClass.level);
+      const targetLevel = normalizeLevel(selectedClass.level);
+      const filtered = lessons.filter(l => {
+        const lessonLevel = normalizeLevel(l.level);
+        return (
+          lessonLevel === targetLevel ||
+          lessonLevel === 'all' ||
+          l.level === selectedClass.level ||
+          (Array.isArray(selectedClass.assignedLessons) && selectedClass.assignedLessons.includes(l.id)) ||
+          (Array.isArray(l.classes) && l.classes.includes(selectedClass.id)) ||
+          (Array.isArray(l.schools) && l.schools.includes(selectedClass.name))
+        );
+      });
       setLevelLessons(filtered);
     } else {
       setEntries([]);
@@ -1154,6 +1159,7 @@ export default function AdminLogbook() {
 
   const triggerPrint = () => {
     openLogbookPrintWindow(selectedClass, entries, profName, {
+      isArMode,
       arFont,
       frFont,
       baseFontSize,
@@ -1168,8 +1174,6 @@ export default function AdminLogbook() {
   const selectedClassLevelLabel = selectedClass
     ? SYSTEM_LEVELS.find(lvl => lvl.id === selectedClass.level)?.label || selectedClass.level
     : '';
-
-  const isArMode = false;
 
   // Style properties are bound to React state variables
 
@@ -1917,12 +1921,17 @@ export default function AdminLogbook() {
             <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.3rem' }}>
-                  <span style={{ 
-                    background: isArMode ? 'var(--warning)' : 'var(--violet)', 
-                    color: 'white', fontWeight: 900, fontSize: '0.75rem', padding: '0.25rem 0.6rem', borderRadius: '6px' 
-                  }}>
-                    {isArMode ? 'Option Arabe' : 'Option Français (BIOF)'}
-                  </span>
+                  <button 
+                    onClick={() => setManualLanguage(prev => (isArMode ? 'fr' : 'ar'))}
+                    title="اضغط لتغيير لغة العرض والطباعة بين العربية والفرنسية"
+                    style={{ 
+                      background: isArMode ? 'linear-gradient(135deg, #d97706 0%, #b45309 100%)' : 'linear-gradient(135deg, #4f46e5 0%, #3730a3 100%)', 
+                      color: 'white', fontWeight: 900, fontSize: '0.75rem', padding: '0.35rem 0.8rem', borderRadius: '8px',
+                      border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', boxShadow: '0 2px 6px rgba(0,0,0,0.12)'
+                    }}
+                  >
+                    🌐 {isArMode ? 'خيار عربي (RTL)' : 'Option Français (BIOF)'}
+                  </button>
                   <h2 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0, color: 'var(--text-main)' }}>{selectedClass.name}</h2>
                 </div>
                 <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.9rem' }}>
@@ -1979,82 +1988,129 @@ export default function AdminLogbook() {
               color: '#0f172a',
               marginBottom: '1.5rem' 
             }}>
-              {/* Top Row: Brand & Title */}
+              {/* Top Official Header Card */}
               <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center', 
-                paddingBottom: '0.5rem', 
-                borderBottom: '2px solid #0f172a',
-                width: '100%' 
+                borderTop: '4px solid #1e3a8a',
+                background: 'linear-gradient(180deg, #f8fafc 0%, #ffffff 100%)',
+                borderRadius: '12px',
+                padding: '14px 18px 12px',
+                border: '1px solid #e2e8f0',
+                marginBottom: '14px',
+                boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)'
               }}>
-                <div>
-                  <span style={{ fontSize: '1.5rem', fontWeight: 900, color: '#4f46e5', letterSpacing: '-0.03em' }}>L'CONQ</span>
-                  <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, marginTop: '-2px' }}>
-                    {isArMode ? 'دفتر النصوص الإلكتروني' : 'Cahier de Textes Électronique'}
-                  </div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <h1 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {isArMode ? 'دفتر النصوص المنجزة' : 'Cahier de Textes'}
-                  </h1>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <span style={{ 
-                    fontSize: '0.75rem', 
-                    fontWeight: 800, 
-                    background: '#4f46e5', 
-                    color: '#ffffff', 
-                    padding: '0.2rem 0.5rem', 
-                    borderRadius: '4px' 
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', direction: isArMode ? 'rtl' : 'ltr' }}>
+                  {/* Left Dept */}
+                  <div style={{
+                    fontSize: '0.72rem',
+                    lineHeight: 1.45,
+                    color: '#334155',
+                    textAlign: isArMode ? 'right' : 'left',
+                    borderLeft: isArMode ? 'none' : '3.5px solid #3b82f6',
+                    borderRight: isArMode ? '3.5px solid #3b82f6' : 'none',
+                    paddingLeft: isArMode ? 0 : '10px',
+                    paddingRight: isArMode ? '10px' : 0,
                   }}>
-                    {getAcademicYearDates().label}
-                  </span>
-                  <div style={{ fontSize: '0.65rem', color: '#64748b', marginTop: '3px', fontWeight: 500 }}>
-                    {isArMode ? 'تاريخ الطبع: ' : 'Imprimé le : '} {new Date().toLocaleDateString('fr-FR')}
+                    {isArMode ? (
+                      <>
+                        <div style={{ fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', fontSize: '0.78rem', letterSpacing: '0.04em' }}>المملكة المغربية</div>
+                        <div style={{ fontWeight: 700, color: '#1e293b' }}>وزارة التربية الوطنية والتعليم الأولي والرياضة</div>
+                        <div style={{ color: '#475569', fontWeight: 600 }}>{profAcademy || 'الأكاديمية الجهوية للتربية والتكوين'}</div>
+                        <div style={{ color: '#1e3a8a', fontWeight: 800, marginTop: '2px' }}>{profSchool || "مؤسسة L'CONQ للتميز"}</div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', fontSize: '0.78rem', letterSpacing: '0.04em' }}>Royaume du Maroc</div>
+                        <div style={{ fontWeight: 700, color: '#1e293b' }}>Ministère de l'Éducation Nationale</div>
+                        <div style={{ color: '#475569', fontWeight: 600 }}>{profAcademy || "Académie Régionale de l'Éducation et de la Formation"}</div>
+                        <div style={{ color: '#1e3a8a', fontWeight: 800, marginTop: '2px' }}>{profSchool || "Établissement L'CONQ d'Excellence"}</div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Center Brand & Document Title Banner */}
+                  <div style={{ textAlign: 'center', padding: '0 10px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <span style={{ fontSize: '1.85rem', fontWeight: 950, color: '#1e1b4b', letterSpacing: '-0.04em', lineHeight: 1, fontFamily: 'Outfit, sans-serif' }}>
+                        L'CONQ
+                      </span>
+                      <span style={{ fontSize: '0.55rem', fontWeight: 900, letterSpacing: '0.2em', color: '#6366f1', textTransform: 'uppercase', marginTop: '1px' }}>
+                        EXCELLENCE ACADÉMIQUE
+                      </span>
+                    </div>
+                    <div style={{
+                      fontSize: '0.78rem',
+                      fontWeight: 900,
+                      color: '#ffffff',
+                      background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)',
+                      padding: '5px 16px',
+                      borderRadius: '8px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      marginTop: '6px',
+                      display: 'inline-block',
+                      whiteSpace: 'nowrap',
+                      boxShadow: '0 3px 8px rgba(15, 23, 42, 0.18)',
+                      border: '1px solid rgba(255,255,255,0.2)'
+                    }}>
+                      {isArMode ? 'دفتر النصوص الإلكتروني' : 'CAHIER DE TEXTES ÉLECTRONIQUE'}
+                    </div>
+                    <div style={{ fontSize: '0.58rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '3px' }}>
+                      {isArMode ? 'وثيقة رسمية للتتبع التربوي' : 'DOCUMENT OFFICIEL DE SUIVI PÉDAGOGIQUE'}
+                    </div>
+                  </div>
+
+                  {/* Right Metadata */}
+                  <div style={{ textAlign: isArMode ? 'left' : 'right', fontSize: '0.72rem', lineHeight: 1.6 }}>
+                    <div>
+                      <span style={{ color: '#64748b', fontWeight: 700 }}>{isArMode ? 'السنة الدراسية: ' : 'Année Scolaire : '}</span>
+                      <span style={{ background: '#dbeafe', color: '#1e40af', border: '1px solid #bfdbfe', fontWeight: 900, padding: '2px 8px', borderRadius: '5px', fontSize: '0.75rem' }}>
+                        {getAcademicYearDates().label}
+                      </span>
+                    </div>
+                    <div style={{ marginTop: '4px', color: '#0f172a', fontWeight: 700 }}>
+                      {isArMode ? 'تاريخ الطبع: ' : 'Imprimé le : '} <strong>{new Date().toLocaleDateString('fr-FR')}</strong>
+                    </div>
+                    <div style={{ marginTop: '2px', background: '#d1fae5', color: '#059669', fontWeight: 900, padding: '1px 7px', borderRadius: '4px', display: 'inline-block', fontSize: '0.65rem' }}>
+                      L'CONQ OS 2026
+                    </div>
+                  </div>
+                </div>
+
+                {/* Coordinates Grid */}
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(4, 1fr)', 
+                  gap: '8px', 
+                  marginTop: '12px',
+                  fontSize: '0.75rem',
+                  direction: isArMode ? 'rtl' : 'ltr'
+                }}>
+                  <div style={{ background: '#ffffff', border: '1.5px solid #e2e8f0', borderRadius: '8px', padding: '0.5rem 0.75rem', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+                    <span style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 800, display: 'block', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      {isArMode ? 'المستوى' : 'Niveau'}
+                    </span>
+                    <strong style={{ color: '#0f172a', fontSize: '0.85rem' }}>{selectedClassLevelLabel}</strong>
+                  </div>
+                  <div style={{ background: '#ffffff', border: '1.5px solid #e2e8f0', borderRadius: '8px', padding: '0.5rem 0.75rem', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+                    <span style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 800, display: 'block', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      {isArMode ? 'القسم / الفوج' : 'Classe / Groupe'}
+                    </span>
+                    <strong style={{ color: '#4f46e5', fontSize: '0.85rem' }}>{selectedClass.name}</strong>
+                  </div>
+                  <div style={{ background: '#ffffff', border: '1.5px solid #e2e8f0', borderRadius: '8px', padding: '0.5rem 0.75rem', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+                    <span style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 800, display: 'block', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      {isArMode ? 'المادة الدراسية' : 'Matière'}
+                    </span>
+                    <strong style={{ color: '#059669', fontSize: '0.85rem' }}>{selectedClass.subject || 'Mathématiques'}</strong>
+                  </div>
+                  <div style={{ background: '#ffffff', border: '1.5px solid #e2e8f0', borderRadius: '8px', padding: '0.5rem 0.75rem', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+                    <span style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 800, display: 'block', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      {isArMode ? 'الأستاذ المؤطر' : 'Enseignant'}
+                    </span>
+                    <strong style={{ color: '#0f172a', fontSize: '0.85rem' }}>{profName || 'Prof. L\'CONQ'}</strong>
                   </div>
                 </div>
               </div>
-
-              {/* Coordinates Grid */}
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(4, 1fr)', 
-                gap: '1px', 
-                background: '#cbd5e1', 
-                border: '1px solid #94a3b8', 
-                borderRadius: '6px', 
-                overflow: 'hidden',
-                marginTop: '0.8rem',
-                fontSize: '0.75rem',
-                direction: isArMode ? 'rtl' : 'ltr'
-              }}>
-                <div style={{ background: '#f8fafc', padding: '0.4rem 0.6rem', textAlign: 'center' }}>
-                  <span style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 800, display: 'block', textTransform: 'uppercase' }}>
-                    {isArMode ? 'المستوى' : 'Niveau'}
-                  </span>
-                  <strong style={{ color: '#0f172a' }}>{selectedClassLevelLabel}</strong>
-                </div>
-                <div style={{ background: '#f8fafc', padding: '0.4rem 0.6rem', textAlign: 'center' }}>
-                  <span style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 800, display: 'block', textTransform: 'uppercase' }}>
-                    {isArMode ? 'القسم' : 'Classe / Section'}
-                  </span>
-                  <strong style={{ color: '#0f172a' }}>{selectedClass.name}</strong>
-                </div>
-                <div style={{ background: '#f8fafc', padding: '0.4rem 0.6rem', textAlign: 'center' }}>
-                  <span style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 800, display: 'block', textTransform: 'uppercase' }}>
-                    {isArMode ? 'المادة' : 'Matière'}
-                  </span>
-                  <strong style={{ color: '#0f172a' }}>{selectedClass.subject || 'Mathématiques'}</strong>
-                </div>
-                <div style={{ background: '#f8fafc', padding: '0.4rem 0.6rem', textAlign: 'center' }}>
-                  <span style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 800, display: 'block', textTransform: 'uppercase' }}>
-                    {isArMode ? 'الأستاذ' : 'Enseignant'}
-                  </span>
-                  <strong style={{ color: '#0f172a' }}>{profName || 'Professeur'}</strong>
-                </div>
-              </div>
-            </div>
 
           </div>
 
@@ -2273,7 +2329,8 @@ export default function AdminLogbook() {
           </div>
 
         </div>
-      )}
+      </div>
+    )}
 
       {/* ── Slide-over Drawer for Syllabus Progress ── */}
       {drawerOpen && (
@@ -2631,34 +2688,57 @@ export default function AdminLogbook() {
               {/* Lesson Selection (Fiche de Cours) */}
               <div className="input-group">
                 <label style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)', display: 'block', marginBottom: '0.45rem' }}>
-                  Fiche de Cours Correspondante
+                  {isArMode ? 'درس / مقرر المستوى الحرقف' : 'Fiche de Cours Correspondante'}
                 </label>
                 <select
                   className="modal-input"
                   value={formData.lessonId || (formData.selectedProgramItemId ? `custom_prog_${formData.selectedProgramItemId}` : '')}
                   onChange={e => handleLessonChange(e.target.value)}
                 >
-                  <option value="">-- Sélectionner un élément du programme --</option>
-                  {selectedClass && selectedClass.program && selectedClass.program.length > 0 ? (
-                    selectedClass.program.map(item => {
-                      if (item.lessonId) {
-                        return (
-                          <option key={item.id} value={item.lessonId}>
-                            {item.title}
-                          </option>
-                        );
-                      } else {
-                        return (
-                          <option key={item.id} value={`custom_prog_${item.id}`}>
-                            ★ {item.title}
-                          </option>
-                        );
-                      }
-                    })
-                  ) : (
-                    levelLessons.map(l => (
-                      <option key={l.id} value={l.id}>{l.title}</option>
-                    ))
+                  <option value="">{isArMode ? '-- اختر درساً أو دليلاً من القائمة --' : '-- Sélectionner un cours / série --'}</option>
+                  
+                  {/* Custom Program Items if any */}
+                  {selectedClass && selectedClass.program && selectedClass.program.length > 0 && (
+                    <optgroup label={isArMode ? 'برنامج القسم الخاص' : 'Programme spécifique de la classe'}>
+                      {selectedClass.program.map(item => (
+                        <option key={`prog_${item.id}`} value={item.lessonId || `custom_prog_${item.id}`}>
+                          ★ {item.title}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+
+                  {/* 1. Courses / الدروس */}
+                  {levelLessons.filter(l => l.docType === 'course' || (!l.docType && !l.isExam)).length > 0 && (
+                    <optgroup label={isArMode ? '📖 الدروس والمقررات' : '📖 Cours & Chapitres du programme'}>
+                      {levelLessons.filter(l => l.docType === 'course' || (!l.docType && !l.isExam)).map(l => (
+                        <option key={l.id} value={l.id}>
+                          📖 {l.title} {l.subject ? `(${l.subject})` : ''}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+
+                  {/* 2. Series & Exercises / سلاسل التمارين */}
+                  {levelLessons.filter(l => l.docType === 'exercises' || l.docType === 'series').length > 0 && (
+                    <optgroup label={isArMode ? '📝 سلاسل التمارين والأعمال التوجيهية' : '📝 Séries d\'exercices & Fiches TD'}>
+                      {levelLessons.filter(l => l.docType === 'exercises' || l.docType === 'series').map(l => (
+                        <option key={l.id} value={l.id}>
+                          📝 {l.title} {l.subject ? `(${l.subject})` : ''}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+
+                  {/* 3. Homeworks & Controls / الفروض والامتحانات */}
+                  {levelLessons.filter(l => l.docType === 'homework' || l.docType === 'exam' || l.docType === 'control' || l.isExam).length > 0 && (
+                    <optgroup label={isArMode ? '📑 الفروض المحروسة والمنزلية والامتحانات' : '📑 Devoirs surveillés & Contrôles'}>
+                      {levelLessons.filter(l => l.docType === 'homework' || l.docType === 'exam' || l.docType === 'control' || l.isExam).map(l => (
+                        <option key={l.id} value={l.id}>
+                          📑 {l.title} {l.subject ? `(${l.subject})` : ''}
+                        </option>
+                      ))}
+                    </optgroup>
                   )}
                 </select>
                 <p style={{ marginTop: '0.4rem', fontSize: '0.72rem', color: 'var(--text-subtle)', margin: '0.35rem 0 0 0' }}>

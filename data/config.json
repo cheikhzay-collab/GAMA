@@ -5,8 +5,7 @@
     "profSite": "www.lconq.ma",
     "bankName": "CIH Bank (Maroc)",
     "bankRIB": "230 780 4567890123 0001 89",
-    "bankBeneficiary": "L'CONQ SARL",
-    "fbPixelId": ""
+    "bankBeneficiary": "L'CONQ SARL"
   },
   "schools": [
     "2bac_sm",
@@ -112,9 +111,9 @@
   },
   "whatsapp_settings": {
     "enabled": true,
-    "message": "Bonjour, j'ai une question concernant la plateforme .",
+    "phoneNumber": "",
+    "message": "Bonjour, j'ai une question concernant la plateforme Gima.",
     "position": "right",
-    "phoneNumber": "212708072844",
     "tooltipText": "Besoin d'aide ?"
   }
 }

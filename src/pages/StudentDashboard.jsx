@@ -3,8 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   Trophy, Flame, Target, BrainCircuit,
-  Zap, Clock, Camera, LayoutDashboard,
-  CheckCircle2, FileText, Sparkles, BookOpen, GraduationCap, ChevronRight
+  Zap, Clock, Camera,
+  CheckCircle2, FileText, Sparkles, BookOpen, GraduationCap
 } from 'lucide-react';
 
 import StatCard from '../components/dashboard/StatCard';
@@ -12,8 +12,6 @@ import OnboardingModal from '../components/dashboard/OnboardingModal';
 import WeeklyActivityChart from '../components/dashboard/WeeklyActivityChart';
 import MockExamHistoryList from '../components/dashboard/MockExamHistoryList';
 import DashboardSkeleton from '../components/dashboard/DashboardSkeleton';
-import { generateEbookHTML, generateStudentReportHTML, openPrintWindow } from '../utils/generateExamPDF';
-import { getExamById } from '../services/examService';
 
 export default function StudentDashboard() {
   const { 
@@ -150,6 +148,7 @@ export default function StudentDashboard() {
       profSite: profSite || 'www.lconq.ma'
     };
     
+    const { generateEbookHTML, openPrintWindow } = await import('../utils/generateExamPDF');
     const title = "Fascicule de Révision Personnalisé";
     const html = generateEbookHTML(title, questionsToPrint, s);
     openPrintWindow(html, `cahier-revision-points-faibles`);
@@ -169,6 +168,7 @@ export default function StudentDashboard() {
       // Try to load exam from database if not in active in-memory list
       if (!exam && supabaseEnabled && item.examId) {
         try {
+          const { getExamById } = await import('../services/examService');
           exam = await getExamById(item.examId);
         } catch (err) {
           console.warn('[StudentDashboard] Failed to fetch exam from database:', err);
@@ -266,7 +266,7 @@ export default function StudentDashboard() {
       
       const brand = schoolBranding?.[exam.level] || { scoring: { correct: 1, wrong: -0.25, empty: 0 } };
       const rules = brand.scoring || { correct: 1, wrong: -0.25, empty: 0 };
-      const wrongPenalty = Math.abs(rules.wrong || 0.25);
+const wrongPenalty = Math.abs(rules.wrong || 0.25);
   
       const scoreObj = {
         pts: item.score,
@@ -281,6 +281,7 @@ export default function StudentDashboard() {
         profSite: profSite || 'www.lconq.ma'
       };
       
+      const { generateStudentReportHTML, openPrintWindow } = await import('../utils/generateExamPDF');
       const html = generateStudentReportHTML({ ...exam, questions }, scoreObj, corrected, settings);
       localStorage.setItem('print_html', html);
       openPrintWindow(html, `bulletin-${exam.name.toLowerCase().replace(/\s+/g, '-')}`, win);
@@ -296,7 +297,7 @@ export default function StudentDashboard() {
       console.error('Failed to generate student report:', err);
       alert('Erreur de génération : ' + (err.stack || err.message || err));
       if (win) {
-        try { win.close(); } catch {}
+        try { win.close(); } catch { /* The print window may already be closed. */ }
       }
     }
   }, [exams, profName, profPhone, profSite, loadExamQuestions, trackDownload, schoolBranding, supabaseEnabled]);
@@ -318,25 +319,25 @@ export default function StudentDashboard() {
       <div style={{ position: 'relative', zIndex: 1 }}>
         
         {/* ── HEADER ── */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1.5rem' }}>
+        <div className="student-dash-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1.25rem' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem' }}>
-              <div style={{ width: 44, height: 44, borderRadius: '14px', background: 'linear-gradient(135deg, var(--violet), var(--emerald))', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 20px rgba(113, 109, 242, 0.2)' }}>
+              <div style={{ width: 44, height: 44, borderRadius: '14px', background: 'linear-gradient(135deg, var(--violet), var(--emerald))', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 20px rgba(113, 109, 242, 0.2)', flexShrink: 0 }}>
                 <GraduationCap size={24} color="#fff" />
               </div>
-              <h1 style={{ fontSize: '2rem', fontWeight: 850, letterSpacing: '-0.02em', margin: 0, color: 'var(--text-main)' }}>
+              <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 850, letterSpacing: '-0.02em', margin: 0, color: 'var(--text-main)' }}>
                 Bonjour, {user?.name}
               </h1>
             </div>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem', margin: 0 }}>
               Révisez vos cours de mathématiques et préparez vos prochains contrôles.
             </p>
           </div>
           
           {/* Quick Actions Header */}
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <div className="student-dash-actions" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <button 
-              className="btn"
+              className="btn student-dash-btn"
               onClick={() => navigate('/study')}
               style={{ 
                 background: 'linear-gradient(135deg, var(--violet), #4f46e5)', 
@@ -344,8 +345,9 @@ export default function StudentDashboard() {
                 fontWeight: 800, 
                 display: 'flex', 
                 alignItems: 'center', 
+                justifyContent: 'center',
                 gap: '0.5rem',
-                padding: '0.75rem 1.5rem',
+                padding: '0.75rem 1.25rem',
                 boxShadow: '0 8px 20px rgba(124, 58, 237, 0.25)',
                 color: '#fff'
               }}
@@ -368,7 +370,7 @@ export default function StudentDashboard() {
             </button>
 
             <button 
-              className="btn-outline"
+              className="btn-outline student-dash-btn"
               onClick={onNavigateToScanner}
               style={{ 
                 background: 'var(--bg-glass)', 
@@ -376,8 +378,9 @@ export default function StudentDashboard() {
                 fontWeight: 800, 
                 display: 'flex', 
                 alignItems: 'center', 
+                justifyContent: 'center',
                 gap: '0.5rem',
-                padding: '0.75rem 1.5rem',
+                padding: '0.75rem 1.25rem',
                 color: 'var(--text-main)'
               }}
             >
@@ -387,24 +390,23 @@ export default function StudentDashboard() {
         </div>
 
         {/* ── INTERACTIVE LESSONS RECOMMENDATION HUB WIDGET ── */}
-        <div className="glass-panel" style={{ 
+        <div className="glass-panel student-dash-banner" style={{ 
           background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(124, 58, 237, 0.03) 100%)', 
           border: '1.5px solid rgba(16, 185, 129, 0.2)', 
-          padding: '1.75rem 2rem', 
           borderRadius: '20px', 
           marginBottom: '2.5rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
-          gap: '1.5rem'
+          gap: '1.25rem'
         }}>
-          <div style={{ flex: '1 1 500px' }}>
+          <div style={{ flex: '1 1 280px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <Sparkles size={16} style={{ color: 'var(--emerald)' }} />
               <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--emerald)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Fiches Interactives IA</span>
             </div>
-            <h2 style={{ fontSize: '1.35rem', fontWeight: 850, color: '#fff', margin: '0 0 0.5rem 0', letterSpacing: '-0.01em' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 850, color: '#fff', margin: '0 0 0.5rem 0', letterSpacing: '-0.01em' }}>
               Fiches de Cours de Mathématiques
             </h2>
             <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: '1.5', maxWidth: '650px' }}>
@@ -414,17 +416,18 @@ export default function StudentDashboard() {
 
           <button 
             onClick={onNavigateToLevels}
-            className="btn"
+            className="btn student-dash-banner-btn"
             style={{ 
               background: 'linear-gradient(135deg, var(--emerald), #34d399)', 
               color: '#fff',
               fontWeight: 800,
               fontSize: '0.82rem',
-              padding: '0.7rem 1.35rem',
+              padding: '0.75rem 1.35rem',
               borderRadius: '10px',
               boxShadow: '0 6px 15px rgba(16, 185, 129, 0.25)',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: '0.4rem'
             }}
           >
@@ -433,7 +436,7 @@ export default function StudentDashboard() {
         </div>
 
         {/* ── BENTO STATS GRID ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+        <div className="student-dash-stats" style={{ display: 'grid', gap: '1.25rem', marginBottom: '2.5rem' }}>
           <StatCard icon={Trophy} label="Classement National" value={`#${stats.rank} / ${stats.totalStudents}`} colorClass="violet" />
           <StatCard icon={Flame} label="Série de Jours (Streak)" value={`${stats.streak} jours`} colorClass="warning" />
           <StatCard icon={Zap} label="Expérience Accumulée" value={`${user?.xp ?? 0} XP`} colorClass="emerald" />
@@ -441,7 +444,7 @@ export default function StudentDashboard() {
         </div>
 
         {/* ── MAIN CONTENT GRID ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 992 ? '1fr' : '2fr 1fr', gap: '1.75rem' }}>
+        <div className="student-dash-grid" style={{ display: 'grid', gap: '1.75rem' }}>
           
           {/* Left Column: Mock Exam History */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -458,12 +461,12 @@ export default function StudentDashboard() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             
             {/* Weekly Activity */}
-            <div className="glass-panel" style={{ padding: '1.5rem' }}>
+            <div className="glass-panel" style={{ padding: '1.25rem' }}>
               <WeeklyActivityChart data={stats.weeklyActivity} />
             </div>
 
             {/* Weak topics & PDF errors booklet generator */}
-            <div className="glass-panel" style={{ padding: '1.5rem' }}>
+            <div className="glass-panel" style={{ padding: '1.25rem' }}>
               <h3 style={{ fontWeight: 800, margin: '0 0 1.25rem 0', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-main)' }}>
                 <Target size={18} color="var(--warning)" /> Analyse des Points Faibles
               </h3>
@@ -547,7 +550,7 @@ export default function StudentDashboard() {
                 cursor: stats.dueToday > 0 ? 'pointer' : 'default',
                 transform: 'translateY(0)',
                 transition: 'all 0.2s ease',
-                padding: '1.5rem'
+                padding: '1.25rem'
               }}
               onMouseEnter={e => {
                 if (stats.dueToday > 0) {
@@ -588,7 +591,6 @@ export default function StudentDashboard() {
             
           </div>
         </div>
-
       </div>
 
       {/* ── Toast Notification ── */}

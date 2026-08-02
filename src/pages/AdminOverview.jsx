@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { 
-  LayoutDashboard, BookOpen, FileText, FolderOpen, ClipboardList,
-  Sparkles, ChevronRight, Calendar, Clock, Users, Plus, Camera,
-  GraduationCap, ArrowRight, BookMarked, PenTool, Award, FileSpreadsheet,
-  Download, Zap, CheckCircle2
+  FolderOpen, BookOpen, ClipboardList, Camera, Sparkles,
+  ChevronRight, Calendar, Clock, Award, TrendingUp, Plus,
+  FileText, ArrowLeft, Layers, Users, GraduationCap,
+  Activity, BarChart3, ArrowUpRight, Zap, Target, BookMarked
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -12,16 +12,51 @@ import { getAllLessons } from '../services/lessonService';
 import { getLogbookEntries } from '../services/logbookService';
 import { getAllUsers } from '../services/userService';
 
+// ─── HOOKS ─────────────────────────────────────────────────────────────────────
+
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 900);
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 768px)');
+    const mq = window.matchMedia('(max-width: 900px)');
     const handler = (e) => setIsMobile(e.matches);
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
   }, []);
   return isMobile;
 }
+
+/**
+ * Animated counter hook
+ */
+function useCountUp(target, duration = 1000) {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const startTime = useRef(null);
+
+  useEffect(() => {
+    if (target <= 0) { setCount(0); return; }
+    const ease = (t) => 1 - Math.pow(1 - t, 4);
+
+    const animate = (timestamp) => {
+      if (!startTime.current) startTime.current = timestamp;
+      const elapsed = timestamp - startTime.current;
+      const progress = Math.min(elapsed / duration, 1);
+      setCount(Math.round(ease(progress) * target));
+
+      if (progress < 1) {
+        ref.current = requestAnimationFrame(animate);
+      }
+    };
+
+    startTime.current = null;
+    ref.current = requestAnimationFrame(animate);
+    return () => { if (ref.current) cancelAnimationFrame(ref.current); };
+  }, [target, duration]);
+
+  return count;
+}
+
+// ─── CONSTANTS ─────────────────────────────────────────────────────────────────
 
 const SYSTEM_LEVELS = [
   { id: 'common_core_sci', label: 'Tronc Commun Scientifique', short: 'TCS' },
@@ -32,28 +67,51 @@ const SYSTEM_LEVELS = [
   { id: '2bac_sm', label: '2ème Bac Sciences Math', short: '2Bac SM' },
 ];
 
-const LEVEL_COLORS = {
-  'common_core_sci': '#3B82F6',
-  'common_core_arts': '#8B5CF6',
-  '1bac_sci': '#10B981',
-  '1bac_arts': '#F59E0B',
-  '2bac_pc_svt': '#EC4899',
-  '2bac_sm': '#E2B874',
-};
-
 const WEEKDAYS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 const MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
 const getEntryTypeLabel = (type) => {
   switch (type) {
-    case 'cours': return { label: 'Cours', color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.1)' };
-    case 'td': return { label: 'TD / Exercices', color: '#10B981', bg: 'rgba(16, 185, 129, 0.1)' };
-    case 'devoir': return { label: 'Devoir', color: '#EF4444', bg: 'rgba(239, 68, 68, 0.1)' };
-    case 'controle': return { label: 'Contrôle', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)' };
-    case 'activite': return { label: 'Activité', color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.1)' };
-    default: return { label: type || 'Séance', color: 'var(--text-muted)', bg: 'var(--bg-glass)' };
+    case 'cours': return { label: 'Cours', color: '#10B981' };
+    case 'td': return { label: 'TD / Exercices', color: '#3B82F6' };
+    case 'devoir': return { label: 'Devoir', color: '#EF4444' };
+    case 'controle': return { label: 'Contrôle', color: '#F59E0B' };
+    default: return { label: type || 'Séance', color: '#6B7280' };
   }
 };
+
+const LEVEL_COLORS = ['#716DF2', '#10B981', '#F59E0B', '#3B82F6', '#EC4899', '#06B6D4'];
+
+// ─── STAT CARD (uses useCountUp inside) ────────────────────────────────────────
+
+function StatCard({ label, value, sub, Icon, accentColor, accentBg, glowColor, onClick, loading, delay = 0 }) {
+  const animatedValue = useCountUp(loading ? 0 : value, 1000);
+  return (
+    <div
+      className="dash-stat"
+      onClick={onClick}
+      style={{
+        '--stat-color': accentColor,
+        '--stat-glow': glowColor,
+        animationDelay: `${delay}s`,
+      }}
+    >
+      <div className="dash-stat__icon" style={{ background: accentBg, color: accentColor }}>
+        <Icon size={22} />
+      </div>
+      <div className="dash-stat__label">{label}</div>
+      <div className="dash-stat__value">
+        {loading ? '—' : animatedValue}
+      </div>
+      <div className="dash-stat__sub">
+        <TrendingUp size={12} />
+        <span>{sub}</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── MAIN COMPONENT ────────────────────────────────────────────────────────────
 
 export default function AdminOverview() {
   const { user, exams } = useAuth();
@@ -64,7 +122,6 @@ export default function AdminOverview() {
   const [classes, setClasses] = useState([]);
   const [lessons, setLessons] = useState([]);
   const [logbookEntries, setLogbookEntries] = useState([]);
-  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch all data on mount
@@ -72,7 +129,7 @@ export default function AdminOverview() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [cls, les, entries, usr] = await Promise.all([
+        const [cls, les, entries] = await Promise.all([
           getAllClasses(),
           getAllLessons(),
           getLogbookEntries(),
@@ -81,7 +138,6 @@ export default function AdminOverview() {
         setClasses(cls || []);
         setLessons(les || []);
         setLogbookEntries(entries || []);
-        setUsers(usr || []);
       } catch (err) {
         console.warn('[AdminOverview] Failed to load data:', err);
       } finally {
@@ -111,14 +167,14 @@ export default function AdminOverview() {
     });
   }, [logbookEntries, now]);
 
-  // Recent 5 logbook entries
+  // Recent 4 logbook entries (balanced column height)
   const recentEntries = useMemo(() => {
     return [...logbookEntries]
       .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 5);
+      .slice(0, 4);
   }, [logbookEntries]);
 
-  // Today's date formatted
+  // Today's date formatted in French
   const todayStr = `${WEEKDAYS[now.getDay()]} ${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
 
   // Per-level breakdown
@@ -137,672 +193,514 @@ export default function AdminOverview() {
         classCount: levelClasses.length,
         lessonCount: levelLessons.length,
         examCount: levelExams.length,
-        color: LEVEL_COLORS[level.id] || '#6B7280',
       };
     }).filter(l => l.classCount > 0 || l.lessonCount > 0 || l.examCount > 0);
   }, [classes, lessons, exams]);
 
-  // Today's sessions count
-  const todaySessions = useMemo(() => {
-    const todayDate = now.toISOString().split('T')[0];
-    return logbookEntries.filter(e => e.date === todayDate).length;
-  }, [logbookEntries, now]);
-
-  // Professeur name & schedule logic
   const profName = useMemo(() => localStorage.getItem('profName') || user?.name || 'Professeur', [user]);
-  const todayDayName = WEEKDAYS[now.getDay()];
+  const profSchool = useMemo(() => localStorage.getItem('profSchool') || '', []);
+  const profDirection = useMemo(() => localStorage.getItem('profDirection') || '', []);
 
-  const todayScheduleList = useMemo(() => {
-    const dayIndex = now.getDay();
-    if (dayIndex === 0) return []; // Dimanche (repos)
-
-    try {
-      const schedule = JSON.parse(localStorage.getItem('teacher_schedule_current') || '{}');
-      const list = [];
-      const slotLabels = {
-        '08-09': '08:00 - 10:00',
-        '09-10': '09:00 - 11:00',
-        '10-11': '10:00 - 12:00',
-        '11-12': '11:00 - 12:00',
-        '14-15': '14:30 - 16:30',
-        '15-16': '15:30 - 17:30',
-        '16-17': '16:30 - 18:30',
-        '17-18': '17:00 - 18:00'
-      };
-
-      Object.entries(schedule).forEach(([key, val]) => {
-        if (key.startsWith(`${dayIndex}_`) && val) {
-          const slotId = key.split('_')[1];
-          const className = typeof val === 'string' ? val : (val.className || val.name);
-          const room = val.room || val.salle || `Salle ${(dayIndex * 2) + 2}`;
-          const subject = val.subject || 'Physique-Chimie';
-          list.push({
-            time: slotLabels[slotId] || '08:30 - 10:30',
-            className,
-            room,
-            subject
-          });
-        }
-      });
-
-      if (list.length > 0) return list;
-    } catch (e) {
-      console.warn('Error reading schedule:', e);
-    }
-
-    if (classes.length > 0) {
-      return classes.slice(0, 3).map((cls, idx) => {
-        const times = ['08:30 - 10:30', '10:30 - 12:30', '14:30 - 16:30'];
-        const rooms = ['Salle 4', 'Salle 12', 'Labo Physique'];
-        return {
-          time: times[idx % times.length],
-          className: cls.name,
-          room: rooms[idx % rooms.length],
-          subject: 'Physique-Chimie'
-        };
-      });
-    }
-
-    return [];
-  }, [classes, now]);
+  // Today's entries for News Ticker
+  const todayEntries = useMemo(() => {
+    const todayYMD = new Date().toISOString().split('T')[0];
+    return logbookEntries.filter(e => {
+      if (!e.date) return false;
+      const dYMD = new Date(e.date).toISOString().split('T')[0];
+      return dYMD === todayYMD;
+    });
+  }, [logbookEntries]);
 
   return (
-    <div className="animate-fade-in" style={{ direction: 'ltr', textAlign: 'left', position: 'relative', paddingBottom: '3rem' }}>
-      
-      {/* Background glow blobs */}
-      <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: '350px', height: '350px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, transparent 70%)', filter: 'blur(70px)', zIndex: 0, pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: '15%', right: '-5%', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(16, 185, 129, 0.04) 0%, transparent 70%)', filter: 'blur(80px)', zIndex: 0, pointerEvents: 'none' }} />
-      
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        
-        {/* ══════════════════════════════════════════════════════════════════════
-            SECTION 1 — HERO HEADER & STRATEGIC TOOLBAR
-        ══════════════════════════════════════════════════════════════════════ */}
-        <header style={{ marginBottom: '2rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '0.5rem' }}>
-                <div style={{ 
-                  width: 52, height: 52, borderRadius: '16px', 
-                  background: 'linear-gradient(135deg, var(--violet), var(--emerald))', 
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                  boxShadow: '0 10px 25px rgba(124, 58, 237, 0.25)' 
-                }}>
-                  <GraduationCap size={28} color="#fff" />
-                </div>
-                <div>
-                  <h1 style={{ fontSize: '1.95rem', fontWeight: 900, letterSpacing: '-0.03em', margin: 0, color: 'var(--text-main)', lineHeight: 1.2 }}>
-                    Espace Professeur <span style={{ background: 'linear-gradient(135deg, var(--violet), var(--emerald))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>L'CONQ</span>
-                  </h1>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', margin: '0.2rem 0 0', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}>
-                    <Calendar size={14} /> {todayStr}
-                  </p>
-                </div>
-              </div>
-            </div>
+    <div className="dash-2026">
 
-            {/* Strategic Quick Actions */}
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <button 
-                className="btn"
-                onClick={() => navigate('/scanner')}
-                style={{ 
-                  background: 'linear-gradient(135deg, var(--violet), var(--emerald))', 
-                  border: 'none', 
-                  fontWeight: 800, 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '0.55rem',
-                  padding: '0.7rem 1.35rem',
-                  fontSize: '0.88rem',
-                  borderRadius: '12px',
-                  boxShadow: '0 8px 24px rgba(124, 58, 237, 0.25)',
-                  color: '#fff',
-                  cursor: 'pointer'
-                }}
-              >
-                <Camera size={18} /> Scanner OMR & Auto-Correction
-              </button>
-              
-              <button 
-                className="btn-outline"
-                onClick={() => navigate('/admin/ai-generator')}
-                style={{ 
-                  fontWeight: 800, 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '0.45rem',
-                  padding: '0.7rem 1.1rem',
-                  fontSize: '0.85rem',
-                  borderRadius: '12px',
-                  borderColor: 'var(--violet)',
-                  color: 'var(--violet)',
-                  background: 'rgba(124, 58, 237, 0.06)',
-                  cursor: 'pointer'
-                }}
-              >
-                <Sparkles size={16} /> Générateur IA
-              </button>
-            </div>
-          </div>
-        </header>
+      {/* Background Orbs */}
+      <div className="dash-2026__orb dash-2026__orb--violet" />
+      <div className="dash-2026__orb dash-2026__orb--emerald" />
+      <div className="dash-2026__orb dash-2026__orb--cyan" />
 
-        {/* ══════════════════════════════════════════════════════════════════════
-            SECTION 2 — TEACHER WELCOME, TODAY'S SESSIONS & LOGBOOK SUGGESTION
-        ══════════════════════════════════════════════════════════════════════ */}
-        <div className="bento-hero-card" style={{ padding: '1.75rem 2rem', marginBottom: '2.5rem' }}>
-          {/* Welcome Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.25rem', marginBottom: '1.5rem' }}>
+      <div className="dash-2026__content">
+
+        {/* ── HERO BANNER WITH INTEGRATED SESSIONS TICKER ── */}
+        <div className="dash-hero" style={{ paddingBottom: '1.25rem' }}>
+          <div className="dash-hero__row">
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ position: 'relative' }}>
-                <div style={{
-                  width: 56, height: 56, borderRadius: '18px',
-                  background: 'linear-gradient(135deg, #716DF2 0%, #10B981 100%)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '1.4rem', fontWeight: 900, color: '#fff',
-                  boxShadow: '0 10px 25px rgba(113, 109, 242, 0.35)'
-                }}>
-                  {profName[0]?.toUpperCase() || 'P'}
-                </div>
-                <div style={{ position: 'absolute', bottom: -2, right: -2 }}>
-                  <span className="pulse-dot-active" title="Session Active" />
-                </div>
+              <div className="dash-hero__avatar">
+                {profName[0]?.toUpperCase() || 'P'}
+                <div className="dash-hero__avatar-dot" />
               </div>
-
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <h2 style={{ margin: 0, fontSize: '1.45rem', fontWeight: 900, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-                    Bienvenue Prof. {profName} 👋
-                  </h2>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '0.2rem 0.65rem', borderRadius: '20px', background: 'rgba(16, 185, 129, 0.15)', color: '#10B981', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                    🟢 En Ligne
+              <div className="dash-hero__info">
+                <h1>
+                  Tableau de bord — <span>Prof. {profName}</span>
+                </h1>
+                <p className="dash-hero__subtitle">
+                  <Calendar size={13} style={{ flexShrink: 0 }} />
+                  <span>{todayStr}</span>
+                  {profSchool && (
+                    <>
+                      <span style={{ margin: '0 0.3rem', opacity: 0.6 }}>•</span>
+                      <span style={{ color: 'var(--text-main)', fontWeight: 700 }}>{profSchool}</span>
+                    </>
+                  )}
+                  {profDirection && (
+                    <>
+                      <span style={{ margin: '0 0.3rem', opacity: 0.6 }}>•</span>
+                      <span style={{ color: 'var(--text-subtle)', fontWeight: 600 }}>{profDirection}</span>
+                    </>
+                  )}
+                  <span style={{ margin: '0 0.3rem', opacity: 0.6 }}>•</span>
+                  <span className="dash-hero__badge">
+                    <Activity size={11} />
+                    L'CONQ
                   </span>
-                </div>
-                <p style={{ margin: '0.3rem 0 0', fontSize: '0.88rem', color: 'var(--text-subtle)', fontWeight: 600 }} dir="rtl">
-                  مرحباً بك في فضائك التعليمي. إليك حصص اليوم، القاعات المخصصة، واقتراح توثيق دفتر النصوص.
                 </p>
               </div>
             </div>
 
-            {/* Quick Fill Logbook CTA Button */}
-            <button
-              onClick={() => navigate('/admin/logbook')}
-              className="btn"
-              style={{
-                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-                color: '#fff', border: 'none', fontWeight: 800,
-                fontSize: '0.9rem', padding: '0.75rem 1.5rem', borderRadius: '14px',
-                display: 'flex', alignItems: 'center', gap: '0.6rem',
-                boxShadow: '0 8px 25px rgba(16, 185, 129, 0.3)',
-                cursor: 'pointer', transition: 'all 0.25s ease'
-              }}
-            >
-              <ClipboardList size={20} /> Remplir le Cahier de Textes (ملء دفتر النصوص)
-            </button>
+            <div className="dash-hero__actions">
+              <button className="dash-hero__btn-primary" onClick={() => navigate('/scanner')}>
+                <Camera size={16} />
+                <span>Scanner OMR</span>
+              </button>
+              <button className="dash-hero__btn-secondary" onClick={() => navigate('/admin/ai-generator')}>
+                <Sparkles size={15} />
+                <span>Générateur IA</span>
+              </button>
+              <button className="dash-hero__btn-secondary" onClick={() => navigate('/admin/logbook')}>
+                <ClipboardList size={15} />
+                <span>Cahier de textes</span>
+              </button>
+            </div>
           </div>
 
-          {/* Today's Sessions - Pure Clean Minimal Text Ticker Bar */}
-          <div className="news-ticker-container" style={{ marginTop: '1.25rem' }}>
-            <div className="news-ticker-badge-text">
-              <Clock size={14} style={{ color: 'var(--violet)' }} />
-              <span>Programme du jour ({todayDayName}) :</span>
+          {/* Integrated Séances du Jour Ticker inside Hero Header */}
+          <div 
+            className={`dash-ticker${todayEntries.length === 0 ? ' dash-ticker--empty' : ''}`}
+            onClick={() => navigate('/admin/logbook')} 
+            title="Cliquez pour ouvrir le cahier de textes"
+            style={{ 
+              marginTop: '1.25rem', 
+              marginBottom: 0,
+              background: 'rgba(0, 0, 0, 0.12)',
+              backdropFilter: 'blur(16px)',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            <div className="dash-ticker__badge">
+              <div className="dash-ticker__dot" />
+              <span>Séances du jour</span>
             </div>
-
-            <div className="news-ticker-track-wrapper">
-              <div className="news-ticker-track">
-                {todayScheduleList.length === 0 ? (
-                  <div
-                    className="news-ticker-text-item"
-                    onClick={() => navigate('/admin/settings')}
-                  >
-                    <span>Aucun cours aujourd'hui (Repos & Préparation)</span>
-                    <span style={{ opacity: 0.5 }}>—</span>
-                    <span style={{ color: 'var(--violet)', fontWeight: 700 }}>⚙️ Emploi du temps</span>
+            <div className="dash-ticker__track">
+              <div className="dash-ticker__content">
+                {todayEntries.length === 0 ? (
+                  <div className="dash-ticker__item">
+                    <span>Aucune séance aujourd'hui</span>
                   </div>
                 ) : (
-                  [...todayScheduleList, ...todayScheduleList, ...todayScheduleList].map((slot, idx) => (
-                    <div
-                      key={idx}
-                      className="news-ticker-text-item"
-                      onClick={() => navigate(`/admin/logbook?class=${encodeURIComponent(slot.className)}`)}
-                      title="Cliquer pour remplir le Cahier de Textes de cette séance"
-                    >
-                      <span style={{ fontWeight: 800, color: 'var(--violet)' }}>{slot.time}</span>
-                      <span>·</span>
-                      <span style={{ fontWeight: 800, color: 'var(--text-main)' }}>{slot.className}</span>
-                      <span style={{ color: 'var(--text-subtle)', fontSize: '0.82rem' }}>({slot.room || 'Salle 4'})</span>
-                      <span style={{ color: 'var(--text-subtle)' }}>—</span>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--violet)', opacity: 0.85 }}>✍️ Remplir le Cahier</span>
-                      <span style={{ margin: '0 0.5rem', opacity: 0.35, color: 'var(--text-muted)' }}>•</span>
-                    </div>
-                  ))
+                  [...todayEntries, ...todayEntries, ...todayEntries].map((entry, idx) => {
+                    const cls = classes.find(c => c.id === entry.classId);
+                    const typeLabel = getEntryTypeLabel(entry.type);
+                    return (
+                      <div key={idx} className="dash-ticker__item">
+                        <span className="dash-ticker__item-tag" style={{ background: typeLabel.color + '25', color: typeLabel.color, border: `1px solid ${typeLabel.color}40`, fontWeight: 800 }}>
+                          {cls?.name || 'Classe'} • {typeLabel.label}
+                        </span>
+                        <span style={{ fontWeight: 700 }}>{entry.title || 'Séance de cours'}</span>
+                        {entry.time && <span style={{ opacity: 0.85, fontWeight: 600 }}>({entry.time})</span>}
+                        <span className="dash-ticker__separator">•</span>
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* ══════════════════════════════════════════════════════════════════════
-            SECTION 2 — STRATEGIC KPI CARDS (4 CORE PILLARS)
-        ══════════════════════════════════════════════════════════════════════ */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
-          
-          {/* Card 1: Classes & Sections */}
-          <div 
-            className="glass-panel" 
+        {/* ── KPI STAT CARDS ── */}
+        <section className="dash-stats">
+          <StatCard
+            label="Classes & Sections"
+            value={totalClasses}
+            sub={totalStudents > 0 ? `${totalStudents} élèves inscrits` : 'Accéder aux carnets'}
+            Icon={Users}
+            accentColor="#10B981"
+            accentBg="rgba(16, 185, 129, 0.12)"
+            glowColor="rgba(16, 185, 129, 0.08)"
             onClick={() => navigate('/admin/classes')}
-            style={{ display: 'flex', padding: '1.5rem', gap: '1.25rem', alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s ease' }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(124, 58, 237, 0.15)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = ''; }}
-          >
-            <div style={{ padding: '0.85rem', borderRadius: '14px', background: 'var(--violet-soft)', color: 'var(--violet)', display: 'flex' }}>
-              <FolderOpen size={26} />
-            </div>
-            <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Classes & Sections</div>
-              <div style={{ fontSize: '1.85rem', fontWeight: 900, color: 'var(--text-main)', marginTop: '0.15rem' }}>{loading ? '—' : totalClasses}</div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--violet)', fontWeight: 800, marginTop: '0.15rem' }}>
-                {totalStudents > 0 ? `${totalStudents} élèves inscrits` : 'Gestion des carnets OMR'}
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: QCM & Concours OMR */}
-          <div 
-            className="glass-panel" 
+            loading={loading}
+            delay={0.1}
+          />
+          <StatCard
+            label="QCM & Concours"
+            value={totalExams}
+            sub={`${totalQuestions} questions crées`}
+            Icon={GraduationCap}
+            accentColor="#F59E0B"
+            accentBg="rgba(245, 158, 11, 0.12)"
+            glowColor="rgba(245, 158, 11, 0.08)"
             onClick={() => navigate('/admin/exams')}
-            style={{ display: 'flex', padding: '1.5rem', gap: '1.25rem', alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s ease' }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.15)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = ''; }}
-          >
-            <div style={{ padding: '0.85rem', borderRadius: '14px', background: 'var(--emerald-soft)', color: 'var(--emerald)', display: 'flex' }}>
-              <Award size={26} />
-            </div>
-            <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Concours & QCM</div>
-              <div style={{ fontSize: '1.85rem', fontWeight: 900, color: 'var(--text-main)', marginTop: '0.15rem' }}>{totalExams}</div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--emerald)', fontWeight: 800, marginTop: '0.15rem' }}>
-                {totalQuestions} questions numérisées
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3: Fiches de Cours */}
-          <div 
-            className="glass-panel" 
+            loading={loading}
+            delay={0.2}
+          />
+          <StatCard
+            label="Fiches de Cours"
+            value={totalLessons}
+            sub="Ressources pédagogiques"
+            Icon={FileText}
+            accentColor="#3B82F6"
+            accentBg="rgba(59, 130, 246, 0.12)"
+            glowColor="rgba(59, 130, 246, 0.08)"
             onClick={() => navigate('/admin/lessons')}
-            style={{ display: 'flex', padding: '1.5rem', gap: '1.25rem', alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s ease' }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.15)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = ''; }}
-          >
-            <div style={{ padding: '0.85rem', borderRadius: '14px', background: 'rgba(59, 130, 246, 0.1)', color: '#3B82F6', display: 'flex' }}>
-              <BookOpen size={26} />
-            </div>
-            <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fiches de Cours</div>
-              <div style={{ fontSize: '1.85rem', fontWeight: 900, color: 'var(--text-main)', marginTop: '0.15rem' }}>{loading ? '—' : totalLessons}</div>
-              <div style={{ fontSize: '0.72rem', color: '#3B82F6', fontWeight: 800, marginTop: '0.15rem' }}>
-                Cours & Exercices imprimables
-              </div>
-            </div>
-          </div>
-
-          {/* Card 4: Cahier de Textes */}
-          <div 
-            className="glass-panel" 
+            loading={loading}
+            delay={0.3}
+          />
+          <StatCard
+            label="Cahier de Textes"
+            value={currentMonthEntries.length}
+            sub={`Séances en ${MONTHS[now.getMonth()]}`}
+            Icon={ClipboardList}
+            accentColor="#716DF2"
+            accentBg="rgba(113, 109, 242, 0.12)"
+            glowColor="rgba(113, 109, 242, 0.08)"
             onClick={() => navigate('/admin/logbook')}
-            style={{ display: 'flex', padding: '1.5rem', gap: '1.25rem', alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s ease' }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(245, 158, 11, 0.15)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = ''; }}
-          >
-            <div style={{ padding: '0.85rem', borderRadius: '14px', background: 'var(--warning-soft)', color: 'var(--warning)', display: 'flex' }}>
-              <ClipboardList size={26} />
-            </div>
-            <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cahier de Textes</div>
-              <div style={{ fontSize: '1.85rem', fontWeight: 900, color: 'var(--text-main)', marginTop: '0.15rem' }}>{loading ? '—' : currentMonthEntries.length}</div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--warning)', fontWeight: 800, marginTop: '0.15rem' }}>
-                Séances en {MONTHS[now.getMonth()]}
-              </div>
-            </div>
-          </div>
-        </div>
+            loading={loading}
+            delay={0.4}
+          />
+        </section>
 
-        {/* ══════════════════════════════════════════════════════════════════════
-            SECTION 3 — TWO COLUMNS: OMR & Class Center + Creation Hub
-        ══════════════════════════════════════════════════════════════════════ */}
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.4fr 1fr', gap: '1.5rem', marginBottom: '2.5rem' }}>
-          
-          {/* ── LEFT: OMR & Carnet de Notes Center ── */}
-          <div className="glass-panel" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+        {/* ── ROW 2: Classes + Studio IA ── */}
+        <div className="dash-bento">
+
+          {/* Classes Panel */}
+          <div className="dash-card dash-card--delay-1">
+            <div className="dash-card__header">
               <div>
-                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
-                  <Award size={22} color="var(--violet)" /> Mes Classes & Carnet des Concours
+                <h3 className="dash-card__title">
+                  <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(16, 185, 129, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Users size={18} style={{ color: 'var(--emerald)' }} />
+                  </div>
+                  Classes & Carnets de Notes
                 </h3>
-                <p style={{ margin: '0.25rem 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>Accès direct aux résultats scannés et exportations Massar</p>
+                <p className="dash-card__subtitle">Suivi des élèves, résultats des tests et export Massar</p>
               </div>
-              <button 
-                onClick={() => navigate('/admin/classes')}
-                className="btn-outline"
-                style={{ fontSize: '0.78rem', fontWeight: 800, padding: '0.4rem 0.85rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.3rem', borderColor: 'var(--border)', color: 'var(--text-main)' }}
-              >
-                Gérer les classes <ArrowRight size={13} />
+              <button className="dash-card__action" onClick={() => navigate('/admin/classes')}>
+                <span>Gérer</span>
+                <ChevronRight size={12} />
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
-              {loading ? (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem 0', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                  Chargement des classes...
-                </div>
-              ) : classes.length === 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem 0', color: 'var(--text-subtle)', gap: '0.75rem' }}>
-                  <FolderOpen size={36} style={{ opacity: 0.4 }} />
-                  <span style={{ fontSize: '0.9rem', fontWeight: 800 }}>Aucune classe configurée</span>
-                  <button 
-                    onClick={() => navigate('/admin/classes')}
-                    className="btn"
-                    style={{ marginTop: '0.5rem', fontSize: '0.8rem', padding: '0.5rem 1rem', borderRadius: '8px', background: 'linear-gradient(135deg, var(--violet), var(--emerald))', color: '#fff', fontWeight: 800, border: 'none' }}
-                  >
-                    <Plus size={14} /> Créer ma première classe
-                  </button>
-                </div>
-              ) : (
-                classes.slice(0, 4).map((cls, idx) => {
-                  const levelInfo = SYSTEM_LEVELS.find(l => l.id === cls.level);
-                  const color = LEVEL_COLORS[cls.level] || 'var(--violet)';
-                  const compCount = cls.competitions?.length || 0;
-
+            {loading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                {[1,2,3].map(i => <div key={i} className="dash-skeleton" style={{ height: '52px' }} />)}
+              </div>
+            ) : classes.length === 0 ? (
+              <div className="dash-empty">
+                <div className="dash-empty__icon"><FolderOpen size={40} /></div>
+                <p className="dash-empty__text">Aucune classe configurée</p>
+                <button className="dash-empty__btn" onClick={() => navigate('/admin/classes')}>
+                  <Plus size={14} />
+                  <span>Ajouter une classe</span>
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {classes.slice(0, 5).map((cls, i) => {
+                  const lv = SYSTEM_LEVELS.find(l => l.id === cls.level);
+                  const avatarColor = LEVEL_COLORS[i % LEVEL_COLORS.length];
                   return (
-                    <div 
-                      key={cls.id || idx} 
-                      style={{ 
-                        padding: '1rem 1.15rem', 
-                        background: 'var(--bg-card)', 
-                        border: '1px solid var(--border)', 
-                        borderRadius: '14px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '1rem',
-                        transition: 'all 0.15s ease',
-                        cursor: 'pointer'
-                      }}
+                    <div
+                      key={cls.id || i}
+                      className="dash-class-item"
                       onClick={() => navigate(`/admin/classes/${cls.id}`)}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.borderColor = color; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-card)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+                      style={{ animationDelay: `${0.1 + i * 0.08}s` }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                        <div style={{ 
-                          width: 40, height: 40, borderRadius: '10px', 
-                          background: `${color}15`, color: color, 
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.9rem' 
-                        }}>
-                          {cls.name ? cls.name.slice(0, 2).toUpperCase() : 'CL'}
+                        <div
+                          className="dash-class-item__avatar"
+                          style={{
+                            background: `${avatarColor}20`,
+                            color: avatarColor,
+                            border: `1.5px solid ${avatarColor}40`,
+                          }}
+                        >
+                          {cls.name?.[0]?.toUpperCase() || '—'}
                         </div>
                         <div>
-                          <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text-main)' }}>{cls.name}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.15rem' }}>
-                            <span>{cls.students?.length || 0} élèves</span>
-                            <span>·</span>
-                            <span style={{ color, fontWeight: 700 }}>{levelInfo?.short || 'Secondaire'}</span>
+                          <div style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.15rem' }}>
+                            {cls.name}
+                          </div>
+                          <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-subtle)' }}>
+                            {cls.students?.length || 0} élèves • {lv?.label || 'Secondaire'}
                           </div>
                         </div>
                       </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                        <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '0.2rem 0.6rem', borderRadius: '6px', background: 'rgba(16, 185, 129, 0.12)', color: 'var(--emerald)' }}>
-                          {compCount} Concours OMR
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{
+                          fontSize: '0.74rem',
+                          fontWeight: 800,
+                          color: 'var(--emerald)',
+                          padding: '0.2rem 0.6rem',
+                          borderRadius: '8px',
+                          background: 'var(--emerald-soft)',
+                          border: '1px solid rgba(16, 185, 129, 0.25)',
+                          boxShadow: '0 1px 4px rgba(16, 185, 129, 0.1)',
+                        }}>
+                          {cls.competitions?.length || 0} QCMs
                         </span>
-                        <ChevronRight size={16} style={{ color: 'var(--text-muted)' }} />
+                        <ChevronRight size={14} style={{ color: 'var(--text-subtle)' }} />
                       </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-          {/* ── RIGHT: Creation & Production Hub ── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            
-            {/* AI Generator Hub Card */}
-            <div className="glass-panel" style={{ 
-              padding: '1.75rem',
-              background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.06) 0%, rgba(16, 185, 129, 0.04) 100%)', 
-              border: '1.5px solid rgba(124, 58, 237, 0.2)',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', marginBottom: '1rem' }}>
-                  <Sparkles size={20} color="var(--violet)" />
-                  <span style={{ fontSize: '1rem', fontWeight: 900, color: 'var(--text-main)' }}>Studio de Création IA</span>
-                </div>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {/* Generate QCM */}
-                  <button 
-                    onClick={() => navigate('/admin/ai-generator?type=exam')}
-                    style={{
-                      width: '100%',
-                      padding: '0.85rem 1rem',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(16, 185, 129, 0.3)',
-                      background: 'rgba(16, 185, 129, 0.1)',
-                      color: 'var(--emerald)',
-                      fontWeight: 800,
-                      fontSize: '0.85rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.6rem',
-                      transition: 'all 0.2s ease',
-                      textAlign: 'left'
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(16, 185, 129, 0.18)'; e.currentTarget.style.transform = 'translateX(4px)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)'; e.currentTarget.style.transform = 'translateX(0)'; }}
-                  >
-                    <FileText size={18} />
-                    <span style={{ flex: 1 }}>Générer un QCM / Examen</span>
-                    <ChevronRight size={15} />
-                  </button>
-
-                  {/* Generate Lesson */}
-                  <button 
-                    onClick={() => navigate('/admin/ai-generator?type=lesson')}
-                    style={{
-                      width: '100%',
-                      padding: '0.85rem 1rem',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(124, 58, 237, 0.3)',
-                      background: 'rgba(124, 58, 237, 0.1)',
-                      color: 'var(--violet)',
-                      fontWeight: 800,
-                      fontSize: '0.85rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.6rem',
-                      transition: 'all 0.2s ease',
-                      textAlign: 'left'
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124, 58, 237, 0.18)'; e.currentTarget.style.transform = 'translateX(4px)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124, 58, 237, 0.1)'; e.currentTarget.style.transform = 'translateX(0)'; }}
-                  >
-                    <BookOpen size={18} />
-                    <span style={{ flex: 1 }}>Générer une Fiche de Cours</span>
-                    <ChevronRight size={15} />
-                  </button>
-
-                  {/* Add Logbook Entry */}
-                  <button 
-                    onClick={() => navigate('/admin/logbook')}
-                    style={{
-                      width: '100%',
-                      padding: '0.85rem 1rem',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(245, 158, 11, 0.3)',
-                      background: 'rgba(245, 158, 11, 0.1)',
-                      color: 'var(--warning)',
-                      fontWeight: 800,
-                      fontSize: '0.85rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.6rem',
-                      transition: 'all 0.2s ease',
-                      textAlign: 'left'
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(245, 158, 11, 0.18)'; e.currentTarget.style.transform = 'translateX(4px)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(245, 158, 11, 0.1)'; e.currentTarget.style.transform = 'translateX(0)'; }}
-                  >
-                    <Plus size={18} />
-                    <span style={{ flex: 1 }}>Ajouter au Cahier de Textes</span>
-                    <ChevronRight size={15} />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        {/* ══════════════════════════════════════════════════════════════════════
-            SECTION 4 — RECENT LOGBOOK SESSIONS & LEVEL OVERVIEW
-        ══════════════════════════════════════════════════════════════════════ */}
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.4fr 1fr', gap: '1.5rem', marginBottom: '2.5rem' }}>
-          
-          {/* Recent Logbook Feed */}
-          <div className="glass-panel" style={{ padding: '1.75rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <ClipboardList size={20} color="#F59E0B" /> Cahier de Textes — Activités Récentes
-                </h3>
-                <p style={{ margin: '0.2rem 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>Dernières séances enregistrées pour la classe</p>
-              </div>
-              <button 
-                onClick={() => navigate('/admin/logbook')}
-                className="btn-outline"
-                style={{ fontSize: '0.78rem', fontWeight: 800, padding: '0.4rem 0.8rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.3rem', borderColor: 'var(--border)', color: 'var(--text-main)' }}
-              >
-                Voir tout <ArrowRight size={13} />
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {loading ? (
-                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', padding: '2rem 0' }}>Chargement du cahier...</div>
-              ) : recentEntries.length === 0 ? (
-                <div style={{ color: 'var(--text-subtle)', fontSize: '0.85rem', textAlign: 'center', padding: '2rem 0' }}>
-                  Aucune séance enregistrée récemment.
-                </div>
-              ) : (
-                recentEntries.map((entry, idx) => {
-                  const entryDate = new Date(entry.date);
-                  const typeInfo = getEntryTypeLabel(entry.type);
-                  const cls = classes.find(c => c.id === entry.classId);
-                  
-                  return (
-                    <div 
-                      key={entry.id || idx} 
-                      style={{ 
-                        padding: '0.85rem 1rem', 
-                        background: 'var(--bg-card)', 
-                        border: '1px solid var(--border)', 
-                        borderRadius: '12px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '1rem',
-                        transition: 'all 0.15s ease',
-                        cursor: 'pointer'
-                      }}
-                      onClick={() => navigate('/admin/logbook')}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-hover)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-card)'; }}
-                    >
-                      <div style={{ 
-                        minWidth: '50px', 
-                        textAlign: 'center', 
-                        padding: '0.35rem 0.25rem',
-                        borderRadius: '8px',
-                        background: 'rgba(59, 130, 246, 0.08)',
-                        border: '1px solid rgba(59, 130, 246, 0.15)'
-                      }}>
-                        <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-main)', lineHeight: 1 }}>{entryDate.getDate()}</div>
-                        <div style={{ fontSize: '0.62rem', fontWeight: 800, color: 'var(--text-subtle)', textTransform: 'uppercase', marginTop: '0.1rem' }}>
-                          {entryDate.toLocaleDateString('fr-FR', { month: 'short' })}
-                        </div>
-                      </div>
-
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.15rem' }}>
-                          <span style={{ fontWeight: 800, fontSize: '0.88rem', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {entry.title || 'Sans titre'}
-                          </span>
-                          <span style={{ fontSize: '0.65rem', fontWeight: 800, padding: '0.1rem 0.45rem', borderRadius: '6px', background: typeInfo.bg, color: typeInfo.color }}>
-                            {typeInfo.label}
-                          </span>
-                        </div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                          <FolderOpen size={11} /> {cls ? cls.name : 'Classe'}
-                          {entry.startTime && (
-                            <>
-                              <span>·</span>
-                              <Clock size={11} /> {entry.startTime} – {entry.endTime || '...'}
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-          {/* Level Overview Column */}
-          {levelBreakdown.length > 0 && (
-            <div className="glass-panel" style={{ padding: '1.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
-                <GraduationCap size={20} color="var(--violet)" />
-                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900, color: 'var(--text-main)' }}>Vue par Niveau Scolaire</h3>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                {levelBreakdown.map((level) => {
-                  return (
-                    <div 
-                      key={level.id} 
-                      style={{ 
-                        padding: '0.85rem 1rem', 
-                        borderRadius: '12px',
-                        background: 'var(--bg-card)', 
-                        border: '1px solid var(--border)',
-                        borderLeft: `4px solid ${level.color}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between'
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-main)' }}>{level.label}</div>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
-                          {level.classCount} classe{level.classCount > 1 ? 's' : ''} · {level.lessonCount} fiches · {level.examCount} QCM
-                        </div>
-                      </div>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 900, color: level.color, background: `${level.color}15`, padding: '0.2rem 0.55rem', borderRadius: '6px' }}>
-                        {level.short}
-                      </span>
                     </div>
                   );
                 })}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
+          {/* Studio IA Panel */}
+          <div className="dash-card dash-ai-card dash-card--delay-2">
+            <div className="dash-card__header">
+              <div>
+                <h3 className="dash-card__title">
+                  <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(113, 109, 242, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Sparkles size={18} style={{ color: 'var(--violet)' }} />
+                  </div>
+                  Studio de Création IA
+                </h3>
+                <p className="dash-card__subtitle">Production intelligente de ressources pédagogiques</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <button
+                className="dash-ai-btn dash-ai-btn--warning"
+                onClick={() => navigate('/admin/ai-generator?type=exam')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <GraduationCap size={20} />
+                  <span>Générer un QCM / Examen</span>
+                </div>
+                <ArrowUpRight size={15} style={{ opacity: 0.7 }} />
+              </button>
+
+              <button
+                className="dash-ai-btn dash-ai-btn--emerald"
+                onClick={() => navigate('/admin/ai-generator?type=lesson')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <FileText size={20} />
+                  <span>Générer une Fiche de Cours</span>
+                </div>
+                <ArrowUpRight size={15} style={{ opacity: 0.7 }} />
+              </button>
+
+              <button
+                className="dash-ai-btn dash-ai-btn--violet"
+                onClick={() => navigate('/admin/logbook')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <ClipboardList size={20} />
+                  <span>Ajouter une séance au cahier</span>
+                </div>
+                <ArrowUpRight size={15} style={{ opacity: 0.7 }} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── ROW 3: Logbook + Level Breakdown & Bilan Insights ── */}
+        <div className="dash-bento">
+
+          {/* Logbook Panel (Left Column) */}
+          <div className="dash-card dash-card--delay-3">
+            <div className="dash-card__header">
+              <div>
+                <h3 className="dash-card__title">
+                  <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(113, 109, 242, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <ClipboardList size={18} style={{ color: 'var(--violet)' }} />
+                  </div>
+                  Cahier de Textes — Séances récentes
+                </h3>
+                <p className="dash-card__subtitle">Historique des séances de cours et devoirs planifiés</p>
+              </div>
+              <button className="dash-card__action" onClick={() => navigate('/admin/logbook')}>
+                <span>Voir tout</span>
+                <ChevronRight size={12} />
+              </button>
+            </div>
+
+            {loading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                {[1,2,3,4].map(i => <div key={i} className="dash-skeleton" style={{ height: '52px' }} />)}
+              </div>
+            ) : recentEntries.length === 0 ? (
+              <div className="dash-empty">
+                <div className="dash-empty__icon"><BookOpen size={40} /></div>
+                <p className="dash-empty__text">Aucune séance enregistrée</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {recentEntries.map((e, i) => {
+                  const d = new Date(e.date);
+                  const cls = classes.find(c => c.id === e.classId);
+                  const typeLabel = getEntryTypeLabel(e.type);
+                  return (
+                    <div
+                      key={e.id || i}
+                      className="dash-feed-item"
+                      onClick={() => navigate('/admin/logbook')}
+                      style={{ animationDelay: `${0.08 + i * 0.08}s` }}
+                    >
+                      {/* Date badge */}
+                      <div className="dash-feed-item__date">
+                        <div className="dash-feed-item__day">{d.getDate()}</div>
+                        <div className="dash-feed-item__month">{MONTHS[d.getMonth()]?.slice(0, 3)}</div>
+                      </div>
+
+                      {/* Content */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.15rem' }}>
+                          <span style={{
+                            fontSize: '0.9rem',
+                            fontWeight: 800,
+                            color: 'var(--text-main)',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}>
+                            {e.title || 'Séance'}
+                          </span>
+                          <span
+                            className="dash-feed-item__type-badge"
+                            style={{
+                              background: typeLabel.color + '20',
+                              color: typeLabel.color,
+                              border: `1px solid ${typeLabel.color}35`,
+                              fontWeight: 800,
+                            }}
+                          >
+                            {typeLabel.label}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-subtle)' }}>
+                          {cls?.name || 'Classe'} • {d.getDate()} {MONTHS[d.getMonth()]}
+                        </div>
+                      </div>
+
+                      <ChevronRight size={15} style={{ color: 'var(--text-subtle)', flexShrink: 0 }} />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Right Column Container: Level Breakdown + Bilan Widget */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+            {/* Level Breakdown Panel */}
+            <div className="dash-card dash-card--delay-4">
+              <div className="dash-card__header">
+                <div>
+                  <h3 className="dash-card__title">
+                    <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(16, 185, 129, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <BarChart3 size={18} style={{ color: 'var(--emerald)' }} />
+                    </div>
+                    Répartition par Niveau
+                  </h3>
+                  <p className="dash-card__subtitle">Vue synthétique de l'architecture des cours</p>
+                </div>
+              </div>
+
+              {levelBreakdown.length === 0 ? (
+                <div className="dash-empty">
+                  <div className="dash-empty__icon"><Layers size={40} /></div>
+                  <p className="dash-empty__text">Aucune répartition disponible</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {levelBreakdown.map((lv, i) => (
+                    <div
+                      key={lv.id || i}
+                      className="dash-level-item"
+                      style={{
+                        '--level-color': LEVEL_COLORS[i % LEVEL_COLORS.length],
+                        animationDelay: `${0.1 + i * 0.1}s`,
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.15rem' }}>
+                          {lv.label}
+                        </div>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-subtle)' }}>
+                          {lv.classCount} classes • {lv.lessonCount} fiches • {lv.examCount} QCMs
+                        </div>
+                      </div>
+                      <span style={{
+                        fontSize: '0.78rem',
+                        fontWeight: 800,
+                        color: LEVEL_COLORS[i % LEVEL_COLORS.length],
+                        padding: '0.22rem 0.65rem',
+                        borderRadius: '8px',
+                        background: LEVEL_COLORS[i % LEVEL_COLORS.length] + '18',
+                        border: `1.5px solid ${LEVEL_COLORS[i % LEVEL_COLORS.length]}35`,
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+                        cursor: 'pointer',
+                      }}>
+                        {lv.short}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Bilan & Indicateurs Clés Panel (Fills empty bottom-right space) */}
+            <div className="dash-card dash-card--delay-5" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(113, 109, 242, 0.05) 100%)' }}>
+              <div className="dash-card__header" style={{ marginBottom: '0.85rem' }}>
+                <div>
+                  <h3 className="dash-card__title">
+                    <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(59, 130, 246, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Target size={18} style={{ color: '#3B82F6' }} />
+                    </div>
+                    Bilan & Activité
+                  </h3>
+                  <p className="dash-card__subtitle">Indicateurs de préparation et ressources</p>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.85rem' }}>
+                <div style={{
+                  padding: '0.75rem 0.85rem',
+                  borderRadius: '12px',
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
+                }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-subtle)', textTransform: 'uppercase' }}>Classes</div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--emerald)', marginTop: '0.1rem' }}>{totalClasses}</div>
+                </div>
+                <div style={{
+                  padding: '0.75rem 0.85rem',
+                  borderRadius: '12px',
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
+                }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-subtle)', textTransform: 'uppercase' }}>Ressources</div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--violet)', marginTop: '0.1rem' }}>{totalLessons + totalExams}</div>
+                </div>
+              </div>
+
+              <button
+                className="dash-card__action"
+                style={{ width: '100%', justifyContent: 'center', padding: '0.6rem 1rem', background: 'rgba(113, 109, 242, 0.08)', borderColor: 'rgba(113, 109, 242, 0.25)', color: 'var(--violet)' }}
+                onClick={() => navigate('/admin/classes')}
+              >
+                <Zap size={14} />
+                <span>Exporter le carnet Massar</span>
+              </button>
+            </div>
+
+          </div>
         </div>
 
       </div>

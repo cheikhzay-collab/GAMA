@@ -1,173 +1,193 @@
 // src/services/classService.js
-// Service for managing school classes and student assignments via Supabase or Local Companion API.
+// Service for managing school classes and student assignments with fail-safe persistence.
 
 import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
+
+const STORAGE_KEY = 'lconq_classes_db';
+
+const getLocalStorageClasses = () => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+const saveLocalStorageClasses = (classes) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(classes));
+  } catch (e) {
+    console.warn('[LocalStorage] Failed to save classes:', e);
+  }
+};
+
+const mapDBToClass = (row) => ({
+  id: row.id,
+  name: row.name,
+  level: row.level,
+  students: row.students || [],
+  studentCount: row.student_count || (row.students ? row.students.length : 0),
+  competitions: row.competitions || [],
+  competitionGrades: row.competition_grades || row.competitionGrades || {},
+  controls: row.controls || [],
+  grades: row.grades || {},
+  homework: row.homework || {},
+  language: row.language || 'fr',
+  program: row.program || [],
+  createdAt: row.created_at || row.createdAt
+});
 
 /**
  * Fetch all classes.
  */
 export const getAllClasses = async () => {
-  if (!supabase) {
+  if (supabase) {
     try {
-      const data = await localDb.get('/classes');
-      return data;
+      const { data, error } = await supabase
+        .from('classes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const mapped = data.map(mapDBToClass);
+        saveLocalStorageClasses(mapped);
+        return mapped;
+      }
     } catch (err) {
-      console.error('[LocalDB] Failed to fetch classes:', err);
-      return [];
+      console.warn('[Supabase] Failed to fetch classes:', err);
     }
   }
 
-  const { data, error } = await supabase
-    .from('classes')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('[Supabase] Failed to fetch classes:', error);
-    return [];
+  try {
+    const data = await localDb.get('/classes');
+    if (Array.isArray(data) && data.length > 0) {
+      const mapped = data.map(mapDBToClass);
+      saveLocalStorageClasses(mapped);
+      return mapped;
+    }
+  } catch (err) {
+    console.warn('[LocalDB] Companion server offline for classes, using local storage backup.');
   }
 
-  return data.map(row => ({
-    id: row.id,
-    name: row.name,
-    level: row.level,
-    students: row.students || [],
-    studentCount: row.student_count || (row.students ? row.students.length : 0),
-    competitions: row.competitions || [],
-    competitionGrades: row.competition_grades || row.competitionGrades || {},
-    controls: row.controls || [],
-    grades: row.grades || {},
-    homework: row.homework || {},
-    language: row.language || 'fr',
-    program: row.program || [],
-    createdAt: row.created_at
-  }));
+  const cache = getLocalStorageClasses();
+  return cache || [];
 };
 
 /**
  * Fetch a single class by ID.
  */
 export const getClassById = async (classId) => {
-  if (!supabase) {
-    try {
-      const list = await localDb.get('/classes');
-      return list.find(c => c.id === classId) || null;
-    } catch (err) {
-      console.error('[LocalDB] Failed to fetch class by ID:', err);
-      return null;
-    }
-  }
-
-  const { data, error } = await supabase
-    .from('classes')
-    .select('*')
-    .eq('id', classId)
-    .maybeSingle();
-
-  if (error) {
-    console.error('[Supabase] Failed to fetch class by ID:', error);
-    return null;
-  }
-  if (!data) return null;
-
-  return {
-    id: data.id,
-    name: data.name,
-    level: data.level,
-    studentCount: data.student_count || 0,
-    controls: data.controls || [],
-    grades: data.grades || {},
-    homework: data.homework || {},
-    language: data.language || 'fr',
-    program: data.program || [],
-    createdAt: data.created_at
-  };
+  const classes = await getAllClasses();
+  return classes.find(c => c.id === classId) || null;
 };
 
 /**
  * Add or update a class.
  */
 export const addClass = async (classData) => {
-  if (!supabase) {
+  const id = classData.id || 'CLASS-' + Math.random().toString(36).substring(2, 11).toUpperCase();
+  const now = new Date().toISOString();
+
+  const newClass = {
+    id,
+    name: classData.name,
+    level: classData.level,
+    students: classData.students || [],
+    studentCount: classData.studentCount || (classData.students ? classData.students.length : 0),
+    competitions: classData.competitions || [],
+    competitionGrades: classData.competitionGrades || {},
+    controls: classData.controls || [],
+    grades: classData.grades || {},
+    homework: classData.homework || {},
+    language: classData.language || 'fr',
+    program: classData.program || [],
+    createdAt: classData.createdAt || now
+  };
+
+  // 1. LocalStorage
+  const currentClasses = (await getAllClasses()).filter(c => c.id !== id);
+  currentClasses.unshift(newClass);
+  saveLocalStorageClasses(currentClasses);
+
+  // 2. Companion API
+  try {
+    await localDb.post('/classes', newClass);
+  } catch (err) {
+    console.warn('[LocalDB] Could not sync addClass to Companion server:', err.message);
+  }
+
+  // 3. Supabase
+  if (supabase) {
     try {
-      const newClass = {
-        id: classData.id || 'CLASS-' + Math.random().toString(36).substring(2, 11).toUpperCase(),
+      await supabase.from('classes').upsert({
+        id,
         name: classData.name,
         level: classData.level,
-        studentCount: classData.studentCount || 0,
-        controls: classData.controls || [],
-        grades: classData.grades || {},
-        homework: classData.homework || {},
-        language: classData.language || 'fr',
-        program: classData.program || [],
-        createdAt: classData.createdAt || new Date().toISOString()
-      };
-      await localDb.post('/classes', newClass);
-      return newClass.id;
+        student_count: newClass.studentCount,
+        students: newClass.students,
+        competitions: newClass.competitions,
+        competition_grades: newClass.competitionGrades,
+        controls: newClass.controls,
+        grades: newClass.grades,
+        homework: newClass.homework,
+        language: newClass.language,
+        program: newClass.program,
+        updated_at: now
+      });
     } catch (err) {
-      console.error('[LocalDB] Failed to add/update class:', err);
-      throw err;
+      console.warn('[Supabase] Could not sync addClass to Supabase:', err.message);
     }
   }
 
-  const { error } = await supabase
-    .from('classes')
-    .upsert({
-      id: classData.id,
-      name: classData.name,
-      level: classData.level,
-      student_count: classData.studentCount || 0,
-      controls: classData.controls || [],
-      grades: classData.grades || {},
-      homework: classData.homework || {},
-      language: classData.language || 'fr',
-      program: classData.program || [],
-      updated_at: new Date().toISOString()
-    });
-
-  if (error) {
-    console.error('[Supabase] Failed to add/update class:', error);
-    throw error;
-  }
-  return classData.id;
+  return id;
 };
 
 /**
  * Update specific fields on a class.
  */
 export const updateClass = async (classId, updates) => {
-  if (!supabase) {
+  const now = new Date().toISOString();
+
+  // 1. LocalStorage
+  const currentClasses = await getAllClasses();
+  const idx = currentClasses.findIndex(c => c.id === classId);
+  if (idx !== -1) {
+    currentClasses[idx] = {
+      ...currentClasses[idx],
+      ...updates,
+      updatedAt: now
+    };
+    saveLocalStorageClasses(currentClasses);
+  }
+
+  // 2. Companion API
+  try {
+    const list = await localDb.get('/classes');
+    const cls = list.find(c => c.id === classId);
+    if (cls) {
+      const merged = { ...cls, ...updates, updatedAt: now };
+      await localDb.post('/classes', merged);
+    }
+  } catch (err) {
+    console.warn('[LocalDB] Could not sync updateClass to Companion server:', err.message);
+  }
+
+  // 3. Supabase
+  if (supabase) {
     try {
-      const list = await localDb.get('/classes');
-      const cls = list.find(c => c.id === classId);
-      if (cls) {
-        const updated = {
-          ...cls,
-          ...updates,
-          updatedAt: new Date().toISOString()
-        };
-        await localDb.post('/classes', updated);
-      }
-      return classId;
+      await supabase.from('classes').update({
+        ...updates,
+        updated_at: now
+      }).eq('id', classId);
     } catch (err) {
-      console.error('[LocalDB] Failed to update class:', err);
-      throw err;
+      console.warn('[Supabase] Could not sync updateClass to Supabase:', err.message);
     }
   }
 
-  const { error } = await supabase
-    .from('classes')
-    .update({
-      ...updates,
-      updated_at: new Date().toISOString()
-    })
-    .eq('id', classId);
-
-  if (error) {
-    console.error('[Supabase] Failed to update class:', error);
-    throw error;
-  }
   return classId;
 };
 
@@ -175,25 +195,27 @@ export const updateClass = async (classId, updates) => {
  * Delete a class by ID.
  */
 export const deleteClass = async (classId) => {
-  if (!supabase) {
+  // 1. LocalStorage
+  const currentClasses = await getAllClasses();
+  const filtered = currentClasses.filter(c => c.id !== classId);
+  saveLocalStorageClasses(filtered);
+
+  // 2. Companion API
+  try {
+    await localDb.delete('/classes', classId);
+  } catch (err) {
+    console.warn('[LocalDB] Could not sync deleteClass to Companion server:', err.message);
+  }
+
+  // 3. Supabase
+  if (supabase) {
     try {
-      await localDb.delete('/classes', classId);
-      return true;
+      await supabase.from('classes').delete().eq('id', classId);
     } catch (err) {
-      console.error('[LocalDB] Failed to delete class:', err);
-      throw err;
+      console.warn('[Supabase] Could not sync deleteClass to Supabase:', err.message);
     }
   }
 
-  const { error } = await supabase
-    .from('classes')
-    .delete()
-    .eq('id', classId);
-
-  if (error) {
-    console.error('[Supabase] Failed to delete class:', error);
-    throw error;
-  }
   return true;
 };
 
@@ -227,7 +249,6 @@ export const recordStudentExamGrade = async (classId, studentMassar, examName, s
     displayScore = `${numericScore}/${total} (${score20}/20)`;
   }
 
-  // Map grade to all variations of student keys (massarCode, id, uppercase, lowercase)
   const studentKeys = new Set([
     studentMassar,
     studentMassar.toUpperCase(),
@@ -256,4 +277,3 @@ export const recordStudentExamGrade = async (classId, studentMassar, examName, s
   await updateClass(classId, { competitions, competitionGrades, controls, grades });
   return { examName, score: numericScore, totalQuestions: total, score20, displayScore };
 };
-

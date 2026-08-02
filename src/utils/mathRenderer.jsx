@@ -111,6 +111,17 @@ export const repairMathExpression = (latex) => {
     .replace(/\b([uvwn])0\b/g, '$1_0')
     .replace(/\b([uvw])p\b/g, '$1_p');
 
+  // 7. High quality vector, arrow, set, and operator repairs
+  repaired = repaired
+    .replace(/\\vec\{([a-zA-Z0-9]+)\}/g, '\\overrightarrow{$1}')
+    .replace(/(?<!\\)vec\{([a-zA-Z0-9]+)\}/g, '\\overrightarrow{$1}')
+    .replace(/==>/g, '\\implies')
+    .replace(/<=>/g, '\\iff')
+    .replace(/->/g, '\\to')
+    .replace(/\\rightarrow\b/g, '\\to')
+    .replace(/(?<![a-zA-Z\\])implies\b/g, '\\implies')
+    .replace(/(?<![a-zA-Z\\])iff\b/g, '\\iff');
+
   return repaired;
 };
 

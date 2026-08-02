@@ -215,9 +215,47 @@ const fileToBase64 = (file) => new Promise((resolve, reject) => {
   reader.readAsDataURL(file);
 });
 
-const SYSTEM_PROMPT = `Tu es un Professeur Agrégé de mathématiques, expert en manuels scolaires marocains (niveaux Tronc Commun, 1ère Bac, 2ème Bac — filières SM, PC/SVT, Arts, SGC).
-Tu analyses des fiches de cours, chapitres de manuel, ou séries d'exercices fournis en PDF ou image.
-Ton objectif UNIQUE est de produire un JSON structuré représentant FIDÈLEMENT et INTÉGRALEMENT le contenu pédagogique du document.
+const SYSTEM_PROMPT = `Tu es un Professeur Agrégé de mathématiques et Inspecteur Pédagogique, expert en manuels scolaires marocains (niveaux Tronc Commun, 1ère Bac, 2ème Bac — filières SM, PC/SVT, Arts, SGC).
+Tu analyses des fiches de cours, chapitres de manuel, séries d'exercices, devoirs surveillés ou épreuves d'examen fournis en PDF ou image.
+Ton objectif UNIQUE est de produire un JSON structuré représentant FIDÈLEMENT, INTÉGRALEMENT et INTELLIGEMMENT le contenu pédagogique du document.
+
+════════════════════════════════════════════════════════════
+🧠 DÉTECTION AUTOMATIQUE INTELLIGENTE DE NIVEAU, TYPE & BAREME DE NOTATION (POINTS)
+════════════════════════════════════════════════════════════
+⚠️ DIRECTIVES D'ANALYSE AUTOMATIQUE HAUTE INTELLIGENCE :
+
+1. DÉTECTION AUTOMATIQUE DU NIVEAU PÉDAGOGIQUE ("header.detected_level") :
+   - Analyse le titre, l'en-tête, les références officielles et le contenu pour identifier le niveau exact :
+     • "common_core_sci"  : Tronc Commun Scientifique (الجدع المشترك العلمي)
+     • "common_core_arts" : Tronc Commun Littéraire (الجدع المشترك الأدبي)
+     • "1bac_sci"         : 1ère Bac Sciences Expérimentales / Math (الأولى باك علوم تجريبية / رياضية)
+     • "1bac_arts"        : 1ère Bac Littéraire (الأولى باك آداب)
+     • "2bac_sm"          : 2ème Bac Sciences Mathématiques (الثانية باك علوم رياضية)
+     • "2bac_pc_svt"      : 2ème Bac Sciences Expérimentales PC/SVT (الثانية باك علوم تجريبية)
+     • "2bac_arts"        : 2ème Bac Lettres & Sciences Humaines (الثانية باك آداب)
+
+2. DÉTECTION AUTOMATIQUE DU TYPE DE DOCUMENT ("header.doc_type") :
+   - 'course'    : Fiche de cours, chapitre théorique, définitions, théorèmes.
+   - 'exercises' : Série d'exercices, travaux dirigés (TD), fiche de révision.
+   - 'homework'  : Devoir surveillé (DS), devoir à la maison (DM), contrôle continu, examen.
+   - 'concours'  : Épreuve de concours, annale d'examen national.
+
+3. EXTRACTION DU BARÈME DE NOTATION ET DES POINTS ("points" & "header.total_points") :
+   - Si le document est un devoir / contrôle / examen ou s'il contient des mentions de points (ex: (1.5 pts), (2 pts), (0.75 pt), [3 pts], (1,5 ن), (2 ن), (0,75 نقطة)) :
+     • Dans le "header", indique "total_points": 20 (ou la somme totale des points calculée).
+     • Pour CHAQUE exercice ou section (type 'exercise' ou 'activity') :
+       - Extrais le nombre numérique de points attribués dans le champ "points" (ex: 3.5, 2, 1.5, 0.75).
+       - Conserve aussi les mentions de points des sous-questions dans le texte de l'énoncé (ex: "**1.a.** (0.75 pt) Montrer que...").
+
+════════════════════════════════════════════════════════════
+RÈGLE ABSOLUE DE LANGUE — CONSERVATION RIGOUREUSE DE LA LANGUE D'ORIGINE
+════════════════════════════════════════════════════════════
+⚠️ INSTRUCTION DE LANGUE OBLIGATOIRE ET PRIORITAIRE :
+- Tu DOIS CONSERVER STRICTEMENT ET RIGOUREUSEMENT LA LANGUE ORIGINALE DU DOCUMENT SOURCE.
+- Si le fichier / PDF / image est rédigé en ARABE (titres, cours, définitions, théorèmes, activités, questions, exercices, remarques), TOUT LE JSON PRODUIT (titres, sous-titres, texte des items, solutions, remarques) DOIT ÊTRE EN ARABE ! Ne traduis JAMAIS un document arabe en français.
+- Si le fichier source est en FRANÇAIS, extrais l'intégralité en français.
+- Détermine la langue principale du document et indique-la dans le champ "language" du header/metadata JSON ("ar" ou "fr").
+- Ne traduis AUCUN mot, titre, définition ou énoncé d'une langue vers une autre. Le résultat doit respecter à 100% la langue d'origine du fichier importé !
 
 ════════════════════════════════════════════════════════════
 MODÈLE DE COURS MAROCAIN — STRUCTURE HIÉRARCHIQUE OBLIGATOIRE
@@ -450,18 +488,36 @@ JSON attendu (extrait) :
 ]
 
 ════════════════════════════════════════════════════════════
-RÈGLES LATEX ET NOTATION MAROCAINE OFFICIELLES
+🎯 DIRECTIVES EXIGENCES LATEX HAUTE QUALITÉ & SYMBOLISME RIGOUREUX
 ════════════════════════════════════════════════════════════
 
-1. VECTEURS : Toujours $\\overrightarrow{AB}$ (jamais \\vec{AB}). Produit vectoriel marocain: $\\overrightarrow{AB} \\wedge \\overrightarrow{AC}$.
-2. BARYCENTRE : $bar\\{(A;a);(B;b)\\}$ — accolades échappées dans JSON: $bar\\\\{(A;a);(B;b)\\\\}$
-3. NORME : $\\|\\overrightarrow{AB}\\|$ — dans JSON: $\\\\|\\\\overrightarrow{AB}\\\\|$
-4. DOUBLE BACKSLASH dans JSON : \\frac → \\\\frac, \\overrightarrow → \\\\overrightarrow, \\neq → \\\\neq, \\mathbb{N} → \\\\mathbb{N}
-5. FORMULES EN LIGNE : $...$  — FORMULES EN BLOC : $$...$$
-6. RETOURS À LA LIGNE dans les chaînes JSON : utilise \\n (un seul antislash-n littéral en JSON).
-7. POINTS PONDÉRÉS : $(A;a)$ et non $(A, a)$
-8. PGCD(a,b), $C_n^k = \\frac{n!}{k!(n-k)!}$, $P(A)$ — notations officielles marocaines.
-9. NE JAMAIS écrire \\nLe dans une chaîne — c'est \\n suivi de "Le". Si un retour à ligne précède un mot, écrire \\nMot.
+1. INTÉGRALES & CALCUL INTÉGRAL :
+   - Intégrale définie : $\int_{a}^{b} f(x) \, \mathrm{d}x$ (espace '\,' et différentielle '\mathrm{d}x')
+   - Crochet d'intégration : $\left[ F(x) \right]_{a}^{b} = F(b) - F(a)$
+   - Intégrale par parties : $\int_{a}^{b} u(x)v'(x) \, \mathrm{d}x = \left[ u(x)v(x) \right]_{a}^{b} - \int_{a}^{b} u'(x)v(x) \, \mathrm{d}x$
+
+2. LIMITES & ASYMPTOTES :
+   - Forme canonique : $\lim_{x \to a} f(x) = L$ et $\lim_{x \to \pm\infty} \frac{f(x)}{x} = l$
+   - Flèches de limite : toujours $\to$ (jamais -> ou \rightarrow)
+
+3. VECTEURS, NORMES & GÉOMÉTRIE (MAROC) :
+   - Flèche complète : $\overrightarrow{AB}$, $\overrightarrow{u}$ (jamais \vec{})
+   - Produit vectoriel officiel : $\overrightarrow{u} \wedge \overrightarrow{v}$ (symbole \wedge)
+   - Produit scalaire : $\overrightarrow{u} \cdot \overrightarrow{v}$ ou $\overrightarrow{AB} \cdot \overrightarrow{AC}$
+   - Norme : $\left\| \overrightarrow{AB} \right\|$ ou $\left\| \overrightarrow{u} \right\|$
+
+4. FRACTIONS ET PARENTHÈSES AUTOSIZE :
+   - Utiliser $\left( \dfrac{a}{b} \right)$, $\left[ ... \right]$, $\left\{ ... \right\}$ pour des formules aérées sans chevauchement.
+   - Utiliser $\dfrac{a}{b}$ pour les fractions principales en mode ligne.
+
+5. ENSEMBLES ET NOTATIONS :
+   - Ensembles officiels : $\mathbb{R}$, $\mathbb{N}$, $\mathbb{Z}$, $\mathbb{C}$, $\mathbb{Q}$, $\mathbb{R}^*$, $\mathbb{R}_+^*$
+   - Intervalles : $[a; b]$, $]a; b[$, $[a; +\infty[$ (avec point-virgule)
+   - Systèmes d'équations : $\begin{cases} ax + by = c \\ dx + ey = f \end{cases}$
+
+6. DOUBLE BACKSLASH DANS LE JSON :
+   - Dans toutes les chaînes JSON, échapper CHAQUE antislash LaTeX avec un double antislash (ex: \frac → \\frac, \overrightarrow → \\overrightarrow, \neq → \\neq).
+   - Formules en ligne: $...$ — Formules en bloc: $$...$$
 
 ════════════════════════════════════════════════════════════
 RÈGLES accent_text
@@ -489,10 +545,12 @@ SCHÉMA JSON OBLIGATOIRE
   "header": {
     "prep_title": "Titre de la série ou de la préparation si présent, sinon \"\"",
     "subject": "Matière (ex: Mathématiques)",
-    "fiche_title": "Titre du chapitre (ex: Barycentre)",
+    "fiche_title": "Titre du chapitre ou du devoir (ex: Devoir Surveillé N°1 ou Barycentre)",
     "teacher": "Nom du professeur si présent, sinon \"\"",
     "phone": "Téléphone si présent, sinon \"\"",
-    "doc_type": "'course' | 'homework' | 'exercises' | 'concours'"
+    "doc_type": "'course' | 'homework' | 'exercises' | 'concours'",
+    "detected_level": "'common_core_sci' | 'common_core_arts' | '1bac_sci' | '1bac_arts' | '2bac_sm' | '2bac_pc_svt' | '2bac_arts'",
+    "total_points": 20
   },
   "sections": [
     {
@@ -517,12 +575,13 @@ SCHÉMA JSON OBLIGATOIRE
     },
     {
       "id": "ex-1",
-      "section_header": "I. Grand titre correspondant",
-      "title": "**Application ① :**",
+      "section_header": "Exercice 1 : Calcul de limites",
+      "title": "**Exercice 1 :** (3,5 pts)",
       "type": "exercise",
-      "section_number": "I",
-      "content": "Énoncé complet de l'application ou exercice, questions sur des lignes séparées par \\n.",
-      "solution": "Solution détaillée étape par étape si mode résolution activé, sinon \"\".",
+      "points": 3.5,
+      "section_number": "1",
+      "content": "Énoncé complet de l'exercice avec barème de chaque sous-question.",
+      "solution": "Solution détaillée si disponible, sinon \"\"",
       "interactive_answers": []
     }
   ]
@@ -548,50 +607,7 @@ function useIsMobile() {
   return isMobile;
 }
 
-const normalizeLevel = (rawLevel) => {
-  if (!rawLevel) return '2bac_pc_svt';
-  const normalized = rawLevel.toLowerCase().trim();
-  
-  if (normalized.includes('common_core_sci') || normalized.includes('common-core-sci')) return 'common_core_sci';
-  if (normalized.includes('common_core_arts') || normalized.includes('common-core-arts')) return 'common_core_arts';
-  if (normalized.includes('1bac_sci') || normalized.includes('1bac-sci')) return '1bac_sci';
-  if (normalized.includes('1bac_arts') || normalized.includes('1bac-arts')) return '1bac_arts';
-  if (normalized.includes('2bac_sm') || normalized.includes('2bac-sm')) return '2bac_sm';
-  if (normalized.includes('2bac_pc_svt') || normalized.includes('2bac-pc-svt') || normalized.includes('2bac_pc/svt')) return '2bac_pc_svt';
-  if (normalized.includes('2bac_arts') || normalized.includes('2bac-arts')) return '2bac_arts';
-
-  if (normalized.includes('sm') || normalized.includes('math') || normalized.includes('رياضية')) {
-    return '2bac_sm';
-  }
-  if (normalized.includes('pc') || normalized.includes('svt') || normalized.includes('تجريبية')) {
-    return '2bac_pc_svt';
-  }
-  if (normalized.includes('2bac') || normalized.includes('ثانية باك')) {
-    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
-      return '2bac_arts';
-    }
-    return '2bac_pc_svt';
-  }
-  if (normalized.includes('1bac') || normalized.includes('أولى باك') || normalized.includes('1ère bac') || normalized.includes('première bac')) {
-    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
-      return '1bac_arts';
-    }
-    return '1bac_sci';
-  }
-  if (normalized.includes('commun') || normalized.includes('tc') || normalized.includes('مشترك')) {
-    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
-      return 'common_core_arts';
-    }
-    return 'common_core_sci';
-  }
-  
-  const validKeys = ['common_core_sci', 'common_core_arts', '1bac_sci', '1bac_arts', '2bac_sm', '2bac_pc_svt', '2bac_arts'];
-  if (validKeys.includes(rawLevel)) {
-    return rawLevel;
-  }
-  
-  return '2bac_pc_svt';
-};
+import { normalizeLevel } from '../utils/levelHelpers';
 
 export default function AdminLessonsImport({ onBack }) {
   const isMobile = useIsMobile();
@@ -613,9 +629,14 @@ export default function AdminLessonsImport({ onBack }) {
   const [claudeModel, setClaudeModel] = useState(() => localStorage.getItem('claudeModel') || 'claude-3-5-sonnet-20241022');
   const [proxyUrl, setProxyUrl] = useState(() => localStorage.getItem('claudeProxyUrl') || '');
 
-  const [deepseekKey, setDeepseekKey] = useState(() => localStorage.getItem('deepseekApiKey') || '');
+  const [deepseekKey, setDeepseekKey] = useState(() => localStorage.getItem('deepseekApiKey') || 'sk-12a7032f07d740348c607ef947a0a9f7');
   const [deepseekUrl, setDeepseekUrl] = useState(() => localStorage.getItem('deepseekApiUrl') || 'https://api.deepseek.com');
-  const [deepseekModel, setDeepseekModel] = useState(() => localStorage.getItem('deepseekModel') || 'deepseek-chat');
+  const [deepseekModel, setDeepseekModel] = useState(() => {
+    const m = localStorage.getItem('deepseekModel') || 'deepseek-v4-pro';
+    if (m === 'deepseek-reasoner' || m === 'deepseek-r1') return 'deepseek-v4-pro';
+    if (m === 'deepseek-chat' || m === 'deepseek-v3') return 'deepseek-v4-flash';
+    return m;
+  });
   
   const [uploadFile, setUploadFile] = useState(null);
   const [fileName, setFileName] = useState('');
@@ -638,6 +659,8 @@ export default function AdminLessonsImport({ onBack }) {
   const [selectedLevel, setSelectedLevel] = useState('2bac_pc_svt');
   const [docType, setDocType] = useState('course');
   const [docLanguage, setDocLanguage] = useState('fr');
+  const [topics, setTopics] = useState([]);
+  const [totalPoints, setTotalPoints] = useState(20);
 
   // Load API key from settings if updated
   useEffect(() => {
@@ -650,7 +673,13 @@ export default function AdminLessonsImport({ onBack }) {
       setProxyUrl(localStorage.getItem('claudeProxyUrl') || '');
       setDeepseekKey(localStorage.getItem('deepseekApiKey') || '');
       setDeepseekUrl(localStorage.getItem('deepseekApiUrl') || 'https://api.deepseek.com');
-      setDeepseekModel(localStorage.getItem('deepseekModel') || 'deepseek-chat');
+      const rawDs = localStorage.getItem('deepseekModel') || 'deepseek-v4-pro';
+      const dsModel = (rawDs === 'deepseek-reasoner' || rawDs === 'deepseek-r1')
+        ? 'deepseek-v4-pro'
+        : (rawDs === 'deepseek-chat' || rawDs === 'deepseek-v3')
+          ? 'deepseek-v4-flash'
+          : rawDs;
+      setDeepseekModel(dsModel);
     };
     window.addEventListener('storage', sync);
     return () => window.removeEventListener('storage', sync);
@@ -682,8 +711,8 @@ export default function AdminLessonsImport({ onBack }) {
       : SYSTEM_PROMPT + NO_SOLUTION_ADDENDUM;
 
     const userText = solveSolutions
-      ? "Transcris et extrais l'intégralité absolue de ce document. Analyse chaque paragraphe, formule et exercice. Ne résume rien, ne laisse aucun élément de côté, et génère le JSON complet selon le schéma exigé."
-      : "Extrais et structure FIDÈLEMENT tout le contenu. N'oublie aucun titre, définition, théorème, propriété, remarque, activité ou exercice. IMPORTANT : Laisse le champ \"solution\" vide (\"\") pour chaque exercice et \"interactive_answers\" comme tableau vide []. Ne résous rien.";
+      ? "Transcris et extrais l'intégralité absolue de ce document DANS SA LANGUE D'ORIGINE (si le document est en arabe, extrais TOUT en arabe sans traduire en français). Analyse chaque paragraphe, formule et exercice. Ne résume rien, ne laisse aucun élément de côté, et génère le JSON complet selon le schéma exigé."
+      : "Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le document est en arabe, extrais TOUT en arabe sans traduire en français). N'oublie aucun titre, définition, théorème, propriété, remarque, activité ou exercice. IMPORTANT : Laisse le champ \"solution\" vide (\"\") pour chaque exercice et \"interactive_answers\" comme tableau vide []. Ne résous rien.";
 
     const payload = {
       contents: [
@@ -758,8 +787,8 @@ export default function AdminLessonsImport({ onBack }) {
       : SYSTEM_PROMPT + NO_SOLUTION_ADDENDUM;
 
     const userText = solveSolutions
-      ? "Transcris et extrais l'intégralité absolue de ce document. Analyse chaque paragraphe, formule et exercice. Ne résume rien, ne laisse aucun élément de côté, et génère le JSON complet selon le schéma exigé."
-      : "Extrais et structure FIDÈLEMENT tout le contenu. N'oublie aucun titre, définition, théorème, propriété, remarque, activité ou exercice. IMPORTANT : Laisse le champ \"solution\" vide (\"\") pour chaque exercice et \"interactive_answers\" comme tableau vide []. Ne résous rien.";
+      ? "Transcris et extrais l'intégralité absolue de ce document DANS SA LANGUE D'ORIGINE (si le document est en arabe, extrais TOUT en arabe sans traduire en français). Analyse chaque paragraphe, formule et exercice. Ne résume rien, ne laisse aucun élément de côté, et génère le JSON complet selon le schéma exigé."
+      : "Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le document est en arabe, extrais TOUT en arabe sans traduire en français). N'oublie aucun titre, définition, théorème, propriété, remarque, activité ou exercice. IMPORTANT : Laisse le champ \"solution\" vide (\"\") pour chaque exercice et \"interactive_answers\" comme tableau vide []. Ne résous rien.";
 
     const res = await fetch(endpoint, {
       method: 'POST',
@@ -827,7 +856,12 @@ export default function AdminLessonsImport({ onBack }) {
   };
 
   const fetchDeepSeekWithText = async (pdfText) => {
-    const modelToUse = deepseekModel || 'deepseek-chat';
+    const rawModel = deepseekModel || 'deepseek-v4-pro';
+    const modelToUse = (rawModel === 'deepseek-reasoner' || rawModel === 'deepseek-r1')
+      ? 'deepseek-v4-pro'
+      : (rawModel === 'deepseek-chat' || rawModel === 'deepseek-v3')
+        ? 'deepseek-v4-flash'
+        : rawModel;
     const cleanUrl = deepseekUrl.trim().replace(/\/$/, '');
     const endpoint = `${cleanUrl}/v1/chat/completions`;
 
@@ -849,11 +883,11 @@ export default function AdminLessonsImport({ onBack }) {
       ? `TEXTE DU DOCUMENT :
 ${pdfText}
 
-Transcris et extrais l'intégralité absolue de ce texte. Analyse chaque paragraphe, formule et exercice. Ne résume rien, ne laisse aucun élément de côté, et génère le JSON complet selon le schéma exigé.`
+Transcris et extrais l'intégralité absolue de ce texte DANS SA LANGUE D'ORIGINE (si le document est en arabe, extrais TOUT en arabe sans traduire en français). Analyse chaque paragraphe, formule et exercice. Ne résume rien, ne laisse aucun élément de côté, et génère le JSON complet selon le schéma exigé.`
       : `TEXTE DU DOCUMENT :
 ${pdfText}
 
-Extrais et structure FIDÈLEMENT tout le contenu. N'oublie aucun titre, définition, théorème, propriété, remarque, activité ou exercice.
+Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le document est en arabe, extrais TOUT en arabe sans traduire en français). N'oublie aucun titre, définition, théorème, propriété, remarque, activité ou exercice.
 IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "interactive_answers" comme tableau vide []. Ne résous rien.`;
 
     const payload = {
@@ -862,7 +896,7 @@ IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "intera
         { role: "system", content: systemContent },
         { role: "user",   content: userContent }
       ],
-      response_format: modelToUse === 'deepseek-chat' ? { type: 'json_object' } : undefined,
+      response_format: !modelToUse.includes('reasoner') ? { type: 'json_object' } : undefined,
       temperature: 0.1
     };
 
@@ -1002,26 +1036,37 @@ IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "intera
 
       console.log('[Extraction Response]:', parsed);
 
-      // Populate form state
-      setFicheTitle(parsed.header.fiche_title || '');
-      setSubject(parsed.header.subject || 'Algèbre');
-      setPrepTitle(parsed.header.prep_title || 'Préparation aux concours');
-      setTeacher(parsed.header.teacher || '');
-      setPhone(parsed.header.phone || '');
-      const mappedSections = (parsed.sections || []).map(sec => {
+      const header = parsed?.header || {};
+      const rawSections = Array.isArray(parsed) ? parsed : (parsed?.sections || []);
+
+      // Populate form state safely
+      setFicheTitle(header.fiche_title || header.title || '');
+      setSubject(header.subject || 'Mathématiques');
+      setPrepTitle(header.prep_title || 'Préparation aux concours');
+      setTeacher(header.teacher || '');
+      setPhone(header.phone || '');
+      setTopics(Array.isArray(header.topics) ? header.topics : []);
+      if (header.total_points) setTotalPoints(header.total_points);
+
+      const detectedLvl = header.detected_level || header.level;
+      if (detectedLvl) {
+        setSelectedLevel(normalizeLevel(detectedLvl));
+      }
+      setDocType(header.doc_type || 'course');
+
+      const mappedSections = rawSections.map(sec => {
         const hasAr = /[\u0600-\u06FF]/.test((sec.title || '') + ' ' + (sec.content || '') + ' ' + (sec.solution || '') + ' ' + (sec.items || []).map(it => it.text || '').join(' '));
         return {
           ...sec,
+          points: sec.points !== undefined && sec.points !== null ? sec.points : '',
           language: sec.language || (hasAr ? 'ar' : 'fr')
         };
       });
       setSections(mappedSections);
-      setSelectedLevel(normalizeLevel(parsed.header.level));
-      setDocType(parsed.header.doc_type || 'course');
-      const isAr = /[\u0600-\u06FF]/.test((parsed.header.fiche_title || '') + ' ' + (parsed.header.subject || ''));
-      setDocLanguage(parsed.metadata?.language || (isAr ? 'ar' : 'fr'));
+      const isAr = /[\u0600-\u06FF]/.test((header.fiche_title || '') + ' ' + (header.subject || ''));
+      setDocLanguage(parsed?.metadata?.language || (isAr ? 'ar' : 'fr'));
       
-      const numMatch = (parsed.header.fiche_title || '').match(/Fiche\s*(\d+)/i);
+      const numMatch = (header.fiche_title || '').match(/Fiche\s*(\d+)/i);
       if (numMatch) setChapterNumber(numMatch[1]);
 
       clearInterval(progressInterval);
@@ -1330,8 +1375,8 @@ IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "intera
                   value={deepseekModel}
                   onChange={e => { setDeepseekModel(e.target.value); localStorage.setItem('deepseekModel', e.target.value); }}
                 >
-                  <option value="deepseek-chat">deepseek-chat (V3 - Rapide/Éco)</option>
-                  <option value="deepseek-reasoner">deepseek-reasoner (R1 - Réflexion)</option>
+                  <option value="deepseek-v4-pro">deepseek-v4-pro (R1 - Réflexion / Raisonnement)</option>
+                  <option value="deepseek-v4-flash">deepseek-v4-flash (Flash - Rapide & Économique)</option>
                 </select>
               ) : (
                 <select
@@ -1687,7 +1732,7 @@ IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "intera
                   </div>
 
                   {/* Section Metadata Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '80px 1.5fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '80px 100px 1.5fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
                     <div>
                       <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>N° Section</label>
                       <input 
@@ -1699,6 +1744,19 @@ IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "intera
                         style={{ padding: '0.35rem', fontSize: '0.85rem' }}
                       />
                     </div>
+
+                    <div>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--amber)', fontWeight: 800 }}>⭐ Points</label>
+                      <input 
+                        type="text" 
+                        className="input-control" 
+                        value={sec.points !== undefined && sec.points !== null ? sec.points : ''} 
+                        onChange={e => handleUpdateSection(secIdx, 'points', e.target.value)}
+                        placeholder="Ex: 3.5"
+                        style={{ padding: '0.35rem', fontSize: '0.85rem', borderColor: 'var(--amber)', fontWeight: 800 }}
+                      />
+                    </div>
+
                     <div>
                       <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>En-tête de Section Pill (ex: Résumé : Suites Numériques)</label>
                       <input 
@@ -1746,6 +1804,7 @@ IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "intera
                             <option value="highlight_box">Formule (Encadré)</option>
                             <option value="notation_grid">Grille de Notations</option>
                             <option value="table">Tableau Comparatif</option>
+                            <option value="image">🖼️ Figure / Image (شكل/مبيان)</option>
                           </select>
 
                           {item.type === 'notation_grid' ? (
@@ -1836,6 +1895,77 @@ IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "intera
                                   style={{ padding: '0.35rem', fontSize: '0.8rem' }}
                                 />
                               </div>
+                            </div>
+                          ) : item.type === 'image' ? (
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.6rem', background: 'rgba(255,255,255,0.01)', padding: '0.75rem', borderRadius: '8px', border: '1px dashed var(--border)' }}>
+                              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                                <input
+                                  type="text"
+                                  className="input-control"
+                                  placeholder="رابط الصورة / URL de l'image (ex: https://...)"
+                                  value={item.url || ''}
+                                  onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'url', e.target.value)}
+                                  style={{ flex: 1, padding: '0.35rem', fontSize: '0.8rem' }}
+                                />
+                                <label className="btn-outline" style={{ fontSize: '0.75rem', padding: '0.35rem 0.6rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap' }}>
+                                  📁 رفع صورة
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    onChange={e => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        const reader = new FileReader();
+                                        reader.onload = ev => {
+                                          handleUpdateContentItem(secIdx, itemIdx, 'url', ev.target.result);
+                                        };
+                                        reader.readAsDataURL(file);
+                                      }
+                                    }}
+                                  />
+                                </label>
+                              </div>
+                              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                  <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>📐 الحجم:</label>
+                                  <select
+                                    className="input-control"
+                                    value={item.width_pct || 100}
+                                    onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'width_pct', parseInt(e.target.value))}
+                                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                                  >
+                                    <option value={100}>100% (كامل العرض)</option>
+                                    <option value={90}>90% (كبير جداً)</option>
+                                    <option value={80}>80% (كبير)</option>
+                                    <option value={70}>70% (متوسط)</option>
+                                    <option value={50}>50% (نصف العرض)</option>
+                                  </select>
+                                </div>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                  <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>📍 المحاذاة:</label>
+                                  <select
+                                    className="input-control"
+                                    value={item.align || 'center'}
+                                    onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'align', e.target.value)}
+                                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                                  >
+                                    <option value="center">الوسط (Center)</option>
+                                    <option value="right">اليمين (Right)</option>
+                                    <option value="left">اليسار (Left)</option>
+                                  </select>
+                                </div>
+                              </div>
+
+                              <input
+                                type="text"
+                                className="input-control"
+                                placeholder="عنوان الشكل / Légende (ex: Figure 1 — Courbes représentatives de f(x) et g(x))"
+                                value={item.alt || ''}
+                                onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'alt', e.target.value)}
+                                style={{ padding: '0.35rem', fontSize: '0.8rem' }}
+                              />
                             </div>
                           ) : (
                             <textarea

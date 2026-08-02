@@ -30,32 +30,34 @@ function SignTableViewer({ altText }) {
   // Case A: Sign of ax + b
   if (alt.includes('ax+b') || alt.includes('ax + b') || (alt.includes('signe') && (alt.includes('1er degré') || alt.includes('1-er degré') || alt.includes('1er degre')))) {
     return (
-      <div style={{ margin: '1rem 0', padding: '1.15rem', borderRadius: '14px', background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', width: '100%' }}>
-        <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--violet)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+      <div style={{ margin: '1.2rem 0', padding: '1.25rem', borderRadius: '16px', background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', width: '100%' }}>
+        <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--violet)', marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           📊 Tableaux de signe de f(x) = ax + b (a ≠ 0)
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.2rem' }}>
           {/* Case a > 0 */}
           <div style={{ overflowX: 'auto' }}>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--emerald)', marginBottom: '0.35rem' }}>Premier cas : a &gt; 0</div>
-            <table className="sheet-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.85rem' }}>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#10B981', marginBottom: '0.4rem' }}>Premier cas : a &gt; 0</div>
+            <table className="sheet-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.88rem' }}>
               <thead>
                 <tr style={{ background: 'rgba(124, 58, 237, 0.08)' }}>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$x$')}</th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\infty$')}</th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\frac{b}{a}$')}</th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$+\\infty$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$x$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\infty$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\frac{b}{a}$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$+\\infty$')}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'var(--bg-glass)' }}>{renderWithMath('$ax+b$')}</td>
                   <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
-                  <td style={{ padding: '0.6rem', color: '#EF4444', fontWeight: 800, border: '1px solid var(--border)' }}>−</td>
-                  <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'rgba(245,158,11,0.1)' }}>0</td>
-                  <td style={{ padding: '0.6rem', color: '#10B981', fontWeight: 800, border: '1px solid var(--border)' }}>+</td>
+                  <td style={{ padding: '0.6rem', color: '#EF4444', fontWeight: 900, border: '1px solid var(--border)', fontSize: '1.1rem' }}>−</td>
+                  <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>
+                    <span style={{ background: 'linear-gradient(135deg, #fef3c7, #fde68a)', color: '#92400e', border: '1px solid #fcd34d', padding: '2px 7px', borderRadius: '4px', fontWeight: 900, fontSize: '0.82rem', display: 'inline-block' }}>0</span>
+                  </td>
+                  <td style={{ padding: '0.6rem', color: '#10B981', fontWeight: 900, border: '1px solid var(--border)', fontSize: '1.1rem' }}>+</td>
                   <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
                 </tr>
               </tbody>
@@ -64,25 +66,27 @@ function SignTableViewer({ altText }) {
 
           {/* Case a < 0 */}
           <div style={{ overflowX: 'auto' }}>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--warning)', marginBottom: '0.35rem' }}>Deuxième cas : a &lt; 0</div>
-            <table className="sheet-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.85rem' }}>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#F59E0B', marginBottom: '0.4rem' }}>Deuxième cas : a &lt; 0</div>
+            <table className="sheet-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.88rem' }}>
               <thead>
                 <tr style={{ background: 'rgba(124, 58, 237, 0.08)' }}>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$x$')}</th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\infty$')}</th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\frac{b}{a}$')}</th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$+\\infty$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$x$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\infty$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\frac{b}{a}$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$+\\infty$')}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'var(--bg-glass)' }}>{renderWithMath('$ax+b$')}</td>
                   <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
-                  <td style={{ padding: '0.6rem', color: '#10B981', fontWeight: 800, border: '1px solid var(--border)' }}>+</td>
-                  <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'rgba(245,158,11,0.1)' }}>0</td>
-                  <td style={{ padding: '0.6rem', color: '#EF4444', fontWeight: 800, border: '1px solid var(--border)' }}>−</td>
+                  <td style={{ padding: '0.6rem', color: '#10B981', fontWeight: 900, border: '1px solid var(--border)', fontSize: '1.1rem' }}>+</td>
+                  <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>
+                    <span style={{ background: 'linear-gradient(135deg, #fef3c7, #fde68a)', color: '#92400e', border: '1px solid #fcd34d', padding: '2px 7px', borderRadius: '4px', fontWeight: 900, fontSize: '0.82rem', display: 'inline-block' }}>0</span>
+                  </td>
+                  <td style={{ padding: '0.6rem', color: '#EF4444', fontWeight: 900, border: '1px solid var(--border)', fontSize: '1.1rem' }}>−</td>
                   <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
                 </tr>
               </tbody>
@@ -96,28 +100,28 @@ function SignTableViewer({ altText }) {
   // Case B: Sign of ax^2 + bx + c
   if (alt.includes('ax^2') || alt.includes('ax2') || alt.includes('delta') || alt.includes('trinôme') || alt.includes('trinome') || alt.includes('2nd degré') || alt.includes('2ème degré')) {
     return (
-      <div style={{ margin: '1rem 0', padding: '1.15rem', borderRadius: '14px', background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', width: '100%' }}>
-        <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--emerald)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+      <div style={{ margin: '1.2rem 0', padding: '1.25rem', borderRadius: '16px', background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', width: '100%' }}>
+        <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#10B981', marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           📊 Tableaux de signe du trinôme f(x) = ax² + bx + c (a ≠ 0)
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
           
           {/* Delta > 0 */}
           <div style={{ overflowX: 'auto' }}>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--violet)', marginBottom: '0.35rem' }}>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--violet)', marginBottom: '0.4rem' }}>
               {renderWithMath('1er cas : $\\Delta > 0$ ($x_1 < x_2$ deux racines distinctes)')}
             </div>
-            <table className="sheet-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.85rem' }}>
+            <table className="sheet-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.88rem' }}>
               <thead>
                 <tr style={{ background: 'rgba(124, 58, 237, 0.08)' }}>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$x$')}</th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\infty$')}</th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$x_1$')}</th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$x_2$')}</th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$+\\infty$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$x$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\infty$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$x_1$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$x_2$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$+\\infty$')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -125,9 +129,13 @@ function SignTableViewer({ altText }) {
                   <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'var(--bg-glass)' }}>{renderWithMath('$ax^2+bx+c$')}</td>
                   <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
                   <td style={{ padding: '0.6rem', fontWeight: 700, border: '1px solid var(--border)' }}>Signe de {renderWithMath('$a$')}</td>
-                  <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'rgba(245,158,11,0.1)' }}>0</td>
-                  <td style={{ padding: '0.6rem', fontWeight: 700, color: 'var(--violet)', border: '1px solid var(--border)' }}>Signe de {renderWithMath('$-a$')}</td>
-                  <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'rgba(245,158,11,0.1)' }}>0</td>
+                  <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>
+                    <span style={{ background: 'linear-gradient(135deg, #fef3c7, #fde68a)', color: '#92400e', border: '1px solid #fcd34d', padding: '2px 7px', borderRadius: '4px', fontWeight: 900, fontSize: '0.82rem', display: 'inline-block' }}>0</span>
+                  </td>
+                  <td style={{ padding: '0.6rem', fontWeight: 800, color: 'var(--violet)', border: '1px solid var(--border)' }}>Signe de {renderWithMath('$-a$')}</td>
+                  <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>
+                    <span style={{ background: 'linear-gradient(135deg, #fef3c7, #fde68a)', color: '#92400e', border: '1px solid #fcd34d', padding: '2px 7px', borderRadius: '4px', fontWeight: 900, fontSize: '0.82rem', display: 'inline-block' }}>0</span>
+                  </td>
                   <td style={{ padding: '0.6rem', fontWeight: 700, border: '1px solid var(--border)' }}>Signe de {renderWithMath('$a$')}</td>
                   <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
                 </tr>
@@ -137,18 +145,18 @@ function SignTableViewer({ altText }) {
 
           {/* Delta = 0 */}
           <div style={{ overflowX: 'auto' }}>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--emerald)', marginBottom: '0.35rem' }}>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#10B981', marginBottom: '0.4rem' }}>
               {renderWithMath('2ème cas : $\\Delta = 0$ ($x_0 = -\\frac{b}{2a}$ racine double)')}
             </div>
-            <table className="sheet-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.85rem' }}>
+            <table className="sheet-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.88rem' }}>
               <thead>
                 <tr style={{ background: 'rgba(16, 185, 129, 0.08)' }}>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$x$')}</th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\infty$')}</th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$x_0$')}</th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$+\\infty$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$x$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\infty$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$x_0$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$+\\infty$')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -156,7 +164,9 @@ function SignTableViewer({ altText }) {
                   <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'var(--bg-glass)' }}>{renderWithMath('$ax^2+bx+c$')}</td>
                   <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
                   <td style={{ padding: '0.6rem', fontWeight: 700, border: '1px solid var(--border)' }}>Signe de {renderWithMath('$a$')}</td>
-                  <td style={{ padding: '0.6rem', fontWeight: 800, border: '1px solid var(--border)', background: 'rgba(245,158,11,0.1)' }}>0</td>
+                  <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>
+                    <span style={{ background: 'linear-gradient(135deg, #fef3c7, #fde68a)', color: '#92400e', border: '1px solid #fcd34d', padding: '2px 7px', borderRadius: '4px', fontWeight: 900, fontSize: '0.82rem', display: 'inline-block' }}>0</span>
+                  </td>
                   <td style={{ padding: '0.6rem', fontWeight: 700, border: '1px solid var(--border)' }}>Signe de {renderWithMath('$a$')}</td>
                   <td style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></td>
                 </tr>
@@ -166,16 +176,16 @@ function SignTableViewer({ altText }) {
 
           {/* Delta < 0 */}
           <div style={{ overflowX: 'auto' }}>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--warning)', marginBottom: '0.35rem' }}>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#F59E0B', marginBottom: '0.4rem' }}>
               {renderWithMath('3ème cas : $\\Delta < 0$ (aucune racine réelle)')}
             </div>
-            <table className="sheet-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.85rem' }}>
+            <table className="sheet-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.88rem' }}>
               <thead>
                 <tr style={{ background: 'rgba(245, 158, 11, 0.08)' }}>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$x$')}</th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\infty$')}</th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}></th>
-                  <th style={{ padding: '0.5rem', border: '1px solid var(--border)' }}>{renderWithMath('$+\\infty$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$x$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$-\\infty$')}</th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}></th>
+                  <th style={{ padding: '0.6rem', border: '1px solid var(--border)' }}>{renderWithMath('$+\\infty$')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -315,11 +325,11 @@ const renderHomeworkBody = (text, isArabicMode, arabicFont, renderWithMath, secI
     mergedLines.push(lines[i]);
   }
 
-  // Regex to detect points: (1,5 pts), (1 pt), (0.5 ن), (2 points)
   const pointsRegex = /\(\s*([\d.,]+)\s*(?:pts?|points?|\u0646|\u0646\u0642\u0637\u0629?|\u0646\u0642\u0637)\s*\)/i;
   const parenthesizedNumRegex = /^(\s*(?:\d+|[a-zA-Z])[.)]\s*)\(([\d.,]+)\)/;
+  const isSubQRegex = /^(\s*(?:\d+|[a-zA-Z])[.)]\s*)/;
 
-  const rows = [];
+  const parsedItems = [];
   mergedLines.forEach((line, idx) => {
     let cleanLine = line.trim();
     if (!cleanLine) return;
@@ -347,53 +357,144 @@ const renderHomeworkBody = (text, isArabicMode, arabicFont, renderWithMath, secI
       displayPoints = displayPoints.slice(1, -1);
     }
 
-    rows.push(
-      <div key={idx} className="homework-row">
-        <div className="homework-bareme-cell" style={{ position: 'relative' }}>
-          <input
-            type="text"
-            className="homework-bareme-input no-print"
-            value={displayPoints}
-            onChange={(e) => onPointsChange(secId, idx, e.target.value)}
-            placeholder="..."
+    const isSubQ = isSubQRegex.test(cleanLine);
+    parsedItems.push({
+      idx,
+      cleanLine,
+      pointsStr,
+      displayPoints,
+      isSubQ
+    });
+  });
+
+  const blocks = [];
+  let i = 0;
+  while (i < parsedItems.length) {
+    const item = parsedItems[i];
+    if (item.pointsStr || !item.isSubQ) {
+      const block = { headerItem: item, subItems: [] };
+      i++;
+      while (i < parsedItems.length && parsedItems[i].isSubQ && !parsedItems[i].pointsStr) {
+        block.subItems.push(parsedItems[i]);
+        i++;
+      }
+      blocks.push(block);
+    } else {
+      const block = { headerItem: null, subItems: [] };
+      while (i < parsedItems.length && parsedItems[i].isSubQ && !parsedItems[i].pointsStr) {
+        block.subItems.push(parsedItems[i]);
+        i++;
+      }
+      if (block.subItems.length === 0) {
+        block.subItems.push(item);
+        i++;
+      }
+      blocks.push(block);
+    }
+  }
+
+  const rows = blocks.map((b, bIdx) => {
+    const ptsStr = b.headerItem ? b.headerItem.pointsStr : '';
+    const displayPts = b.headerItem ? b.headerItem.displayPoints : '';
+    const hIdx = b.headerItem ? b.headerItem.idx : (b.subItems[0]?.idx || bIdx);
+
+    const headerContent = b.headerItem ? (
+      <div style={{ fontWeight: 700 }}>
+        {isDirectEdit ? (
+          <textarea
+            className="homework-content-textarea"
+            value={b.headerItem.cleanLine}
+            onChange={(e) => onContentChange(secId, hIdx, e.target.value)}
             style={{
               width: '100%',
-              border: 'none',
-              background: 'transparent',
-              textAlign: 'center',
-              fontWeight: 700,
-              fontSize: '0.9rem',
-              color: '#005086',
-              outline: 'none',
-              padding: '0.15rem'
+              border: '1px solid rgba(0, 80, 134, 0.2)',
+              borderRadius: '4px',
+              background: '#fff',
+              padding: '0.4rem',
+              fontSize: '0.95rem',
+              color: '#1a202c',
+              fontFamily: isArabicMode ? arabicFont : 'inherit',
+              resize: 'vertical',
+              minHeight: '2.5rem',
+              direction: isArabicMode ? 'rtl' : 'ltr',
+              textAlign: isArabicMode ? 'right' : 'left'
             }}
           />
-          <span className="print-only" style={{ fontWeight: 700, fontSize: '0.9rem' }}>{pointsStr}</span>
+        ) : (
+          renderWithMath(b.headerItem.cleanLine)
+        )}
+      </div>
+    ) : null;
+
+    let subquestionsContent = null;
+    if (b.subItems.length >= 2) {
+      subquestionsContent = (
+        <div className="homework-subquestions-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.2rem', marginTop: '0.4rem' }}>
+          {b.subItems.map((si) => (
+            <div key={si.idx} className="homework-subq-item" style={{ padding: '0.15rem 0' }}>
+              {isDirectEdit ? (
+                <textarea
+                  className="homework-content-textarea"
+                  value={si.cleanLine}
+                  onChange={(e) => onContentChange(secId, si.idx, e.target.value)}
+                  style={{
+                    width: '100%', border: '1px solid rgba(0, 80, 134, 0.2)', borderRadius: '4px',
+                    background: '#fff', padding: '0.3rem', fontSize: '0.9rem', color: '#1a202c',
+                    fontFamily: isArabicMode ? arabicFont : 'inherit', resize: 'vertical', minHeight: '2rem'
+                  }}
+                />
+              ) : (
+                renderWithMath(si.cleanLine)
+              )}
+            </div>
+          ))}
         </div>
-        <div className="homework-content-cell" style={isArabicMode ? { textAlign: 'right', direction: 'rtl', fontFamily: arabicFont } : {}}>
+      );
+    } else if (b.subItems.length === 1) {
+      const si = b.subItems[0];
+      subquestionsContent = (
+        <div style={{ marginTop: '0.25rem' }}>
           {isDirectEdit ? (
             <textarea
               className="homework-content-textarea"
-              value={cleanLine}
-              onChange={(e) => onContentChange(secId, idx, e.target.value)}
+              value={si.cleanLine}
+              onChange={(e) => onContentChange(secId, si.idx, e.target.value)}
               style={{
-                width: '100%',
-                border: '1px solid rgba(0, 80, 134, 0.2)',
-                borderRadius: '4px',
-                background: '#fff',
-                padding: '0.4rem',
-                fontSize: '0.95rem',
-                color: '#1a202c',
-                fontFamily: isArabicMode ? arabicFont : 'inherit',
-                resize: 'vertical',
-                minHeight: '2.5rem',
-                direction: isArabicMode ? 'rtl' : 'ltr',
-                textAlign: isArabicMode ? 'right' : 'left'
+                width: '100%', border: '1px solid rgba(0, 80, 134, 0.2)', borderRadius: '4px',
+                background: '#fff', padding: '0.4rem', fontSize: '0.95rem', color: '#1a202c',
+                fontFamily: isArabicMode ? arabicFont : 'inherit', resize: 'vertical', minHeight: '2.5rem'
               }}
             />
           ) : (
-            renderWithMath(cleanLine)
+            renderWithMath(si.cleanLine)
           )}
+        </div>
+      );
+    }
+
+    return (
+      <div key={bIdx} className="homework-row">
+        <div className="homework-bareme-cell" style={{ position: 'relative' }}>
+          {b.headerItem && (
+            <>
+              <input
+                type="text"
+                className="homework-bareme-input no-print"
+                value={displayPts}
+                onChange={(e) => onPointsChange(secId, hIdx, e.target.value)}
+                placeholder="..."
+                style={{
+                  width: '100%', border: 'none', background: 'transparent', textAlign: 'center',
+                  fontWeight: 700, fontSize: '0.9rem', color: '#005086', outline: 'none', padding: '0.15rem'
+                }}
+              />
+              <span className="print-only" style={{ fontWeight: 700, fontSize: '0.9rem' }}>{ptsStr}</span>
+            </>
+          )}
+        </div>
+        <div className="homework-content-cell" style={isArabicMode ? { textAlign: 'right', direction: 'rtl', fontFamily: arabicFont } : {}}>
+          {headerContent}
+          {subquestionsContent}
         </div>
       </div>
     );
@@ -987,11 +1088,11 @@ export default function LessonViewerPage() {
         }
         
         .exporting-pdf .katex {
-          font-size: 0.98em !important; /* Match surrounding text size exactly in PDF export */
+          font-size: 0.98em !important;
         }
 
         .sheet-body .katex {
-          font-size: 0.98em !important; /* Match surrounding text size exactly in sheet body */
+          font-size: 0.98em !important;
         }
 
 
@@ -1744,8 +1845,19 @@ export default function LessonViewerPage() {
             color: #005086 !important;
           }
 
-          /* Exercises */
-          .exercise-wrapper { break-inside: avoid !important; }
+          /* Exercises page break flow — allow exercises to break across pages while keeping rows intact */
+          .exercise-wrapper, .homework-table, .anisse-ex-card {
+            page-break-inside: auto !important;
+            break-inside: auto !important;
+          }
+          .homework-row, .anisse-ex-row, .homework-subq-item {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          .homework-header-row, .anisse-ex-card-header, .exercise-banner-row {
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+          }
           .exercise-pill {
             background: #005086 !important;
             color: #ffffff !important;
@@ -1767,9 +1879,21 @@ export default function LessonViewerPage() {
             color: #1a202c !important;
           }
 
-          /* KaTeX math — always dark on white */
-          .katex, .katex * { color: #1a202c !important; }
-          .katex { font-size: 0.98em !important; }
+          /* KaTeX math — always crisp regular weight and non-wrapping inline */
+          .katex, .katex *, .katex .mathnormal, .katex .mord, .katex .mbin, .katex .mrel, .katex .mopen, .katex .mclose, .katex .mpunct {
+            color: #1a202c !important;
+            font-weight: normal !important;
+          }
+          .katex .mathbf, .katex .mathbf * { font-weight: bold !important; }
+          .inline-math-container, .katex-inline, .katex {
+            white-space: nowrap !important;
+            font-weight: normal !important;
+          }
+          .inline-math-container .katex .base {
+            white-space: nowrap !important;
+            display: inline !important;
+            font-weight: normal !important;
+          }
 
           /* Response/attention callouts */
           .mfc-callout-response {
@@ -1906,186 +2030,212 @@ export default function LessonViewerPage() {
           </div>
         </header>
 
-        {/* Screen-only header: interactive mode top bar or classic paper header */}
-        {uiStyle === 'classic' ? (
-          <div className="paper-header" style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1.5fr 1fr',
-            borderBottom: '2px solid #005086',
-            textAlign: 'center',
-            background: '#ffffff'
+        {/* Screen & Print Pedagogical Header Table — ONLY FOR LESSONS / COURSES */}
+        {!(lesson?.docType === 'exercises' || lesson?.docType === 'homework' || lesson?.type === 'exercises' || lesson?.type === 'homework' || lesson?.content?.doc_type === 'homework') && (
+          <table className="fiche-pedagogique-header" style={{
+            width: '100%',
+            borderCollapse: 'separate',
+            borderSpacing: 0,
+            border: '1.5px solid #005086',
+            borderRadius: '6px',
+            overflow: 'hidden',
+            marginBottom: '1.25rem',
+            background: '#ffffff',
+            boxShadow: '0 2px 8px rgba(0,80,134,0.06)'
           }}>
-            <div className="paper-header-cell" style={{ padding: '1rem', borderRight: '1.5px solid #005086', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '0.25rem', color: '#111827', fontSize: '0.8rem', fontWeight: 'bold' }}>
-              {isDirectEdit ? (
-                <input
-                  type="text"
-                  value={header.prep_title}
-                  onChange={(e) => handleHeaderChange('prep_title', e.target.value)}
-                  style={{ width: '100%', fontSize: '0.8rem', border: '1px solid rgba(0,80,134,0.2)', padding: '0.2rem', textAlign: 'center', fontWeight: 'bold', borderRadius: '4px' }}
-                />
-              ) : (
-                <div>{header.prep_title}</div>
-              )}
-              <div style={{ color: '#005086' }}>{header.schools?.join(' - ')}</div>
-            </div>
-            <div className="paper-header-cell" style={{ padding: '1rem', borderRight: '1.5px solid #005086', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '0.25rem', color: '#111827' }}>
-              {isDirectEdit ? (
-                <input
-                  type="text"
-                  value={header.subject}
-                  onChange={(e) => handleHeaderChange('subject', e.target.value)}
-                  style={{ width: '100%', fontSize: '0.85rem', border: '1px solid rgba(0,80,134,0.2)', padding: '0.2rem', textAlign: 'center', borderRadius: '4px', textTransform: 'uppercase', color: '#6b7280' }}
-                />
-              ) : (
-                <div style={{ fontSize: '0.9rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  {header.subject}
-                </div>
-              )}
-              <div className="paper-header-title" style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#005086', width: '100%' }}>
-                {isDirectEdit ? (
-                  <input
-                    type="text"
-                    value={header.fiche_title}
-                    onChange={(e) => handleHeaderChange('fiche_title', e.target.value)}
-                    style={{ width: '100%', fontSize: '1.1rem', border: '1px solid rgba(0,80,134,0.2)', padding: '0.2rem', textAlign: 'center', borderRadius: '4px', color: '#b91c1c', fontWeight: 900 }}
-                  />
-                ) : (
-                  <span className="paper-header-title-underline" style={{ color: '#b91c1c', textDecoration: 'underline', fontWeight: 900 }}>{renderWithMath(header.fiche_title)}</span>
-                )}
-              </div>
-            </div>
-            <div className="paper-header-cell" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '0.25rem', color: '#111827', fontSize: '0.8rem', fontWeight: 'bold' }}>
-              {isDirectEdit ? (
-                <input
-                  type="text"
-                  value={header.teacher || profName}
-                  onChange={(e) => handleHeaderChange('teacher', e.target.value)}
-                  style={{ width: '100%', fontSize: '0.8rem', border: '1px solid rgba(0,80,134,0.2)', padding: '0.2rem', textAlign: 'center', fontWeight: 'bold', borderRadius: '4px' }}
-                />
-              ) : (
-                <div>{header.teacher || profName}</div>
-              )}
-              {isDirectEdit ? (
-                <input
-                  type="text"
-                  value={header.phone || profPhone}
-                  onChange={(e) => handleHeaderChange('phone', e.target.value)}
-                  style={{ width: '100%', fontSize: '0.8rem', border: '1px solid rgba(0,80,134,0.2)', padding: '0.2rem', textAlign: 'center', color: '#4b5563', borderRadius: '4px', marginTop: '0.1rem' }}
-                />
-              ) : (
-                (header.phone || profPhone) && <div style={{ color: '#4b5563' }}>{header.phone || profPhone}</div>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="no-print" style={{
-            padding: '2rem 2.5rem 1rem',
-            borderBottom: '1px solid var(--border)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            flexWrap: 'wrap',
-            gap: '1rem'
-          }}>
-            <div>
-              {isDirectEdit ? (
-                <input
-                  type="text"
-                  value={header.subject}
-                  onChange={(e) => handleHeaderChange('subject', e.target.value)}
-                  style={{
-                    background: 'var(--violet-soft)',
-                    color: 'var(--violet)',
-                    padding: '0.2rem 0.65rem',
-                    borderRadius: '6px',
-                    fontSize: '0.72rem',
-                    fontWeight: 900,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    border: '1px solid rgba(79,70,229,0.2)',
-                    marginBottom: '0.5rem'
-                  }}
-                />
-              ) : (
-                <span style={{
-                  background: 'var(--violet-soft)',
-                  color: 'var(--violet)',
-                  padding: '0.2rem 0.65rem',
-                  borderRadius: '6px',
-                  fontSize: '0.72rem',
-                  fontWeight: 900,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  display: 'inline-block',
-                  marginBottom: '0.5rem'
-                }}>
-                  {header.subject}
-                </span>
-              )}
-              {isDirectEdit ? (
-                <input
-                  type="text"
-                  value={header.fiche_title}
-                  onChange={(e) => handleHeaderChange('fiche_title', e.target.value)}
-                  style={{
-                    fontSize: '1.5rem',
-                    fontWeight: 800,
-                    width: '100%',
-                    border: '1px solid var(--border)',
-                    background: 'var(--bg-glass)',
-                    color: 'var(--text-main)',
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '6px',
-                    marginTop: '0.25rem'
-                  }}
-                />
-              ) : (
-                <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
-                  {renderWithMath(header.fiche_title)}
-                </h1>
-              )}
-            </div>
-            
-            {/* Meta badges */}
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              {isDirectEdit ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--bg-glass)', border: '1px solid var(--border)', padding: '0.3rem 0.75rem', borderRadius: '8px' }}>
-                  <User size={14} />
-                  <input
-                    type="text"
-                    value={header.teacher || profName}
-                    onChange={(e) => handleHeaderChange('teacher', e.target.value)}
-                    style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', fontSize: '0.8rem', width: '100px', outline: 'none' }}
-                  />
-                </div>
-              ) : (
-                (header.teacher || profName) && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--bg-glass)', border: '1px solid var(--border)', padding: '0.3rem 0.75rem', borderRadius: '8px' }}>
-                    <User size={14} />
-                    <span>{header.teacher || profName}</span>
-                  </div>
-                )
-              )}
-              {isDirectEdit ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--bg-glass)', border: '1px solid var(--border)', padding: '0.3rem 0.75rem', borderRadius: '8px' }}>
-                  <Phone size={14} />
-                  <input
-                    type="text"
-                    value={header.phone || profPhone}
-                    onChange={(e) => handleHeaderChange('phone', e.target.value)}
-                    style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', fontSize: '0.8rem', width: '100px', outline: 'none' }}
-                  />
-                </div>
-              ) : (
-                (header.phone || profPhone) && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--bg-glass)', border: '1px solid var(--border)', padding: '0.3rem 0.75rem', borderRadius: '8px' }}>
-                    <Phone size={14} />
-                    <span>{header.phone || profPhone}</span>
-                  </div>
-                )
-              )}
-            </div>
-          </div>
+            <tbody>
+              <tr>
+                {/* Left Main Content Block (73% width) */}
+                <td style={{ width: '73%', padding: 0, borderRight: '1.5px solid #005086', borderBottom: 'none' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <tbody>
+                      {/* Top Main Title Row */}
+                      <tr>
+                        <td colSpan={2} className="title-cell" style={{
+                          background: '#005086',
+                          color: '#ffffff',
+                          textAlign: 'center',
+                          fontWeight: 900,
+                          fontSize: '1.25rem',
+                          padding: '0.65rem 1rem',
+                          letterSpacing: '0.04em',
+                          borderBottom: '1.5px solid #005086'
+                        }}>
+                          <input
+                            type="text"
+                            value={header.fiche_title || header.subject || "CALCULS D' INTEGRALS"}
+                            onChange={(e) => handleHeaderChange('fiche_title', e.target.value)}
+                            placeholder="Titre de la fiche..."
+                            style={{
+                              width: '100%',
+                              fontSize: '1.2rem',
+                              background: 'transparent',
+                              color: '#ffffff',
+                              border: 'none',
+                              textAlign: 'center',
+                              fontWeight: 900,
+                              outline: 'none',
+                              fontFamily: 'inherit'
+                            }}
+                          />
+                        </td>
+                      </tr>
+
+                      {/* Middle Row: Capacités Attendues & Contenus */}
+                      <tr>
+                        {/* Red Line 1: LES CAPACITÉS ATTENDUES */}
+                        <td style={{ width: '50%', padding: 0, verticalAlign: 'top', borderRight: '1.5px solid #005086', borderBottom: '1.5px solid #005086' }}>
+                          <div className="header-section-title" style={{ background: '#f8fafc', color: '#005086', fontWeight: 800, textAlign: 'center', padding: '0.35rem 0.5rem', fontSize: '0.78rem', borderBottom: '1.5px solid #005086', textTransform: 'uppercase' }}>
+                            {isArabic ? 'القدرات المنتظرة' : 'LES CAPACITÉS ATTENDUES'}
+                          </div>
+                          <div style={{ padding: '0.4rem 0.5rem', minHeight: '65px' }}>
+                            <textarea
+                              value={header.capacites_attendues || ''}
+                              onChange={(e) => handleHeaderChange('capacites_attendues', e.target.value)}
+                              placeholder={isArabic ? 'انقر هنا لإضافة القدرات المنتظرة...' : 'Cliquer ici pour ajouter les capacités attendues...'}
+                              rows={3}
+                              style={{
+                                width: '100%',
+                                fontSize: '0.82rem',
+                                border: '1px dashed rgba(0,80,134,0.25)',
+                                background: 'rgba(0,80,134,0.02)',
+                                padding: '0.35rem',
+                                borderRadius: '4px',
+                                resize: 'vertical',
+                                outline: 'none',
+                                color: '#0f172a',
+                                fontFamily: 'inherit'
+                              }}
+                            />
+                          </div>
+                        </td>
+
+                        {/* Red Line 2: CONTENUS */}
+                        <td style={{ width: '50%', padding: 0, verticalAlign: 'top', borderBottom: '1.5px solid #005086' }}>
+                          <div className="header-section-title" style={{ background: '#f8fafc', color: '#005086', fontWeight: 800, textAlign: 'center', padding: '0.35rem 0.5rem', fontSize: '0.78rem', borderBottom: '1.5px solid #005086', textTransform: 'uppercase' }}>
+                            {isArabic ? 'المحتويات' : 'CONTENUS'}
+                          </div>
+                          <div style={{ padding: '0.4rem 0.5rem', minHeight: '65px' }}>
+                            <textarea
+                              value={header.contenus || ''}
+                              onChange={(e) => handleHeaderChange('contenus', e.target.value)}
+                              placeholder={isArabic ? 'انقر هنا لإضافة المحتويات...' : 'Cliquer ici pour ajouter les contenus...'}
+                              rows={3}
+                              style={{
+                                width: '100%',
+                                fontSize: '0.82rem',
+                                border: '1px dashed rgba(0,80,134,0.25)',
+                                background: 'rgba(0,80,134,0.02)',
+                                padding: '0.35rem',
+                                borderRadius: '4px',
+                                resize: 'vertical',
+                                outline: 'none',
+                                color: '#0f172a',
+                                fontFamily: 'inherit'
+                              }}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* Bottom Row: Red Line 3: LE CONTENU */}
+                      <tr>
+                        <td colSpan={2} style={{ padding: 0, verticalAlign: 'top' }}>
+                          <div className="header-section-title" style={{ background: '#f8fafc', color: '#005086', fontWeight: 800, textAlign: 'center', padding: '0.35rem 0.5rem', fontSize: '0.78rem', borderBottom: '1.5px solid #005086', textTransform: 'uppercase' }}>
+                            {isArabic ? 'المحتوى' : 'LE CONTENU'}
+                          </div>
+                          <div style={{ padding: '0.4rem 0.6rem', minHeight: '50px' }}>
+                            <textarea
+                              value={header.le_contenu || ''}
+                              onChange={(e) => handleHeaderChange('le_contenu', e.target.value)}
+                              placeholder={isArabic ? 'انقر هنا لإضافة المحتوى العام...' : 'Cliquer ici pour ajouter le contenu général...'}
+                              rows={2}
+                              style={{
+                                width: '100%',
+                                fontSize: '0.82rem',
+                                border: '1px dashed rgba(0,80,134,0.25)',
+                                background: 'rgba(0,80,134,0.02)',
+                                padding: '0.35rem',
+                                borderRadius: '4px',
+                                resize: 'vertical',
+                                outline: 'none',
+                                color: '#0f172a',
+                                fontFamily: 'inherit'
+                              }}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+
+                {/* Right Metadata Side (27% width) */}
+                <td style={{ width: '27%', padding: 0, verticalAlign: 'top', borderBottom: 'none' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <tbody>
+                      <tr>
+                        <td style={{ padding: '0.45rem 0.65rem', borderBottom: '1.5px solid #005086', fontSize: '0.8rem' }}>
+                          <strong style={{ color: '#005086' }}>{isArabic ? 'الأكاديمية' : 'Académie'} :</strong><br/>
+                          <input
+                            type="text"
+                            value={header.academie || 'FES-MEKNES'}
+                            onChange={(e) => handleHeaderChange('academie', e.target.value)}
+                            style={{ width: '100%', fontSize: '0.78rem', border: '1px solid rgba(0,80,134,0.2)', background: 'transparent', fontWeight: 600, color: '#1e293b', outline: 'none', marginTop: '2px', borderRadius: '3px', padding: '0.1rem 0.25rem' }}
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: '0.45rem 0.65rem', borderBottom: '1.5px solid #005086', fontSize: '0.8rem' }}>
+                          <strong style={{ color: '#005086' }}>{isArabic ? 'المديرية الإقليمية' : 'Direction Provinciale'} :</strong><br/>
+                          <input
+                            type="text"
+                            value={header.direction || 'MY'}
+                            onChange={(e) => handleHeaderChange('direction', e.target.value)}
+                            style={{ width: '100%', fontSize: '0.78rem', border: '1px solid rgba(0,80,134,0.2)', background: 'transparent', fontWeight: 600, color: '#1e293b', outline: 'none', marginTop: '2px', borderRadius: '3px', padding: '0.1rem 0.25rem' }}
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: '0.45rem 0.65rem', borderBottom: '1.5px solid #005086', fontSize: '0.8rem' }}>
+                          <strong style={{ color: '#005086' }}>{isArabic ? 'المؤسسة' : 'Etablissement'} :</strong><br/>
+                          <input
+                            type="text"
+                            value={header.etablissement || '18 NOVEMBRE'}
+                            onChange={(e) => handleHeaderChange('etablissement', e.target.value)}
+                            style={{ width: '100%', fontSize: '0.78rem', border: '1px solid rgba(0,80,134,0.2)', background: 'transparent', fontWeight: 600, color: '#1e293b', outline: 'none', marginTop: '2px', borderRadius: '3px', padding: '0.1rem 0.25rem' }}
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: '0.45rem 0.65rem', borderBottom: '1.5px solid #005086', fontSize: '0.8rem' }}>
+                          <strong style={{ color: '#005086' }}>{isArabic ? 'الأهمية' : "Degré d'importance"} :</strong><br/>
+                          <input
+                            type="text"
+                            value={header.degre_importance || '40%'}
+                            onChange={(e) => handleHeaderChange('degre_importance', e.target.value)}
+                            style={{ width: '100%', fontSize: '0.78rem', border: 'none', background: '#fef08a', color: '#854d0e', fontWeight: 800, padding: '1px 5px', borderRadius: '3px', outline: 'none', marginTop: '2px' }}
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: '0.45rem 0.65rem', fontSize: '0.8rem', borderBottom: 'none' }}>
+                          <strong style={{ color: '#005086' }}>{isArabic ? 'ملاحظات' : 'Remarques'} :</strong><br/>
+                          <input
+                            type="text"
+                            value={header.remarques || ''}
+                            onChange={(e) => handleHeaderChange('remarques', e.target.value)}
+                            placeholder="Remarques..."
+                            style={{ width: '100%', fontSize: '0.78rem', border: '1px solid rgba(0,80,134,0.2)', background: 'transparent', color: '#1e293b', outline: 'none', marginTop: '2px', borderRadius: '3px', padding: '0.1rem 0.25rem' }}
+                          />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         )}
 
         {/* WORKBOOK MAIN BODY */}
@@ -2126,14 +2276,16 @@ export default function LessonViewerPage() {
               🌐 نسخة عربية — مترجمة بالذكاء الاصطناعي
             </div>
           )}
-          {/* Centered blue banner title for both modes */}
-          <div className="sheet-header-banner" style={{
-            margin: '0 auto 2rem', display: 'inline-flex',
-            fontFamily: isArabic ? arabicFont : 'inherit',
-            direction: lessonDir,
-          }}>
-            {renderWithMath(header.fiche_title || header.subject || "Fiche de Cours")}
-          </div>
+          {/* Centered blue banner title (hidden for homework/Devoir Surveillé as it is already in the ANISSE Cartouche Header) */}
+          {!(lesson?.docType === 'homework' || lesson?.content?.doc_type === 'homework' || lesson?.type === 'homework') && (
+            <div className="sheet-header-banner" style={{
+              margin: '0 auto 2rem', display: 'inline-flex',
+              fontFamily: isArabic ? arabicFont : 'inherit',
+              direction: lessonDir,
+            }}>
+              {renderWithMath(header.fiche_title || header.subject || "Fiche de Cours")}
+            </div>
+          )}
 
           <div className={`sections-list-container ${lesson?.docType === 'exercises' ? 'exercises-two-columns-layout' : ''}`}>
             {sections?.map((sec, idx) => {
@@ -2421,47 +2573,71 @@ export default function LessonViewerPage() {
                           const widthPct = item.width_pct || 80;
                           const justifyMap = { left: 'flex-start', center: 'center', right: 'flex-end' };
                           const rawUrl = (item.url || '').trim();
+                          const altText = item.alt || item.description || '';
+                          const altLower = altText.toLowerCase();
+                          const urlLower = rawUrl.toLowerCase();
+                          
                           const isInvalidUrl = !rawUrl || rawUrl.length < 5 || rawUrl.includes('placeholder') || rawUrl.includes('example.com') || rawUrl === 'none' || rawUrl === 'url' || rawUrl === 'image';
-                          const isSignTable = (item.alt || rawUrl).toLowerCase().includes('signe') || (item.alt || rawUrl).toLowerCase().includes('tableau') || (item.alt || rawUrl).includes('ax+b') || (item.alt || rawUrl).includes('ax^2');
+                          const isSignTable = altLower.includes('tableau de signe') || altLower.includes('sign_table') || urlLower.includes('sign_table');
 
-                          if (isInvalidUrl || isSignTable) {
+                          if (isSignTable) {
                             return (
                               <div key={itemIdx} style={{ display: 'flex', justifyContent: justifyMap[align], width: '100%', margin: '0.75rem 0' }}>
-                                <SignTableViewer altText={item.alt || item.url || ''} />
+                                <SignTableViewer altText={altText || rawUrl} />
                               </div>
                             );
                           }
 
                           return (
-                            <div key={itemIdx} style={{ display: 'flex', flexDirection: 'column', alignItems: justifyMap[align], margin: '0.75rem 0' }}>
-                              <img
-                                src={item.url}
-                                alt={item.alt || ''}
-                                style={{
-                                  width: `${widthPct}%`,
-                                  maxWidth: '100%',
-                                  borderRadius: '8px',
-                                  border: '1px solid var(--border)',
-                                  boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
-                                  display: 'block',
-                                  objectFit: 'contain',
+                            <div 
+                              key={itemIdx} 
+                              style={{ 
+                                display: 'flex', 
+                                flexDirection: 'column', 
+                                alignItems: justifyMap[align], 
+                                margin: '1.25rem 0',
+                                width: '100%' 
+                              }}
+                            >
+                              <div 
+                                style={{ 
+                                  background: 'var(--bg-card)', 
+                                  border: '1px solid var(--border)', 
+                                  borderRadius: '16px', 
+                                  padding: '0.85rem', 
+                                  boxShadow: '0 4px 20px rgba(0,0,0,0.06)', 
+                                  display: 'inline-flex', 
+                                  flexDirection: 'column', 
+                                  alignItems: 'center',
+                                  maxWidth: `${widthPct}%`,
+                                  minWidth: '260px'
                                 }}
-                                onError={e => {
-                                  e.target.style.display = 'none';
-                                }}
-                              />
-                              {item.alt && (
-                                <div style={{
-                                  fontSize: '0.78rem',
-                                  color: 'var(--text-muted)',
-                                  fontStyle: 'italic',
-                                  marginTop: '0.35rem',
-                                  textAlign: align,
-                                  width: `${widthPct}%`,
-                                }}>
-                                  {renderWithMath(item.alt)}
-                                </div>
-                              )}
+                              >
+                                {isInvalidUrl ? (
+                                  <div style={{ padding: '1.5rem 1rem', textAlign: 'center', color: 'var(--text-subtle)', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', width: '100%' }}>
+                                    <div style={{ fontSize: '2rem', marginBottom: '0.4rem' }}>📈</div>
+                                    <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>{altText ? renderWithMath(altText) : (isArabic ? 'شكل هندسي / منحنى دالة' : 'Figure / Courbe représentative')}</div>
+                                  </div>
+                                ) : (
+                                  <img
+                                    src={rawUrl}
+                                    alt={altText || 'Figure'}
+                                    style={{
+                                      width: '100%',
+                                      maxHeight: '400px',
+                                      borderRadius: '10px',
+                                      display: 'block',
+                                      objectFit: 'contain',
+                                    }}
+                                  />
+                                )}
+                                
+                                {altText && (
+                                  <div style={{ marginTop: '0.6rem', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textAlign: 'center' }}>
+                                    {renderWithMath(altText)}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           );
                         }

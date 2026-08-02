@@ -30,6 +30,14 @@ export default function AdminSettings() {
     schools, addSchool, removeSchool,
     profName: initialProfName,
     profPhone: initialProfPhone,
+    profSchool: initialProfSchool,
+    profDirection: initialProfDirection,
+    profAcademy: initialProfAcademy,
+    profSubject: initialProfSubject,
+    profSOM: initialProfSOM,
+    profEmail: initialProfEmail,
+    profAcademicYear: initialProfAcademicYear,
+    profCity: initialProfCity,
     profSite: initialProfSite,
     bankName: initialBankName,
     bankRIB: initialBankRIB,
@@ -44,6 +52,7 @@ export default function AdminSettings() {
   } = useAuth();
   const [newSchool, setNewSchool] = useState('');
   const [activeTab, setActiveTab] = useState('general');
+  const [profileSubTab, setProfileSubTab] = useState('contact');
   const [classes, setClasses] = useState([]);
 
   // Tab active indicator animation
@@ -88,7 +97,7 @@ export default function AdminSettings() {
   const [geminiSolveSolutions, setGeminiSolveSolutions] = useState(() => localStorage.getItem('gemini_solve_solutions') !== 'false');
 
   // DeepSeek API Key
-  const [deepseekKey, setDeepseekKey] = useState(() => localStorage.getItem('deepseekApiKey') || '');
+  const [deepseekKey, setDeepseekKey] = useState(() => localStorage.getItem('deepseekApiKey') || 'sk-12a7032f07d740348c607ef947a0a9f7');
   const [deepseekUrl, setDeepseekUrl] = useState(() => localStorage.getItem('deepseekApiUrl') || 'https://api.deepseek.com');
   const [showDeepseekKey, setShowDeepseekKey] = useState(false);
   const [deepseekKeySaved, setDeepseekKeySaved] = useState(false);
@@ -221,9 +230,17 @@ export default function AdminSettings() {
               .replace(/&gt;/g, '>');
   };
 
-  // Branding / Identity
+  // Branding / Identity / Profile
   const [profName, setProfName] = useState(() => decodeHtmlEntities(initialProfName || ''));
   const [profPhone, setProfPhone] = useState(() => decodeHtmlEntities(initialProfPhone || ''));
+  const [profSchool, setProfSchool] = useState(() => decodeHtmlEntities(initialProfSchool || ''));
+  const [profDirection, setProfDirection] = useState(() => decodeHtmlEntities(initialProfDirection || ''));
+  const [profAcademy, setProfAcademy] = useState(() => decodeHtmlEntities(initialProfAcademy || ''));
+  const [profSubject, setProfSubject] = useState(() => decodeHtmlEntities(initialProfSubject || 'Mathématiques'));
+  const [profSOM, setProfSOM] = useState(() => decodeHtmlEntities(initialProfSOM || ''));
+  const [profEmail, setProfEmail] = useState(() => decodeHtmlEntities(initialProfEmail || ''));
+  const [profAcademicYear, setProfAcademicYear] = useState(() => decodeHtmlEntities(initialProfAcademicYear || '2025/2026'));
+  const [profCity, setProfCity] = useState(() => decodeHtmlEntities(initialProfCity || ''));
   const [profSite, setProfSite] = useState(() => decodeHtmlEntities(initialProfSite || 'www.lconq.ma'));
   const [bankName, setBankName] = useState(() => decodeHtmlEntities(initialBankName || 'CIH Bank (Maroc)'));
   const [bankRIB, setBankRIB] = useState(() => decodeHtmlEntities(initialBankRIB || '230 780 4567890123 0001 89'));
@@ -269,18 +286,34 @@ export default function AdminSettings() {
     Promise.resolve().then(() => {
       if (initialProfName !== undefined) setProfName(decodeHtmlEntities(initialProfName));
       if (initialProfPhone !== undefined) setProfPhone(decodeHtmlEntities(initialProfPhone));
+      if (initialProfSchool !== undefined) setProfSchool(decodeHtmlEntities(initialProfSchool));
+      if (initialProfDirection !== undefined) setProfDirection(decodeHtmlEntities(initialProfDirection));
+      if (initialProfAcademy !== undefined) setProfAcademy(decodeHtmlEntities(initialProfAcademy));
+      if (initialProfSubject !== undefined) setProfSubject(decodeHtmlEntities(initialProfSubject));
+      if (initialProfSOM !== undefined) setProfSOM(decodeHtmlEntities(initialProfSOM));
+      if (initialProfEmail !== undefined) setProfEmail(decodeHtmlEntities(initialProfEmail));
+      if (initialProfAcademicYear !== undefined) setProfAcademicYear(decodeHtmlEntities(initialProfAcademicYear));
+      if (initialProfCity !== undefined) setProfCity(decodeHtmlEntities(initialProfCity));
       if (initialProfSite !== undefined) setProfSite(decodeHtmlEntities(initialProfSite));
       if (initialBankName !== undefined) setBankName(decodeHtmlEntities(initialBankName));
       if (initialBankRIB !== undefined) setBankRIB(decodeHtmlEntities(initialBankRIB));
       if (initialBankBeneficiary !== undefined) setBankBeneficiary(decodeHtmlEntities(initialBankBeneficiary));
       if (initialFacebookPixelId !== undefined) setFbPixelId(decodeHtmlEntities(initialFacebookPixelId));
     });
-  }, [initialProfName, initialProfPhone, initialProfSite, initialBankName, initialBankRIB, initialBankBeneficiary, initialFacebookPixelId]);
+  }, [initialProfName, initialProfPhone, initialProfSchool, initialProfDirection, initialProfAcademy, initialProfSubject, initialProfSOM, initialProfEmail, initialProfAcademicYear, initialProfCity, initialProfSite, initialBankName, initialBankRIB, initialBankBeneficiary, initialFacebookPixelId]);
 
   const saveBranding = async () => {
     await updateBrandingConfig({
       profName: profName.trim(),
       profPhone: profPhone.trim(),
+      profSchool: profSchool.trim(),
+      profDirection: profDirection.trim(),
+      profAcademy: profAcademy.trim(),
+      profSubject: profSubject.trim(),
+      profSOM: profSOM.trim(),
+      profEmail: profEmail.trim(),
+      profAcademicYear: profAcademicYear.trim(),
+      profCity: profCity.trim(),
       profSite: profSite.trim() || 'www.lconq.ma',
       bankName: bankName.trim(),
       bankRIB: bankRIB.trim(),
@@ -1344,7 +1377,7 @@ export default function AdminSettings() {
           </div>
           <div>
             <h1 className="text-2xl font-black tracking-tight text-[var(--text-main)]">Paramètres</h1>
-            <p className="text-sm text-[var(--text-muted)]">Ajustez et modifiez la configuration globale de Gima.</p>
+            <p className="text-sm text-[var(--text-muted)]">Ajustez et modifiez la configuration globale de L'CONQ.</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -1370,7 +1403,8 @@ export default function AdminSettings() {
             }}
           />
           {[
-            { id: 'general', label: 'Branding & Général', desc: 'Identité, RIB, Pixel FB', icon: Sliders },
+            { id: 'general', label: 'Branding & Profil', desc: 'Identité & Établissement', icon: Crown },
+            { id: 'backup_omr', label: 'Sauvegarde & OMR', desc: 'Backup JSON & Scanner', icon: Download },
             { id: 'whatsapp', label: 'WhatsApp', desc: 'Bouton de support direct', icon: MessageCircle },
             { id: 'pdf', label: 'Modèles PDF', desc: 'LaTeX, styles & polices', icon: FileText },
             { id: 'flashcards', label: 'Flashcards', desc: 'Révélation & animations', icon: Layers },
@@ -1587,6 +1621,7 @@ export default function AdminSettings() {
                       onChange={e => setPdfTemplateStyle(e.target.value)}
                       className="input-control"
                     >
+                      <option value="anisse_classic">Modèle Devoir Surveillé (Style Lycée ANISSE — En-tête Cadre & Barème)</option>
                       <option value="classic_latex">Classique LaTeX (Sobre & Académique)</option>
                       <option value="modern_minimalist">Moderne Épuré (Minimaliste contemporain)</option>
                       <option value="premium_royal">Royal Institutionnel (Ruban & En-tête officiel)</option>
@@ -2510,119 +2545,257 @@ export default function AdminSettings() {
             </div>
           )}
 
-          {/* ── GENERAL TAB ── */}
+          {/* ── BRANDING & PROFIL TAB ── */}
           {activeTab === 'general' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="flex flex-col gap-6">
               
-              {/* Profile Card (Identité & Branding) - spans 2 columns on desktop */}
-              <div className="bento-card lg:col-span-2 flex flex-col justify-between">
+              {/* Profile Card (Identité du Directeur & Enseignant) */}
+              <div className="bento-card flex flex-col justify-between">
                 <div>
-                  <h2 className="settings-title">
-                    🎨 Identité & Branding
-                  </h2>
-                  <p className="settings-desc">
-                    Personnalisez votre profil enseignant et l&apos;identité visuelle de votre plateforme.
-                  </p>
+                  
+                  {/* Card Header & Sub-Tab Switcher */}
+                  <div className="flex items-center justify-between gap-4 mb-5 flex-wrap pb-4 border-b border-[var(--border)]">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-xl bg-[var(--violet-soft)] border border-[var(--violet)] flex items-center justify-center text-[var(--violet)]">
+                        <Crown size={20} />
+                      </div>
+                      <div>
+                        <h2 className="settings-title" style={{ margin: 0, fontSize: '1.15rem' }}>
+                          Profil du Directeur & Enseignant
+                        </h2>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-subtle)', fontFamily: "'Cairo', sans-serif" }}>
+                          (بطاقة تعريف مدير المنصة والأستاذ)
+                        </span>
+                      </div>
+                    </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">
-                    <div className="settings-field">
-                      <label className="settings-label">Nom du professeur</label>
-                      <input className="input-control" dir="auto" placeholder="Prof. Ahmed Benali" value={profName} onChange={e => setProfName(e.target.value)} />
-                    </div>
-                    <div className="settings-field">
-                      <label className="settings-label">Téléphone / WhatsApp</label>
-                      <input className="input-control" dir="auto" placeholder="+212 6XX XXX XXX" value={profPhone} onChange={e => setProfPhone(e.target.value)} />
-                    </div>
-                    <div className="settings-field md:col-span-2">
-                      <label className="settings-label">Site web officiel</label>
-                      <input className="input-control" dir="auto" placeholder="www.lconq.ma" value={profSite} onChange={e => setProfSite(e.target.value)} />
-                    </div>
-                    <div className="settings-field md:col-span-2">
-                      <label className="settings-label">ID du Pixel Facebook (Facebook Pixel ID)</label>
-                      <input
-                        type="text"
-                        dir="auto"
-                        className="input-control"
-                        placeholder="Ex: 123456789012345"
-                        value={fbPixelId}
-                        onChange={e => setFbPixelId(e.target.value)}
-                        style={{ fontFamily: 'monospace' }}
-                      />
-                      <p className="text-[11px] text-[var(--text-subtle)] leading-snug">
-                        Permet de suivre et d&apos;optimiser le suivi publicitaire Facebook Ads de vos campagnes d&apos;inscription d&apos;élèves.
-                      </p>
+                    {/* Pill Sub-Tabs Selector */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: 'var(--bg-glass)', padding: '0.25rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                      {[
+                        { id: 'contact', label: '1. Contact & Identité', icon: Pencil },
+                        { id: 'school', label: '2. Établissement', icon: School },
+                        { id: 'pedagogy', label: '3. Pédagogie & Web', icon: BookOpen },
+                      ].map(subTab => {
+                        const isActive = profileSubTab === subTab.id;
+                        return (
+                          <button
+                            key={subTab.id}
+                            type="button"
+                            onClick={() => setProfileSubTab(subTab.id)}
+                            style={{
+                              padding: '0.45rem 0.85rem',
+                              borderRadius: '8px',
+                              fontSize: '0.78rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              background: isActive ? 'var(--violet)' : 'transparent',
+                              color: isActive ? '#ffffff' : 'var(--text-muted)',
+                              border: 'none',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.35rem',
+                              boxShadow: isActive ? '0 2px 8px var(--violet-glow)' : 'none'
+                            }}
+                          >
+                            <subTab.icon size={13} />
+                            {subTab.label}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
+
+                  {/* Sub-Tab 1: Contact & Identité */}
+                  {profileSubTab === 'contact' && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div className="settings-field">
+                        <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
+                          Nom et Prénom du Directeur / Enseignant *
+                        </label>
+                        <input className="input-control" dir="auto" placeholder="Ex: Prof. Mohamed Benali" value={profName} onChange={e => setProfName(e.target.value)} />
+                      </div>
+                      <div className="settings-field">
+                        <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
+                          Téléphone / WhatsApp *
+                        </label>
+                        <input className="input-control" dir="auto" placeholder="Ex: +212 661 234 567" value={profPhone} onChange={e => setProfPhone(e.target.value)} />
+                      </div>
+                      <div className="settings-field" style={{ gridColumn: '1 / -1' }}>
+                        <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
+                          Adresse Email Professionnelle
+                        </label>
+                        <input type="email" className="input-control" dir="auto" placeholder="Ex: prof.benali@taalim.ma" value={profEmail} onChange={e => setProfEmail(e.target.value)} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sub-Tab 2: Établissement & Ministère */}
+                  {profileSubTab === 'school' && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div className="settings-field" style={{ gridColumn: '1 / -1' }}>
+                        <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
+                          Nom de l&apos;Établissement / École (المؤسسة التعليمية) *
+                        </label>
+                        <input className="input-control" dir="auto" placeholder="Ex: Lycée Qualifiant Ibn Khaldoun" value={profSchool} onChange={e => setProfSchool(e.target.value)} />
+                      </div>
+                      <div className="settings-field">
+                        <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
+                          Direction Provinciale (المديرية الإقليمية) *
+                        </label>
+                        <input className="input-control" dir="auto" placeholder="Ex: Direction Provinciale de Rabat" value={profDirection} onChange={e => setProfDirection(e.target.value)} />
+                      </div>
+                      <div className="settings-field">
+                        <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
+                          Académie Régionale - AREF (الأكاديمية الجهوية) *
+                        </label>
+                        <input className="input-control" dir="auto" placeholder="Ex: AREF Rabat-Salé-Kénitra" value={profAcademy} onChange={e => setProfAcademy(e.target.value)} />
+                      </div>
+                      <div className="settings-field" style={{ gridColumn: '1 / -1' }}>
+                        <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
+                          Ville / Commune (المدينة / الجماعة)
+                        </label>
+                        <input className="input-control" dir="auto" placeholder="Ex: Rabat" value={profCity} onChange={e => setProfCity(e.target.value)} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sub-Tab 3: Données Pédagogiques & Web */}
+                  {profileSubTab === 'pedagogy' && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div className="settings-field">
+                        <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
+                          Matière / Discipline (مادة التدريس)
+                        </label>
+                        <input className="input-control" dir="auto" placeholder="Ex: Mathématiques / PC / SVT" value={profSubject} onChange={e => setProfSubject(e.target.value)} />
+                      </div>
+                      <div className="settings-field">
+                        <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
+                          Matricule SOM / N° PPA (الرقم التأجيري)
+                        </label>
+                        <input className="input-control" dir="auto" placeholder="Ex: 1548923" value={profSOM} onChange={e => setProfSOM(e.target.value)} />
+                      </div>
+                      <div className="settings-field">
+                        <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
+                          Année Scolaire (السنة الدراسية)
+                        </label>
+                        <input className="input-control" dir="auto" placeholder="Ex: 2025/2026" value={profAcademicYear} onChange={e => setProfAcademicYear(e.target.value)} />
+                      </div>
+                      <div className="settings-field">
+                        <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
+                          ID Pixel Facebook (Facebook Pixel ID)
+                        </label>
+                        <input
+                          type="text"
+                          dir="auto"
+                          className="input-control"
+                          placeholder="Ex: 123456789012345"
+                          value={fbPixelId}
+                          onChange={e => setFbPixelId(e.target.value)}
+                          style={{ fontFamily: 'monospace' }}
+                        />
+                      </div>
+                      <div className="settings-field" style={{ gridColumn: '1 / -1' }}>
+                        <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
+                          Site web officiel
+                        </label>
+                        <input className="input-control" dir="auto" placeholder="www.lconq.ma" value={profSite} onChange={e => setProfSite(e.target.value)} />
+                      </div>
+                    </div>
+                  )}
+
                 </div>
 
-                <div className="flex justify-between items-center gap-4 mt-8 pt-6 border-t border-[var(--border)]">
-                  <div>
-                    {brandSaved && (
-                      <div className="save-badge">
-                        <CheckCircle2 size={14} /> Enregistré !
+                {/* Save Action Row */}
+                <div className="flex justify-between items-center gap-4 mt-6 pt-4 border-t border-[var(--border)]">
+                  <div className="flex items-center gap-2">
+                    {brandSaved ? (
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--emerald)]">
+                        <CheckCircle2 size={16} /> Identité enregistrée avec succès !
                       </div>
+                    ) : (
+                      <span className="text-xs font-bold text-[var(--text-subtle)]">
+                        Alimente automatiquement vos en-têtes officiels
+                      </span>
                     )}
                   </div>
-                  <button type="button" onClick={saveBranding} className="btn" style={{ padding: '0.65rem 1.75rem', borderRadius: '12px' }}>
+                  <button type="button" onClick={saveBranding} className="btn" style={{ padding: '0.65rem 1.75rem', borderRadius: '12px', fontWeight: 800 }}>
                     Enregistrer l&apos;identité
                   </button>
                 </div>
               </div>
 
+            </div>
+          )}
+
+          {/* ── SAUVEGARDE & OMR TAB ── */}
+          {activeTab === 'backup_omr' && (
+            <div className="flex flex-col gap-6">
+              
               {/* Backup & Restore Data Card */}
-              <div className="bento-card flex flex-col justify-between" style={{ border: '1px solid rgba(16, 185, 129, 0.3)', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.03) 0%, rgba(6, 182, 212, 0.03) 100%)' }}>
+              <div className="bento-card settings-backup-card flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Download size={20} className="text-[var(--emerald)]" />
-                    <h2 className="settings-title" style={{ margin: 0 }}>
-                      النسخ الاحتياطي واسترجاع البيانات
-                    </h2>
+                  <div className="flex items-center gap-2.5 mb-2">
+                    <div className="w-10 h-10 rounded-xl bg-[var(--emerald-soft)] border border-[var(--emerald)] flex items-center justify-center text-[var(--emerald)]">
+                      <Download size={20} />
+                    </div>
+                    <div>
+                      <h2 className="settings-title" style={{ margin: 0, fontSize: '1.2rem', fontFamily: "'Cairo', 'Inter', sans-serif" }}>
+                        النسخ الاحتياطي واسترجاع البيانات (Sauvegarde & Restauration)
+                      </h2>
+                    </div>
                   </div>
-                  <p className="settings-desc">
-                    احفظ نسخة كاملة من بيانات جميع الأقسام، النقط، الفروض، المفاتيح، والدروس في ملف واحد، أو استرجعها في أي وقت بضغطة زر.
+                  
+                  <p style={{ fontFamily: "'Cairo', sans-serif", fontSize: '0.92rem', fontWeight: 600, color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+                    احفظ نسخة احتياطية كاملة من بيانات جميع الأقسام، النقط، الفروض، المفاتيح، والدروس في ملف واحد (.json)، أو استرجعها في أي وقت بضغطة زر.
                   </p>
 
-                  <div className="flex flex-col gap-3 mt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <button
                       type="button"
                       onClick={handleExportBackup}
                       className="btn"
                       style={{
-                        padding: '0.65rem 1rem', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700,
+                        padding: '0.85rem 1.25rem', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 800,
                         background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-                        color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+                        color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem',
+                        boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2)', fontFamily: "'Cairo', sans-serif"
                       }}
                     >
-                      <Download size={16} /> تصدير نسخة احتياطية شاملة (.json)
+                      <Download size={18} /> تصدير نسخة احتياطية شاملة (.json)
                     </button>
 
                     <label
                       style={{
-                        padding: '0.65rem 1rem', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700,
-                        background: 'var(--bg-glass)', color: 'var(--text-main)', border: '1px solid var(--border)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer'
+                        padding: '0.85rem 1.25rem', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 800,
+                        background: 'var(--bg-glass)', color: 'var(--text-main)', border: '1.5px solid var(--border)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', cursor: 'pointer',
+                        fontFamily: "'Cairo', sans-serif", transition: 'all 0.2s ease'
                       }}
                     >
-                      <Upload size={16} /> استرجاع نسخة احتياطية من ملف (.json)
+                      <Upload size={18} /> استرجاع نسخة احتياطية من ملف (.json)
                       <input type="file" accept=".json" onChange={handleImportBackup} style={{ display: 'none' }} />
                     </label>
                   </div>
                 </div>
 
-                <div style={{ marginTop: '1.5rem', padding: '0.6rem 0.75rem', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', fontSize: '0.7rem', color: 'var(--text-subtle)' }}>
-                  🛡️ حفظ شامل: يتضمن الحفظ كل الأقسام، التلاميذ، النقط، والمفاتيح في ملف مشفر بترميز نقي.
+                <div style={{ marginTop: '1.75rem', padding: '0.75rem 1rem', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-subtle)', fontFamily: "'Cairo', sans-serif" }}>
+                  🛡️ حفظ شامل: يتضمن الملف المحفوظ كل البيانات والتلاميذ والنقط والمفاتيح في ملف آمن ومشفر بترميز نقي.
                 </div>
               </div>
 
-
-
               {/* OMR Scanner - prominent card below */}
-              <div className="bento-card lg:col-span-3">
+              <div className="bento-card">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                   <div className="flex-1">
-                    <h2 className="settings-title">
-                      📷 Scanner OMR Intelligent
-                    </h2>
+                    <div className="flex items-center gap-2.5 mb-2">
+                      <div className="w-10 h-10 rounded-xl bg-[var(--violet-soft)] border border-[var(--violet)] flex items-center justify-center text-[var(--violet)]">
+                        <Camera size={20} />
+                      </div>
+                      <h2 className="settings-title" style={{ margin: 0, fontSize: '1.2rem' }}>
+                        Scanner OMR Intelligent
+                      </h2>
+                    </div>
                     <p className="settings-desc" style={{ margin: 0 }}>
                       Activez le mode continu pour capturer automatiquement les feuilles QCM dès qu&apos;elles sont détectées par la caméra, sans clic manuel.
                     </p>

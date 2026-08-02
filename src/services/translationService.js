@@ -189,12 +189,19 @@ async function callGemini(prompt, geminiKey, model = 'gemini-2.5-flash') {
 /**
  * استدعاء DeepSeek API (متوافق مع OpenAI)
  */
-async function callDeepSeek(prompt, deepseekKey, deepseekUrl, model = 'deepseek-chat') {
+async function callDeepSeek(prompt, deepseekKey, deepseekUrl, model = 'deepseek-v4-pro') {
   const baseUrl = (deepseekUrl || 'https://api.deepseek.com').replace(/\/$/, '');
   const endpoint = `${baseUrl}/v1/chat/completions`;
 
+  const rawModel = model || 'deepseek-v4-pro';
+  const normalizedModel = (rawModel === 'deepseek-reasoner' || rawModel === 'deepseek-r1')
+    ? 'deepseek-v4-pro'
+    : (rawModel === 'deepseek-chat' || rawModel === 'deepseek-v3')
+      ? 'deepseek-v4-flash'
+      : rawModel;
+
   const payload = {
-    model,
+    model: normalizedModel,
     messages: [
       {
         role: 'system',
@@ -206,7 +213,7 @@ async function callDeepSeek(prompt, deepseekKey, deepseekUrl, model = 'deepseek-
     max_tokens: 32000,
   };
 
-  if (model === 'deepseek-chat') {
+  if (!normalizedModel.includes('reasoner') && !normalizedModel.includes('pro')) {
     payload.response_format = { type: 'json_object' };
   }
 
@@ -374,10 +381,10 @@ export async function callAIWithFailover(prompt, options = {}) {
       }
 
       if (prov === 'deepseek') {
-        const key = options.deepseekKey || localStorage.getItem('deepseekApiKey') || '';
+        const key = options.deepseekKey || localStorage.getItem('deepseekApiKey') || 'sk-12a7032f07d740348c607ef947a0a9f7';
         if (!key) continue;
         const url = options.deepseekUrl || localStorage.getItem('deepseekApiUrl') || 'https://api.deepseek.com';
-        const model = options.deepseekModel || 'deepseek-chat';
+        const model = options.deepseekModel || localStorage.getItem('deepseekModel') || 'deepseek-v4-pro';
         console.log(`[AI Failover] Attemping generation with DeepSeek (${model})...`);
         const text = await callDeepSeek(prompt, key, url, model);
         return { text, provider: 'deepseek' };

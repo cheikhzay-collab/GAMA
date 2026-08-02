@@ -3,13 +3,14 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocat
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 
-// Core pages — kept static for instant initial render
+// Keep only the public entry screen in the initial bundle.
 import Login from './pages/Login';
-import Layout from './components/Layout';
-import StudentDashboard from './pages/StudentDashboard';
 import CommandPalette from './components/CommandPalette';
 
-// Secondary/Admin pages — lazy-loaded to reduce main bundle size
+// Protected pages are lazy-loaded so login does not download charts, PDF tools,
+// KaTeX, scanners, or admin-only dependencies.
+const Layout             = lazy(() => import('./components/Layout'));
+const StudentDashboard   = lazy(() => import('./pages/StudentDashboard'));
 const StudyMode          = lazy(() => import('./pages/StudyMode'));
 const AdminOverview      = lazy(() => import('./pages/AdminOverview'));
 const AdminExams         = lazy(() => import('./pages/AdminExams'));

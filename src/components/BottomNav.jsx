@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, BookOpen, Trophy, GraduationCap,
-  Library, Users, UploadCloud, LogOut, Sun, Moon, Camera, Zap, Settings
+  Library, Users, UploadCloud, LogOut, Sun, Moon, Camera, Zap, Settings,
+  ClipboardList, Sparkles, FileText, BookMarked, Layers
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -15,18 +16,19 @@ export default function BottomNav() {
   const [showSheet, setShowSheet] = useState(false);
 
   const isStudent = user?.role === 'student';
-  const dueToday = isStudent ? (dueTodayCount || 0) : 0;
+  const isAdmin   = user?.role === 'admin';
+  const dueToday  = isStudent ? (dueTodayCount || 0) : 0;
 
   const studentItems = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Accueil'  },
     { to: '/levels',    icon: Library,         label: 'Cours'    },
-    { to: '/schools',   icon: GraduationCap,   label: 'Écoles'   },
     { to: '/scanner',   icon: Camera,          label: 'Scanner'  },
+    { to: '/study',     icon: BookOpen,        label: 'Réviser'  },
     { to: '/ranking',   icon: Trophy,          label: 'Rank'     },
   ];
 
   const adminItems = [
-    { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Overview' },
+    { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Accueil' },
     { to: '/admin/exams',     icon: Library,          label: 'QCMs'    },
     { to: '/scanner',         icon: Camera,           label: 'Scanner' },
   ];
@@ -53,6 +55,28 @@ export default function BottomNav() {
 
   /* Avatar initial */
   const initial = (user?.name || user?.email || '?')[0].toUpperCase();
+
+  const adminTools = [
+    { label: 'Upload PDF', icon: UploadCloud, to: '/admin/upload', color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)' },
+    { label: 'Import IA', icon: Sparkles, to: '/admin/ai-generator', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.12)' },
+    { label: 'Leçons', icon: FileText, to: '/admin/lessons', color: '#7C3AED', bg: 'rgba(124, 58, 237, 0.12)' },
+    { label: 'Classes', icon: Users, to: '/admin/classes', color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)' },
+    { label: 'Cahier Textes', icon: ClipboardList, to: '/admin/logbook', color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.12)' },
+    { label: 'Banque QCM', icon: GraduationCap, to: '/admin/exams', color: '#EC4899', bg: 'rgba(236, 72, 153, 0.12)' },
+    { label: 'Scanner OMR', icon: Camera, to: '/scanner', color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)' },
+    { label: 'E-books', icon: BookMarked, to: '/admin/ebooks', color: '#F43F5E', bg: 'rgba(244, 63, 94, 0.12)' },
+    { label: 'Niveaux', icon: Layers, to: '/levels', color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.12)' },
+    { label: 'Settings', icon: Settings, to: '/admin/settings', color: '#64748B', bg: 'rgba(100, 116, 139, 0.12)' },
+  ];
+
+  const studentTools = [
+    { label: 'Accueil', icon: LayoutDashboard, to: '/dashboard', color: '#716DF2', bg: 'rgba(113, 109, 242, 0.12)' },
+    { label: 'Cours', icon: Layers, to: '/levels', color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.12)' },
+    { label: 'Scanner OMR', icon: Camera, to: '/scanner', color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)' },
+    { label: 'Révision SRS', icon: BookOpen, to: '/study', color: '#7C3AED', bg: 'rgba(124, 58, 237, 0.12)' },
+    { label: 'Classement', icon: Trophy, to: '/ranking', color: '#EC4899', bg: 'rgba(236, 72, 153, 0.12)' },
+    { label: 'Fiche IA', icon: Sparkles, to: '/study/suites-numeriques', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.12)' },
+  ];
 
   return (
     <>
@@ -145,6 +169,8 @@ export default function BottomNav() {
               border: '1px solid var(--border)',
               borderBottom: 'none',
               paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))',
+              maxHeight: '85vh',
+              overflowY: 'auto',
               boxShadow: '0 -12px 48px rgba(0,0,0,0.4)',
               animation: 'sheetSlideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
             }}
@@ -205,159 +231,101 @@ export default function BottomNav() {
               </div>
             ) : (
               <>
-                {user?.role === 'admin' ? (
-                  <>
-                    {/* ── Admin Info Header ── */}
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: '0.875rem',
-                      padding: '1.25rem 1.5rem 1.125rem',
-                      borderBottom: '1px solid var(--border)',
+                {/* ── User Info Header ── */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '0.875rem',
+                  padding: '1.25rem 1.5rem 1.125rem',
+                  borderBottom: '1px solid var(--border)',
+                }}>
+                  <div style={{
+                    width: 48, height: 48, borderRadius: '14px', flexShrink: 0,
+                    background: 'linear-gradient(135deg, var(--violet), var(--emerald))',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '1.35rem', fontWeight: 900, color: '#fff',
+                    boxShadow: '0 4px 12px rgba(99,102,241,0.3)',
+                  }}>
+                    {initial}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{
+                      fontWeight: 850, fontSize: '1rem', margin: 0,
+                      color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
                     }}>
-                      <div style={{
-                        width: 46, height: 46, borderRadius: '12px', flexShrink: 0,
-                        background: 'linear-gradient(135deg, var(--violet), var(--emerald))',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '1.3rem', fontWeight: 900, color: '#fff',
-                        boxShadow: '0 4px 12px rgba(99,102,241,0.3)',
-                      }}>
-                        {initial}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{
-                          fontWeight: 800, fontSize: '0.98rem', margin: 0,
-                          color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
-                        }}>
-                          {user?.name || 'Directeur'}
-                        </p>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {user?.email}
-                        </p>
-                      </div>
-                      <span style={{
-                        padding: '0.25rem 0.65rem', borderRadius: 99,
-                        fontSize: '0.62rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em',
-                        background: 'rgba(16, 185, 129, 0.12)', color: 'var(--emerald)',
-                        border: '1px solid rgba(16, 185, 129, 0.22)', flexShrink: 0
-                      }}>
-                        Directeur
-                      </span>
-                    </div>
+                      {user?.name || (isAdmin ? 'Administrateur Local' : 'Élève')}
+                    </p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {user?.email}
+                    </p>
+                  </div>
+                  <span style={{
+                    padding: '0.25rem 0.65rem', borderRadius: 99,
+                    fontSize: '0.62rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em',
+                    background: isAdmin ? 'rgba(16, 185, 129, 0.12)' : 'var(--violet-soft)',
+                    color: isAdmin ? 'var(--emerald)' : 'var(--violet)',
+                    border: `1px solid ${isAdmin ? 'rgba(16, 185, 129, 0.22)' : 'rgba(99, 102, 241, 0.22)'}`,
+                    flexShrink: 0
+                  }}>
+                    {isAdmin ? 'Directeur' : 'Élève'}
+                  </span>
+                </div>
 
-                    {/* ── Admin Tools Grid ── */}
-                    <div style={{
-                      padding: '1.25rem 1.5rem 0.75rem',
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(3, 1fr)',
-                      gap: '0.875rem',
-                    }}>
-                      {[
-                        { label: 'Upload PDF', icon: UploadCloud, to: '/admin/upload', color: '#10B981', bg: 'rgba(16, 185, 129, 0.1)' },
-                        { label: 'Import IA', icon: Zap, to: '/admin/ai-import', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)' },
-                        { label: 'Leçons', icon: BookOpen, to: '/admin/lessons', color: '#7C3AED', bg: 'rgba(124, 58, 237, 0.1)' },
-                        { label: 'E-books', icon: Library, to: '/admin/ebooks', color: '#EC4899', bg: 'rgba(236, 72, 153, 0.1)' },
-                        { label: 'Settings', icon: Settings, to: '/admin/settings', color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.1)' },
-                      ].map((tool, idx) => {
-                        const ToolIcon = tool.icon;
-                        return (
-                          <button
-                            key={idx}
-                            onClick={() => { navigate(tool.to); setShowSheet(false); }}
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              gap: '0.5rem',
-                              padding: '0.85rem 0.25rem',
-                              background: 'var(--bg-glass)',
-                              border: '1px solid var(--border)',
-                              borderRadius: '16px',
-                              cursor: 'pointer',
-                              transition: 'all 0.15s ease',
-                              width: '100%',
-                              fontFamily: 'inherit',
-                            }}
-                          >
-                            <div style={{
-                              width: '40px',
-                              height: '40px',
-                              borderRadius: '12px',
-                              background: tool.bg,
-                              color: tool.color,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}>
-                              <ToolIcon size={20} strokeWidth={2} />
-                            </div>
-                            <span style={{
-                              fontSize: '0.75rem',
-                              fontWeight: 800,
-                              color: 'var(--text-main)',
-                              textAlign: 'center',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              width: '100%',
-                            }}>
-                              {tool.label}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {/* ── Student User card ── */}
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: '0.875rem',
-                      padding: '1.25rem 1.5rem 1.125rem',
-                      borderBottom: '1px solid var(--border)',
-                    }}>
-                      {/* Avatar */}
-                      <div style={{
-                        width: 52, height: 52, borderRadius: '15px', flexShrink: 0,
-                        background: 'linear-gradient(135deg, var(--violet), var(--emerald))',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '1.5rem', fontWeight: 900, color: '#fff',
-                        boxShadow: '0 4px 16px rgba(99,102,241,0.35)',
-                      }}>
-                        {initial}
-                      </div>
-
-                      {/* Name + email */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{
-                          fontWeight: 800, fontSize: '1rem', margin: 0,
-                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                          color: 'var(--text-main)',
-                        }}>
-                          {user?.name || 'Utilisateur'}
-                        </p>
-                        <p style={{
-                          color: 'var(--text-muted)', fontSize: '0.78rem', margin: '3px 0 0',
-                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                        }}>
-                          {user?.email}
-                        </p>
-                      </div>
-
-                      {/* Role badge */}
-                      <span 
+                {/* ── Platform Tools Grid ── */}
+                <div style={{
+                  padding: '1.25rem 1.5rem 0.75rem',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: '0.85rem',
+                }}>
+                  {(isAdmin ? adminTools : studentTools).map((tool, idx) => {
+                    const ToolIcon = tool.icon;
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => { navigate(tool.to); setShowSheet(false); }}
                         style={{
-                          padding: '0.28rem 0.7rem', borderRadius: 99,
-                          fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em',
-                          background: isAdmin ? 'rgba(16,185,129,0.1)' : 'var(--bg-glass)',
-                          color:      isAdmin ? 'var(--emerald)'        : 'var(--text-muted)',
-                          border: `1px solid ${isAdmin ? 'rgba(16,185,129,0.3)' : 'var(--border)'}`,
-                          flexShrink: 0,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.85rem 0.25rem',
+                          background: 'var(--bg-glass)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '16px',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          width: '100%',
+                          fontFamily: 'inherit',
                         }}
                       >
-                        {isAdmin ? 'Professeur' : 'Élève'}
-                      </span>
-                    </div>
-                  </>
-                )}
+                        <div style={{
+                          width: '42px',
+                          height: '42px',
+                          borderRadius: '13px',
+                          background: tool.bg,
+                          color: tool.color,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                        }}>
+                          <ToolIcon size={21} strokeWidth={2} />
+                        </div>
+                        <span style={{
+                          fontSize: '0.75rem',
+                          fontWeight: 800,
+                          color: 'var(--text-main)',
+                          textAlign: 'center',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          width: '100%',
+                        }}>
+                          {tool.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
 
                 {/* ── Actions (Common to both student and admin) ── */}
                 <div style={{ padding: '0.875rem 1.25rem 0', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

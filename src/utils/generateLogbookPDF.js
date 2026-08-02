@@ -293,12 +293,26 @@ const getAcademicYear = () => {
 };
 
 export const generateLogbookHTML = (selectedClass, entries, profName, styleConfig = {}) => {
-  const isArMode = false;
+  const isArMode = styleConfig.isArMode !== undefined ? Boolean(styleConfig.isArMode) : Boolean(
+    selectedClass?.language === 'ar' ||
+    selectedClass?.lang === 'ar' ||
+    selectedClass?.option === 'ar' ||
+    selectedClass?.isArabic ||
+    selectedClass?.isAr ||
+    (selectedClass?.name && (selectedClass.name.includes('عرب') || selectedClass.name.includes('عام') || selectedClass.name.toLowerCase().includes('(ar)'))) ||
+    (selectedClass?.level && (selectedClass.level.includes('arts') || selectedClass.level.includes('lettres') || selectedClass.level.includes('آداب')))
+  );
   const academicYear = getAcademicYear();
   const dir = isArMode ? 'rtl' : 'ltr';
   const alignment = isArMode ? 'right' : 'left';
   const logoText = "L'CONQ";
   const titleText = isArMode ? "دفتر النصوص الإلكتروني" : "Cahier de Textes Électronique";
+  
+  const profSchool = (typeof window !== 'undefined' && window.localStorage) ? (localStorage.getItem('profSchool') || '') : '';
+  const profDirection = (typeof window !== 'undefined' && window.localStorage) ? (localStorage.getItem('profDirection') || '') : '';
+  const profAcademy = (typeof window !== 'undefined' && window.localStorage) ? (localStorage.getItem('profAcademy') || '') : '';
+  const profSOM = (typeof window !== 'undefined' && window.localStorage) ? (localStorage.getItem('profSOM') || '') : '';
+  const profSubject = (typeof window !== 'undefined' && window.localStorage) ? (localStorage.getItem('profSubject') || '') : '';
   
   const arFont = styleConfig.arFont || 'Cairo';
   const frFont = styleConfig.frFont || 'Outfit';
@@ -416,12 +430,21 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
     }
 
     /* =========================================================================
-       PREMIUM OFFICIAL HEADER (ذو رأس راقي)
+       PREMIUM OFFICIAL HEADER (رأس وثيقة رسمية رفيع المستوى)
        ========================================================================= */
+    .header-top-container {
+      border-top: 4px solid #1e3a8a;
+      background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+      border-radius: 12px;
+      padding: 14px 18px 12px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+
     .official-header {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 20px;
       font-family: 'Cairo', 'Outfit', sans-serif;
       direction: ${dir};
     }
@@ -429,89 +452,152 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
     .official-header td {
       border: none !important;
       padding: 0 !important;
-      vertical-align: top;
+      vertical-align: middle !important;
     }
 
     /* Ministry block */
     .header-dept-block {
-      width: 33%;
+      width: 32%;
       font-size: 8.5px;
-      line-height: 1.4;
-      font-weight: 700;
+      line-height: 1.45;
       color: #334155;
       text-align: ${isArMode ? 'right' : 'left'};
+      ${isArMode ? 'border-right: 3.5px solid #3b82f6; padding-right: 12px !important;' : 'border-left: 3.5px solid #3b82f6; padding-left: 12px !important;'}
     }
     .header-dept-block span {
       display: block;
     }
+    .kingdom-title {
+      font-size: 10px;
+      font-weight: 900;
+      color: #0f172a;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 2px;
+    }
+    .ministry-title {
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 2px;
+    }
+    .academy-title {
+      font-weight: 600;
+      color: #475569;
+    }
+    .direction-title {
+      font-weight: 600;
+      color: #475569;
+    }
+    .school-title {
+      font-weight: 800;
+      color: #1e3a8a;
+      margin-top: 2px;
+    }
 
     /* Middle Emblem & Document Title */
     .header-center-block {
-      width: 34%;
+      width: 36%;
       text-align: center;
+      padding: 0 8px;
+    }
+    .brand-logo-wrap {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 5px 0;
+      margin-bottom: 4px;
     }
     .header-emblem-text {
-      font-size: 1.7rem;
+      font-size: 1.9rem;
       font-weight: 950;
+      line-height: 1;
       letter-spacing: -0.04em;
-      background: linear-gradient(135deg, #1e3a8a, #4f46e5);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin: 0 0 2px 0;
+      color: #1e1b4b;
+      font-family: 'Outfit', sans-serif !important;
+    }
+    .brand-subtext {
+      font-size: 7px;
+      font-weight: 900;
+      letter-spacing: 0.22em;
+      color: #6366f1;
+      text-transform: uppercase;
+      margin-top: 1px;
     }
     .header-document-title {
-      font-size: 11px;
-      font-weight: 800;
-      color: #0f172a;
-      border: 1.5px solid #0f172a;
-      padding: 3px 12px;
-      border-radius: 6px;
-      background: #f8fafc;
+      font-size: 11.5px;
+      font-weight: 900;
+      color: #ffffff;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      padding: 6px 16px;
+      border-radius: 8px;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
+      display: inline-block;
+      white-space: nowrap !important;
+      box-shadow: 0 3px 8px rgba(15, 23, 42, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .header-document-sub {
+      font-size: 7.5px;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
       margin-top: 4px;
     }
 
     /* Coordinates details block */
     .header-coords-block {
-      width: 33%;
+      width: 32%;
       font-size: 9px;
       font-weight: 700;
       text-align: ${isArMode ? 'left' : 'right'};
-      line-height: 1.5;
-      color: #0f172a;
+      line-height: 1.6;
+      color: #334155;
     }
     .coord-item {
       display: block;
+      margin-bottom: 3px;
+    }
+    .coord-badge {
+      font-weight: 900;
+      color: #1e40af;
+      background: #dbeafe;
+      border: 1px solid #bfdbfe;
+      padding: 1px 8px;
+      border-radius: 5px;
+      font-size: 9.5px;
     }
     .coord-value {
       font-weight: 800;
-      color: #1e3a8a;
+      color: #0f172a;
+    }
+    .coord-system {
+      font-weight: 900;
+      color: #059669;
+      background: #d1fae5;
+      padding: 1px 7px;
+      border-radius: 4px;
+      font-size: 8.5px;
     }
 
     /* Metadata Badge Grid under header */
     .coords-badge-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 1px;
-      background: #cbd5e1;
-      border: 1px solid #94a3b8;
-      border-radius: 6px;
-      overflow: hidden;
-      margin-top: 10px;
-      margin-bottom: 25px;
+      gap: 8px;
+      margin-top: 12px;
+      margin-bottom: 22px;
       font-size: 11px;
       direction: ${dir};
     }
     .coords-badge-cell {
-      background: #f8fafc;
-      padding: 6px 10px;
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 12px;
       text-align: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
     .coords-badge-label {
       font-size: 8px;
@@ -519,9 +605,11 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
       font-weight: 800;
       display: block;
       text-transform: uppercase;
-      margin-bottom: 2px;
+      letter-spacing: 0.05em;
+      margin-bottom: 3px;
     }
     .coords-badge-val {
+      font-size: 12px;
       font-weight: 900;
       color: #0f172a;
     }
@@ -705,49 +793,59 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
 
   <div class="print-page-wrapper">
     
-    <!-- ── OFFICIAL TOP HEADER (First Page Only) ── -->
-    <table class="official-header">
-      <tr>
-        <!-- Left: Ministry (AR or FR depending on locale) -->
-        <td class="header-dept-block">
-          ${isArMode ? `
-            <span>المملكة المغربية</span>
-            <span>وزارة التربية الوطنية والتعليم الأولي والرياضة</span>
-            <span>الأكاديمية الجهوية للتربية والتكوين</span>
-            <span>مؤسسة التميز للتعليم الخصوصي</span>
-          ` : `
-            <span>Royaume du Maroc</span>
-            <span>Ministère de l'Éducation Nationale, du Préscolaire et des Sports</span>
-            <span>Académie Régionale de l'Éducation et de la Formation</span>
-            <span>Établissement L'CONQ d'Excellence</span>
-          `}
-        </td>
-        
-        <!-- Center Emblem / Logo & Title -->
-        <td class="header-center-block">
-          <span style="font-family:'Outfit',sans-serif;" class="header-emblem-text">${logoText}</span>
-          <div class="header-document-title">
-            ${isArMode ? 'دفتر النصوص الإلكتروني' : 'Cahier de Textes'}
-          </div>
-        </td>
-        
-        <!-- Right: Print Metadata Coordinates -->
-        <td class="header-coords-block">
-          <span class="coord-item">
-            ${isArMode ? 'السنة الدراسية: ' : 'Année Scolaire : '}
-            <span class="coord-value">${academicYear}</span>
-          </span>
-          <span class="coord-item">
-            ${isArMode ? 'تاريخ الاستخراج: ' : 'Date d\'impression : '}
-            <span class="coord-value">${new Date().toLocaleDateString('fr-FR')}</span>
-          </span>
-          <span class="coord-item">
-            ${isArMode ? 'البرنامج المستعمل: ' : 'Généré via : '}
-            <span class="coord-value" style="color:#4f46e5;">L'CONQ OS 2026</span>
-          </span>
-        </td>
-      </tr>
-    </table>
+    <!-- ── OFFICIAL TOP HEADER CONTAINER (First Page Only) ── -->
+    <div class="header-top-container">
+      <table class="official-header">
+        <tr>
+          <!-- Left: Ministry & Institution -->
+          <td class="header-dept-block">
+            ${isArMode ? `
+              <span class="kingdom-title">المملكة المغربية</span>
+              <span class="ministry-title">وزارة التربية الوطنية والتعليم الأولي والرياضة</span>
+              <span class="academy-title">${esc(profAcademy || 'الأكاديمية الجهوية للتربية والتكوين')}</span>
+              ${profDirection ? `<span class="direction-title">${esc(profDirection)}</span>` : ''}
+              <span class="school-title">${esc(profSchool || 'مؤسسة L\'CONQ للتميز')}</span>
+            ` : `
+              <span class="kingdom-title">Royaume du Maroc</span>
+              <span class="ministry-title">Ministère de l'Éducation Nationale</span>
+              <span class="academy-title">${esc(profAcademy || "Académie Régionale de l'Éducation et de la Formation")}</span>
+              ${profDirection ? `<span class="direction-title">${esc(profDirection)}</span>` : ''}
+              <span class="school-title">${esc(profSchool || "Établissement L'CONQ d'Excellence")}</span>
+            `}
+          </td>
+          
+          <!-- Center Emblem / Logo & Title Banner -->
+          <td class="header-center-block">
+            <div class="brand-logo-wrap">
+              <span class="header-emblem-text">${logoText}</span>
+              <span class="brand-subtext">EXCELLENCE ACADÉMIQUE</span>
+            </div>
+            <div class="header-document-title">
+              ${isArMode ? 'دفتر النصوص الإلكتروني' : 'CAHIER DE TEXTES ÉLECTRONIQUE'}
+            </div>
+            <div class="header-document-sub">
+              ${isArMode ? 'وثيقة رسمية للتتبع التربوي' : 'DOCUMENT OFFICIEL DE SUIVI PÉDAGOGIQUE'}
+            </div>
+          </td>
+          
+          <!-- Right: Print Metadata Coordinates -->
+          <td class="header-coords-block">
+            <span class="coord-item">
+              ${isArMode ? 'السنة الدراسية: ' : 'Année Scolaire : '}
+              <span class="coord-badge">${academicYear}</span>
+            </span>
+            <span class="coord-item">
+              ${isArMode ? 'تاريخ الاستخراج: ' : 'Date d\'impression : '}
+              <span class="coord-value">${new Date().toLocaleDateString('fr-FR')}</span>
+            </span>
+            <span class="coord-item">
+              ${isArMode ? 'البرنامج المستعمل: ' : 'Généré via : '}
+              <span class="coord-system">L'CONQ OS 2026</span>
+            </span>
+          </td>
+        </tr>
+      </table>
+    </div>
 
     <!-- ── BADGES GRID COORDINATES ── -->
     <div class="coords-badge-grid">
@@ -761,11 +859,11 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
       </div>
       <div class="coords-badge-cell">
         <span class="coords-badge-label">${isArMode ? 'المادة الدراسية' : 'Matière'}</span>
-        <span class="coords-badge-val" style="color:#10b981;">${esc(selectedClass.subject || (isArMode ? 'الرياضيات' : 'Mathématiques'))}</span>
+        <span class="coords-badge-val" style="color:#059669;">${esc(selectedClass.subject || (isArMode ? 'الرياضيات' : 'Mathématiques'))}</span>
       </div>
       <div class="coords-badge-cell">
         <span class="coords-badge-label">${isArMode ? 'الأستاذ المؤطر' : 'Enseignant'}</span>
-        <span class="coords-badge-val">${esc(profName || 'Professeur')}</span>
+        <span class="coords-badge-val">${esc(profName || 'Prof. L\'CONQ')}${profSOM ? ` (SOM: ${esc(profSOM)})` : ''}</span>
       </div>
     </div>
 

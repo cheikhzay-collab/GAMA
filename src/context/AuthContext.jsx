@@ -2,7 +2,7 @@ import React, { createContext, useState, useContext, useEffect, useCallback, use
 import { onAuthChange, loginWithEmail, logoutUser, registerStudent, loginWithGoogle } from '../services/authService';
 import { getUserDoc, createUserDoc, updateUserDoc, saveQuestionProgress, getProgressDeltas, saveMockResult, getMockHistory, incrementDailyActivity, getRecentActivity, getAllUsers, setUserSubscription, getLeaderboard, addLoginLog, syncStudentsWithSupabase, logUserDownload } from '../services/userService';
 import { getAllExams, addExam as dbAddExam, updateExam as dbUpdateExam, deleteExam as dbDeleteExam, toggleExamStatus as dbToggleExamStatus, toggleArchiveExam as dbToggleArchiveExam, getExamQuestionsOnly } from '../services/examService';
-import { getSchoolsConfig, saveSchoolsConfig, getBrandingConfig, saveBrandingConfig, getFlashcardSettingsConfig, saveFlashcardSettingsConfig, getPdfSettingsConfig, savePdfSettingsConfig, getOmrScannerSettingsConfig, saveOmrScannerSettingsConfig, getWhatsAppSettingsConfig, saveWhatsAppSettingsConfig } from '../services/schoolService';
+import { getSchoolsConfig, saveSchoolsConfig, getBrandingConfig, saveBrandingConfig, getFlashcardSettingsConfig, saveFlashcardSettingsConfig, getPdfSettingsConfig, savePdfSettingsConfig, getOmrScannerSettingsConfig, saveOmrScannerSettingsConfig, getWhatsAppSettingsConfig, saveWhatsAppSettingsConfig, getPlansConfig, savePlansConfig } from '../services/schoolService';
 
 import { sanitizeInputString, validatePhoneNumber } from '../utils/security';
 import { supabase } from '../lib/supabase';
@@ -457,6 +457,14 @@ export function AuthProvider({ children }) {
 
   const [profName, setProfName] = useState(() => localStorage.getItem('profName') || '');
   const [profPhone, setProfPhone] = useState(() => localStorage.getItem('profPhone') || '');
+  const [profSchool, setProfSchool] = useState(() => localStorage.getItem('profSchool') || '');
+  const [profDirection, setProfDirection] = useState(() => localStorage.getItem('profDirection') || '');
+  const [profAcademy, setProfAcademy] = useState(() => localStorage.getItem('profAcademy') || '');
+  const [profSubject, setProfSubject] = useState(() => localStorage.getItem('profSubject') || 'Mathématiques');
+  const [profSOM, setProfSOM] = useState(() => localStorage.getItem('profSOM') || '');
+  const [profEmail, setProfEmail] = useState(() => localStorage.getItem('profEmail') || '');
+  const [profAcademicYear, setProfAcademicYear] = useState(() => localStorage.getItem('profAcademicYear') || '2025/2026');
+  const [profCity, setProfCity] = useState(() => localStorage.getItem('profCity') || '');
   const [profSite, setProfSite] = useState(() => localStorage.getItem('profSite') || 'www.lconq.ma');
   const [bankName, setBankName] = useState(() => localStorage.getItem('bankName') || 'CIH Bank (Maroc)');
   const [bankRIB, setBankRIB] = useState(() => localStorage.getItem('bankRIB') || '230 780 4567890123 0001 89');
@@ -466,6 +474,14 @@ export function AuthProvider({ children }) {
   const updateBrandingConfig = async (branding) => {
     const name = sanitizeInputString(branding.profName || '').trim();
     const phone = sanitizeInputString(branding.profPhone || '').trim();
+    const school = sanitizeInputString(branding.profSchool || '').trim();
+    const direction = sanitizeInputString(branding.profDirection || '').trim();
+    const academy = sanitizeInputString(branding.profAcademy || '').trim();
+    const subject = sanitizeInputString(branding.profSubject || '').trim();
+    const som = sanitizeInputString(branding.profSOM || '').trim();
+    const email = sanitizeInputString(branding.profEmail || '').trim();
+    const academicYear = sanitizeInputString(branding.profAcademicYear || '').trim();
+    const city = sanitizeInputString(branding.profCity || '').trim();
     const site = sanitizeInputString(branding.profSite || '').trim() || 'www.lconq.ma';
     const bName = sanitizeInputString(branding.bankName || 'CIH Bank (Maroc)').trim();
     const bRIB = sanitizeInputString(branding.bankRIB || '230 780 4567890123 0001 89').trim();
@@ -478,6 +494,14 @@ export function AuthProvider({ children }) {
 
     setProfName(name);
     setProfPhone(phone);
+    setProfSchool(school);
+    setProfDirection(direction);
+    setProfAcademy(academy);
+    setProfSubject(subject);
+    setProfSOM(som);
+    setProfEmail(email);
+    setProfAcademicYear(academicYear);
+    setProfCity(city);
     setProfSite(site);
     setBankName(bName);
     setBankRIB(bRIB);
@@ -486,6 +510,14 @@ export function AuthProvider({ children }) {
 
     localStorage.setItem('profName', name);
     localStorage.setItem('profPhone', phone);
+    localStorage.setItem('profSchool', school);
+    localStorage.setItem('profDirection', direction);
+    localStorage.setItem('profAcademy', academy);
+    localStorage.setItem('profSubject', subject);
+    localStorage.setItem('profSOM', som);
+    localStorage.setItem('profEmail', email);
+    localStorage.setItem('profAcademicYear', academicYear);
+    localStorage.setItem('profCity', city);
     localStorage.setItem('profSite', site);
     localStorage.setItem('bankName', bName);
     localStorage.setItem('bankRIB', bRIB);
@@ -504,6 +536,14 @@ export function AuthProvider({ children }) {
         await saveBrandingConfig({
           profName: name,
           profPhone: phone,
+          profSchool: school,
+          profDirection: direction,
+          profAcademy: academy,
+          profSubject: subject,
+          profSOM: som,
+          profEmail: email,
+          profAcademicYear: academicYear,
+          profCity: city,
           profSite: site,
           bankName: bName,
           bankRIB: bRIB,
@@ -1472,16 +1512,31 @@ export function AuthProvider({ children }) {
     };
     const updatedPlans = [...plans, newPlan];
     setPlans(updatedPlans);
+    try {
+      await savePlansConfig(updatedPlans);
+    } catch (err) {
+      console.warn('[Plans] Saved locally; remote synchronization will retry later.', err);
+    }
   };
 
   const removePlan = async (planId) => {
     const updatedPlans = plans.filter(p => p.id !== planId);
     setPlans(updatedPlans);
+    try {
+      await savePlansConfig(updatedPlans);
+    } catch (err) {
+      console.warn('[Plans] Saved locally; remote synchronization will retry later.', err);
+    }
   };
 
   const updatePlan = async (planId, updates) => {
     const updatedPlans = plans.map(p => p.id === planId ? { ...p, ...updates } : p);
     setPlans(updatedPlans);
+    try {
+      await savePlansConfig(updatedPlans);
+    } catch (err) {
+      console.warn('[Plans] Saved locally; remote synchronization will retry later.', err);
+    }
   };
 
   const activateSubscription = async (userId, planId, durationDays) => {
@@ -1881,7 +1936,7 @@ export function AuthProvider({ children }) {
           pdfConfigRes,
           omrScannerConfigRes,
           whatsappConfigRes,
-          fbPlansRes,
+          plansConfigRes,
           fbExamsRes
         ] = await Promise.allSettled([
           getSchoolsConfig(),
@@ -1890,7 +1945,7 @@ export function AuthProvider({ children }) {
           getPdfSettingsConfig(),
           getOmrScannerSettingsConfig(),
           getWhatsAppSettingsConfig(),
-          getPlans(),
+          getPlansConfig(),
           getAllExams()
         ]);
 
@@ -1900,7 +1955,7 @@ export function AuthProvider({ children }) {
         const pdfConfig = pdfConfigRes.status === 'fulfilled' ? pdfConfigRes.value : null;
         const omrScannerConfig = omrScannerConfigRes.status === 'fulfilled' ? omrScannerConfigRes.value : null;
         const whatsappConfig = whatsappConfigRes.status === 'fulfilled' ? whatsappConfigRes.value : null;
-        const fbPlans = fbPlansRes.status === 'fulfilled' ? fbPlansRes.value : null;
+        const plansConfig = plansConfigRes.status === 'fulfilled' ? plansConfigRes.value : null;
         const fbExams = fbExamsRes.status === 'fulfilled' ? fbExamsRes.value : null;
 
         // Process Schools Config
@@ -2050,14 +2105,14 @@ export function AuthProvider({ children }) {
         }
 
         // Process Plans
-        if (fbPlans && fbPlans.length > 0) {
-          setPlans(fbPlans);
+        if (plansConfig && plansConfig.length > 0) {
+          setPlans(plansConfig);
         } else {
           // Seed default plans if not present
           try {
-            await savePlans(plans);
+            await savePlansConfig(plansRef.current);
           } catch (seedErr) {
-            console.warn('[Supabase] Failed to seed default plans:', seedErr.message);
+            console.warn('[Plans] Failed to seed default plans:', seedErr.message);
           }
         }
 
@@ -2071,16 +2126,8 @@ export function AuthProvider({ children }) {
         }
         setExams(finalExams);
 
-        // Background prefetch questions for all active, non-archived exams
-        const activeExams = finalExams.filter(e => e.isActive !== false && e.isArchived !== true);
-        Promise.allSettled(activeExams.map(async (exam) => {
-          try {
-            const questions = await getExamQuestionsOnly(exam.id);
-            setExams(prev => prev.map(e => e.id === exam.id ? { ...e, questions } : e));
-          } catch (err) {
-            console.error('[Supabase] Failed to prefetch questions for', exam.id, err);
-          }
-        }));
+        // Questions are loaded on demand by the study/exam screens.
+        // Avoid downloading every question bank during app startup.
       } catch (e) {
         console.warn('[Supabase] Error syncing config/exams:', e.message);
       }
@@ -2220,14 +2267,8 @@ export function AuthProvider({ children }) {
       if (fbUsers) {
         setUsers(fbUsers);
       }
-      if (SUPABASE_ENABLED) {
-        const fbCodes = await getAllCodes();
-        if (fbCodes) {
-          setActivationCodes(fbCodes);
-        }
-      }
     } catch (e) {
-      console.warn('[Auth] Error loading admin users/codes:', e.message);
+      console.warn('[Auth] Error loading admin users:', e.message);
     }
   }, [user?.role]);
 
@@ -2381,26 +2422,39 @@ export function AuthProvider({ children }) {
     return false;
   };
 
+  const examQuestionRequests = React.useRef(new Map());
+
   const loadExamQuestions = async (examId) => {
     const exam = exams.find(e => e.id === examId);
     if (exam && exam.questions && exam.questions.length > 0) {
       return exam.questions;
     }
-    try {
-      const questions = await getExamQuestionsOnly(examId);
-      setExams(prev => prev.map(e => e.id === examId ? { ...e, questions } : e));
-      return questions;
-    } catch (err) {
-      console.error('[Supabase] Failed to load questions for exam:', examId, err);
-      throw err;
-    }
+
+    const pendingRequest = examQuestionRequests.current.get(examId);
+    if (pendingRequest) return pendingRequest;
+
+    const request = getExamQuestionsOnly(examId)
+      .then((questions) => {
+        setExams(prev => prev.map(e => e.id === examId ? { ...e, questions } : e));
+        return questions;
+      })
+      .catch((err) => {
+        console.error('[Supabase] Failed to load questions for exam:', examId, err);
+        throw err;
+      })
+      .finally(() => {
+        examQuestionRequests.current.delete(examId);
+      });
+
+    examQuestionRequests.current.set(examId, request);
+    return request;
   };
 
   return (
     <AuthContext.Provider value={{ 
       user, users, login, logout, register, loginWithGoogle: loginGoogle, exams, addExam, updateUserTier, updateProfile,
       toggleExamStatus, updateExamDetails, deleteExam, toggleArchiveExam,
-      plans, activateSubscription, cancelSubscription, updateStudentCRM, deleteStudent, addPlan, removePlan, updatePlan,
+      plans, getPlans: getPlansConfig, getPlansConfig, activateSubscription, cancelSubscription, updateStudentCRM, deleteStudent, addPlan, removePlan, updatePlan,
       activationCodes, generateActivationCodes, redeemActivationCode,
       progress, updateCardProgress, getStudentStats, dueTodayCount,
       theme, toggleTheme,
@@ -2415,7 +2469,7 @@ export function AuthProvider({ children }) {
       syncStudentsList,
       trackDownload,
       loading,
-      profName, profPhone, profSite, bankName, bankRIB, bankBeneficiary, facebookPixelId, updateBrandingConfig, updateFlashcardSettingsConfig, updatePdfSettingsConfig, updateOmrScannerSettingsConfig,
+      profName, profPhone, profSchool, profDirection, profAcademy, profSubject, profSOM, profEmail, profAcademicYear, profCity, profSite, bankName, bankRIB, bankBeneficiary, facebookPixelId, updateBrandingConfig, updateFlashcardSettingsConfig, updatePdfSettingsConfig, updateOmrScannerSettingsConfig,
       whatsappSettings, updateWhatsAppSettingsConfig,
       upgradedPlan, setUpgradedPlan,
       isOnline,

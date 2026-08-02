@@ -52,6 +52,218 @@ const getFontFamilyStyle = (font) => {
 
 
 const getTemplateStyles = (style) => {
+  if (style === 'anisse_classic') {
+    return `
+      /* === LYCÉE ANISSE / DEVOIR SURVEILLÉ MAROCAIN === */
+      .anisse-header-frame {
+        display: grid;
+        grid-template-columns: 1.6fr 3.2fr 1.6fr 0.9fr;
+        border: 1.5px solid #005086;
+        border-radius: 4px;
+        background: #ffffff;
+        margin-bottom: 0.6rem;
+        page-break-inside: avoid;
+        font-family: 'Computer Modern Serif', 'STIX Two Text', 'Times New Roman', serif;
+        box-shadow: 0 2px 8px rgba(0,80,134,0.06);
+      }
+      .anisse-col {
+        padding: 0.45rem 0.65rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border-right: 1.5px solid #005086;
+      }
+      .anisse-col:last-child {
+        border-right: none;
+      }
+      .anisse-col.col-left {
+        font-size: 0.84rem;
+        color: #0f172a;
+        line-height: 1.55;
+      }
+      .anisse-col.col-left strong {
+        color: #005086;
+        font-weight: 700;
+      }
+      .anisse-col.col-center {
+        text-align: center;
+        align-items: center;
+      }
+      .anisse-col.col-center .main-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #005086;
+        font-family: 'STIX Two Text', 'Computer Modern Serif', serif;
+        line-height: 1.2;
+      }
+      .anisse-col.col-center .sub-title {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: #475569;
+        text-transform: uppercase;
+        margin-top: 0.2rem;
+      }
+      .anisse-col.col-right {
+        font-size: 0.84rem;
+        text-align: center;
+        align-items: center;
+      }
+      .anisse-col.col-right strong {
+        color: #005086;
+        font-weight: 700;
+      }
+      .anisse-col.col-qr {
+        padding: 0.25rem;
+        align-items: center;
+        justify-content: center;
+        background: #005086;
+        color: #ffffff;
+      }
+      .anisse-col.col-qr img {
+        width: 44px;
+        height: 44px;
+        border-radius: 2px;
+        background: #ffffff;
+        padding: 2px;
+      }
+      .anisse-col.col-qr .qr-label {
+        font-size: 0.55rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        margin-top: 0.15rem;
+        text-transform: uppercase;
+        color: #ffffff;
+      }
+      .anisse-sub-bar {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.8rem;
+        padding-bottom: 0.45rem;
+        border-bottom: 2px solid #005086;
+        page-break-inside: avoid;
+      }
+      .anisse-sub-bar .badge-num {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: #005086;
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .anisse-sub-bar .pill-instructions {
+        border: 1.5px solid #005086;
+        border-radius: 20px;
+        padding: 0.2rem 1.1rem;
+        font-size: 0.88rem;
+        font-style: italic;
+        font-weight: 600;
+        color: #005086;
+        background: #ffffff;
+      }
+
+      .anisse-ex-card {
+        border: 1.5px solid #005086;
+        border-radius: 4px;
+        margin-bottom: 0.65rem;
+        background: #ffffff;
+        overflow: visible;
+        page-break-inside: auto;
+        break-inside: auto;
+      }
+      .anisse-ex-card-header {
+        display: flex;
+        background: #005086;
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 0.95rem;
+        page-break-after: avoid;
+        break-after: avoid;
+      }
+      .anisse-ex-card-header .pts-col-header {
+        width: 80px;
+        min-width: 80px;
+        padding: 0.45rem 0.65rem;
+        border-right: 1.5px solid #ffffff;
+        text-align: center;
+        font-size: 0.88rem;
+      }
+      .anisse-ex-card-header .title-col-header {
+        flex: 1;
+        padding: 0.45rem 0.85rem;
+        letter-spacing: 0.02em;
+      }
+      .anisse-ex-row {
+        display: flex;
+        border-top: 1px solid #cbd5e1;
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      .anisse-ex-row:first-child {
+        border-top: none;
+      }
+      .anisse-ex-row .pts-col {
+        width: 80px;
+        min-width: 80px;
+        padding: 0.65rem 0.4rem;
+        border-right: 1px solid #cbd5e1;
+        font-size: 0.8rem;
+        color: #64748b;
+        font-weight: 600;
+        text-align: center;
+        background: #f8fafc;
+      }
+      .anisse-ex-row .content-col {
+        flex: 1;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.92rem;
+        line-height: 1.6;
+        color: #0f172a;
+      }
+
+      @media print {
+        .anisse-ex-card {
+          display: table !important;
+          width: 100% !important;
+          border-collapse: collapse !important;
+          border: 1.5px solid #005086 !important;
+          overflow: visible !important;
+          page-break-inside: auto !important;
+          break-inside: auto !important;
+        }
+        .anisse-ex-card-header {
+          display: table-row !important;
+          background: #005086 !important;
+          color: #ffffff !important;
+          page-break-after: avoid !important;
+          break-after: avoid !important;
+        }
+        .anisse-ex-row {
+          display: table-row !important;
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+        }
+        .anisse-ex-card-header .pts-col-header, .anisse-ex-row .pts-col {
+          display: table-cell !important;
+          width: 80px !important;
+          min-width: 80px !important;
+          max-width: 80px !important;
+          vertical-align: middle !important;
+        }
+        .anisse-ex-card-header .title-col-header, .anisse-ex-row .content-col {
+          display: table-cell !important;
+          vertical-align: top !important;
+          padding: 0.55rem 0.85rem !important;
+        }
+      }
+    `;
+  }
   if (style === 'modern_minimalist') {
     return `
       /* === MODERN MINIMALIST OVERRIDES === */
@@ -1864,7 +2076,7 @@ html{counter-reset:page ${startPage - 1}}
     box-shadow: none !important;
   }
 }
-.katex{font-size:1.05em}.katex-display{margin:4px 0}
+.katex, .katex *, .katex .mathnormal, .katex .mord, .katex .mbin, .katex .mrel, .katex .mopen, .katex .mclose, .katex .mpunct { font-weight: normal !important; white-space: nowrap !important; } .katex .mathbf, .katex .mathbf * { font-weight: bold !important; } .katex-display { margin: 4px 0; white-space: normal !important; }
 ${templateCSS}
 </style>
 </head><body>
@@ -1948,6 +2160,29 @@ ${settings.premiumOmr === true ? `
 ` : ''}
 
 <div class="ws-content">
+  ${templateStyle === 'anisse_classic' ? `
+<div class="anisse-header-frame">
+  <div class="anisse-col col-left">
+    <div>Prof : <strong>${profName || 'Lycée ANISSE'}</strong></div>
+    <div>A.S : <strong>${year || '2025/2026'}</strong></div>
+  </div>
+  <div class="anisse-col col-center">
+    <div class="main-title">${examTitle || 'Devoir Surveillé N° 1 (Semestre 1)'}</div>
+    <div class="sub-title">DEVOIR SURVEILLÉ</div>
+  </div>
+  <div class="anisse-col col-right">
+    <div>Niveau : <strong>${school || '2ème Bac PC/SVT'}</strong></div>
+  </div>
+  <div class="anisse-col col-qr">
+    <img src="${premiumQrUrl}" alt="Solution QR" class="qr-img" />
+    <span class="qr-label">SOLUTION</span>
+  </div>
+</div>
+<div class="anisse-sub-bar">
+  <span class="badge-num">1</span>
+  <span class="pill-instructions">(Les questions de l'exercice sont indépendantes)</span>
+</div>
+  ` : `
   <div class="ws-doc-header">
     <div class="ws-doc-header-left">
       <h1 class="ws-doc-title">${examTitle}</h1>
@@ -1957,6 +2192,7 @@ ${settings.premiumOmr === true ? `
       <span class="ws-doc-type-badge">SUJET OFFICIEL</span>
     </div>
   </div>
+  `}
   ${questionsHtml}
 </div>
 
@@ -2771,7 +3007,7 @@ html{counter-reset:page ${startPage - 1}}
     box-shadow: none !important;
   }
 }
-.katex{font-size:1.05em}.katex-display{margin:4px 0}
+.katex, .katex *, .katex .mathnormal, .katex .mord, .katex .mbin, .katex .mrel, .katex .mopen, .katex .mclose, .katex .mpunct { font-weight: normal !important; white-space: nowrap !important; } .katex .mathbf, .katex .mathbf * { font-weight: bold !important; } .katex-display { margin: 4px 0; white-space: normal !important; }
 ${templateCSS}
 </style>
 </head><body>
@@ -2793,6 +3029,29 @@ ${pdfConf.showSidebar ? `<div class="ws-sidebar">${sidebarTabsHtml}</div>` : ''}
 ${coverHtml}
 
 <div class="ws-content">
+  ${templateStyle === 'anisse_classic' ? `
+<div class="anisse-header-frame">
+  <div class="anisse-col col-left">
+    <div>Prof : <strong>${profName || 'Lycée ANISSE'}</strong></div>
+    <div>A.S : <strong>${year || '2025/2026'}</strong></div>
+  </div>
+  <div class="anisse-col col-center">
+    <div class="main-title">${examTitle || 'Devoir Surveillé N° 1 (Semestre 1)'}</div>
+    <div class="sub-title" style="color: #7c3aed;">CORRIGÉ DÉTAILLÉ DEVOIR</div>
+  </div>
+  <div class="anisse-col col-right">
+    <div>Niveau : <strong>${school || '2ème Bac PC/SVT'}</strong></div>
+  </div>
+  <div class="anisse-col col-qr" style="background: #7c3aed;">
+    <img src="${premiumQrUrl}" alt="Solution QR" class="qr-img" />
+    <span class="qr-label">SOLUTION</span>
+  </div>
+</div>
+<div class="anisse-sub-bar" style="border-bottom-color: #7c3aed;">
+  <span class="badge-num" style="background: #7c3aed;">1</span>
+  <span class="pill-instructions" style="border-color: #7c3aed; color: #7c3aed;">(Corrigé détaillé et astuces de résolution)</span>
+</div>
+  ` : `
   <div class="ws-doc-header" style="border-bottom-color: #7c3aed;">
     <div class="ws-doc-header-left">
       <h1 class="ws-doc-title">${examTitle}</h1>
@@ -2802,6 +3061,7 @@ ${coverHtml}
       <span class="ws-doc-type-badge" style="background: #7c3aed;">CORRIGÉ DÉTAILLÉ</span>
     </div>
   </div>
+  `}
   ${questionsHtml}
 </div>
 
@@ -3402,7 +3662,7 @@ html{counter-reset:page ${startPage - 1}}
   .cover{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   ${!shouldShowCover ? '.cover{display:none!important}' : ''}
 }
-.katex{font-size:1.05em}.katex-display{margin:4px 0}
+.katex, .katex *, .katex .mathnormal, .katex .mord, .katex .mbin, .katex .mrel, .katex .mopen, .katex .mclose, .katex .mpunct { font-weight: normal !important; white-space: nowrap !important; } .katex .mathbf, .katex .mathbf * { font-weight: bold !important; } .katex-display { margin: 4px 0; white-space: normal !important; }
 ${templateCSS}
 </style>
 </head><body>

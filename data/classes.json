@@ -133,10 +133,10 @@
         "الفرض الثالث": 8
       },
       "N152008459": {
-        "Concours Médecine / Pharmacie 2024": "-0.5/20"
+        "Concours Médecine / Pharmacie 2024": "-0.25/20"
       },
       "n152008459": {
-        "Concours Médecine / Pharmacie 2024": "-0.5/20"
+        "Concours Médecine / Pharmacie 2024": "-0.25/20"
       }
     },
     "homework": {},
@@ -147,20 +147,32 @@
         "type": "course",
         "title": "Fiche 01 : Logique Mathématique",
         "lessonId": "MOCK-TC-MATH-01"
+      },
+      {
+        "id": "prog_1785410481896_94gwr",
+        "type": "homework",
+        "title": "Devoir Surveillé N°1 - Semestre 1",
+        "lessonId": "MOCK-L-1ZH33OIKJ"
+      },
+      {
+        "id": "prog_1785411281537_vbpbz",
+        "type": "homework",
+        "title": "فرض 1 الدورة 1",
+        "lessonId": "MOCK-L-3GCJFI71R"
       }
     ],
     "createdAt": "2026-07-12T17:50:46.658Z",
-    "updatedAt": "2026-07-23T10:07:32.396Z",
+    "updatedAt": "2026-07-30T11:34:41.561Z",
     "competitions": [
       "Concours Médecine / Pharmacie 2024",
       "QCM : المتتاليات الترجعية (20 Questions)"
     ],
     "competitionGrades": {
       "N152008459": {
-        "Concours Médecine / Pharmacie 2024": "-0.5/20"
+        "Concours Médecine / Pharmacie 2024": "-0.25/20"
       },
       "n152008459": {
-        "Concours Médecine / Pharmacie 2024": "-0.5/20"
+        "Concours Médecine / Pharmacie 2024": "-0.25/20"
       }
     }
   },
@@ -355,9 +367,22 @@
     },
     "homework": {},
     "language": "fr",
-    "program": [],
+    "program": [
+      {
+        "id": "prog_1785411698789_avhtf",
+        "type": "course",
+        "title": "Barycentre",
+        "lessonId": "MOCK-L-TKF6NKSTI"
+      },
+      {
+        "id": "prog_1785412497968_yqpkw",
+        "type": "homework",
+        "title": "Contrôle 1",
+        "lessonId": "MOCK-L-7DX9H14UZ"
+      }
+    ],
     "createdAt": "2026-07-16T09:51:05.939Z",
-    "updatedAt": "2026-07-22T21:54:41.114Z",
+    "updatedAt": "2026-07-30T11:54:58.003Z",
     "competitions": [
       "Concours Médecine / Pharmacie 2024",
       "QCM : Généralités sur les fonctions numériques (20 Questions)",

@@ -9,55 +9,7 @@ import {
   FileDown, Play, Clock, BrainCircuit, Zap
 } from 'lucide-react';
 import { renderWithMath } from '../utils/mathRenderer';
-import { mapLegacySchoolToLevel } from '../utils/levelHelpers';
-import { generateSubjectHTML, generateCorrectionHTML, openPrintWindow } from '../utils/generateExamPDF';
-import { generateAnswerSheet } from '../utils/generateAnswerSheet';
-
-
-const normalizeLevel = (rawLevel) => {
-  if (!rawLevel) return '2bac_pc_svt';
-  const normalized = rawLevel.toLowerCase().trim();
-  
-  if (normalized.includes('common_core_sci') || normalized.includes('common-core-sci')) return 'common_core_sci';
-  if (normalized.includes('common_core_arts') || normalized.includes('common-core-arts')) return 'common_core_arts';
-  if (normalized.includes('1bac_sci') || normalized.includes('1bac-sci')) return '1bac_sci';
-  if (normalized.includes('1bac_arts') || normalized.includes('1bac-arts')) return '1bac_arts';
-  if (normalized.includes('2bac_sm') || normalized.includes('2bac-sm')) return '2bac_sm';
-  if (normalized.includes('2bac_pc_svt') || normalized.includes('2bac-pc-svt') || normalized.includes('2bac_pc/svt')) return '2bac_pc_svt';
-  if (normalized.includes('2bac_arts') || normalized.includes('2bac-arts')) return '2bac_arts';
-
-  if (normalized.includes('sm') || normalized.includes('math') || normalized.includes('رياضية')) {
-    return '2bac_sm';
-  }
-  if (normalized.includes('pc') || normalized.includes('svt') || normalized.includes('تجريبية')) {
-    return '2bac_pc_svt';
-  }
-  if (normalized.includes('2bac') || normalized.includes('ثانية باك')) {
-    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
-      return '2bac_arts';
-    }
-    return '2bac_pc_svt';
-  }
-  if (normalized.includes('1bac') || normalized.includes('أولى باك') || normalized.includes('1ère bac') || normalized.includes('première bac')) {
-    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
-      return '1bac_arts';
-    }
-    return '1bac_sci';
-  }
-  if (normalized.includes('commun') || normalized.includes('tc') || normalized.includes('مشترك')) {
-    if (normalized.includes('letter') || normalized.includes('art') || normalized.includes('آداب') || normalized.includes('إنسانية')) {
-      return 'common_core_arts';
-    }
-    return 'common_core_sci';
-  }
-  
-  const validKeys = ['common_core_sci', 'common_core_arts', '1bac_sci', '1bac_arts', '2bac_sm', '2bac_pc_svt', '2bac_arts'];
-  if (validKeys.includes(rawLevel)) {
-    return rawLevel;
-  }
-  
-  return '2bac_pc_svt';
-};
+import { mapLegacySchoolToLevel, normalizeLevel } from '../utils/levelHelpers';
 
 const MAIN_LEVELS = [
   {

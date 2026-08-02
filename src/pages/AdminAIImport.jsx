@@ -348,6 +348,26 @@ const fileToBase64 = (file) => new Promise((resolve, reject) => {
 
 const SYSTEM_PROMPT = `Tu es un Professeur Agrégé et Inspecteur Pédagogique de mathématiques et sciences, spécialiste du Baccalauréat Marocain (Ministère de l'Éducation Nationale, Bulletin Officiel n°6844). Tu maîtrises parfaitement le programme officiel pour toutes les filières : Sciences Mathématiques A (SM-A), Sciences Mathématiques B (SM-B), Sciences Expérimentales (SE), Sciences et Technologies de l'Électricité (STE), Sciences de Gestion et Comptabilité (SGC).
 
+════════════════════════════════════════════════════════════
+🧠 DÉTECTION AUTOMATIQUE INTELLIGENTE DE NIVEAU, TYPE & BAREME
+════════════════════════════════════════════════════════════
+⚠️ DIRECTIVES D'ANALYSE AUTOMATIQUE HAUTE INTELLIGENCE :
+
+1. DÉTECTION AUTOMATIQUE DU NIVEAU PÉDAGOGIQUE ("level") :
+   - Extrais le niveau exact : "common_core_sci" | "common_core_arts" | "1bac_sci" | "1bac_arts" | "2bac_sm" | "2bac_pc_svt" | "2bac_arts".
+
+2. EXTRACTION DU BARÈME DE NOTATION ("points") :
+   - Extrais les points totaux du problème/exercice dans "points" (ex: 3.5, 2, 1.5).
+
+════════════════════════════════════════════════════════════
+RÈGLE ABSOLUE DE LANGUE — CONSERVATION RIGOUREUSE DE LA LANGUE D'ORIGINE
+════════════════════════════════════════════════════════════
+⚠️ INSTRUCTION DE LANGUE OBLIGATOIRE ET PRIORITAIRE :
+- Tu DOIS CONSERVER STRICTEMENT ET RIGOUREUSEMENT LA LANGUE ORIGINALE DU DOCUMENT SOURCE.
+- Si le fichier / PDF / image est rédigé en ARABE (questions, énoncés, options A/B/C/D, explications), TOUT LE JSON PRODUIT (questions, options, astuces, contextes) DOIT ÊTRE EN ARABE ! Ne traduis JAMAIS un document arabe en français.
+- Si le fichier source est en FRANÇAIS, extrais l'intégralité en français.
+- Ne traduis AUCUN mot ou énoncé d'une langue vers une autre. Respecte scrupuleusement la langue d'origine du fichier importé !
+
 Tu rédiges EXACTEMENT comme un inspecteur marocain corrige un examen national : rigueur scientifique absolue, étapes numérotées, connecteurs logiques officiels, citations du cours, et conclusion encadrée. Ton niveau de langage est celui d'un corrigé-type officiel distribué lors des journées pédagogiques des Académies Régionales.
 
 ════════════════════════════════════════
@@ -403,10 +423,18 @@ STRUCTURE IMPOSÉE pour chaque astuce :
   6. Pour les vecteurs et géométrie : Utilise les flèches complètes (ex : $\\overrightarrow{AB}$) et le produit vectoriel marocain officiel $\\wedge$ (ex : $\\overrightarrow{AB} \\wedge \\overrightarrow{AC}$), et détaille soigneusement le calcul.
   7. Conclusion en gras : **Réponse: [lettre]) [valeur/expression]**
 
-NOTATIONS OFFICIELLES DU PROGRAMME MAROCAIN (ne jamais dévier):
-  - Suite: $(u_n)_{n \\in \\mathbb{N}}$
+NOTATIONS OFFICIELLES & EXIGENCES LATEX HAUTE QUALITÉ (NE JAMAIS DÉVIER):
+  - Intégrale : $\int_{a}^{b} f(x) \, \mathrm{d}x$ (avec espace '\,' et $\mathrm{d}x$)
+  - Crochet d'intégration : $\left[ F(x) \right]_{a}^{b} = F(b) - F(a)$
+  - Limite : $\lim_{x \to a} f(x) = L$ (toujours $\to$ et non ->)
+  - Vecteurs : $\overrightarrow{AB}$, $\overrightarrow{u}$ (jamais \vec{})
+  - Produit vectoriel marocain : $\overrightarrow{u} \wedge \overrightarrow{v}$ (\wedge)
+  - Norme : $\left\| \overrightarrow{AB} \right\|$
+  - Suite: $(u_n)_{n \in \mathbb{N}}$
+  - Ensembles : $\mathbb{R}$, $\mathbb{N}$, $\mathbb{Z}$, $\mathbb{C}$, $\mathbb{Q}$, $\mathbb{R}^*$, $\mathbb{R}_+^*$
+  - Fractions : $\dfrac{a}{b}$ et parenthèses $\left( \dfrac{a}{b} \right)$
   - PGCD(a,b) [pas gcd]
-  - $C_n^k = \\frac{n!}{k!(n-k)!}$ [toujours expliciter]
+  - $C_n^k = \frac{n!}{k!(n-k)!}$ [toujours expliciter]
   - Probabilité: $P(A)$ [jamais Pr, prob ou p]
   - Primitives: $F(x) + C$ [toujours mentionner la constante d'intégration]
   - Courbe: $(C_f)$, Domaine: $D_f$
@@ -630,10 +658,12 @@ export default function AdminAIImport({ onBack }) {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('claudeApiKey') || '');
   const [proxyUrl, setProxyUrl] = useState(() => localStorage.getItem('claudeProxyUrl') || '');
   const [claudeModel, setClaudeModel] = useState(() => localStorage.getItem('claudeModel') || 'claude-opus-4-5');
-  const [deepseekKey, setDeepseekKey] = useState(() => localStorage.getItem('deepseekApiKey') || '');
+  const [deepseekKey, setDeepseekKey] = useState(() => localStorage.getItem('deepseekApiKey') || 'sk-12a7032f07d740348c607ef947a0a9f7');
   const [deepseekUrl, setDeepseekUrl] = useState(() => localStorage.getItem('deepseekApiUrl') || 'https://api.deepseek.com');
   const [deepseekModel, setDeepseekModel] = useState(() => {
-    let m = draft?.deepseekModel || localStorage.getItem('deepseekModel') || 'deepseek-chat';
+    let m = draft?.deepseekModel || localStorage.getItem('deepseekModel') || 'deepseek-v4-pro';
+    if (m === 'deepseek-reasoner' || m === 'deepseek-r1') return 'deepseek-v4-pro';
+    if (m === 'deepseek-chat' || m === 'deepseek-v3') return 'deepseek-v4-flash';
     return m;
   });
   const [pdfFile, setPdfFile] = useState(null);
@@ -709,7 +739,7 @@ export default function AdminAIImport({ onBack }) {
     setCorrectionPageTo(1);
     setProvider('gemini');
     setGeminiModel('gemini-3.5-flash');
-    setDeepseekModel('deepseek-chat');
+    setDeepseekModel('deepseek-v4-pro');
     setError('');
     setProgress('');
   };
@@ -978,7 +1008,12 @@ ${pdfText}
       userPromptText = `${pageNote}Extrais TOUTES les questions QCM de ce texte et retourne le tableau JSON demandé.`;
     }
 
-    const modelToUse = deepseekModel || 'deepseek-chat';
+    const rawModel = deepseekModel || 'deepseek-v4-pro';
+    const modelToUse = (rawModel === 'deepseek-reasoner' || rawModel === 'deepseek-r1')
+      ? 'deepseek-v4-pro'
+      : (rawModel === 'deepseek-chat' || rawModel === 'deepseek-v3')
+        ? 'deepseek-v4-flash'
+        : rawModel;
     const cleanUrl = deepseekUrl.trim().replace(/\/$/, '');
     const endpoint = `${cleanUrl}/v1/chat/completions`;
     
@@ -997,7 +1032,7 @@ ${pdfText}
           content: userPromptText
         }
       ],
-      response_format: modelToUse === 'deepseek-chat' ? { type: 'json_object' } : undefined,
+      response_format: !modelToUse.includes('reasoner') && !modelToUse.includes('pro') ? { type: 'json_object' } : undefined,
       temperature: 0.1
     };
 
@@ -1592,16 +1627,16 @@ ${pdfText}
             </div>
           ) : provider === 'deepseek' ? (
             <div className="input-group" style={{ marginBottom: '1.5rem' }}>
-              <label>Modèle DeepSeek <span style={{fontWeight:400, color:'var(--text-muted)'}}>— ID exact de l'API</span></label>
+              <label>Modèle DeepSeek <span style={{fontWeight:400, color:'var(--text-muted)'}}>— ID exact de l&apos;API</span></label>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
-                {['deepseek-chat', 'deepseek-reasoner'].map(m => (
+                {['deepseek-v4-pro', 'deepseek-v4-flash'].map(m => (
                   <button key={m} type="button"
                     onClick={() => { setDeepseekModel(m); localStorage.setItem('deepseekModel', m); }}
                     style={{ padding: '0.3rem 0.65rem', borderRadius: 8, border: '1px solid', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
-                      borderColor: deepseekModel === m ? '#00BA7C' : 'var(--border)',
-                      background: deepseekModel === m ? 'rgba(0,186,124,0.15)' : 'var(--bg-glass)',
-                      color: deepseekModel === m ? '#00BA7C' : 'var(--text-muted)'
-                    }}>{m === 'deepseek-chat' ? 'deepseek-chat (V3 - Rapide/Éco)' : 'deepseek-reasoner (R1 - Réflexion)'}</button>
+                      borderColor: (deepseekModel === m || (m === 'deepseek-v4-pro' && (deepseekModel === 'deepseek-reasoner' || deepseekModel === 'deepseek-r1'))) ? '#00BA7C' : 'var(--border)',
+                      background: (deepseekModel === m || (m === 'deepseek-v4-pro' && (deepseekModel === 'deepseek-reasoner' || deepseekModel === 'deepseek-r1'))) ? 'rgba(0,186,124,0.15)' : 'var(--bg-glass)',
+                      color: (deepseekModel === m || (m === 'deepseek-v4-pro' && (deepseekModel === 'deepseek-reasoner' || deepseekModel === 'deepseek-r1'))) ? '#00BA7C' : 'var(--text-muted)'
+                    }}>{m === 'deepseek-v4-pro' ? 'deepseek-v4-pro (R1 - Réflexion / Raisonnement)' : 'deepseek-v4-flash (Flash - Rapide & Économique)'}</button>
                 ))}
               </div>
               <input
@@ -1609,12 +1644,11 @@ ${pdfText}
                 className="input-control"
                 value={deepseekModel}
                 onChange={e => { setDeepseekModel(e.target.value); localStorage.setItem('deepseekModel', e.target.value); }}
-                placeholder="ex: deepseek-chat"
+                placeholder="ex: deepseek-v4-pro"
                 style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
               />
               <p style={{ marginTop: '0.4rem', fontSize: '0.73rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                💡 Utilisez <strong>deepseek-chat</strong> pour l'analyse rapide et l'extraction au coût le plus bas. 
-                Le modèle <strong>deepseek-reasoner</strong> (DeepSeek R1) utilise le raisonnement logique poussé pour résoudre les énoncés complexes.
+                💡 Utilisez <strong>deepseek-v4-pro</strong> (DeepSeek R1) pour le raisonnement logique poussé et la résolution d&apos;exercices complexes, ou <strong>deepseek-v4-flash</strong> pour l&apos;extraction ultra rapide et économique.
               </p>
             </div>
           ) : (

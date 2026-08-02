@@ -457,7 +457,7 @@ const renderMath = (text) => {
   if (!raw.trim()) return '';
 
   const segments = extractTablesAndText(raw);
-  
+
   if (segments.length === 1 && segments[0].type === 'text') {
     return renderMathInternal(segments[0].content);
   }
@@ -474,14 +474,14 @@ const generateSignTableHtml = (altText) => {
   const alt = (altText || '').toLowerCase();
   
   if (alt.includes('ax+b') || alt.includes('ax + b') || (alt.includes('signe') && (alt.includes('1er degré') || alt.includes('1er degre')))) {
-    return `<div style="margin:0.75rem 0;padding:0.75rem;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc">
-      <div style="font-weight:750;font-size:0.85rem;color:#7c3aed;margin-bottom:0.5rem">Tableaux de signe de f(x) = ax + b (a &ne; 0)</div>
-      <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+    return `<div style="margin:0.85rem 0;padding:0.95rem;border-radius:12px;border:1px solid #cbd5e1;background:#ffffff;box-shadow:0 4px 16px rgba(0,0,0,0.04)">
+      <div style="font-weight:800;font-size:0.88rem;color:#1e3a8a;margin-bottom:0.65rem;display:flex;align-items:center;gap:0.4rem">📊 Tableaux de signe de f(x) = ax + b (a &ne; 0)</div>
+      <div style="display:flex;gap:0.85rem;flex-wrap:wrap">
         <div style="flex:1;min-width:220px">
-          <div style="font-size:0.75rem;font-weight:700;color:#059669;margin-bottom:0.25rem">1er cas : a &gt; 0</div>
-          <table class="sheet-table" style="text-align:center;font-size:0.82rem">
+          <div style="font-size:0.78rem;font-weight:700;color:#059669;margin-bottom:0.3rem">Premier cas : a &gt; 0</div>
+          <table class="sheet-table" style="width:100%;border-collapse:collapse;text-align:center;font-size:0.84rem">
             <thead>
-              <tr style="background:#f1f5f9">
+              <tr style="background:rgba(124,58,237,0.07)">
                 <th>${renderMath('$x$')}</th>
                 <th>${renderMath('$-\\infty$')}</th>
                 <th></th>
@@ -492,21 +492,21 @@ const generateSignTableHtml = (altText) => {
             </thead>
             <tbody>
               <tr>
-                <td style="font-weight:700">${renderMath('$ax+b$')}</td>
+                <td style="font-weight:800;background:#f8fafc">${renderMath('$ax+b$')}</td>
                 <td></td>
-                <td style="color:#dc2626;font-weight:800">&minus;</td>
-                <td style="font-weight:800;background:#fef3c7">0</td>
-                <td style="color:#059669;font-weight:800">+</td>
+                <td style="color:#ef4444;font-weight:900;font-size:1.05rem">&minus;</td>
+                <td><span style="background:linear-gradient(135deg, #fef3c7, #fde68a);color:#92400e;border:1px solid #fcd34d;padding:1px 6px;border-radius:4px;font-weight:900;font-size:0.82rem;display:inline-block">0</span></td>
+                <td style="color:#10b981;font-weight:900;font-size:1.05rem">+</td>
                 <td></td>
               </tr>
             </tbody>
           </table>
         </div>
         <div style="flex:1;min-width:220px">
-          <div style="font-size:0.75rem;font-weight:700;color:#d97706;margin-bottom:0.25rem">2ème cas : a &lt; 0</div>
-          <table class="sheet-table" style="text-align:center;font-size:0.82rem">
+          <div style="font-size:0.78rem;font-weight:700;color:#d97706;margin-bottom:0.3rem">Deuxième cas : a &lt; 0</div>
+          <table class="sheet-table" style="width:100%;border-collapse:collapse;text-align:center;font-size:0.84rem">
             <thead>
-              <tr style="background:#f1f5f9">
+              <tr style="background:rgba(124,58,237,0.07)">
                 <th>${renderMath('$x$')}</th>
                 <th>${renderMath('$-\\infty$')}</th>
                 <th></th>
@@ -517,11 +517,11 @@ const generateSignTableHtml = (altText) => {
             </thead>
             <tbody>
               <tr>
-                <td style="font-weight:700">${renderMath('$ax+b$')}</td>
+                <td style="font-weight:800;background:#f8fafc">${renderMath('$ax+b$')}</td>
                 <td></td>
-                <td style="color:#059669;font-weight:800">+</td>
-                <td style="font-weight:800;background:#fef3c7">0</td>
-                <td style="color:#dc2626;font-weight:800">&minus;</td>
+                <td style="color:#10b981;font-weight:900;font-size:1.05rem">+</td>
+                <td><span style="background:linear-gradient(135deg, #fef3c7, #fde68a);color:#92400e;border:1px solid #fcd34d;padding:1px 6px;border-radius:4px;font-weight:900;font-size:0.82rem;display:inline-block">0</span></td>
+                <td style="color:#ef4444;font-weight:900;font-size:1.05rem">&minus;</td>
                 <td></td>
               </tr>
             </tbody>
@@ -532,14 +532,14 @@ const generateSignTableHtml = (altText) => {
   }
 
   if (alt.includes('ax^2') || alt.includes('ax2') || alt.includes('delta') || alt.includes('trinôme') || alt.includes('trinome') || alt.includes('2nd degré') || alt.includes('2ème degré')) {
-    return `<div style="margin:0.75rem 0;padding:0.75rem;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc">
-      <div style="font-weight:750;font-size:0.85rem;color:#059669;margin-bottom:0.5rem">Tableaux de signe du trinôme f(x) = ax&sup2; + bx + c (a &ne; 0)</div>
-      <div style="display:flex;flex-direction:column;gap:0.6rem">
+    return `<div style="margin:0.85rem 0;padding:0.95rem;border-radius:12px;border:1px solid #cbd5e1;background:#ffffff;box-shadow:0 4px 16px rgba(0,0,0,0.04)">
+      <div style="font-weight:800;font-size:0.88rem;color:#059669;margin-bottom:0.65rem;display:flex;align-items:center;gap:0.4rem">📊 Tableaux de signe du trinôme f(x) = ax&sup2; + bx + c (a &ne; 0)</div>
+      <div style="display:flex;flex-direction:column;gap:0.75rem">
         <div>
-          <div style="font-size:0.75rem;font-weight:700;color:#7c3aed;margin-bottom:0.2rem">${renderMath('1er cas : $\\Delta > 0$')}</div>
-          <table class="sheet-table" style="text-align:center;font-size:0.82rem">
+          <div style="font-size:0.78rem;font-weight:700;color:#7c3aed;margin-bottom:0.25rem">${renderMath('1er cas : $\\Delta > 0$ ($x_1 < x_2$ deux racines distinctes)')}</div>
+          <table class="sheet-table" style="width:100%;border-collapse:collapse;text-align:center;font-size:0.84rem">
             <thead>
-              <tr style="background:#f1f5f9">
+              <tr style="background:rgba(124,58,237,0.07)">
                 <th>${renderMath('$x$')}</th>
                 <th>${renderMath('$-\\infty$')}</th>
                 <th></th>
@@ -552,23 +552,23 @@ const generateSignTableHtml = (altText) => {
             </thead>
             <tbody>
               <tr>
-                <td style="font-weight:700">${renderMath('$ax^2+bx+c$')}</td>
+                <td style="font-weight:800;background:#f8fafc">${renderMath('$ax^2+bx+c$')}</td>
                 <td></td>
-                <td>Signe de ${renderMath('$a$')}</td>
-                <td style="font-weight:800;background:#fef3c7">0</td>
-                <td style="color:#7c3aed;font-weight:700">Signe de ${renderMath('$-a$')}</td>
-                <td style="font-weight:800;background:#fef3c7">0</td>
-                <td>Signe de ${renderMath('$a$')}</td>
+                <td style="font-weight:700">Signe de ${renderMath('$a$')}</td>
+                <td><span style="background:linear-gradient(135deg, #fef3c7, #fde68a);color:#92400e;border:1px solid #fcd34d;padding:1px 6px;border-radius:4px;font-weight:900;font-size:0.82rem;display:inline-block">0</span></td>
+                <td style="color:#7c3aed;font-weight:800">Signe de ${renderMath('$-a$')}</td>
+                <td><span style="background:linear-gradient(135deg, #fef3c7, #fde68a);color:#92400e;border:1px solid #fcd34d;padding:1px 6px;border-radius:4px;font-weight:900;font-size:0.82rem;display:inline-block">0</span></td>
+                <td style="font-weight:700">Signe de ${renderMath('$a$')}</td>
                 <td></td>
               </tr>
             </tbody>
           </table>
         </div>
         <div>
-          <div style="font-size:0.75rem;font-weight:700;color:#059669;margin-bottom:0.2rem">${renderMath('2ème cas : $\\Delta = 0$ ($x_0 = -\\frac{b}{2a}$)')}</div>
-          <table class="sheet-table" style="text-align:center;font-size:0.82rem">
+          <div style="font-size:0.78rem;font-weight:700;color:#059669;margin-bottom:0.25rem">${renderMath('2ème cas : $\\Delta = 0$ ($x_0 = -\\frac{b}{2a}$ racine double)')}</div>
+          <table class="sheet-table" style="width:100%;border-collapse:collapse;text-align:center;font-size:0.84rem">
             <thead>
-              <tr style="background:#f1f5f9">
+              <tr style="background:rgba(16,185,129,0.07)">
                 <th>${renderMath('$x$')}</th>
                 <th>${renderMath('$-\\infty$')}</th>
                 <th></th>
@@ -579,21 +579,21 @@ const generateSignTableHtml = (altText) => {
             </thead>
             <tbody>
               <tr>
-                <td style="font-weight:700">${renderMath('$ax^2+bx+c$')}</td>
+                <td style="font-weight:800;background:#f8fafc">${renderMath('$ax^2+bx+c$')}</td>
                 <td></td>
-                <td>Signe de ${renderMath('$a$')}</td>
-                <td style="font-weight:800;background:#fef3c7">0</td>
-                <td>Signe de ${renderMath('$a$')}</td>
+                <td style="font-weight:700">Signe de ${renderMath('$a$')}</td>
+                <td><span style="background:linear-gradient(135deg, #fef3c7, #fde68a);color:#92400e;border:1px solid #fcd34d;padding:1px 6px;border-radius:4px;font-weight:900;font-size:0.82rem;display:inline-block">0</span></td>
+                <td style="font-weight:700">Signe de ${renderMath('$a$')}</td>
                 <td></td>
               </tr>
             </tbody>
           </table>
         </div>
         <div>
-          <div style="font-size:0.75rem;font-weight:700;color:#d97706;margin-bottom:0.2rem">${renderMath('3ème cas : $\\Delta < 0$')}</div>
-          <table class="sheet-table" style="text-align:center;font-size:0.82rem">
+          <div style="font-size:0.78rem;font-weight:700;color:#d97706;margin-bottom:0.25rem">${renderMath('3ème cas : $\\Delta < 0$ (aucune racine réelle)')}</div>
+          <table class="sheet-table" style="width:100%;border-collapse:collapse;text-align:center;font-size:0.84rem">
             <thead>
-              <tr style="background:#f1f5f9">
+              <tr style="background:rgba(245,158,11,0.07)">
                 <th>${renderMath('$x$')}</th>
                 <th>${renderMath('$-\\infty$')}</th>
                 <th></th>
@@ -602,9 +602,9 @@ const generateSignTableHtml = (altText) => {
             </thead>
             <tbody>
               <tr>
-                <td style="font-weight:700">${renderMath('$ax^2+bx+c$')}</td>
+                <td style="font-weight:800;background:#f8fafc">${renderMath('$ax^2+bx+c$')}</td>
                 <td></td>
-                <td>Signe de ${renderMath('$a$')} sur ${renderMath('$\\mathbb{R}$')} tout entier</td>
+                <td style="font-weight:700">Signe de ${renderMath('$a$')} sur ${renderMath('$\\mathbb{R}$')} tout entier</td>
                 <td></td>
               </tr>
             </tbody>
@@ -765,13 +765,14 @@ const renderHomeworkBody = (text, isArabicMode) => {
     mergedLines.push(lines[i]);
   }
 
-  // Regex to detect points: (1,5 pts), (1 pt), (0.5 ن), (2 points)
   const pointsRegex = /\(\s*([\d.,]+)\s*(?:pts?|points?|\u0646|\u0646\u0642\u0637\u0629?|\u0646\u0642\u0637)\s*\)/i;
   const parenthesizedNumRegex = /^(\s*(?:\d+|[a-zA-Z])[.)]\s*)\(([\d.,]+)\)/;
+  const isSubQRegex = /^(\s*(?:\d+|[a-zA-Z])[.)]\s*)/;
 
-  const rows = mergedLines.map(line => {
+  const parsedItems = [];
+  mergedLines.forEach(line => {
     let cleanLine = line.trim();
-    if (!cleanLine) return '';
+    if (!cleanLine) return;
 
     let pointsStr = '';
     const match = cleanLine.match(pointsRegex);
@@ -789,12 +790,67 @@ const renderHomeworkBody = (text, isArabicMode) => {
       }
     }
 
-    if (!cleanLine) return '';
+    if (!cleanLine) return;
+
+    const isSubQ = isSubQRegex.test(cleanLine);
+    parsedItems.push({
+      cleanLine,
+      pointsStr,
+      isSubQ
+    });
+  });
+
+  const blocks = [];
+  let i = 0;
+  while (i < parsedItems.length) {
+    const item = parsedItems[i];
+    if (item.pointsStr || !item.isSubQ) {
+      const block = { headerItem: item, subItems: [] };
+      i++;
+      while (i < parsedItems.length && parsedItems[i].isSubQ && !parsedItems[i].pointsStr) {
+        block.subItems.push(parsedItems[i]);
+        i++;
+      }
+      blocks.push(block);
+    } else {
+      const block = { headerItem: null, subItems: [] };
+      while (i < parsedItems.length && parsedItems[i].isSubQ && !parsedItems[i].pointsStr) {
+        block.subItems.push(parsedItems[i]);
+        i++;
+      }
+      if (block.subItems.length === 0) {
+        block.subItems.push(item);
+        i++;
+      }
+      blocks.push(block);
+    }
+  }
+
+  const rows = blocks.map(b => {
+    const ptsStr = b.headerItem ? b.headerItem.pointsStr : '';
+    const headerHtml = b.headerItem ? `<div>${renderMath(b.headerItem.cleanLine)}</div>` : '';
+
+    let subHtml = '';
+    if (b.subItems.length >= 2) {
+      const allShort = b.subItems.every(si => si.cleanLine.length < 50);
+      const cols = allShort && b.subItems.length >= 3 ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)';
+      subHtml = `
+        <div class="homework-subquestions-grid" style="display: grid; grid-template-columns: ${cols}; gap: 0.35rem 1.0rem; margin-top: 0.35rem;">
+          ${b.subItems.map((si, idx) => {
+            const cleanText = si.cleanLine.trim();
+            const needsSemi = allShort && idx < b.subItems.length - 1 && !cleanText.endsWith(';') && !cleanText.endsWith(':');
+            const displayText = needsSemi ? `${cleanText} ;` : cleanText;
+            return `<div class="homework-subq-item" style="padding: 0.1rem 0;">${renderMath(displayText)}</div>`;
+          }).join('')}
+        </div>`;
+    } else if (b.subItems.length === 1) {
+      subHtml = `<div style="margin-top: 0.25rem;">${renderMath(b.subItems[0].cleanLine)}</div>`;
+    }
 
     return `
       <div class="homework-row">
-        <div class="homework-bareme-cell">${esc(pointsStr)}</div>
-        <div class="homework-content-cell">${renderMath(cleanLine)}</div>
+        <div class="homework-bareme-cell">${esc(ptsStr)}</div>
+        <div class="homework-content-cell">${headerHtml}${subHtml}</div>
       </div>`;
   }).join('');
 
@@ -924,7 +980,7 @@ export const generateLessonHTML = (lesson, settings = {}) => {
     if (!isExercises && sec.section_header && sec.section_header !== prevSectionHeader) {
       sectionsHtml += `
         <div style="text-align: center; margin: 0.7rem 0 0.3rem; page-break-after: avoid;">
-          <h2 style="font-size: 1.05rem; font-weight: 800; font-style: italic; color: #000; margin: 0; font-family: ${isArabic ? arabicFontFamily : 'inherit'}">
+          <h2 style="font-size: 1.05rem; font-weight: 800; font-style: italic; color: #0f172a; margin: 0; font-family: ${isArabic ? arabicFontFamily : 'inherit'}">
             ${renderLineContent(sec.section_header || '')}
           </h2>
         </div>`;
@@ -972,17 +1028,30 @@ export const generateLessonHTML = (lesson, settings = {}) => {
           const widthPct = item.width_pct || 80;
           const textAlign = align;
           const rawUrl = (item.url || '').trim();
-          const isInvalidUrl = !rawUrl || rawUrl.length < 5 || rawUrl.includes('placeholder') || rawUrl.includes('example.com') || rawUrl === 'none' || rawUrl === 'url' || rawUrl === 'image';
-          const isSignTable = (item.alt || rawUrl).toLowerCase().includes('signe') || (item.alt || rawUrl).toLowerCase().includes('tableau') || (item.alt || rawUrl).includes('ax+b') || (item.alt || rawUrl).includes('ax^2');
+          const altText = item.alt || item.description || '';
+          const altLower = altText.toLowerCase();
+          const urlLower = rawUrl.toLowerCase();
 
-          if (isInvalidUrl || isSignTable) {
-            return generateSignTableHtml(item.alt || item.url || '');
+          const isInvalidUrl = !rawUrl || rawUrl.length < 5 || rawUrl.includes('placeholder') || rawUrl.includes('example.com') || rawUrl === 'none' || rawUrl === 'url' || rawUrl === 'image';
+          const isSignTable = altLower.includes('tableau de signe') || altLower.includes('sign_table') || urlLower.includes('sign_table');
+
+          if (isSignTable) {
+            return generateSignTableHtml(altText || rawUrl);
+          } else if (isInvalidUrl) {
+            return `<div style="text-align:${textAlign};margin:0.75rem 0">
+              <div style="display:inline-block;padding:0.75rem 1rem;background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;box-shadow:0 3px 12px rgba(0,0,0,0.04);max-width:${widthPct}%;">
+                <div style="font-size:1.5rem;margin-bottom:0.25rem">📈</div>
+                <div style="font-size:0.82rem;font-weight:700;color:#334155;">${altText ? renderMath(altText) : (isArabic ? 'شكل هندسي / منحنى دالة' : 'Figure / Courbe représentative')}</div>
+              </div>
+            </div>`;
           } else {
-            return `<div style="text-align:${textAlign};margin:0.5rem 0">
-              <img src="${esc(item.url)}" alt="${esc(item.alt || '')}"
-                style="width:${widthPct}%;max-width:100%;border-radius:6px;border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,0.07);object-fit:contain;"
-              />
-              ${item.alt ? `<div style="font-size:0.75rem;color:#64748b;font-style:italic;margin-top:0.2rem">${renderMath(item.alt)}</div>` : ''}
+            return `<div style="text-align:${textAlign};margin:0.75rem 0">
+              <div style="display:inline-block;padding:0.6rem;background:#ffffff;border:1px solid #cbd5e1;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);max-width:${widthPct}%;">
+                <img src="${esc(item.url)}" alt="${esc(altText)}"
+                  style="width:100%;max-width:100%;border-radius:8px;object-fit:contain;"
+                />
+                ${altText ? `<div style="font-size:0.8rem;font-weight:700;color:#475569;margin-top:0.4rem;text-align:center">${renderMath(altText)}</div>` : ''}
+              </div>
             </div>`;
           }
         } else {
@@ -1000,37 +1069,61 @@ export const generateLessonHTML = (lesson, settings = {}) => {
       if (hasImageItem) {
         const imageItem = sec.items.find(item => item.type === 'image');
         const nonImageItems = sec.items.filter(item => item.type !== 'image');
-        
-        let nonImageHtml = '';
-        nonImageItems.forEach((item) => {
-          nonImageHtml += renderItemHtml(item);
-        });
-        
-        const rawUrl = (imageItem.url || '').trim();
-        const isInvalidUrl = !rawUrl || rawUrl.length < 5 || rawUrl.includes('placeholder') || rawUrl.includes('example.com') || rawUrl === 'none' || rawUrl === 'url' || rawUrl === 'image';
-        const isSignTable = (imageItem.alt || rawUrl).toLowerCase().includes('signe') || (imageItem.alt || rawUrl).toLowerCase().includes('tableau') || (imageItem.alt || rawUrl).includes('ax+b') || (imageItem.alt || rawUrl).includes('ax^2');
-        
-        let imgHtml = '';
-        if (isInvalidUrl || isSignTable) {
-          imgHtml = generateSignTableHtml(imageItem.alt || imageItem.url || '');
+        const widthPct = imageItem.width_pct || 80;
+        const align = imageItem.align || 'center';
+
+        if (nonImageItems.length === 0 || align === 'center' || widthPct >= 70) {
+          // Full-width / Centered Figure Block
+          sec.items.forEach((item) => {
+            itemsHtml += renderItemHtml(item);
+          });
         } else {
-          imgHtml = `
-            <div class="side-image-wrapper" style="min-width:180px; max-width:260px; flex-shrink:0; text-align:center;">
-              <img src="${esc(imageItem.url)}" alt="${esc(imageItem.alt || '')}"
-                style="width:100%; max-width:100%; border-radius:4px; border:1px solid #cbd5e1; object-fit:contain;"
-              />
-              ${imageItem.alt ? `<div style="font-size:0.75rem; color:#64748b; font-style:italic; margin-top:0.2rem">${renderMath(imageItem.alt)}</div>` : ''}
+          // Side-by-Side layout for small side images (widthPct < 70)
+          let nonImageHtml = '';
+          nonImageItems.forEach((item) => {
+            nonImageHtml += renderItemHtml(item);
+          });
+
+          const rawUrl = (imageItem.url || '').trim();
+          const altText = imageItem.alt || imageItem.description || '';
+          const altLower = altText.toLowerCase();
+          const urlLower = rawUrl.toLowerCase();
+
+          const isInvalidUrl = !rawUrl || rawUrl.length < 5 || rawUrl.includes('placeholder') || rawUrl.includes('example.com') || rawUrl === 'none' || rawUrl === 'url' || rawUrl === 'image';
+          const isSignTable = altLower.includes('tableau de signe') || altLower.includes('sign_table') || urlLower.includes('sign_table');
+
+          let imgHtml = '';
+          if (isSignTable) {
+            imgHtml = generateSignTableHtml(altText || rawUrl);
+          } else if (isInvalidUrl) {
+            imgHtml = `
+              <div class="side-image-wrapper" style="min-width:220px; max-width:400px; flex-shrink:0; text-align:center;">
+                <div style="padding:0.75rem 1rem;background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;box-shadow:0 3px 12px rgba(0,0,0,0.04);">
+                  <div style="font-size:1.5rem;margin-bottom:0.2rem">📈</div>
+                  <div style="font-size:0.8rem;font-weight:700;color:#334155">${altText ? renderMath(altText) : (isArabic ? 'شكل هندسي / منحنى دالة' : 'Figure / Courbe')}</div>
+                </div>
+              </div>`;
+          } else {
+            imgHtml = `
+              <div class="side-image-wrapper" style="min-width:220px; max-width:420px; flex-shrink:0; text-align:center;">
+                <div style="padding:0.6rem;background:#ffffff;border:1px solid #cbd5e1;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05)">
+                  <img src="${esc(imageItem.url)}" alt="${esc(altText)}"
+                    style="width:100%; max-width:100%; border-radius:8px; object-fit:contain;"
+                  />
+                  ${altText ? `<div style="font-size:0.8rem; font-weight:700; color:#475569; margin-top:0.35rem">${renderMath(altText)}</div>` : ''}
+                </div>
+              </div>`;
+          }
+
+          const flexDir = isArabic ? 'row-reverse' : 'row';
+          itemsHtml = `
+            <div class="side-by-side-container" style="display:flex; flex-direction:${flexDir}; gap:1.2rem; align-items:center; width:100%; justify-content:space-between;">
+              <div style="flex:1; display:flex; flex-direction:column; gap:0.25rem;">
+                ${nonImageHtml}
+              </div>
+              ${imgHtml}
             </div>`;
         }
-        
-        const flexDir = isArabic ? 'row-reverse' : 'row';
-        itemsHtml = `
-          <div class="side-by-side-container" style="display:flex; flex-direction:${flexDir}; gap:1.2rem; align-items:center; width:100%; justify-content:space-between;">
-            <div style="flex:1; display:flex; flex-direction:column; gap:0.25rem;">
-              ${nonImageHtml}
-            </div>
-            ${imgHtml}
-          </div>`;
       } else {
         sec.items?.forEach((item) => {
           itemsHtml += renderItemHtml(item);
@@ -1047,60 +1140,63 @@ export const generateLessonHTML = (lesson, settings = {}) => {
       const isExample = type === 'example' || titleLower.includes('exemple') || titleLower.includes('مثال');
       const isRemark = type === 'remark' || titleLower.includes('remarque') || titleLower.includes('ملاحظة');
       const isActivity = type === 'activity' || titleLower.includes('activité') || titleLower.includes('activite') || titleLower.includes('تطبيق');
+      const isTechnique = type === 'technique' || titleLower.includes('technique');
 
-      // ── Prefix and title cleanup (matching reference images exactly) ──
       let prefix = '';
-      const isBoxed = isDefinition || isProperty || isTheorem || isCorollary; // boxed = thin black frame
-      const isTechnique = type === 'technique' || (sec.title || '').toLowerCase().includes('technique');
+      const isBoxed = isDefinition || isProperty || isTheorem || isCorollary;
+      let borderAccentColor = '#0284c7';
+
+      const stripSectionKeyword = (text, keywordRegex) => {
+        if (!text) return '';
+        let cleaned = text.replace(/^[*\s_#.\-0-9📌🔍💡✨⚖️🎯🚀🛠️]+/gu, '').trim();
+        cleaned = cleaned.replace(keywordRegex, '').trim();
+        cleaned = cleaned.replace(/^[*_:\-\s]+|[*_:\-\s]+$/g, '').trim();
+        return cleaned;
+      };
 
       if (isDefinition) {
-        prefix = '⬜⬜⬜<b><i>Définition :</i></b>';
-        if (isArabic) prefix = '⬜⬜⬜<b><i>تعريف :</i></b>';
-        cleanTitleText = cleanTitleText.replace(/^[0-9.\s]*(D[ée]finition|definition|تعريف)\s*[:\-]*\s*/i, '');
+        prefix = `<span class="doc-badge-pill badge-def">${isArabic ? '📌 تعريف :' : '📌 Définition :'}</span>`;
+        cleanTitleText = stripSectionKeyword(cleanTitleText, /^(D[ée]finitions?|definition|تعريف)\s*[:\-]*\s*/i);
+        borderAccentColor = '#7c3aed';
       } else if (isProperty) {
-        prefix = '⬜⬜⬜<b><i>Propriété :</i></b>';
-        if (isArabic) prefix = '⬜⬜⬜<b><i>خاصية :</i></b>';
-        cleanTitleText = cleanTitleText.replace(/^[0-9.\s]*(Propri[ée]t[ée]|propriete|خاصية)\s*[:\-]*\s*/i, '');
+        prefix = `<span class="doc-badge-pill badge-prop">${isArabic ? '✨ خاصية :' : '✨ Propriété :'}</span>`;
+        cleanTitleText = stripSectionKeyword(cleanTitleText, /^(Propri[ée]t[ée]s?|propriete|خاصية)\s*[:\-]*\s*/i);
+        borderAccentColor = '#0284c7';
       } else if (isTheorem) {
-        prefix = '⬜⬜⬜<b><i>Théorème :</i></b>';
-        if (isArabic) prefix = '⬜⬜⬜<b><i>مبرهنة :</i></b>';
-        cleanTitleText = cleanTitleText.replace(/^[0-9.\s]*(Th[ée]or[èe]me|theoreme|مبرهنة)\s*[:\-]*\s*/i, '');
+        prefix = `<span class="doc-badge-pill badge-thm">${isArabic ? '⚖️ مبرهنة :' : '⚖️ Théorème :'}</span>`;
+        cleanTitleText = stripSectionKeyword(cleanTitleText, /^(Th[ée]or[èe]mes?|theoreme|مبرهنة)\s*[:\-]*\s*/i);
+        borderAccentColor = '#10b981';
       } else if (isCorollary) {
-        prefix = '⬜⬜<b><i>Corollaire :</i></b>';
-        if (isArabic) prefix = '⬜⬜<b><i>نتيجة :</i></b>';
-        cleanTitleText = cleanTitleText.replace(/^[0-9.\s]*(Corollaire|نتيجة)\s*[:\-]*\s*/i, '');
+        prefix = `<span class="doc-badge-pill badge-cor">${isArabic ? '🎯 نتيجة :' : '🎯 Corollaire :'}</span>`;
+        cleanTitleText = stripSectionKeyword(cleanTitleText, /^(Corollaires?|نتيجة)\s*[:\-]*\s*/i);
+        borderAccentColor = '#f59e0b';
       } else if (isExample) {
-        prefix = '<span style="color:#c00">○⬜</span><b style="color:#c00"><i>Exemple :</i></b>';
-        if (isArabic) prefix = '<span style="color:#c00">○⬜</span><b style="color:#c00"><i>مثال :</i></b>';
-        cleanTitleText = cleanTitleText.replace(/^[0-9.\s]*(Exemple|exemple|مثال)\s*[:\-]*\s*/i, '');
+        prefix = `<span class="doc-badge-pill badge-ex">${isArabic ? '💡 مثال :' : '💡 Exemple :'}</span>`;
+        cleanTitleText = stripSectionKeyword(cleanTitleText, /^(Exemples?|مثال)\s*[:\-]*\s*/i);
       } else if (isRemark) {
-        prefix = '<span style="color:#c00">○</span> <b style="color:#c00"><i>Remarque :</i></b>';
-        if (isArabic) prefix = '<span style="color:#c00">○</span> <b style="color:#c00"><i>ملاحظة :</i></b>';
-        cleanTitleText = cleanTitleText.replace(/^[0-9.\s]*(Remarque|remarque|ملاحظة)\s*[:\-]*\s*/i, '');
+        prefix = `<span class="doc-badge-pill badge-rem">${isArabic ? '🔍 ملاحظة :' : '🔍 Remarque :'}</span>`;
+        cleanTitleText = stripSectionKeyword(cleanTitleText, /^(Remarques?|ملاحظة)\s*[:\-]*\s*/i);
       } else if (isActivity) {
-        prefix = '⬜⬜<b><i>Activité :</i></b>';
-        if (isArabic) prefix = '⬜⬜<b><i>نشاط :</i></b>';
-        cleanTitleText = cleanTitleText.replace(/^[0-9.\s]*(Activit[ée]|activite|نشاط|تطبيق)\s*[:\-]*\s*/i, '');
+        prefix = `<span class="doc-badge-pill badge-act">${isArabic ? '🚀 نشاط :' : '🚀 Activité :'}</span>`;
+        cleanTitleText = stripSectionKeyword(cleanTitleText, /^(Activit[ée]s?|activite|نشاط|تطبيق)\s*[:\-]*\s*/i);
       } else if (isTechnique) {
-        prefix = '<span style="color:#c00">○</span> <b style="color:#c00"><i>Technique :</i></b>';
-        cleanTitleText = cleanTitleText.replace(/^[0-9.\s]*(Technique|technique)\s*[:\-]*\s*/i, '');
+        prefix = `<span class="doc-badge-pill badge-tech">🛠️ Technique :</span>`;
+        cleanTitleText = stripSectionKeyword(cleanTitleText, /^(Techniques?)\s*[:\-]*\s*/i);
       }
 
-      // ── Card and header styles: match reference exactly ──
-      let cardStyles = `margin-bottom: 0.35rem; padding: 0.3rem 0; display: flex; flex-direction: column; gap: 0.15rem; page-break-inside: avoid;`;
-      let headerStyles = `font-size: 0.92rem; font-weight: 800; margin-bottom: 0.1rem; text-decoration: underline; text-underline-offset: 2px;`;
+      let cardStyles = `margin-bottom: 0.5rem; padding: 0.2rem 0; display: flex; flex-direction: column; gap: 0.2rem; page-break-inside: avoid;`;
+      let headerStyles = `font-size: 0.95rem; font-weight: 800; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;`;
 
       if (isArabic) {
         cardStyles += ` font-family: ${arabicFontFamily}; direction: rtl; text-align: right;`;
       }
 
-      // Definitions/Properties/Theorems: content inside thin black frame (like reference image)
       if (isBoxed) {
         sectionsHtml += `
           <div style="${cardStyles}">
             <div style="${headerStyles}">${prefix}${cleanTitleText ? ' ' + renderLineContent(cleanTitleText) : ''}</div>
-            ${sec.accent_text ? `<div style="color:#009688;font-weight:700;font-style:italic;margin-bottom:0.1rem">${renderMath((sec.accent_text || '').replace(/\\n/g, '\n'))}</div>` : ''}
-            <div style="border: 1px solid #000; padding: 0.4rem 0.6rem; margin-top: 0.1rem;">
+            ${sec.accent_text ? `<div style="color:#0f766e;font-weight:700;font-style:italic;margin-bottom:0.2rem">${renderMath((sec.accent_text || '').replace(/\\n/g, '\n'))}</div>` : ''}
+            <div style="border: 1px solid #cbd5e1; border-left: 4px solid ${borderAccentColor}; border-radius: 8px; background: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.03); padding: 0.6rem 0.85rem; margin-top: 0.1rem;">
               ${itemsHtml}
             </div>
           </div>`;
@@ -1192,7 +1288,7 @@ export const generateLessonHTML = (lesson, settings = {}) => {
 
 @page {
   size: A4 portrait;
-  margin: 10mm;
+  margin: 6mm 8mm;
   @bottom-left {
     content: "${esc(teacher || (isArabic ? 'زياتي محمد' : 'Pr. LATRACH ABDELKBIR'))}";
     font-family: 'Computer Modern Serif', 'STIX Two Text', 'Times New Roman', serif;
@@ -1229,53 +1325,91 @@ body {
 
 @media print {
   body {
-    border: 1.5px solid #000000;
-    padding: 8mm;
-    min-height: 275mm;
+    border: none !important;
+    padding: 0 !important;
+    min-height: auto;
   }
 }
 
-/* Fiche pedagogique header grid — matching reference image exactly */
+/* Fiche pedagogique header grid — royal blue layout */
 .fiche-pedagogique-header {
   width: 100%;
-  border-collapse: collapse;
-  border: 1.5px solid #000;
-  margin-bottom: 0.5rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1.5px solid #005086;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
   font-size: 8.5pt;
   line-height: 1.35;
-  color: #000;
+  color: #1e293b;
   background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0,80,134,0.06);
   font-family: inherit;
 }
 .fiche-pedagogique-header td {
-  border: 1.5px solid #000;
+  border-right: 1.5px solid #005086;
+  border-bottom: 1.5px solid #005086;
   vertical-align: top;
 }
+.fiche-pedagogique-header td:last-child {
+  border-right: none;
+}
+.fiche-pedagogique-header tr:last-child td {
+  border-bottom: none;
+}
 .fiche-pedagogique-header .title-cell {
-  background-color: #dbeafe;
+  background: #005086;
   text-align: center;
   font-weight: 900;
-  font-size: 13pt;
-  color: #1e3a8a;
-  padding: 8px 10px;
+  font-size: 13.5pt;
+  color: #ffffff;
+  padding: 10px 14px;
+  letter-spacing: 0.04em;
+  border-bottom: 1.5px solid #005086;
 }
 .fiche-pedagogique-header .header-section-title {
   font-weight: 800;
   text-align: center;
-  background-color: #f0f0f0;
-  border-bottom: 1.5px solid #000;
-  padding: 3px 6px;
-  font-size: 8pt;
-  color: #000;
+  background-color: #f8fafc;
+  border-bottom: 1.5px solid #005086;
+  padding: 5px 8px;
+  font-size: 8.2pt;
+  color: #005086;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 .fiche-pedagogique-header .right-info-table td {
-  padding: 4px 6px;
-  font-size: 7.8pt;
-  border-bottom: 1.5px solid #000;
+  padding: 5px 8px;
+  font-size: 8pt;
+  border-bottom: 1.5px solid #005086;
+  color: #1e293b;
 }
 .fiche-pedagogique-header .right-info-table tr:last-child td {
   border-bottom: none;
 }
+
+/* Badge pill styles for definitions, properties, theorems, etc. */
+.doc-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  margin-right: 6px;
+  text-decoration: none !important;
+}
+.badge-def { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
+.badge-prop { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+.badge-thm { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+.badge-cor { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+.badge-ex { background: #ffe4e6; color: #be123c; border: 1px solid #fca5a5; }
+.badge-rem { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+.badge-act { background: #ccfbf1; color: #0f766e; border: 1px solid #5eead4; }
+.badge-tech { background: #fae8ff; color: #86198f; border: 1px solid #f0abfc; }
+
 
 /* ═══════════════════════════════════════
    PRINT HINT BAR (hidden on print)
@@ -1348,7 +1482,7 @@ body {
   .page-content {
     max-width: 210mm;
     margin: 0 auto;
-    padding: 12mm 12mm;
+    padding: 6mm 8mm;
     background: #fff;
     box-shadow: 0 0 40px rgba(0,0,0,0.08);
   }
@@ -1791,19 +1925,67 @@ body {
 }
 
 /* ═══════════════════════════════════════
-   KATEX OVERRIDES
+   KATEX — PREMIUM ACADEMIC TYPOGRAPHY
    ═══════════════════════════════════════ */
-.katex {
-  color: #1a202c !important;
-  font-size: 0.98em !important;
-}
-.katex .mord, .katex .mbin, .katex .mrel,
-.katex .mopen, .katex .mclose, .katex .mpunct,
-.katex .minner, .katex .mop { color: #1a202c !important; }
 
-/* Display-mode KaTeX blocks need margin */
+/* Base: all KaTeX elements inherit color, never bold from context */
+.katex,
+.katex *,
+.katex .mathnormal,
+.katex .mord,
+.katex .mbin,
+.katex .mrel,
+.katex .mopen,
+.katex .mclose,
+.katex .mpunct,
+.katex .minner,
+.katex .mop {
+  color: #1a202c !important;
+  font-weight: normal !important;
+}
+
+/* Explicit \mathbf{} remains bold — by design */
+.katex .mathbf,
+.katex .mathbf * {
+  font-weight: bold !important;
+}
+
+/* Inline math containers: crisp, no-wrap, elegant */
+.inline-math-container,
+.katex-inline {
+  white-space: nowrap !important;
+  display: inline-block !important;
+  vertical-align: -0.1em;
+  font-weight: normal !important;
+}
+
+/* KaTeX base spans */
+.inline-math-container .katex .base {
+  white-space: nowrap !important;
+  display: inline !important;
+  font-weight: normal !important;
+}
+
+/* Inline math size: slightly larger for academic clarity */
+.inline-math-container .katex,
+.katex-inline .katex {
+  font-size: 1.08em !important;
+  font-weight: normal !important;
+}
+
+/* Block display-mode math: visible breathing room */
 .katex-display {
-  margin: 0.25rem 0 !important;
+  margin: 0.55rem 0 !important;
+  white-space: normal !important;
+  font-size: 1.1em !important;
+}
+
+/* Strong / bold context must NOT propagate weight into math */
+strong .katex,
+b .katex,
+strong .katex *,
+b .katex * {
+  font-weight: normal !important;
 }
 
 /* ═══════════════════════════════════════
@@ -1925,51 +2107,127 @@ html[dir="rtl"] .section-header-row {
 .homework-table {
   width: 100%;
   border-collapse: collapse;
-  border: none;
-  margin-bottom: 0.6rem;
+  border: 1.5px solid #005086;
+  border-radius: 4px;
+  overflow: visible;
+  margin-bottom: 0.8rem;
   page-break-inside: auto;
+  break-inside: auto;
+  box-shadow: 0 2px 8px rgba(0,80,134,0.04);
 }
 .homework-header-row {
   display: flex;
-  background: transparent;
-  color: #000;
+  background: #005086;
+  color: #ffffff;
   font-weight: 800;
-  border-bottom: 2px solid #000;
+  border-bottom: 1.5px solid #005086;
   align-items: stretch;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.homework-bareme-header {
+  width: 75px;
+  min-width: 75px;
+  background: #005086;
+  color: #ffffff;
+  border-right: 1.5px solid #ffffff;
+  text-align: center;
+  font-size: 0.88rem;
+  padding: 0.45rem 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.homework-content-header {
+  flex: 1;
+  background: #005086;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.95rem;
+  padding: 0.45rem 0.85rem;
+  display: flex;
+  align-items: center;
 }
 .homework-row {
   display: flex;
   border-bottom: 1px solid #cbd5e1;
   align-items: stretch;
+  page-break-inside: avoid;
+  break-inside: avoid;
 }
 .homework-row:last-child {
   border-bottom: none;
 }
-.homework-bareme-cell, .homework-bareme-header {
-  width: 55px;
-  flex-shrink: 0;
-  padding: 0.35rem 0.2rem;
+.homework-bareme-cell {
+  width: 75px;
+  min-width: 75px;
+  background: #f8fafc;
+  color: #475569;
+  border-right: 1.5px solid #005086;
+  font-weight: 600;
+  font-size: 0.82rem;
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
-  font-weight: 700;
+  padding: 0.45rem 0.3rem;
 }
-.homework-bareme-header {
-  background: transparent;
-  color: #000;
-  border-right: 1.5px solid #000;
-}
-.homework-bareme-cell {
-  background: transparent;
-  color: #475569;
-  border-right: 1.5px solid #000;
-  font-family: inherit;
-}
-.homework-content-cell, .homework-content-header {
+.homework-content-cell {
   flex: 1;
-  padding: 0.4rem 0.75rem;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: #0f172a;
+}
+
+@media print {
+  .sections-container, .sections-list-container {
+    overflow: visible !important;
+  }
+  .homework-table {
+    display: table !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    border: 1.5px solid #005086 !important;
+    overflow: visible !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+  .homework-header-row {
+    display: table-row !important;
+    background: #005086 !important;
+    color: #ffffff !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+  .homework-row {
+    display: table-row !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  .homework-bareme-cell, .homework-bareme-header {
+    display: table-cell !important;
+    width: 75px !important;
+    min-width: 75px !important;
+    max-width: 75px !important;
+    vertical-align: middle !important;
+    background: #f8fafc !important;
+    border-right: 1.5px solid #005086 !important;
+  }
+  .homework-bareme-header {
+    background: #005086 !important;
+    color: #ffffff !important;
+    border-right: 1.5px solid #ffffff !important;
+  }
+  .homework-content-cell, .homework-content-header {
+    display: table-cell !important;
+    vertical-align: top !important;
+    padding: 0.45rem 0.75rem !important;
+  }
+  .homework-content-header {
+    background: #005086 !important;
+    color: #ffffff !important;
+  }
 }
 .homework-content-header {
   font-size: 1.02rem;
@@ -2050,18 +2308,23 @@ html[dir="rtl"] .homework-bareme-header {
           <tr>
             <td style="width: 50%; padding: 0;">
               <div class="header-section-title">${isArabic ? 'القدرات المنتظرة' : 'Les capacités attendues'}</div>
-              <div style="padding: 6px 10px; font-size: 8.2pt; min-height: 60px; font-family: ${isArabic ? arabicFontFamily : 'inherit'}">
+              <div style="padding: 6px 10px; font-size: 8.2pt; min-height: 50px; font-family: ${isArabic ? arabicFontFamily : 'inherit'}">
+                ${renderMath(lesson.header?.capacites_attendues || lesson.header?.capacites || lesson.content?.capacites_attendues || '')}
               </div>
             </td>
             <td style="width: 50%; padding: 0;">
               <div class="header-section-title">${isArabic ? 'المحتويات' : 'Contenus'}</div>
-              <div style="padding: 6px 10px; font-size: 8.2pt; min-height: 60px; font-family: ${isArabic ? arabicFontFamily : 'inherit'}">
+              <div style="padding: 6px 10px; font-size: 8.2pt; min-height: 50px; font-family: ${isArabic ? arabicFontFamily : 'inherit'}">
+                ${renderMath(lesson.header?.contenus || lesson.header?.prerequisites || lesson.content?.contenus || '')}
               </div>
             </td>
           </tr>
           <tr>
             <td colspan="2" style="padding: 0;">
               <div class="header-section-title">${isArabic ? 'المحتوى' : 'Le contenu'}</div>
+              <div style="padding: 6px 10px; font-size: 8.2pt; min-height: 40px; font-family: ${isArabic ? arabicFontFamily : 'inherit'}">
+                ${renderMath(lesson.header?.le_contenu || lesson.header?.overview || lesson.content?.le_contenu || '')}
+              </div>
             </td>
           </tr>
         </table>
@@ -2071,22 +2334,25 @@ html[dir="rtl"] .homework-bareme-header {
       <td style="width: 27%; padding: 0;">
         <table class="right-info-table" style="width: 100%; border-collapse: collapse; height: 100%;">
           <tr>
-            <td style="font-family: ${isArabic ? arabicFontFamily : 'inherit'}"><strong>${isArabic ? 'الأكاديمية' : 'Académie'} :</strong><br/>${isArabic ? 'فاس - مكناس' : 'FES-MEKNES'}</td>
+            <td style="font-family: ${isArabic ? arabicFontFamily : 'inherit'}"><strong>${isArabic ? 'الأكاديمية' : 'Académie'} :</strong><br/>${esc(lesson.header?.academie || (isArabic ? 'فاس - مكناس' : 'FES-MEKNES'))}</td>
           </tr>
           <tr>
-            <td style="font-family: ${isArabic ? arabicFontFamily : 'inherit'}"><strong>${isArabic ? 'المديرية الإقليمية' : 'Direction Provinciale'} :</strong><br/>${isArabic ? 'مكناس' : 'MY'}</td>
+            <td style="font-family: ${isArabic ? arabicFontFamily : 'inherit'}"><strong>${isArabic ? 'المديرية الإقليمية' : 'Direction Provinciale'} :</strong><br/>${esc(lesson.header?.direction || (isArabic ? 'مكناس' : 'MY'))}</td>
           </tr>
           <tr>
-            <td style="font-family: ${isArabic ? arabicFontFamily : 'inherit'}"><strong>${isArabic ? 'المؤسسة' : 'Etablissement'} :</strong><br/>${esc(schools[0] || (isArabic ? '18 نونبر' : '18 NOVEMBRE'))}</td>
+            <td style="font-family: ${isArabic ? arabicFontFamily : 'inherit'}"><strong>${isArabic ? 'المؤسسة' : 'Etablissement'} :</strong><br/>${esc(lesson.header?.etablissement || schools[0] || (isArabic ? '18 نونبر' : '18 NOVEMBRE'))}</td>
           </tr>
           <tr>
             <td style="font-family: ${isArabic ? arabicFontFamily : 'inherit'}">
               <strong>${isArabic ? 'الأهمية' : "Degré d'importance"} :</strong><br/>
-              <span style="background-color: #fef08a; padding: 1px 5px; font-weight: 800; color: #854d0e; font-size: 8.5pt; display: inline-block; margin-top: 2px;">40%</span>
+              <span style="background-color: #fef08a; padding: 1px 5px; font-weight: 800; color: #854d0e; font-size: 8.5pt; display: inline-block; margin-top: 2px;">${esc(lesson.header?.degre_importance || '40%')}</span>
             </td>
           </tr>
           <tr>
-            <td style="font-family: ${isArabic ? arabicFontFamily : 'inherit'}; border-bottom: none;"><strong>${isArabic ? 'ملاحظات' : 'Remarques'}</strong></td>
+            <td style="font-family: ${isArabic ? arabicFontFamily : 'inherit'}; border-bottom: none;">
+              <strong>${isArabic ? 'ملاحظات' : 'Remarques'} :</strong><br/>
+              ${renderMath(lesson.header?.remarques || '')}
+            </td>
           </tr>
         </table>
       </td>

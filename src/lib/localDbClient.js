@@ -1,37 +1,123 @@
 // src/lib/localDbClient.js
 // Client API wrapper for communicating with the local Companion server database on port 5002.
 
-const BASE_URL = 'http://localhost:5002/api';
+const BASE_URL = 'http://127.0.0.1:5002/api';
+const PING_URL = 'http://127.0.0.1:5002/ping';
+const PROBE_TIMEOUT_MS = 750;
+const REQUEST_TIMEOUT_MS = 3000;
+const OFFLINE_COOLDOWN_MS = 30000;
+const GET_CACHE_TTL_MS = 2000;
+
+let companionAvailable = null;
+let companionUnavailableUntil = 0;
+let companionProbe = null;
+const inFlightGets = new Map();
+const getCache = new Map();
+
+const unavailableError = () => {
+  const error = new Error('Local companion server unavailable');
+  error.code = 'COMPANION_UNAVAILABLE';
+  return error;
+};
+
+const probeCompanion = async () => {
+  if (companionAvailable === true) return true;
+  if (companionAvailable === false && Date.now() < companionUnavailableUntil) return false;
+  if (companionProbe) return companionProbe;
+
+  companionProbe = (async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), PROBE_TIMEOUT_MS);
+    try {
+      const response = await fetch(PING_URL, { method: 'GET', signal: controller.signal });
+      companionAvailable = response.ok;
+      if (!companionAvailable) companionUnavailableUntil = Date.now() + OFFLINE_COOLDOWN_MS;
+      return companionAvailable;
+    } catch {
+      companionAvailable = false;
+      companionUnavailableUntil = Date.now() + OFFLINE_COOLDOWN_MS;
+      return false;
+    } finally {
+      clearTimeout(timeoutId);
+      companionProbe = null;
+    }
+  })();
+
+  return companionProbe;
+};
 
 const request = async (endpoint, options = {}) => {
+  if (!(await probeCompanion())) throw unavailableError();
+
   const url = `${BASE_URL}${endpoint}`;
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {})
   };
 
+  const controller = new AbortController();
+  // The companion server can need a moment to read local JSON files on its
+  // first request. A short timeout keeps the UI responsive without treating a
+  // healthy local service as unavailable.
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
   const config = {
     ...options,
-    headers
+    headers,
+    signal: controller.signal
   };
 
   try {
     const response = await fetch(url, config);
+    clearTimeout(timeoutId);
+    companionAvailable = true;
     if (!response.ok) {
       const errBody = await response.json().catch(() => ({}));
       throw new Error(errBody.error || `HTTP error! status: ${response.status}`);
     }
     return await response.json();
   } catch (error) {
-    console.error(`[LocalDB Client] Request to ${endpoint} failed:`, error);
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError' || error.name === 'TypeError') {
+      companionAvailable = false;
+      companionUnavailableUntil = Date.now() + OFFLINE_COOLDOWN_MS;
+    } else if (error.code !== 'COMPANION_UNAVAILABLE') {
+      console.warn(`[LocalDB Client] Request to ${endpoint} failed:`, error.message);
+    }
     throw error;
   }
 };
 
+const get = (endpoint) => {
+  const cached = getCache.get(endpoint);
+  if (cached && cached.expiresAt > Date.now()) return Promise.resolve(cached.value);
+
+  const pending = inFlightGets.get(endpoint);
+  if (pending) return pending;
+
+  const getRequest = request(endpoint, { method: 'GET' })
+    .then((value) => {
+      getCache.set(endpoint, { value, expiresAt: Date.now() + GET_CACHE_TTL_MS });
+      return value;
+    })
+    .finally(() => {
+      inFlightGets.delete(endpoint);
+    });
+
+  inFlightGets.set(endpoint, getRequest);
+  return getRequest;
+};
+
+const mutate = async (endpoint, options) => {
+  const result = await request(endpoint, options);
+  getCache.clear();
+  return result;
+};
+
 export const localDb = {
-  get: (endpoint) => request(endpoint, { method: 'GET' }),
-  post: (endpoint, body) => request(endpoint, { method: 'POST', body: JSON.stringify(body) }),
-  delete: (endpoint, id) => request(`${endpoint}?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+  get,
+  post: (endpoint, body) => mutate(endpoint, { method: 'POST', body: JSON.stringify(body) }),
+  delete: (endpoint, id) => mutate(`${endpoint}?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
 };
 
 export default localDb;

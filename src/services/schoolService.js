@@ -340,6 +340,57 @@ export const saveWhatsAppSettingsConfig = async (settings) => {
 };
 
 /**
+ * Fetch subscription plans shared by the admin dashboard and sales pages.
+ */
+export const getPlansConfig = async () => {
+  if (!supabase) {
+    try {
+      const config = await localDb.get('/config');
+      return Array.isArray(config.plans) ? config.plans : null;
+    } catch (err) {
+      console.error('[LocalDB] Failed to fetch plans config:', err);
+      return null;
+    }
+  }
+
+  const { data, error } = await supabase
+    .from('config')
+    .select('value')
+    .eq('key', 'plans')
+    .maybeSingle();
+
+  return error || !data || !Array.isArray(data.value) ? null : data.value;
+};
+
+// Aliases to avoid "getPlans is not defined" runtime errors
+export const getPlans = getPlansConfig;
+
+/**
+ * Persist subscription plans in the active data source.
+ */
+export const savePlansConfig = async (plans) => {
+  if (!supabase) {
+    await localDb.post('/config', { plans });
+    return;
+  }
+
+  const { error } = await supabase
+    .from('config')
+    .upsert({
+      key: 'plans',
+      value: plans,
+      updated_at: new Date().toISOString(),
+    });
+
+  if (error) {
+    console.error('[Supabase] Failed to save plans config:', error);
+    throw error;
+  }
+};
+
+export const savePlans = savePlansConfig;
+
+/**
  * Fetch dynamic Arabic sales page config.
  */
 export const getLandingArConfig = async () => {
