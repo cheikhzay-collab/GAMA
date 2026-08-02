@@ -4,11 +4,20 @@
 import { generateFichePedagogiquePDF } from './generateFichePedagogiquePDF';
 
 export async function generateFichePedagogiqueWithAI(lesson, options = {}) {
-  const geminiKey = localStorage.getItem('gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
+  let geminiKey = localStorage.getItem('geminiApiKey') || 
+                  localStorage.getItem('gemini_api_key') || 
+                  localStorage.getItem('lconq_gemini_api_key') || 
+                  import.meta.env.VITE_GEMINI_API_KEY || '';
   
-  if (!geminiKey) {
-    alert("⚠️ Clé API Gemini introuvable. Veuillez configurer votre clé API dans Paramètres -> Clés API pour utiliser le générateur de Fiches par IA.");
-    return;
+  if (!geminiKey || geminiKey.trim() === '') {
+    const inputKey = prompt("🔑 Clé API Gemini requise :\nVeuillez saisir votre clé API Gemini (obtenue gratuitement sur aistudio.google.com) pour générer la Fiche Pédagogique par IA :");
+    if (inputKey && inputKey.trim() !== '') {
+      geminiKey = inputKey.trim();
+      localStorage.setItem('geminiApiKey', geminiKey);
+    } else {
+      alert("⚠️ Clé API non fournie. Génération annulée.");
+      return;
+    }
   }
 
   // Extract lesson text for prompt context
@@ -71,7 +80,10 @@ Le JSON doit respecter scrupuleusement la structure suivante :
 
   const promptText = `Voici le contenu du cours à analyser :\n\n${lessonText}\n\nGénère la Fiche Pédagogique Officielle au format JSON.`;
 
-  const modelToUse = localStorage.getItem('gemini_model') || 'gemini-1.5-flash';
+  let modelToUse = localStorage.getItem('geminiModel') || localStorage.getItem('gemini_model') || 'gemini-1.5-flash';
+  if (!modelToUse || modelToUse.includes('3.5')) {
+    modelToUse = 'gemini-1.5-flash';
+  }
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${geminiKey}`;
 
   try {
