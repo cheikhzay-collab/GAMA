@@ -629,6 +629,32 @@ export default function LessonViewerPage() {
   const [boardTheme, setBoardTheme] = useState('dark'); // 'dark' | 'chalkboard' | 'whiteboard'
   const [boardFontSize, setBoardFontSize] = useState(1.25); // rem
   const [showSlideDrawer, setShowSlideDrawer] = useState(false);
+  const [zenFocusMode, setZenFocusMode] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().then(() => {
+        setIsFullscreen(true);
+      }).catch(err => {
+        console.error("Error enabling fullscreen:", err);
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().then(() => {
+          setIsFullscreen(false);
+        });
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, []);
 
   useEffect(() => {
     if (!presentationMode) return;
@@ -646,13 +672,23 @@ export default function LessonViewerPage() {
       } else if (e.key === 's' || e.key === 'S') {
         e.preventDefault();
         setShowSolutionInSlide(prev => !prev);
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
+      } else if (e.key === 'z' || e.key === 'Z') {
+        e.preventDefault();
+        setZenFocusMode(prev => !prev);
       } else if (e.key === 'Escape') {
-        setPresentationMode(false);
+        if (zenFocusMode) {
+          setZenFocusMode(false);
+        } else {
+          setPresentationMode(false);
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [presentationMode, lesson]);
+  }, [presentationMode, lesson, zenFocusMode]);
 
   if (!authLoading && !user) {
     return <Navigate to="/login" replace />;
@@ -3238,142 +3274,181 @@ export default function LessonViewerPage() {
             }}
           >
             {/* Top Progress Line */}
-            <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', position: 'relative' }}>
-              <div style={{ width: `${progressPct}%`, height: '100%', background: t.accentGlow, transition: 'width 0.3s ease' }} />
-            </div>
-
-            {/* Top Control Bar */}
-            <div
-              style={{
-                padding: '0.75rem 1.75rem',
-                background: t.headerBg,
-                borderBottom: `1px solid ${boardTheme === 'whiteboard' ? '#e2e8f0' : '#1e293b'}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '1rem',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                <span style={{ background: t.accentGlow, color: '#fff', padding: '0.25rem 0.75rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 900, letterSpacing: '0.05em' }}>
-                  📺 DATA SHOW
-                </span>
-                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: t.textMain }}>
-                  {renderWithMath(lesson?.title || header?.fiche_title || 'Présentation Classe')}
-                </h3>
+            {!zenFocusMode && (
+              <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', position: 'relative' }}>
+                <div style={{ width: `${progressPct}%`, height: '100%', background: t.accentGlow, transition: 'width 0.3s ease' }} />
               </div>
+            )}
 
-              {/* Theme & Controls Bar */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                
-                {/* Theme Selector Pills */}
-                <div style={{ display: 'flex', background: boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)', padding: '3px', borderRadius: '10px', border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.1)'}` }}>
-                  <button
-                    onClick={() => setBoardTheme('dark')}
-                    style={{
-                      background: boardTheme === 'dark' ? '#6366f1' : 'transparent',
-                      color: boardTheme === 'dark' ? '#ffffff' : (boardTheme === 'whiteboard' ? '#1e293b' : '#94a3b8'),
-                      border: 'none', padding: '0.3rem 0.65rem', borderRadius: '7px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
-                      display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
-                    }}
-                    title="Mode Cyber Glass Sombre"
-                  >
-                    🌙 <span>Sombre</span>
-                  </button>
-                  <button
-                    onClick={() => setBoardTheme('chalkboard')}
-                    style={{
-                      background: boardTheme === 'chalkboard' ? '#059669' : 'transparent',
-                      color: boardTheme === 'chalkboard' ? '#ffffff' : (boardTheme === 'whiteboard' ? '#1e293b' : '#94a3b8'),
-                      border: 'none', padding: '0.3rem 0.65rem', borderRadius: '7px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
-                      display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
-                    }}
-                    title="Mode السبورة الخضراء (Chalkboard)"
-                  >
-                    🌿 <span>السبورة</span>
-                  </button>
-                  <button
-                    onClick={() => setBoardTheme('whiteboard')}
-                    style={{
-                      background: boardTheme === 'whiteboard' ? '#2563eb' : 'transparent',
-                      color: boardTheme === 'whiteboard' ? '#ffffff' : '#94a3b8',
-                      border: 'none', padding: '0.3rem 0.65rem', borderRadius: '7px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
-                      display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
-                    }}
-                    title="Mode السبورة البيضاء (Whiteboard)"
-                  >
-                    ☀️ <span>البيضاء</span>
-                  </button>
+            {/* Top Control Bar (Hidden in Zen Focus Mode) */}
+            {!zenFocusMode && (
+              <div
+                style={{
+                  padding: '0.75rem 1.75rem',
+                  background: t.headerBg,
+                  borderBottom: `1px solid ${boardTheme === 'whiteboard' ? '#e2e8f0' : '#1e293b'}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+                }}
+              >
+                {/* Left side: Lesson Title & Slide Count */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                  <span style={{ background: t.accentGlow, color: '#fff', padding: '0.25rem 0.75rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 900, letterSpacing: '0.05em' }}>
+                    📺 DATA SHOW
+                  </span>
+                  <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: t.textMain }}>
+                    {renderWithMath(lesson?.title || header?.fiche_title || 'Présentation Classe')}
+                  </h3>
+                  <span style={{ background: boardTheme === 'whiteboard' ? '#e2e8f0' : 'rgba(255,255,255,0.1)', color: t.textMain, padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 800 }}>
+                    {currentSlideIndex + 1} / {totalSlides}
+                  </span>
                 </div>
 
-                {/* Font Size Adjusters */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)', border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'transparent'}`, padding: '3px 8px', borderRadius: '10px' }}>
+                {/* Right side: Organized Controls */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  
+                  {/* Fullscreen Toggle Button */}
                   <button
-                    onClick={() => setBoardFontSize(prev => Math.max(prev - 0.15, 0.9))}
-                    style={{ background: 'transparent', border: 'none', color: t.textMain, fontWeight: 900, cursor: 'pointer', fontSize: '0.8rem' }}
-                    title="Réduire la taille du texte"
+                    onClick={toggleFullscreen}
+                    style={{
+                      background: isFullscreen ? t.accent : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.08)'),
+                      color: isFullscreen ? '#ffffff' : t.textMain,
+                      border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.15)'}`,
+                      padding: '0.4rem 0.85rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer',
+                      display: 'inline-flex', alignItems: 'center', gap: '0.35rem'
+                    }}
+                    title="Activer/Désactiver le mode plein écran (F)"
                   >
-                    A-
+                    ⛶ <span>{isFullscreen ? 'Quitter Plein Écran (F)' : 'Plein Écran (F)'}</span>
                   </button>
-                  <span style={{ fontSize: '0.75rem', opacity: 0.6, fontWeight: 700, color: t.textMain }}>|</span>
+
+                  {/* Zen Focus Mode Button */}
                   <button
-                    onClick={() => setBoardFontSize(prev => Math.min(prev + 0.15, 2.2))}
-                    style={{ background: 'transparent', border: 'none', color: t.textMain, fontWeight: 900, cursor: 'pointer', fontSize: '0.95rem' }}
-                    title="Agrandir la taille du texte"
+                    onClick={() => setZenFocusMode(true)}
+                    style={{
+                      background: 'linear-gradient(135deg, #10b981, #059669)',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '0.4rem 0.85rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer',
+                      display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                    }}
+                    title="Mode التركيز الكامل (Z) - إخفاء جميع الأشرطة لعدم التشتت"
                   >
-                    A+
+                    🎯 <span>Mode Focus (Z)</span>
+                  </button>
+
+                  {/* Theme Selector Pills */}
+                  <div style={{ display: 'flex', background: boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)', padding: '3px', borderRadius: '10px', border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.1)'}` }}>
+                    <button
+                      onClick={() => setBoardTheme('dark')}
+                      style={{
+                        background: boardTheme === 'dark' ? '#6366f1' : 'transparent',
+                        color: boardTheme === 'dark' ? '#ffffff' : (boardTheme === 'whiteboard' ? '#1e293b' : '#94a3b8'),
+                        border: 'none', padding: '0.3rem 0.65rem', borderRadius: '7px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
+                        display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
+                      }}
+                      title="Mode Cyber Glass Sombre"
+                    >
+                      🌙 <span>Sombre</span>
+                    </button>
+                    <button
+                      onClick={() => setBoardTheme('chalkboard')}
+                      style={{
+                        background: boardTheme === 'chalkboard' ? '#059669' : 'transparent',
+                        color: boardTheme === 'chalkboard' ? '#ffffff' : (boardTheme === 'whiteboard' ? '#1e293b' : '#94a3b8'),
+                        border: 'none', padding: '0.3rem 0.65rem', borderRadius: '7px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
+                        display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
+                      }}
+                      title="Mode السبورة الخضراء (Chalkboard)"
+                    >
+                      🌿 <span>السبورة</span>
+                    </button>
+                    <button
+                      onClick={() => setBoardTheme('whiteboard')}
+                      style={{
+                        background: boardTheme === 'whiteboard' ? '#2563eb' : 'transparent',
+                        color: boardTheme === 'whiteboard' ? '#ffffff' : '#94a3b8',
+                        border: 'none', padding: '0.3rem 0.65rem', borderRadius: '7px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
+                        display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
+                      }}
+                      title="Mode السبورة البيضاء (Whiteboard)"
+                    >
+                      ☀️ <span>البيضاء</span>
+                    </button>
+                  </div>
+
+                  {/* Font Size Adjusters */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)', border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'transparent'}`, padding: '3px 8px', borderRadius: '10px' }}>
+                    <button
+                      onClick={() => setBoardFontSize(prev => Math.max(prev - 0.15, 0.9))}
+                      style={{ background: 'transparent', border: 'none', color: t.textMain, fontWeight: 900, cursor: 'pointer', fontSize: '0.8rem' }}
+                      title="Réduire la taille du texte"
+                    >
+                      A-
+                    </button>
+                    <span style={{ fontSize: '0.75rem', opacity: 0.6, fontWeight: 700, color: t.textMain }}>|</span>
+                    <button
+                      onClick={() => setBoardFontSize(prev => Math.min(prev + 0.15, 2.2))}
+                      style={{ background: 'transparent', border: 'none', color: t.textMain, fontWeight: 900, cursor: 'pointer', fontSize: '0.95rem' }}
+                      title="Agrandir la taille du texte"
+                    >
+                      A+
+                    </button>
+                  </div>
+
+                  {/* Drawer Thumbnails Toggle Button */}
+                  <button
+                    onClick={() => setShowSlideDrawer(prev => !prev)}
+                    style={{
+                      background: showSlideDrawer ? t.accent : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.08)'),
+                      color: showSlideDrawer ? '#ffffff' : t.textMain,
+                      border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.15)'}`,
+                      padding: '0.4rem 0.85rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer',
+                      display: 'inline-flex', alignItems: 'center', gap: '0.35rem'
+                    }}
+                    title="Afficher la liste des diapositives"
+                  >
+                    📋 <span>Index</span>
+                  </button>
+
+                  {/* Solution Toggle Button */}
+                  <button
+                    onClick={() => setShowSolutionInSlide(prev => !prev)}
+                    style={{
+                      background: showSolutionInSlide ? '#059669' : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.08)'),
+                      color: showSolutionInSlide ? '#ffffff' : t.textMain,
+                      border: `1px solid ${showSolutionInSlide ? '#059669' : (boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.15)')}`,
+                      padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: 800, borderRadius: '8px', cursor: 'pointer',
+                      display: 'inline-flex', alignItems: 'center', gap: '0.35rem'
+                    }}
+                  >
+                    💡 <span>{showSolutionInSlide ? 'Masquer Corrigé (S)' : 'Corrigé (S)'}</span>
+                  </button>
+
+                  {/* Quit Button */}
+                  <button
+                    onClick={() => setPresentationMode(false)}
+                    style={{
+                      background: 'rgba(239, 68, 68, 0.2)',
+                      border: '1px solid #ef4444', color: '#ef4444',
+                      padding: '0.4rem 0.85rem', borderRadius: '8px', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer'
+                    }}
+                  >
+                    ✕ Quitter (Esc)
                   </button>
                 </div>
-
-                {/* Drawer Thumbnails Toggle Button */}
-                <button
-                  onClick={() => setShowSlideDrawer(prev => !prev)}
-                  style={{
-                    background: showSlideDrawer ? t.accent : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.08)'),
-                    color: showSlideDrawer ? '#ffffff' : t.textMain,
-                    border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.15)'}`,
-                    padding: '0.4rem 0.85rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer',
-                    display: 'inline-flex', alignItems: 'center', gap: '0.35rem'
-                  }}
-                  title="Afficher la liste des diapositives"
-                >
-                  📋 <span>Index ({totalSlides})</span>
-                </button>
-
-                {/* Solution Toggle Button */}
-                <button
-                  onClick={() => setShowSolutionInSlide(prev => !prev)}
-                  style={{
-                    background: showSolutionInSlide ? '#059669' : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.08)'),
-                    color: showSolutionInSlide ? '#ffffff' : t.textMain,
-                    border: `1px solid ${showSolutionInSlide ? '#059669' : (boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.15)')}`,
-                    padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: 800, borderRadius: '8px', cursor: 'pointer',
-                    display: 'inline-flex', alignItems: 'center', gap: '0.35rem'
-                  }}
-                >
-                  💡 <span>{showSolutionInSlide ? 'Masquer Corrigé (S)' : 'Afficher Corrigé (S)'}</span>
-                </button>
-
-                {/* Quit Button */}
-                <button
-                  onClick={() => setPresentationMode(false)}
-                  style={{
-                    background: 'rgba(239, 68, 68, 0.2)',
-                    border: '1px solid #ef4444', color: '#ef4444',
-                    padding: '0.4rem 0.85rem', borderRadius: '8px', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer'
-                  }}
-                >
-                  Quitter (Esc)
-                </button>
               </div>
-            </div>
+            )}
 
             {/* Main Area: Drawer + Slide View */}
             <div style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}>
               
-              {/* Slide Drawer Side Panel */}
-              {showSlideDrawer && (
+              {/* Slide Drawer Side Panel (Hidden in Zen Focus Mode) */}
+              {!zenFocusMode && showSlideDrawer && (
                 <div
                   style={{
                     width: '320px',
@@ -3426,7 +3501,7 @@ export default function LessonViewerPage() {
                 style={{
                   flex: 1,
                   overflowY: 'auto',
-                  padding: '2.5rem 3.5rem',
+                  padding: zenFocusMode ? '1.5rem' : '2.5rem 3.5rem',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center',
@@ -3442,32 +3517,32 @@ export default function LessonViewerPage() {
                       background: t.cardBg,
                       border: t.borderBoard,
                       borderRadius: '20px',
-                      padding: '3rem',
+                      padding: zenFocusMode ? '3.5rem 4rem' : '3rem',
                       boxShadow: t.boxShadow,
-                      maxWidth: '1300px',
+                      maxWidth: zenFocusMode ? '1500px' : '1300px',
                       width: '100%',
                       transition: 'all 0.3s ease'
                     }}
                   >
                     {/* Header Banner */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '2rem', borderBottom: `2px dashed ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.15)'}`, paddingBottom: '1.25rem' }}>
-                      <div style={{ background: t.accentGlow, color: '#fff', width: '3rem', height: '3rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.3rem', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
+                      <div style={{ background: t.accentGlow, color: '#fff', width: '3.2rem', height: '3.2rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.4rem', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
                         {currentSlideIndex + 1}
                       </div>
-                      <h2 style={{ margin: 0, fontSize: `${boardFontSize * 1.35}rem`, fontWeight: 900, color: t.textMain }}>
+                      <h2 style={{ margin: 0, fontSize: `${boardFontSize * 1.4}rem`, fontWeight: 900, color: t.textMain }}>
                         {renderWithMath(currentSec.title || currentSec.section_header || `Section ${currentSlideIndex + 1}`)}
                       </h2>
                     </div>
 
                     {/* Body Items */}
-                    <div style={{ fontSize: `${boardFontSize}rem`, lineHeight: 1.9, color: t.textMain }}>
+                    <div style={{ fontSize: `${boardFontSize * (zenFocusMode ? 1.1 : 1)}rem`, lineHeight: 1.95, color: t.textMain }}>
                       {currentSec.items?.map((item, idx) => (
-                        <div key={idx} style={{ margin: '1rem 0' }}>
+                        <div key={idx} style={{ margin: '1.2rem 0' }}>
                           {renderWithMath(typeof item === 'string' ? item : (item.text || ''))}
                         </div>
                       ))}
                       {(!currentSec.items || currentSec.items.length === 0) && currentSec.content && (
-                        <div style={{ lineHeight: 1.9 }}>{renderWithMath(currentSec.content)}</div>
+                        <div style={{ lineHeight: 1.95 }}>{renderWithMath(currentSec.content)}</div>
                       )}
                     </div>
 
@@ -3482,8 +3557,8 @@ export default function LessonViewerPage() {
                             🔍 Afficher le Corrigé / Démonstration (S)
                           </button>
                         ) : (
-                          <div style={{ background: t.solBg, border: `2px solid ${t.solBorder}`, padding: '1.75rem', borderRadius: '14px', color: t.solText, fontSize: `${boardFontSize * 0.95}rem`, lineHeight: 1.9 }}>
-                            <div style={{ fontWeight: 900, color: t.solBorder, marginBottom: '0.85rem', fontSize: '1.15rem' }}>
+                          <div style={{ background: t.solBg, border: `2px solid ${t.solBorder}`, padding: '1.75rem', borderRadius: '14px', color: t.solText, fontSize: `${boardFontSize * 1.05}rem`, lineHeight: 1.95 }}>
+                            <div style={{ fontWeight: 900, color: t.solBorder, marginBottom: '0.85rem', fontSize: '1.2rem' }}>
                               💡 Corrigé & Démonstration Rédigée :
                             </div>
                             {renderWithMath(currentSec.solution)}
@@ -3496,63 +3571,128 @@ export default function LessonViewerPage() {
               </div>
             </div>
 
-            {/* Bottom Footer Bar Navigation */}
-            <div
-              style={{
-                padding: '0.85rem 2.5rem',
-                background: t.footerBg,
-                borderTop: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : '#1e293b'}`,
-                display: 'flex',
-                alignItems: 'center',
-                justify: 'space-between'
-              }}
-            >
-              <button
-                disabled={currentSlideIndex === 0}
-                onClick={() => { setCurrentSlideIndex(prev => Math.max(prev - 1, 0)); setShowSolutionInSlide(false); }}
-                className="btn"
+            {/* Floating Quick Action Bar for Zen Focus Mode */}
+            {zenFocusMode ? (
+              <div
                 style={{
-                  background: currentSlideIndex === 0 ? (boardTheme === 'whiteboard' ? '#e2e8f0' : '#1e293b') : t.accent,
-                  color: currentSlideIndex === 0 ? t.textSubtle : '#fff',
-                  opacity: currentSlideIndex === 0 ? 0.5 : 1,
-                  cursor: currentSlideIndex === 0 ? 'not-allowed' : 'pointer',
-                  padding: '0.6rem 1.5rem',
-                  fontSize: '0.95rem',
-                  fontWeight: 800,
-                  borderRadius: '10px',
-                  display: 'inline-flex',
+                  position: 'fixed',
+                  bottom: '1.5rem',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: 'rgba(15, 23, 42, 0.85)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '30px',
+                  padding: '0.5rem 1.25rem',
+                  display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem'
+                  gap: '1rem',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                  zIndex: 100
                 }}
               >
-                <ChevronLeft size={20} /> Précédent (←)
-              </button>
+                <button
+                  disabled={currentSlideIndex === 0}
+                  onClick={() => { setCurrentSlideIndex(prev => Math.max(prev - 1, 0)); setShowSolutionInSlide(false); }}
+                  style={{ background: 'transparent', border: 'none', color: '#fff', opacity: currentSlideIndex === 0 ? 0.3 : 1, cursor: 'pointer', fontWeight: 800 }}
+                >
+                  <ChevronLeft size={22} />
+                </button>
 
-              <div style={{ fontSize: '0.85rem', color: t.textSubtle, fontWeight: 700 }}>
-                Diapositive <strong style={{ color: t.textMain }}>{currentSlideIndex + 1}</strong> sur <strong style={{ color: t.textMain }}>{totalSlides}</strong> • Naviguez avec <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>←</kbd> <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>→</kbd> ou <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>Espace</kbd>
+                <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#f8fafc' }}>
+                  {currentSlideIndex + 1} / {totalSlides}
+                </span>
+
+                <button
+                  disabled={currentSlideIndex >= totalSlides - 1}
+                  onClick={() => { setCurrentSlideIndex(prev => Math.min(prev + 1, totalSlides - 1)); setShowSolutionInSlide(false); }}
+                  style={{ background: 'transparent', border: 'none', color: '#fff', opacity: currentSlideIndex >= totalSlides - 1 ? 0.3 : 1, cursor: 'pointer', fontWeight: 800 }}
+                >
+                  <ChevronRight size={22} />
+                </button>
+
+                <div style={{ height: '18px', width: '1px', background: 'rgba(255,255,255,0.2)' }} />
+
+                <button
+                  onClick={() => setShowSolutionInSlide(prev => !prev)}
+                  style={{ background: showSolutionInSlide ? '#059669' : 'transparent', border: 'none', color: '#fff', padding: '0.25rem 0.65rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer' }}
+                >
+                  💡 Corrigé (S)
+                </button>
+
+                <button
+                  onClick={toggleFullscreen}
+                  style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer' }}
+                >
+                  ⛶ {isFullscreen ? 'Fenêtre' : 'Plein Écran'}
+                </button>
+
+                <button
+                  onClick={() => setZenFocusMode(false)}
+                  style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 900, cursor: 'pointer' }}
+                >
+                  🎯 Quitter Focus (Z)
+                </button>
               </div>
-
-              <button
-                disabled={currentSlideIndex >= totalSlides - 1}
-                onClick={() => { setCurrentSlideIndex(prev => Math.min(prev + 1, totalSlides - 1)); setShowSolutionInSlide(false); }}
-                className="btn"
+            ) : (
+              /* Bottom Footer Bar Navigation */
+              <div
                 style={{
-                  background: currentSlideIndex >= totalSlides - 1 ? (boardTheme === 'whiteboard' ? '#e2e8f0' : '#1e293b') : t.accent,
-                  color: currentSlideIndex >= totalSlides - 1 ? t.textSubtle : '#fff',
-                  opacity: currentSlideIndex >= totalSlides - 1 ? 0.5 : 1,
-                  cursor: currentSlideIndex >= totalSlides - 1 ? 'not-allowed' : 'pointer',
-                  padding: '0.6rem 1.5rem',
-                  fontSize: '0.95rem',
-                  fontWeight: 800,
-                  borderRadius: '10px',
-                  display: 'inline-flex',
+                  padding: '0.75rem 2.5rem',
+                  background: t.footerBg,
+                  borderTop: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : '#1e293b'}`,
+                  display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem'
+                  justifyContent: 'space-between'
                 }}
               >
-                Suivant (→) <ChevronRight size={20} />
-              </button>
-            </div>
+                <button
+                  disabled={currentSlideIndex === 0}
+                  onClick={() => { setCurrentSlideIndex(prev => Math.max(prev - 1, 0)); setShowSolutionInSlide(false); }}
+                  className="btn"
+                  style={{
+                    background: currentSlideIndex === 0 ? (boardTheme === 'whiteboard' ? '#e2e8f0' : '#1e293b') : t.accent,
+                    color: currentSlideIndex === 0 ? t.textSubtle : '#fff',
+                    opacity: currentSlideIndex === 0 ? 0.5 : 1,
+                    cursor: currentSlideIndex === 0 ? 'not-allowed' : 'pointer',
+                    padding: '0.55rem 1.35rem',
+                    fontSize: '0.9rem',
+                    fontWeight: 800,
+                    borderRadius: '10px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem'
+                  }}
+                >
+                  <ChevronLeft size={18} /> Précédent (←)
+                </button>
+
+                <div style={{ fontSize: '0.85rem', color: t.textSubtle, fontWeight: 700 }}>
+                  Diapositive <strong style={{ color: t.textMain }}>{currentSlideIndex + 1}</strong> sur <strong style={{ color: t.textMain }}>{totalSlides}</strong> • Naviguez مع <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>←</kbd> <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>→</kbd> أو <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>Espace</kbd>
+                </div>
+
+                <button
+                  disabled={currentSlideIndex >= totalSlides - 1}
+                  onClick={() => { setCurrentSlideIndex(prev => Math.min(prev + 1, totalSlides - 1)); setShowSolutionInSlide(false); }}
+                  className="btn"
+                  style={{
+                    background: currentSlideIndex >= totalSlides - 1 ? (boardTheme === 'whiteboard' ? '#e2e8f0' : '#1e293b') : t.accent,
+                    color: currentSlideIndex >= totalSlides - 1 ? t.textSubtle : '#fff',
+                    opacity: currentSlideIndex >= totalSlides - 1 ? 0.5 : 1,
+                    cursor: currentSlideIndex >= totalSlides - 1 ? 'not-allowed' : 'pointer',
+                    padding: '0.55rem 1.35rem',
+                    fontSize: '0.9rem',
+                    fontWeight: 800,
+                    borderRadius: '10px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem'
+                  }}
+                >
+                  Suivant (→) <ChevronRight size={18} />
+                </button>
+              </div>
+            )}
           </div>
         );
       })()}
