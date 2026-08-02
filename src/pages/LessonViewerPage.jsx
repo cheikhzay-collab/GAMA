@@ -626,6 +626,9 @@ export default function LessonViewerPage() {
   const [presentationMode, setPresentationMode] = useState(false);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [showSolutionInSlide, setShowSolutionInSlide] = useState(false);
+  const [boardTheme, setBoardTheme] = useState('dark'); // 'dark' | 'chalkboard' | 'whiteboard'
+  const [boardFontSize, setBoardFontSize] = useState(1.25); // rem
+  const [showSlideDrawer, setShowSlideDrawer] = useState(false);
 
   useEffect(() => {
     if (!presentationMode) return;
@@ -3164,6 +3167,60 @@ export default function LessonViewerPage() {
         const slides = getSlidesList(lesson);
         const totalSlides = slides.length || 1;
         const currentSec = slides[currentSlideIndex];
+        const progressPct = ((currentSlideIndex + 1) / totalSlides) * 100;
+
+        const themeStyles = {
+          dark: {
+            bgOuter: '#070a12',
+            bgBoard: '#0f172a',
+            borderBoard: '2px solid rgba(99, 102, 241, 0.4)',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.7), 0 0 40px rgba(99, 102, 241, 0.15)',
+            textMain: '#f8fafc',
+            textSubtle: '#94a3b8',
+            accent: '#6366f1',
+            accentGlow: 'linear-gradient(135deg, #6366f1, #a855f7)',
+            headerBg: '#0f172a',
+            footerBg: '#0f172a',
+            cardBg: '#1e293b',
+            solBg: '#064e3b',
+            solBorder: '#10b981',
+            solText: '#ecfdf5'
+          },
+          chalkboard: {
+            bgOuter: '#02140e',
+            bgBoard: '#05261d',
+            borderBoard: '3px solid #0d4736',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.8), 0 0 40px rgba(16, 185, 129, 0.1)',
+            textMain: '#f0fdf4',
+            textSubtle: '#a7f3d0',
+            accent: '#10b981',
+            accentGlow: 'linear-gradient(135deg, #059669, #10b981)',
+            headerBg: '#031912',
+            footerBg: '#031912',
+            cardBg: '#09382b',
+            solBg: '#064e3b',
+            solBorder: '#34d399',
+            solText: '#f0fdf4'
+          },
+          whiteboard: {
+            bgOuter: '#f1f5f9',
+            bgBoard: '#ffffff',
+            borderBoard: '2px solid #cbd5e1',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.1)',
+            textMain: '#0f172a',
+            textSubtle: '#475569',
+            accent: '#2563eb',
+            accentGlow: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+            headerBg: '#ffffff',
+            footerBg: '#ffffff',
+            cardBg: '#f8fafc',
+            solBg: '#ecfdf5',
+            solBorder: '#10b981',
+            solText: '#064e3b'
+          }
+        };
+
+        const t = themeStyles[boardTheme] || themeStyles.dark;
 
         return (
           <div
@@ -3171,67 +3228,128 @@ export default function LessonViewerPage() {
               position: 'fixed',
               inset: 0,
               zIndex: 99999,
-              background: '#090d16',
-              color: '#f8fafc',
+              background: t.bgOuter,
+              color: t.textMain,
               display: 'flex',
               flexDirection: 'column',
               fontFamily: isArabic ? arabicFont : 'inherit',
-              direction: lessonDir
+              direction: lessonDir,
+              transition: 'all 0.3s ease'
             }}
           >
+            {/* Top Progress Line */}
+            <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', position: 'relative' }}>
+              <div style={{ width: `${progressPct}%`, height: '100%', background: t.accentGlow, transition: 'width 0.3s ease' }} />
+            </div>
+
             {/* Top Control Bar */}
             <div
               style={{
-                padding: '0.85rem 1.5rem',
-                background: '#0f172a',
-                borderBottom: '1px solid #1e293b',
+                padding: '0.75rem 1.75rem',
+                background: t.headerBg,
+                borderBottom: `1px solid ${boardTheme === 'whiteboard' ? '#e2e8f0' : '#1e293b'}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 gap: '1rem',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
+                boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span style={{ background: '#7c3aed', color: '#fff', padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 900 }}>
-                  DATA SHOW
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                <span style={{ background: t.accentGlow, color: '#fff', padding: '0.25rem 0.75rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 900, letterSpacing: '0.05em' }}>
+                  📺 DATA SHOW
                 </span>
-                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#f8fafc' }}>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: t.textMain }}>
                   {renderWithMath(lesson?.title || header?.fiche_title || 'Présentation Classe')}
                 </h3>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#94a3b8' }}>
-                  Diapositive {currentSlideIndex + 1} / {totalSlides}
-                </span>
+              {/* Theme & Controls Bar */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                
+                {/* Theme Selector Pills */}
+                <div style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', padding: '3px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <button
+                    onClick={() => setBoardTheme('dark')}
+                    style={{
+                      background: boardTheme === 'dark' ? t.accent : 'transparent',
+                      color: '#fff', border: 'none', padding: '0.25rem 0.6rem', borderRadius: '7px', fontSize: '0.75rem', fontWeight: 800, cursor: 'pointer'
+                    }}
+                    title="Mode Cyber Glass Sombre"
+                  >
+                    🌙 Cyber
+                  </button>
+                  <button
+                    onClick={() => setBoardTheme('chalkboard')}
+                    style={{
+                      background: boardTheme === 'chalkboard' ? '#059669' : 'transparent',
+                      color: '#fff', border: 'none', padding: '0.25rem 0.6rem', borderRadius: '7px', fontSize: '0.75rem', fontWeight: 800, cursor: 'pointer'
+                    }}
+                    title="Mode السبورة الخضراء (Chalkboard)"
+                  >
+                    🌿 السبورة
+                  </button>
+                  <button
+                    onClick={() => setBoardTheme('whiteboard')}
+                    style={{
+                      background: boardTheme === 'whiteboard' ? '#2563eb' : 'transparent',
+                      color: boardTheme === 'whiteboard' ? '#fff' : t.textSubtle, border: 'none', padding: '0.25rem 0.6rem', borderRadius: '7px', fontSize: '0.75rem', fontWeight: 800, cursor: 'pointer'
+                    }}
+                    title="Mode السبورة البيضاء (Whiteboard)"
+                  >
+                    ☀️ البيضاء
+                  </button>
+                </div>
 
+                {/* Font Size Adjusters */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(255,255,255,0.06)', padding: '3px 8px', borderRadius: '10px' }}>
+                  <button
+                    onClick={() => setBoardFontSize(prev => Math.max(prev - 0.15, 0.9))}
+                    style={{ background: 'transparent', border: 'none', color: t.textMain, fontWeight: 900, cursor: 'pointer', fontSize: '0.8rem' }}
+                    title="Réduire la taille du texte"
+                  >
+                    A-
+                  </button>
+                  <span style={{ fontSize: '0.75rem', opacity: 0.6, fontWeight: 700 }}>|</span>
+                  <button
+                    onClick={() => setBoardFontSize(prev => Math.min(prev + 0.15, 2.2))}
+                    style={{ background: 'transparent', border: 'none', color: t.textMain, fontWeight: 900, cursor: 'pointer', fontSize: '0.95rem' }}
+                    title="Agrandir la taille du texte"
+                  >
+                    A+
+                  </button>
+                </div>
+
+                {/* Drawer Thumbnails Toggle Button */}
                 <button
-                  onClick={() => setShowSolutionInSlide(prev => !prev)}
-                  className="btn"
+                  onClick={() => setShowSlideDrawer(prev => !prev)}
                   style={{
-                    background: showSolutionInSlide ? '#059669' : '#1e293b',
-                    border: '1px solid #334155',
-                    color: '#fff',
-                    padding: '0.4rem 0.85rem',
-                    fontSize: '0.8rem',
-                    borderRadius: '6px',
-                    cursor: 'pointer'
+                    background: showSlideDrawer ? t.accent : 'rgba(255,255,255,0.08)',
+                    color: '#fff', border: 'none', padding: '0.4rem 0.85rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer'
                   }}
+                  title="Afficher la liste des diapositives"
                 >
-                  {showSolutionInSlide ? '👁️ Masquer la Solution (S)' : '💡 Afficher la Solution (S)'}
+                  📋 Index ({totalSlides})
                 </button>
 
+                {/* Solution Toggle Button */}
+                <button
+                  onClick={() => setShowSolutionInSlide(prev => !prev)}
+                  style={{
+                    background: showSolutionInSlide ? '#059669' : 'rgba(255,255,255,0.08)',
+                    color: '#fff', border: 'none', padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: 800, borderRadius: '8px', cursor: 'pointer'
+                  }}
+                >
+                  {showSolutionInSlide ? '👁️ Masquer Corrigé (S)' : '💡 Afficher Corrigé (S)'}
+                </button>
+
+                {/* Quit Button */}
                 <button
                   onClick={() => setPresentationMode(false)}
                   style={{
                     background: 'rgba(239, 68, 68, 0.2)',
-                    border: '1px solid #ef4444',
-                    color: '#ef4444',
-                    padding: '0.35rem 0.75rem',
-                    borderRadius: '6px',
-                    fontWeight: 800,
-                    cursor: 'pointer'
+                    border: '1px solid #ef4444', color: '#ef4444',
+                    padding: '0.4rem 0.85rem', borderRadius: '8px', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer'
                   }}
                 >
                   Quitter (Esc)
@@ -3239,74 +3357,139 @@ export default function LessonViewerPage() {
               </div>
             </div>
 
-            {/* Slide Content Display (High Contrast, Extra Large Typography) */}
-            <div
-              style={{
-                flex: 1,
-                overflowY: 'auto',
-                padding: '2.5rem 4rem',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                maxWidth: '1400px',
-                margin: '0 auto',
-                width: '100%'
-              }}
-            >
-              {!currentSec ? (
-                <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: '1.2rem' }}>Aucun contenu à afficher dans cette diapositive.</div>
-              ) : (
-                <div style={{ background: '#1e293b', border: '2px solid #334155', borderRadius: '16px', padding: '2.5rem', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', borderBottom: '2px solid #334155', paddingBottom: '1rem' }}>
-                    <div style={{ background: '#6366f1', color: '#fff', width: '2.5rem', height: '2.5rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.1rem' }}>
-                      {currentSlideIndex + 1}
-                    </div>
-                    <h2 style={{ margin: 0, fontSize: '1.6rem', fontWeight: 900, color: '#6366f1' }}>
-                      {renderWithMath(currentSec.title || currentSec.section_header || `Section ${currentSlideIndex + 1}`)}
-                    </h2>
-                  </div>
-
-                  <div style={{ fontSize: '1.25rem', lineHeight: 1.85, color: '#f1f5f9' }}>
-                    {currentSec.items?.map((item, idx) => (
-                      <div key={idx} style={{ margin: '0.85rem 0' }}>
-                        {renderWithMath(typeof item === 'string' ? item : (item.text || ''))}
-                      </div>
-                    ))}
-                    {(!currentSec.items || currentSec.items.length === 0) && currentSec.content && (
-                      <div>{renderWithMath(currentSec.content)}</div>
-                    )}
-                  </div>
-
-                  {/* Solution section inside Data Show slide */}
-                  {currentSec.solution && (
-                    <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px dashed #475569' }}>
-                      {!showSolutionInSlide ? (
-                        <button
-                          onClick={() => setShowSolutionInSlide(true)}
-                          style={{ background: '#059669', color: '#fff', border: 'none', padding: '0.6rem 1.25rem', borderRadius: '8px', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer' }}
+            {/* Main Area: Drawer + Slide View */}
+            <div style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}>
+              
+              {/* Slide Drawer Side Panel */}
+              {showSlideDrawer && (
+                <div
+                  style={{
+                    width: '320px',
+                    background: t.headerBg,
+                    borderRight: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : '#1e293b'}`,
+                    padding: '1.25rem',
+                    overflowY: 'auto',
+                    zIndex: 10
+                  }}
+                >
+                  <h4 style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: t.accent, fontWeight: 900, textTransform: 'uppercase' }}>
+                    📑 Sommaire des Diapositives
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                    {slides.map((s, sIdx) => {
+                      const isActive = sIdx === currentSlideIndex;
+                      return (
+                        <div
+                          key={sIdx}
+                          onClick={() => { setCurrentSlideIndex(sIdx); setShowSolutionInSlide(false); }}
+                          style={{
+                            padding: '0.65rem 0.85rem',
+                            borderRadius: '10px',
+                            background: isActive ? t.accentGlow : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.04)'),
+                            color: isActive ? '#ffffff' : t.textMain,
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            fontWeight: isActive ? 800 : 600,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.65rem',
+                            transition: 'all 0.2s'
+                          }}
                         >
-                          🔍 Afficher le Corrigé / Démonstration
-                        </button>
-                      ) : (
-                        <div style={{ background: '#064e3b', border: '1.5px solid #10b981', padding: '1.5rem', borderRadius: '12px', color: '#ecfdf5', fontSize: '1.15rem', lineHeight: 1.8 }}>
-                          <div style={{ fontWeight: 900, color: '#34d399', marginBottom: '0.75rem', fontSize: '1.1rem' }}>
-                            💡 Corrigé & Démonstration Rédigée :
-                          </div>
-                          {renderWithMath(currentSec.solution)}
+                          <span style={{ background: isActive ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.15)', padding: '2px 7px', borderRadius: '50%', fontSize: '0.75rem', fontWeight: 900 }}>
+                            {sIdx + 1}
+                          </span>
+                          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {s.title || s.section_header || `Diapositive ${sIdx + 1}`}
+                          </span>
                         </div>
-                      )}
-                    </div>
-                  )}
+                      );
+                    })}
+                  </div>
                 </div>
               )}
+
+              {/* Main Slide Content Display Board */}
+              <div
+                style={{
+                  flex: 1,
+                  overflowY: 'auto',
+                  padding: '2.5rem 3.5rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  width: '100%'
+                }}
+              >
+                {!currentSec ? (
+                  <div style={{ textAlign: 'center', color: t.textSubtle, fontSize: '1.2rem' }}>Aucun contenu à afficher dans cette diapositive.</div>
+                ) : (
+                  <div
+                    style={{
+                      background: t.cardBg,
+                      border: t.borderBoard,
+                      borderRadius: '20px',
+                      padding: '3rem',
+                      boxShadow: t.boxShadow,
+                      maxWidth: '1300px',
+                      width: '100%',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    {/* Header Banner */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '2rem', borderBottom: `2px dashed ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.15)'}`, paddingBottom: '1.25rem' }}>
+                      <div style={{ background: t.accentGlow, color: '#fff', width: '3rem', height: '3rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.3rem', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
+                        {currentSlideIndex + 1}
+                      </div>
+                      <h2 style={{ margin: 0, fontSize: `${boardFontSize * 1.35}rem`, fontWeight: 900, color: t.textMain }}>
+                        {renderWithMath(currentSec.title || currentSec.section_header || `Section ${currentSlideIndex + 1}`)}
+                      </h2>
+                    </div>
+
+                    {/* Body Items */}
+                    <div style={{ fontSize: `${boardFontSize}rem`, lineHeight: 1.9, color: t.textMain }}>
+                      {currentSec.items?.map((item, idx) => (
+                        <div key={idx} style={{ margin: '1rem 0' }}>
+                          {renderWithMath(typeof item === 'string' ? item : (item.text || ''))}
+                        </div>
+                      ))}
+                      {(!currentSec.items || currentSec.items.length === 0) && currentSec.content && (
+                        <div style={{ lineHeight: 1.9 }}>{renderWithMath(currentSec.content)}</div>
+                      )}
+                    </div>
+
+                    {/* Solution section inside Data Show slide */}
+                    {currentSec.solution && (
+                      <div style={{ marginTop: '2.5rem', paddingTop: '1.75rem', borderTop: `2px dashed ${t.accent}` }}>
+                        {!showSolutionInSlide ? (
+                          <button
+                            onClick={() => setShowSolutionInSlide(true)}
+                            style={{ background: '#059669', color: '#fff', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '10px', fontWeight: 800, fontSize: '1rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)' }}
+                          >
+                            🔍 Afficher le Corrigé / Démonstration (S)
+                          </button>
+                        ) : (
+                          <div style={{ background: t.solBg, border: `2px solid ${t.solBorder}`, padding: '1.75rem', borderRadius: '14px', color: t.solText, fontSize: `${boardFontSize * 0.95}rem`, lineHeight: 1.9 }}>
+                            <div style={{ fontWeight: 900, color: t.solBorder, marginBottom: '0.85rem', fontSize: '1.15rem' }}>
+                              💡 Corrigé & Démonstration Rédigée :
+                            </div>
+                            {renderWithMath(currentSec.solution)}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Bottom Footer Bar Navigation */}
             <div
               style={{
-                padding: '0.85rem 2rem',
-                background: '#0f172a',
-                borderTop: '1px solid #1e293b',
+                padding: '0.85rem 2.5rem',
+                background: t.footerBg,
+                borderTop: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : '#1e293b'}`,
                 display: 'flex',
                 alignItems: 'center',
                 justify: 'space-between'
@@ -3317,24 +3500,24 @@ export default function LessonViewerPage() {
                 onClick={() => { setCurrentSlideIndex(prev => Math.max(prev - 1, 0)); setShowSolutionInSlide(false); }}
                 className="btn"
                 style={{
-                  background: currentSlideIndex === 0 ? '#1e293b' : '#6366f1',
-                  color: '#fff',
+                  background: currentSlideIndex === 0 ? (boardTheme === 'whiteboard' ? '#e2e8f0' : '#1e293b') : t.accent,
+                  color: currentSlideIndex === 0 ? t.textSubtle : '#fff',
                   opacity: currentSlideIndex === 0 ? 0.5 : 1,
                   cursor: currentSlideIndex === 0 ? 'not-allowed' : 'pointer',
-                  padding: '0.55rem 1.25rem',
-                  fontSize: '0.9rem',
+                  padding: '0.6rem 1.5rem',
+                  fontSize: '0.95rem',
                   fontWeight: 800,
-                  borderRadius: '8px',
+                  borderRadius: '10px',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.4rem'
+                  gap: '0.5rem'
                 }}
               >
-                <ChevronLeft size={18} /> Précédent (←)
+                <ChevronLeft size={20} /> Précédent (←)
               </button>
 
-              <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
-                Utilisez les flèches du clavier <kbd style={{ background: '#1e293b', padding: '2px 6px', borderRadius: '4px' }}>←</kbd> <kbd style={{ background: '#1e293b', padding: '2px 6px', borderRadius: '4px' }}>→</kbd> ou la touche <kbd style={{ background: '#1e293b', padding: '2px 6px', borderRadius: '4px' }}>Espace</kbd>
+              <div style={{ fontSize: '0.85rem', color: t.textSubtle, fontWeight: 700 }}>
+                Diapositive <strong style={{ color: t.textMain }}>{currentSlideIndex + 1}</strong> sur <strong style={{ color: t.textMain }}>{totalSlides}</strong> • Naviguez avec <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>←</kbd> <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>→</kbd> ou <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>Espace</kbd>
               </div>
 
               <button
@@ -3342,20 +3525,20 @@ export default function LessonViewerPage() {
                 onClick={() => { setCurrentSlideIndex(prev => Math.min(prev + 1, totalSlides - 1)); setShowSolutionInSlide(false); }}
                 className="btn"
                 style={{
-                  background: currentSlideIndex >= totalSlides - 1 ? '#1e293b' : '#6366f1',
-                  color: '#fff',
+                  background: currentSlideIndex >= totalSlides - 1 ? (boardTheme === 'whiteboard' ? '#e2e8f0' : '#1e293b') : t.accent,
+                  color: currentSlideIndex >= totalSlides - 1 ? t.textSubtle : '#fff',
                   opacity: currentSlideIndex >= totalSlides - 1 ? 0.5 : 1,
                   cursor: currentSlideIndex >= totalSlides - 1 ? 'not-allowed' : 'pointer',
-                  padding: '0.55rem 1.25rem',
-                  fontSize: '0.9rem',
+                  padding: '0.6rem 1.5rem',
+                  fontSize: '0.95rem',
                   fontWeight: 800,
-                  borderRadius: '8px',
+                  borderRadius: '10px',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.4rem'
+                  gap: '0.5rem'
                 }}
               >
-                Suivant (→) <ChevronRight size={18} />
+                Suivant (→) <ChevronRight size={20} />
               </button>
             </div>
           </div>
