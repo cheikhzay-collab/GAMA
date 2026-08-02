@@ -837,22 +837,70 @@ function renderWithMathInternal(text) {
     }
   }
 
+  const isSubListItem = (str) => {
+    if (!str) return false;
+    const trimmed = str.trim();
+    return /^[-•*]\s+/i.test(trimmed) || /^[-•*]?\s*(\*\*|\*)?([a-zA-Z]|\d+)[\.\)]/i.test(trimmed);
+  };
+
+  const renderLinesGrouped = (lines, baseKey) => {
+    const elements = [];
+    let currentGridGroup = [];
+
+    const flushGridGroup = () => {
+      if (currentGridGroup.length === 0) return;
+      if (currentGridGroup.length === 1) {
+        const { lineStr, li } = currentGridGroup[0];
+        elements.push(renderLine(lineStr, `${baseKey}-${li}`));
+      } else {
+        elements.push(
+          <div
+            key={`${baseKey}-grid-${elements.length}`}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '0.4rem 1rem',
+              margin: '0.5rem 0',
+              width: '100%'
+            }}
+          >
+            {currentGridGroup.map(({ lineStr, li }) => renderLine(lineStr, `${baseKey}-grid-item-${li}`))}
+          </div>
+        );
+      }
+      currentGridGroup = [];
+    };
+
+    lines.forEach((lineTokens, li) => {
+      if (lineTokens.length === 0) return;
+      if (lineTokens.length === 1 && lineTokens[0].type === 'block') {
+        flushGridGroup();
+        elements.push(<SafeBlockMath key={`${baseKey}-blk-${li}`} math={lineTokens[0].content} />);
+        return;
+      }
+      const reconstructedLine = lineTokens.map(t => {
+        if (t.type === 'inline') return `$${t.content}$`;
+        if (t.type === 'block') return `$$${t.content}$$`;
+        return t.content;
+      }).join('');
+
+      if (isSubListItem(reconstructedLine)) {
+        currentGridGroup.push({ lineStr: reconstructedLine, li });
+      } else {
+        flushGridGroup();
+        elements.push(renderLine(reconstructedLine, `${baseKey}-${li}`));
+      }
+    });
+
+    flushGridGroup();
+    return elements;
+  };
+
   if (paragraphs.length === 1) {
     const lines = paragraphs[0];
     return (
       <span style={{ display: 'block' }}>
-        {lines.map((lineTokens, li) => {
-          if (lineTokens.length === 0) return null;
-          if (lineTokens.length === 1 && lineTokens[0].type === 'block') {
-            return <SafeBlockMath key={li} math={lineTokens[0].content} />;
-          }
-          const reconstructedLine = lineTokens.map(t => {
-            if (t.type === 'inline') return `$${t.content}$`;
-            if (t.type === 'block') return `$$${t.content}$$`;
-            return t.content;
-          }).join('');
-          return renderLine(reconstructedLine, li);
-        })}
+        {renderLinesGrouped(lines, 'single-para')}
       </span>
     );
   }
@@ -862,18 +910,7 @@ function renderWithMathInternal(text) {
       {paragraphs.map((lines, pi) => {
         return (
           <div key={pi} style={{ margin: '0.35em 0', lineHeight: 1.75 }}>
-            {lines.map((lineTokens, li) => {
-              if (lineTokens.length === 0) return null;
-              if (lineTokens.length === 1 && lineTokens[0].type === 'block') {
-                return <SafeBlockMath key={li} math={lineTokens[0].content} />;
-              }
-              const reconstructedLine = lineTokens.map(t => {
-                if (t.type === 'inline') return `$${t.content}$`;
-                if (t.type === 'block') return `$$${t.content}$$`;
-                return t.content;
-              }).join('');
-              return renderLine(reconstructedLine, li);
-            })}
+            {renderLinesGrouped(lines, `para-${pi}`)}
           </div>
         );
       })}

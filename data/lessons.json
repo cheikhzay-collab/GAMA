@@ -6669,5 +6669,87 @@
     "updated_at": "2026-07-30T13:01:25.906Z",
     "created_at": "2026-07-30T13:01:25.822Z",
     "createdAt": "2026-07-30T13:01:25.920Z"
+  },
+  {
+    "id": "MOCK-L-KRDY1Q9HJ",
+    "title": "Activité sur le calcul de limites",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": null,
+    "phone": null,
+    "schools": [],
+    "content": {
+      "level": "2bac_sm",
+      "doc_type": "activity",
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "Préparation aux concours",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Activité sur le calcul de limites",
+        "teacher": "",
+        "phone": ""
+      },
+      "sections": [
+        {
+          "id": "act-1",
+          "section_header": "",
+          "title": "**Activité ① :** Soutien des prérequis",
+          "type": "activity",
+          "section_number": "1",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "Calculer les limites suivantes :"
+            },
+            {
+              "type": "bullet",
+              "text": "**a.** $\\lim_{x \\to +\\infty} \\frac{2x^2+x+3}{x-1}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**b.** $\\lim_{x \\to -\\infty} \\frac{x|x|-4x+3}{x^2-7x+2}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**c.** $\\lim_{x \\to -2} \\frac{x^2+5x+6}{x+2}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**d.** $\\lim_{x \\to -3} \\frac{2x^2+3x-9}{x^2+x-6}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**e.** $\\lim_{x \\to 1} \\frac{\\sqrt{2x+7}-3}{x-1}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**f.** $\\lim_{x \\to -2} \\frac{\\sqrt{2x^2+1}-3\\sqrt{x+3}}{x+2}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**g.** $\\lim_{x \\to 2^-} \\frac{x^2+5x+6}{2-x}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**h.** $\\lim_{x \\to -3^+} \\frac{2x^2+x-2}{-x^2-x+6}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**i.** $\\lim_{x \\to 1} \\frac{\\sin(\\pi x)}{x-1}$"
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-08-02T10:53:46.531Z",
+    "created_at": "2026-08-02T10:53:46.269Z",
+    "createdAt": "2026-08-02T10:53:46.546Z"
   }
 ]
