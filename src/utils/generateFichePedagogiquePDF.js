@@ -226,7 +226,7 @@ export function generateFichePedagogiquePDF(lesson, options = {}) {
     <table class="header-table" style="border:1px solid #cbd5e1; margin-bottom:16px; background:#f8fafc; border-radius:4px;">
       <tr>
         <td style="border:1px solid #e2e8f0;"><strong>Niveau :</strong> ${esc(levelName)}</td>
-        <td style="border:1px solid #e2e8f0;"><strong>Durée Globale :</strong> 6 Heures (Théorie + TD)</td>
+        <td style="border:1px solid #e2e8f0;"><strong>Durée Globale :</strong> ${esc(lesson.duration || '6 Heures (Théorie + TD)')}</td>
         <td style="border:1px solid #e2e8f0;"><strong>Fiche N° :</strong> 01</td>
       </tr>
     </table>
@@ -236,17 +236,21 @@ export function generateFichePedagogiquePDF(lesson, options = {}) {
       <div class="card-box">
         <div class="card-title">📌 Prérequis (المكتسبات القبلية)</div>
         <ul>
-          <li>Notions de base en calcul algébrique et étude de fonctions.</li>
-          <li>Propriétés des limites usuelles et continuités des fonctions.</li>
-          <li>Calcul vectoriel et propriétés des repères orthogonaux.</li>
+          ${lesson.prerequisites && lesson.prerequisites.length > 0 ? lesson.prerequisites.map(p => `<li>${esc(p)}</li>`).join('') : `
+            <li>Notions de base en calcul algébrique et étude de fonctions.</li>
+            <li>Propriétés des limites usuelles et continuités des fonctions.</li>
+            <li>Calcul vectoriel et propriétés des repères orthogonaux.</li>
+          `}
         </ul>
       </div>
       <div class="card-box">
         <div class="card-title">🎯 Capacités Attendues (القدرات المستهدفة)</div>
         <ul>
-          <li>Maîtriser les définitions et théorèmes fondamentaux du chapitre.</li>
-          <li>Calculer rigoureusement les limites et déterminer les asymptotes.</li>
-          <li>Appliquer les méthodes de résolution aux exercices de synthèse.</li>
+          ${lesson.capacities && lesson.capacities.length > 0 ? lesson.capacities.map(c => `<li>${esc(c)}</li>`).join('') : `
+            <li>Maîtriser les définitions et théorèmes fondamentaux du chapitre.</li>
+            <li>Calculer rigoureusement les limites et déterminer les asymptotes.</li>
+            <li>Appliquer les méthodes de résolution aux exercices de synthèse.</li>
+          `}
         </ul>
       </div>
     </div>
@@ -254,7 +258,7 @@ export function generateFichePedagogiquePDF(lesson, options = {}) {
     <div class="card-box" style="margin-bottom:16px;">
       <div class="card-title">🛠️ Outils Didactiques & Orientations (الوسائل التوضيحية والتوجيهات)</div>
       <div style="font-size:9.5pt; color:#334155;">
-        • Manuel scolaire officiel, Tableau noir/blanc, Calculatrice scientifique, Data Show (Présentation interactive).<br/>
+        • ${esc(typeof lesson.tools === 'string' ? lesson.tools : (Array.isArray(lesson.tools) ? lesson.tools.join(', ') : 'Manuel scolaire officiel, Tableau noir/blanc, Calculatrice scientifique, Data Show'))}<br/>
         • Recommandations officielles : Inculquer le raisonnement rigoureux, valoriser l'autonomie des élèves lors des activités.
       </div>
     </div>
@@ -279,26 +283,22 @@ export function generateFichePedagogiquePDF(lesson, options = {}) {
           <tr>
             <td style="text-align:center;">
               <span class="step-badge">Phase ${idx + 1}</span><br/>
-              <span style="font-size:8pt; color:#64748b;">45 min</span>
+              <span style="font-size:8pt; color:#64748b;">${esc(sec.duration || '45 min')}</span>
             </td>
             <td>
               <strong style="color:#0f172a;">${esc(sec.title || sec.section_header || `Section ${idx + 1}`)}</strong>
               <div style="font-size:8.5pt; color:#475569; margin-top:4px;">
-                ${sec.type === 'activity' ? '✦ Activité d\'introduction & soutien' : sec.type === 'definition' ? '✦ Définitions & concepts clés' : sec.type === 'property' ? '✦ Propriétés fondamentales & démonstrations' : '✦ Application & Exercices guidés'}
+                ${esc(sec.content_summary || (sec.type === 'activity' ? '✦ Activité d\'introduction & soutien' : sec.type === 'definition' ? '✦ Définitions & concepts clés' : sec.type === 'property' ? '✦ Propriétés fondamentales & démonstrations' : '✦ Application & Exercices guidés'))}
               </div>
             </td>
             <td>
-              • Poser le problème et guider la réflexion.<br/>
-              • Animer la discussion et corriger au tableau.<br/>
-              • Synthétiser les notions et faire noter le cours.
+              ${sec.teacher_role ? esc(sec.teacher_role) : '• Poser le problème et guider la réflexion.<br/>• Animer la discussion et corriger au tableau.<br/>• Synthétiser les notions et faire noter le cours.'}
             </td>
             <td>
-              • Chercher individuellement puis en binôme.<br/>
-              • Formuler les conjectures et participer.<br/>
-              • Prendre des notes sur le cahier de cours.
+              ${sec.student_role ? esc(sec.student_role) : '• Chercher individuellement puis en binôme.<br/>• Formuler les conjectures et participer.<br/>• Prendre des notes sur le cahier de cours.'}
             </td>
             <td style="text-align:center;">
-              <span style="color:#059669; font-weight:700;">Formative</span><br/>
+              <span style="color:#059669; font-weight:700;">${esc(sec.evaluation_type || 'Formative')}</span><br/>
               <span style="font-size:8pt; color:#64748b;">Exercice oral / QCM</span>
             </td>
           </tr>

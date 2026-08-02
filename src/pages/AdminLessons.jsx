@@ -13,6 +13,7 @@ import TranslateModal from '../components/TranslateModal';
 import { renderWithMath } from '../utils/mathRenderer';
 import { normalizeLevel } from '../utils/levelHelpers';
 import { generateFichePedagogiquePDF } from '../utils/generateFichePedagogiquePDF';
+import { generateFichePedagogiqueWithAI } from '../utils/aiFicheGenerator';
 
 const getLevelLabel = (rawLevel) => {
   const level = normalizeLevel(rawLevel);
@@ -676,11 +677,28 @@ ${sectionsContentText}
                             <Languages size={15} />
                           </button>
 
-                          {/* ── Fiche Pédagogique PDF Button ── */}
+                          {/* ── Fiche Pédagogique PDF Button (AI Generated) ── */}
+                          <button
+                            onClick={() => generateFichePedagogiqueWithAI(l, { profName, profPhone, profSchool })}
+                            className="btn-outline"
+                            title="Générer la Fiche Pédagogique par IA (توليد الجذاذة بالذكاء الاصطناعي)"
+                            style={{
+                              padding: '0.45rem', borderRadius: '8px',
+                              border: 'none',
+                              color: '#ffffff',
+                              background: 'linear-gradient(135deg, #10b981, #059669)',
+                              transition: 'all 0.2s',
+                              boxShadow: '0 2px 8px rgba(16,185,129,0.3)'
+                            }}
+                          >
+                            <Sparkles size={15} />
+                          </button>
+
+                          {/* ── Fiche Pédagogique PDF Button (Standard) ── */}
                           <button
                             onClick={() => generateFichePedagogiquePDF(l, { profName, profPhone, profSchool })}
                             className="btn-outline"
-                            title="Imprimer Fiche Pédagogique (الجذاذة التربوية الرسمية)"
+                            title="Imprimer Fiche Pédagogique Standard"
                             style={{
                               padding: '0.45rem', borderRadius: '8px',
                               border: '1px solid rgba(16,185,129,0.35)',

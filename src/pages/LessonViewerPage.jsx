@@ -9,8 +9,8 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { getLessonById, updateLesson } from '../services/lessonService';
 import { renderWithMath } from '../utils/mathRenderer';
-import { openLessonPrintWindow } from '../utils/generateLessonPDF';
 import { generateFichePedagogiquePDF } from '../utils/generateFichePedagogiquePDF';
+import { generateFichePedagogiqueWithAI } from '../utils/aiFicheGenerator';
 
 /**
  * Convert **bold** markdown to <strong> inline spans, keeping the rest as plain text.
@@ -632,6 +632,16 @@ export default function LessonViewerPage() {
   const [showSlideDrawer, setShowSlideDrawer] = useState(false);
   const [zenFocusMode, setZenFocusMode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isGeneratingAiFiche, setIsGeneratingAiFiche] = useState(false);
+
+  const handleGenerateAiFiche = async () => {
+    setIsGeneratingAiFiche(true);
+    try {
+      await generateFichePedagogiqueWithAI(lesson, { profName, profPhone });
+    } finally {
+      setIsGeneratingAiFiche(false);
+    }
+  };
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -2082,7 +2092,34 @@ export default function LessonViewerPage() {
             <Monitor size={16} /> 📺 Data Show
           </button>
 
-          {/* Fiche Pédagogique Button (Feature 5) */}
+          {/* AI Fiche Pédagogique Generator Button */}
+          <button 
+            onClick={handleGenerateAiFiche}
+            disabled={isGeneratingAiFiche}
+            className="btn"
+            style={{
+              padding: '0.5rem 1.1rem',
+              fontSize: '0.85rem',
+              fontWeight: 800,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              color: '#ffffff',
+              background: isGeneratingAiFiche ? '#059669' : 'linear-gradient(135deg, #10b981, #059669)',
+              border: 'none',
+              cursor: isGeneratingAiFiche ? 'wait' : 'pointer',
+              boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)'
+            }}
+            title="Générer automatiquement la Fiche Pédagogique Officielle par IA"
+          >
+            {isGeneratingAiFiche ? (
+              <><Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> Analyse IA...</>
+            ) : (
+              <><Sparkles size={16} /> ⚡ Fiche IA</>
+            )}
+          </button>
+
+          {/* Fiche Pédagogique Button (Standard Template) */}
           <button 
             onClick={() => generateFichePedagogiquePDF(lesson, { profName, profPhone })}
             className="btn-outline"
@@ -2097,9 +2134,9 @@ export default function LessonViewerPage() {
               background: 'var(--emerald-soft)',
               border: '1px solid rgba(16,185,129,0.3)'
             }}
-            title="Imprimer la Fiche Pédagogique Officielle de l'Inspection"
+            title="Imprimer la Fiche Pédagogique Officielle"
           >
-            <FileText size={16} /> Fiche Pédagogique
+            <FileText size={16} /> Fiche Standard
           </button>
 
           {/* PDF Download button */}
