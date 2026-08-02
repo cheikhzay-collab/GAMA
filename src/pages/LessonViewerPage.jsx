@@ -3,7 +3,8 @@ import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { 
   ArrowLeft, Download, Check, X, Eye, EyeOff, Edit,
   BookOpen, Calendar, User, Phone, CheckCircle, AlertCircle,
-  Calculator, BookOpenCheck, Loader, Monitor, FileText, ChevronLeft, ChevronRight, Play
+  Calculator, BookOpenCheck, Loader, Monitor, FileText, ChevronLeft, ChevronRight, Play,
+  Maximize, Minimize, Target, Moon, Sun, Sparkles, ListFilter, Lightbulb, ZoomIn, ZoomOut, Tv, Settings, Layers
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getLessonById, updateLesson } from '../services/lessonService';
@@ -3296,13 +3297,13 @@ export default function LessonViewerPage() {
               >
                 {/* Left side: Lesson Title & Slide Count */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                  <span style={{ background: t.accentGlow, color: '#fff', padding: '0.25rem 0.75rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 900, letterSpacing: '0.05em' }}>
-                    📺 DATA SHOW
+                  <span style={{ background: t.accentGlow, color: '#fff', padding: '0.3rem 0.8rem', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 900, letterSpacing: '0.05em', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', boxShadow: '0 4px 12px rgba(99,102,241,0.25)' }}>
+                    <Tv size={16} /> DATA SHOW
                   </span>
                   <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: t.textMain }}>
                     {renderWithMath(lesson?.title || header?.fiche_title || 'Présentation Classe')}
                   </h3>
-                  <span style={{ background: boardTheme === 'whiteboard' ? '#e2e8f0' : 'rgba(255,255,255,0.1)', color: t.textMain, padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 800 }}>
+                  <span style={{ background: boardTheme === 'whiteboard' ? '#e2e8f0' : 'rgba(255,255,255,0.08)', border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.12)'}`, color: t.textMain, padding: '0.25rem 0.65rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800 }}>
                     {currentSlideIndex + 1} / {totalSlides}
                   </span>
                 </div>
@@ -3314,15 +3315,16 @@ export default function LessonViewerPage() {
                   <button
                     onClick={toggleFullscreen}
                     style={{
-                      background: isFullscreen ? t.accent : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.08)'),
+                      background: isFullscreen ? t.accent : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)'),
                       color: isFullscreen ? '#ffffff' : t.textMain,
                       border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.15)'}`,
-                      padding: '0.4rem 0.85rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer',
-                      display: 'inline-flex', alignItems: 'center', gap: '0.35rem'
+                      padding: '0.45rem 0.85rem', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer',
+                      display: 'inline-flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s ease'
                     }}
                     title="Activer/Désactiver le mode plein écran (F)"
                   >
-                    ⛶ <span>{isFullscreen ? 'Quitter Plein Écran (F)' : 'Plein Écran (F)'}</span>
+                    {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
+                    <span>{isFullscreen ? 'Quitter Plein Écran' : 'Plein Écran'}</span>
                   </button>
 
                   {/* Zen Focus Mode Button */}
@@ -3332,71 +3334,72 @@ export default function LessonViewerPage() {
                       background: 'linear-gradient(135deg, #10b981, #059669)',
                       color: '#ffffff',
                       border: 'none',
-                      padding: '0.4rem 0.85rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer',
-                      display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
-                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                      padding: '0.45rem 0.85rem', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer',
+                      display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+                      boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)', transition: 'all 0.2s ease'
                     }}
                     title="Mode التركيز الكامل (Z) - إخفاء جميع الأشرطة لعدم التشتت"
                   >
-                    🎯 <span>Mode Focus (Z)</span>
+                    <Target size={15} />
+                    <span>Mode Focus</span>
                   </button>
 
                   {/* Theme Selector Pills */}
-                  <div style={{ display: 'flex', background: boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)', padding: '3px', borderRadius: '10px', border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.1)'}` }}>
+                  <div style={{ display: 'flex', background: boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)', padding: '3px', borderRadius: '12px', border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.1)'}` }}>
                     <button
                       onClick={() => setBoardTheme('dark')}
                       style={{
                         background: boardTheme === 'dark' ? '#6366f1' : 'transparent',
                         color: boardTheme === 'dark' ? '#ffffff' : (boardTheme === 'whiteboard' ? '#1e293b' : '#94a3b8'),
-                        border: 'none', padding: '0.3rem 0.65rem', borderRadius: '7px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
-                        display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
+                        border: 'none', padding: '0.35rem 0.65rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
+                        display: 'inline-flex', alignItems: 'center', gap: '0.35rem', transition: 'all 0.2s ease'
                       }}
                       title="Mode Cyber Glass Sombre"
                     >
-                      🌙 <span>Sombre</span>
+                      <Moon size={14} /> <span>Sombre</span>
                     </button>
                     <button
                       onClick={() => setBoardTheme('chalkboard')}
                       style={{
                         background: boardTheme === 'chalkboard' ? '#059669' : 'transparent',
                         color: boardTheme === 'chalkboard' ? '#ffffff' : (boardTheme === 'whiteboard' ? '#1e293b' : '#94a3b8'),
-                        border: 'none', padding: '0.3rem 0.65rem', borderRadius: '7px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
-                        display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
+                        border: 'none', padding: '0.35rem 0.65rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
+                        display: 'inline-flex', alignItems: 'center', gap: '0.35rem', transition: 'all 0.2s ease'
                       }}
                       title="Mode السبورة الخضراء (Chalkboard)"
                     >
-                      🌿 <span>السبورة</span>
+                      <Layers size={14} /> <span>السبورة</span>
                     </button>
                     <button
                       onClick={() => setBoardTheme('whiteboard')}
                       style={{
                         background: boardTheme === 'whiteboard' ? '#2563eb' : 'transparent',
                         color: boardTheme === 'whiteboard' ? '#ffffff' : '#94a3b8',
-                        border: 'none', padding: '0.3rem 0.65rem', borderRadius: '7px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
-                        display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
+                        border: 'none', padding: '0.35rem 0.65rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
+                        display: 'inline-flex', alignItems: 'center', gap: '0.35rem', transition: 'all 0.2s ease'
                       }}
                       title="Mode السبورة البيضاء (Whiteboard)"
                     >
-                      ☀️ <span>البيضاء</span>
+                      <Sun size={14} /> <span>البيضاء</span>
                     </button>
                   </div>
 
                   {/* Font Size Adjusters */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)', border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'transparent'}`, padding: '3px 8px', borderRadius: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)', border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'transparent'}`, padding: '3px 6px', borderRadius: '12px' }}>
                     <button
                       onClick={() => setBoardFontSize(prev => Math.max(prev - 0.15, 0.9))}
-                      style={{ background: 'transparent', border: 'none', color: t.textMain, fontWeight: 900, cursor: 'pointer', fontSize: '0.8rem' }}
+                      style={{ background: 'transparent', border: 'none', color: t.textMain, fontWeight: 900, cursor: 'pointer', padding: '0.25rem 0.4rem', borderRadius: '6px', display: 'flex', alignItems: 'center' }}
                       title="Réduire la taille du texte"
                     >
-                      A-
+                      <ZoomOut size={15} />
                     </button>
-                    <span style={{ fontSize: '0.75rem', opacity: 0.6, fontWeight: 700, color: t.textMain }}>|</span>
+                    <span style={{ fontSize: '0.75rem', opacity: 0.4, fontWeight: 700, color: t.textMain }}>|</span>
                     <button
                       onClick={() => setBoardFontSize(prev => Math.min(prev + 0.15, 2.2))}
-                      style={{ background: 'transparent', border: 'none', color: t.textMain, fontWeight: 900, cursor: 'pointer', fontSize: '0.95rem' }}
+                      style={{ background: 'transparent', border: 'none', color: t.textMain, fontWeight: 900, cursor: 'pointer', padding: '0.25rem 0.4rem', borderRadius: '6px', display: 'flex', alignItems: 'center' }}
                       title="Agrandir la taille du texte"
                     >
-                      A+
+                      <ZoomIn size={15} />
                     </button>
                   </div>
 
@@ -3404,41 +3407,42 @@ export default function LessonViewerPage() {
                   <button
                     onClick={() => setShowSlideDrawer(prev => !prev)}
                     style={{
-                      background: showSlideDrawer ? t.accent : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.08)'),
+                      background: showSlideDrawer ? t.accent : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)'),
                       color: showSlideDrawer ? '#ffffff' : t.textMain,
                       border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.15)'}`,
-                      padding: '0.4rem 0.85rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer',
-                      display: 'inline-flex', alignItems: 'center', gap: '0.35rem'
+                      padding: '0.45rem 0.85rem', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer',
+                      display: 'inline-flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s ease'
                     }}
                     title="Afficher la liste des diapositives"
                   >
-                    📋 <span>Index</span>
+                    <ListFilter size={15} /> <span>Index</span>
                   </button>
 
                   {/* Solution Toggle Button */}
                   <button
                     onClick={() => setShowSolutionInSlide(prev => !prev)}
                     style={{
-                      background: showSolutionInSlide ? '#059669' : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.08)'),
+                      background: showSolutionInSlide ? '#059669' : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)'),
                       color: showSolutionInSlide ? '#ffffff' : t.textMain,
                       border: `1px solid ${showSolutionInSlide ? '#059669' : (boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.15)')}`,
-                      padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: 800, borderRadius: '8px', cursor: 'pointer',
-                      display: 'inline-flex', alignItems: 'center', gap: '0.35rem'
+                      padding: '0.45rem 0.85rem', fontSize: '0.8rem', fontWeight: 800, borderRadius: '10px', cursor: 'pointer',
+                      display: 'inline-flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s ease'
                     }}
                   >
-                    💡 <span>{showSolutionInSlide ? 'Masquer Corrigé (S)' : 'Corrigé (S)'}</span>
+                    <Lightbulb size={15} /> <span>{showSolutionInSlide ? 'Masquer Corrigé' : 'Corrigé'}</span>
                   </button>
 
                   {/* Quit Button */}
                   <button
                     onClick={() => setPresentationMode(false)}
                     style={{
-                      background: 'rgba(239, 68, 68, 0.2)',
+                      background: 'rgba(239, 68, 68, 0.12)',
                       border: '1px solid #ef4444', color: '#ef4444',
-                      padding: '0.4rem 0.85rem', borderRadius: '8px', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer'
+                      padding: '0.45rem 0.85rem', borderRadius: '10px', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer',
+                      display: 'inline-flex', alignItems: 'center', gap: '0.35rem', transition: 'all 0.2s ease'
                     }}
                   >
-                    ✕ Quitter (Esc)
+                    <X size={15} /> <span>Quitter</span>
                   </button>
                 </div>
               </div>
@@ -3615,23 +3619,24 @@ export default function LessonViewerPage() {
 
                 <button
                   onClick={() => setShowSolutionInSlide(prev => !prev)}
-                  style={{ background: showSolutionInSlide ? '#059669' : 'transparent', border: 'none', color: '#fff', padding: '0.25rem 0.65rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer' }}
+                  style={{ background: showSolutionInSlide ? '#059669' : 'transparent', border: 'none', color: '#fff', padding: '0.3rem 0.75rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                 >
-                  💡 Corrigé (S)
+                  <Lightbulb size={15} /> <span>Corrigé (S)</span>
                 </button>
 
                 <button
                   onClick={toggleFullscreen}
-                  style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer' }}
+                  style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                 >
-                  ⛶ {isFullscreen ? 'Fenêtre' : 'Plein Écran'}
+                  {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
+                  <span>{isFullscreen ? 'Fenêtre' : 'Plein Écran'}</span>
                 </button>
 
                 <button
                   onClick={() => setZenFocusMode(false)}
-                  style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 900, cursor: 'pointer' }}
+                  style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 900, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)' }}
                 >
-                  🎯 Quitter Focus (Z)
+                  <Target size={15} /> <span>Quitter Focus (Z)</span>
                 </button>
               </div>
             ) : (
