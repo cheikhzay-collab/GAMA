@@ -1054,6 +1054,33 @@ export const generateLessonHTML = (lesson, settings = {}) => {
               </div>
             </div>`;
           }
+        } else if (item.type === 'grid_items' || Array.isArray(item.grid_items)) {
+          const gList = item.grid_items || item.items || [];
+          let tableRows = '';
+          for (let i = 0; i < gList.length; i += 2) {
+            const item1 = gList[i];
+            const item2 = gList[i + 1];
+            const text1 = typeof item1 === 'string' ? item1 : (item1?.text || '');
+            const text2 = item2 ? (typeof item2 === 'string' ? item2 : (item2?.text || '')) : '';
+            tableRows += `
+              <tr>
+                <td style="width:50%; padding: 6px 10px; vertical-align: top; border: none;">
+                  <div style="display:flex; align-items:flex-start; gap:0.4rem;">
+                    <span style="color:#6366f1; font-weight:800;">•</span>
+                    <div style="flex:1;">${renderMath(text1)}</div>
+                  </div>
+                </td>
+                <td style="width:50%; padding: 6px 10px; vertical-align: top; border: none;">
+                  ${text2 ? `
+                  <div style="display:flex; align-items:flex-start; gap:0.4rem;">
+                    <span style="color:#6366f1; font-weight:800;">•</span>
+                    <div style="flex:1;">${renderMath(text2)}</div>
+                  </div>` : ''}
+                </td>
+              </tr>
+            `;
+          }
+          return `<table style="width:100%; border-collapse:collapse; margin: 8px 0; border: none;"><tbody>${tableRows}</tbody></table>`;
         } else {
           // bullet or text
           const bulletDot = item.type === 'bullet'

@@ -2557,6 +2557,47 @@ export default function LessonViewerPage() {
                       </div>
 
                       {sec.items?.map((item, itemIdx) => {
+                        if (item.type === 'grid_items' || Array.isArray(item.grid_items)) {
+                          const gList = item.grid_items || item.items || [];
+                          const minWidthVal = isMobile ? '100%' : '240px';
+                          return (
+                            <div
+                              key={itemIdx}
+                              style={{
+                                display: 'grid',
+                                gridTemplateColumns: `repeat(auto-fit, minmax(${minWidthVal}, 1fr))`,
+                                gap: '0.75rem 1.25rem',
+                                margin: '0.85rem 0',
+                                direction: lessonDir
+                              }}
+                            >
+                              {gList.map((gItem, gIdx) => {
+                                const gText = typeof gItem === 'string' ? gItem : (gItem?.text || '');
+                                return (
+                                  <div 
+                                    key={gIdx} 
+                                    style={{ 
+                                      display: 'flex', 
+                                      alignItems: 'flex-start', 
+                                      gap: '0.5rem', 
+                                      background: 'rgba(255,255,255,0.02)', 
+                                      padding: '0.6rem 0.85rem', 
+                                      borderRadius: '10px', 
+                                      border: '1px solid var(--border)',
+                                      boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                                    }}
+                                  >
+                                    <span style={{ color: 'var(--violet)', fontWeight: 900, fontSize: '0.9rem' }}>•</span>
+                                    <div style={{ flex: 1, fontFamily: isArabic ? arabicFont : 'inherit' }}>
+                                      {renderWithMath(gText)}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        }
+
                         if (item.type === 'highlight_box') {
                           return (
                             <div

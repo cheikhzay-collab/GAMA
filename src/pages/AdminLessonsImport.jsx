@@ -565,8 +565,19 @@ SCHÉMA JSON OBLIGATOIRE
         { "type": "highlight_box", "text": "Contenu encadré (définition, propriété, théorème)." },
         { "type": "bullet", "text": "• Point de liste ou sous-question." },
         {
+          "type": "grid_items",
+          "cols": 2,
+          "grid_items": [
+            "a. \\lim_{x \\to +\\infty} \\frac{2x^2+x+3}{x-1}",
+            "b. \\lim_{x \\to -\\infty} \\frac{x|x|-4x+3}{x^2-7x+2}",
+            "c. \\lim_{x \\to -2} \\frac{x^2+5x+6}{x+2}",
+            "d. \\lim_{x \\to -3} \\frac{2x^2+3x-9}{x^2+x-6}"
+          ]
+        },
+        {
           "type": "image",
           "url": "",
+          "svg_code": "",
           "alt": "Légende ou description de la figure (ex: Figure 1 — Construction du barycentre G)",
           "align": "center",
           "width_pct": 70
