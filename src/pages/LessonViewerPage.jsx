@@ -3,12 +3,13 @@ import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { 
   ArrowLeft, Download, Check, X, Eye, EyeOff, Edit,
   BookOpen, Calendar, User, Phone, CheckCircle, AlertCircle,
-  Calculator, BookOpenCheck, Loader
+  Calculator, BookOpenCheck, Loader, Monitor, FileText, ChevronLeft, ChevronRight, Play
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getLessonById, updateLesson } from '../services/lessonService';
 import { renderWithMath } from '../utils/mathRenderer';
 import { openLessonPrintWindow } from '../utils/generateLessonPDF';
+import { generateFichePedagogiquePDF } from '../utils/generateFichePedagogiquePDF';
 
 /**
  * Convert **bold** markdown to <strong> inline spans, keeping the rest as plain text.
@@ -586,6 +587,34 @@ export default function LessonViewerPage() {
   const [isDirectEdit, setIsDirectEdit] = useState(false);
   const [originalLessonBackup, setOriginalLessonBackup] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // ── Feature 6: Data Show Presentation Mode ──
+  const [presentationMode, setPresentationMode] = useState(false);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [showSolutionInSlide, setShowSolutionInSlide] = useState(false);
+
+  useEffect(() => {
+    if (!presentationMode) return;
+    const handleKeyDown = (e) => {
+      const totalSlides = lesson?.sections?.length || 1;
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault();
+        setCurrentSlideIndex(prev => Math.min(prev + 1, totalSlides - 1));
+        setShowSolutionInSlide(false);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setCurrentSlideIndex(prev => Math.max(prev - 1, 0));
+        setShowSolutionInSlide(false);
+      } else if (e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        setShowSolutionInSlide(prev => !prev);
+      } else if (e.key === 'Escape') {
+        setPresentationMode(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [presentationMode, lesson?.sections?.length]);
 
   if (!authLoading && !user) {
     return <Navigate to="/login" replace />;
@@ -1957,6 +1986,47 @@ export default function LessonViewerPage() {
               🚀 Mode Interactif
             </button>
           </div>
+          {/* Data Show Presentation Mode Button (Feature 6) */}
+          <button 
+            onClick={() => { setPresentationMode(true); setCurrentSlideIndex(0); setShowSolutionInSlide(false); }}
+            className="btn"
+            style={{
+              padding: '0.5rem 1.1rem',
+              fontSize: '0.85rem',
+              fontWeight: 800,
+              background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+              color: '#ffffff',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              boxShadow: '0 4px 14px rgba(124, 58, 237, 0.3)'
+            }}
+            title="Lancer le mode présentation Data Show pour la classe"
+          >
+            <Monitor size={16} /> 📺 Data Show
+          </button>
+
+          {/* Fiche Pédagogique Button (Feature 5) */}
+          <button 
+            onClick={() => generateFichePedagogiquePDF(lesson, { profName, profPhone })}
+            className="btn-outline"
+            style={{
+              padding: '0.5rem 1.1rem',
+              fontSize: '0.85rem',
+              fontWeight: 800,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              color: 'var(--emerald)',
+              background: 'var(--emerald-soft)',
+              border: '1px solid rgba(16,185,129,0.3)'
+            }}
+            title="Imprimer la Fiche Pédagogique Officielle de l'Inspection"
+          >
+            <FileText size={16} /> Fiche Pédagogique
+          </button>
+
           {/* PDF Download button */}
           <button 
             onClick={handleExportPDF}
@@ -3053,6 +3123,209 @@ export default function LessonViewerPage() {
             })}
           </div>
         </div>
+
+      {/* ── Feature 6: Data Show Presentation Overlay Modal ── */}
+      {presentationMode && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 99999,
+            background: '#090d16',
+            color: '#f8fafc',
+            display: 'flex',
+            flexDirection: 'column',
+            fontFamily: isArabic ? arabicFont : 'inherit',
+            direction: lessonDir
+          }}
+        >
+          {/* Top Control Bar */}
+          <div
+            style={{
+              padding: '0.85rem 1.5rem',
+              background: '#0f172a',
+              borderBottom: '1px solid #1e293b',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span style={{ background: '#7c3aed', color: '#fff', padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 900 }}>
+                DATA SHOW
+              </span>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#f8fafc' }}>
+                {renderWithMath(lesson?.title || header.fiche_title || 'Présentation Classe')}
+              </h3>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#94a3b8' }}>
+                Diapositive {currentSlideIndex + 1} / {lesson?.sections?.length || 1}
+              </span>
+
+              <button
+                onClick={() => setShowSolutionInSlide(prev => !prev)}
+                className="btn"
+                style={{
+                  background: showSolutionInSlide ? '#059669' : '#1e293b',
+                  border: '1px solid #334155',
+                  color: '#fff',
+                  padding: '0.4rem 0.85rem',
+                  fontSize: '0.8rem',
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                {showSolutionInSlide ? '👁️ Masquer la Solution (S)' : '💡 Afficher la Solution (S)'}
+              </button>
+
+              <button
+                onClick={() => setPresentationMode(false)}
+                style={{
+                  background: 'rgba(239, 68, 68, 0.2)',
+                  border: '1px solid #ef4444',
+                  color: '#ef4444',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '6px',
+                  fontWeight: 800,
+                  cursor: 'pointer'
+                }}
+              >
+                Quitter (Esc)
+              </button>
+            </div>
+          </div>
+
+          {/* Slide Content Display (High Contrast, Extra Large Typography) */}
+          <div
+            style={{
+              flex: 1,
+              overflowY: 'auto',
+              padding: '2.5rem 4rem',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              maxWidth: '1400px',
+              margin: '0 auto',
+              width: '100%'
+            }}
+          >
+            {(() => {
+              const sections = lesson?.sections || [];
+              const currentSec = sections[currentSlideIndex];
+              if (!currentSec) {
+                return <div style={{ textAlign: 'center', color: '#94a3b8' }}>Aucun contenu à afficher.</div>;
+              }
+
+              return (
+                <div style={{ background: '#1e293b', border: '2px solid #334155', borderRadius: '16px', padding: '2.5rem', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', borderBottom: '2px solid #334155', paddingBottom: '1rem' }}>
+                    <div style={{ background: '#6366f1', color: '#fff', width: '2.5rem', height: '2.5rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.1rem' }}>
+                      {currentSlideIndex + 1}
+                    </div>
+                    <h2 style={{ margin: 0, fontSize: '1.6rem', fontWeight: 900, color: '#6366f1' }}>
+                      {renderWithMath(currentSec.title || currentSec.section_header || `Section ${currentSlideIndex + 1}`)}
+                    </h2>
+                  </div>
+
+                  <div style={{ fontSize: '1.25rem', lineHeight: 1.85, color: '#f1f5f9' }}>
+                    {currentSec.items?.map((item, idx) => (
+                      <div key={idx} style={{ margin: '0.85rem 0' }}>
+                        {renderWithMath(typeof item === 'string' ? item : item.text)}
+                      </div>
+                    ))}
+                    {!currentSec.items && currentSec.content && (
+                      <div>{renderWithMath(currentSec.content)}</div>
+                    )}
+                  </div>
+
+                  {/* Solution section inside Data Show slide */}
+                  {currentSec.solution && (
+                    <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px dashed #475569' }}>
+                      {!showSolutionInSlide ? (
+                        <button
+                          onClick={() => setShowSolutionInSlide(true)}
+                          style={{ background: '#059669', color: '#fff', border: 'none', padding: '0.6rem 1.25rem', borderRadius: '8px', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer' }}
+                        >
+                          🔍 Afficher le Corrigé / Démonstration
+                        </button>
+                      ) : (
+                        <div style={{ background: '#064e3b', border: '1.5px solid #10b981', padding: '1.5rem', borderRadius: '12px', color: '#ecfdf5', fontSize: '1.15rem', lineHeight: 1.8 }}>
+                          <div style={{ fontWeight: 900, color: '#34d399', marginBottom: '0.75rem', fontSize: '1.1rem' }}>
+                            💡 Corrigé & Démonstration Rédigée :
+                          </div>
+                          {renderWithMath(currentSec.solution)}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Bottom Footer Bar Navigation */}
+          <div
+            style={{
+              padding: '0.85rem 2rem',
+              background: '#0f172a',
+              borderTop: '1px solid #1e293b',
+              display: 'flex',
+              alignItems: 'center',
+              justify: 'space-between'
+            }}
+          >
+            <button
+              disabled={currentSlideIndex === 0}
+              onClick={() => { setCurrentSlideIndex(prev => Math.max(prev - 1, 0)); setShowSolutionInSlide(false); }}
+              className="btn"
+              style={{
+                background: currentSlideIndex === 0 ? '#1e293b' : '#6366f1',
+                color: '#fff',
+                opacity: currentSlideIndex === 0 ? 0.5 : 1,
+                cursor: currentSlideIndex === 0 ? 'not-allowed' : 'pointer',
+                padding: '0.55rem 1.25rem',
+                fontSize: '0.9rem',
+                fontWeight: 800,
+                borderRadius: '8px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem'
+              }}
+            >
+              <ChevronLeft size={18} /> Précédent (←)
+            </button>
+
+            <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
+              Utilisez les flèches du clavier <kbd style={{ background: '#1e293b', padding: '2px 6px', borderRadius: '4px' }}>←</kbd> <kbd style={{ background: '#1e293b', padding: '2px 6px', borderRadius: '4px' }}>→</kbd> ou la touche <kbd style={{ background: '#1e293b', padding: '2px 6px', borderRadius: '4px' }}>Espace</kbd>
+            </div>
+
+            <button
+              disabled={currentSlideIndex >= (lesson?.sections?.length || 1) - 1}
+              onClick={() => { setCurrentSlideIndex(prev => Math.min(prev + 1, (lesson?.sections?.length || 1) - 1)); setShowSolutionInSlide(false); }}
+              className="btn"
+              style={{
+                background: currentSlideIndex >= (lesson?.sections?.length || 1) - 1 ? '#1e293b' : '#6366f1',
+                color: '#fff',
+                opacity: currentSlideIndex >= (lesson?.sections?.length || 1) - 1 ? 0.5 : 1,
+                cursor: currentSlideIndex >= (lesson?.sections?.length || 1) - 1 ? 'not-allowed' : 'pointer',
+                padding: '0.55rem 1.25rem',
+                fontSize: '0.9rem',
+                fontWeight: 800,
+                borderRadius: '8px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem'
+              }}
+            >
+              Suivant (→) <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
+      )}
 
       </div>
     </div>

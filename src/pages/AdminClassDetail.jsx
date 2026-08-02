@@ -2238,6 +2238,27 @@ export default function AdminClassDetail() {
               </button>
 
               <button
+                onClick={() => {
+                  navigate('/admin/ai-import', {
+                    state: {
+                      docType: 'exercises',
+                      promptHint: `Générer une série de soutien et remédiation pédagogique pour la classe ${classObj?.name} (Niveau: ${classObj?.level}). Focus sur les lacunes identifiées : Limites, Dérivation, et Etude de Fonctions.`
+                    }
+                  });
+                }}
+                className="btn-outline"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  padding: '0.6rem 1rem', borderRadius: '10px',
+                  fontSize: '0.82rem', fontWeight: 800, color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.3)',
+                  background: 'rgba(59, 130, 246, 0.08)'
+                }}
+                title="Générer une série de soutien IA ciblée sur les lacunes du groupe"
+              >
+                <BookOpenCheck size={15} /> ⚡ Série de Soutien IA
+              </button>
+
+              <button
                 onClick={() => handleGenerateStudentBulletinsPDF(classObj)}
                 className="btn-outline"
                 style={{

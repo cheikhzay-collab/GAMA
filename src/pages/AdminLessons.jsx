@@ -6,12 +6,13 @@ import {
 } from '../services/lessonService';
 import { getAllClasses } from '../services/classService';
 import { 
-  BookOpen, Sparkles, Search, Trash2, Eye, Edit,
+  BookOpen, Sparkles, Search, Trash2, Eye, Edit, FileText,
   CheckCircle, XCircle, Library, PlusCircle, AlertCircle, Languages 
 } from 'lucide-react';
 import TranslateModal from '../components/TranslateModal';
 import { renderWithMath } from '../utils/mathRenderer';
 import { normalizeLevel } from '../utils/levelHelpers';
+import { generateFichePedagogiquePDF } from '../utils/generateFichePedagogiquePDF';
 
 const getLevelLabel = (rawLevel) => {
   const level = normalizeLevel(rawLevel);
@@ -673,6 +674,22 @@ ${sectionsContentText}
                             }}
                           >
                             <Languages size={15} />
+                          </button>
+
+                          {/* ── Fiche Pédagogique PDF Button ── */}
+                          <button
+                            onClick={() => generateFichePedagogiquePDF(l, { profName, profPhone, profSchool })}
+                            className="btn-outline"
+                            title="Imprimer Fiche Pédagogique (الجذاذة التربوية الرسمية)"
+                            style={{
+                              padding: '0.45rem', borderRadius: '8px',
+                              border: '1px solid rgba(16,185,129,0.35)',
+                              color: 'var(--emerald)',
+                              background: 'var(--emerald-soft)',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            <FileText size={15} />
                           </button>
                           
                           {/* ── زر توليد QCM بالذكاء الاصطناعي ── */}
