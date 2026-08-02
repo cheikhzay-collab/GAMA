@@ -1551,10 +1551,10 @@ IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "intera
               <div className="col-span-3 input-group">
                 <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Type de Document</label>
                 <select className="input-control" value={docType} onChange={e => setDocType(e.target.value)} style={{ width: '100%' }}>
-                  <option value="course">درس (Cours)</option>
-                  <option value="homework">فرض محروس (Devoir Surveillé)</option>
-                  <option value="exercises">سلسلة تمارين (Série d'exercices)</option>
-                  <option value="concours">مباراة (Concours)</option>
+                  <option value="course">Cours</option>
+                  <option value="homework">Devoir Surveillé</option>
+                  <option value="exercises">Série d'exercices</option>
+                  <option value="concours">Concours</option>
                 </select>
               </div>
 
@@ -1605,13 +1605,13 @@ IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "intera
                   onChange={e => setSelectedLevel(e.target.value)}
                   style={{ width: '100%' }}
                 >
-                  <option value="common_core_sci">جدع مشترك علوم (Tronc Commun Sci)</option>
-                  <option value="common_core_arts">جدع مشترك آداب (Tronc Commun Lettres)</option>
-                  <option value="1bac_sci">أولى باك علوم (1ère Bac Sciences)</option>
-                  <option value="1bac_arts">أولى باك آداب (1ère Bac Lettres)</option>
-                  <option value="2bac_sm">ثانية باك علوم رياضية (2ème Bac Sciences Maths)</option>
-                  <option value="2bac_pc_svt">ثانية باك علوم تجريبية (2ème Bac PC/SVT)</option>
-                  <option value="2bac_arts">ثانية باك آداب (2ème Bac Lettres)</option>
+                  <option value="common_core_sci">Tronc Commun Scientifique</option>
+                  <option value="common_core_arts">Tronc Commun Littéraire</option>
+                  <option value="1bac_sci">1ère Bac Sciences</option>
+                  <option value="1bac_arts">1ère Bac Lettres</option>
+                  <option value="2bac_sm">2ème Bac Sciences Maths</option>
+                  <option value="2bac_pc_svt">2ème Bac PC/SVT</option>
+                  <option value="2bac_arts">2ème Bac Lettres</option>
                 </select>
               </div>
 
@@ -1640,16 +1640,16 @@ IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "intera
               </div>
 
               <div className="col-span-2 input-group">
-                <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Langue du document / لغة الملف</label>
+                <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Langue du document</label>
                 <select 
                   className="input-control" 
                   value={docLanguage} 
                   onChange={e => setDocLanguage(e.target.value)}
                   style={{ width: '100%' }}
                 >
-                  <option value="fr">Français (الفرنسية)</option>
-                  <option value="ar">Arabe (العربية)</option>
-                  <option value="en">Anglais (الإنجليزية)</option>
+                  <option value="fr">Français</option>
+                  <option value="ar">Arabe</option>
+                  <option value="en">Anglais</option>
                 </select>
               </div>
             </div>
@@ -1719,14 +1719,14 @@ IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "intera
                         style={{ width: '100%', fontWeight: 700 }}
                       >
                         <option value="content">Théorie (Général)</option>
-                        <option value="definition">Définition (تعريف)</option>
-                        <option value="property">Propriété (خاصية)</option>
-                        <option value="theorem">Théorème (مبرهنة)</option>
-                        <option value="corollary">Corollaire (نتيجة)</option>
-                        <option value="example">Exemple (مثال)</option>
-                        <option value="remark">Remarque (ملاحظة)</option>
-                        <option value="activity">Activité / Application (تطبيق)</option>
-                        <option value="exercise">Exercice / Corrigé (تمرين)</option>
+                        <option value="definition">Définition</option>
+                        <option value="property">Propriété</option>
+                        <option value="theorem">Théorème</option>
+                        <option value="corollary">Corollaire</option>
+                        <option value="example">Exemple</option>
+                        <option value="remark">Remarque</option>
+                        <option value="activity">Activité / Application</option>
+                        <option value="exercise">Exercice / Corrigé</option>
                       </select>
                     </div>
                   </div>

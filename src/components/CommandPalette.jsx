@@ -34,12 +34,12 @@ export default function CommandPalette() {
   }, [isOpen]);
 
   const defaultActions = [
-    { id: 'scanner', title: 'الماسح الضوئي OMR Scanner', desc: 'تصوير وتصحيح أوراق QCM تلقائياً', icon: Camera, path: '/admin/omr-scanner', color: '#10B981' },
-    { id: 'ai-gen', title: 'استوديو الذكاء الاصطناعي AI Studio', desc: 'توليد الدروس والتمارين بالذكاء الاصطناعي', icon: Sparkles, path: '/admin/ai-generator', color: '#8B5CF6' },
-    { id: 'lessons', title: 'مستخرج الدروس والمباريات', desc: 'إدارة وتصفح جميع الدروس التفاعلية', icon: BookOpen, path: '/admin/lessons', color: '#3B82F6' },
-    { id: 'exams', title: 'إدارة الامتحانات والفروض QCM', desc: 'إنشاء الفروض وتوليد نموذج A و B', icon: Layers, path: '/admin/exams', color: '#F59E0B' },
-    { id: 'classes', title: 'إدارة الأقسام والتلاميذ', desc: 'ربط التلاميذ وتصدير ملفات مسار', icon: Users, path: '/admin/classes', color: '#EC4899' },
-    { id: 'settings', title: 'إعدادات المنصة ومفاتيح API', desc: 'تهيئة Gemini, DeepSeek, Claude, Groq', icon: Settings, path: '/admin/settings', color: '#64748B' },
+    { id: 'scanner', title: 'Scanner OMR', desc: 'Scan et correction automatique des QCM', icon: Camera, path: '/admin/omr-scanner', color: '#10B981' },
+    { id: 'ai-gen', title: 'Studio IA (AI Studio)', desc: 'Génération automatique de cours et d\'exercices par IA', icon: Sparkles, path: '/admin/ai-generator', color: '#8B5CF6' },
+    { id: 'lessons', title: 'Fiches de Cours & Ressources', desc: 'Gestion et consultation des cours interactifs', icon: BookOpen, path: '/admin/lessons', color: '#3B82F6' },
+    { id: 'exams', title: 'Gestion des Évaluations & Devoirs', desc: 'Création de devoirs et génération des sujets A/B', icon: Layers, path: '/admin/exams', color: '#F59E0B' },
+    { id: 'classes', title: 'Gestion des Classes & Élèves', desc: 'Gestion des étudiants et exportation Massar', icon: Users, path: '/admin/classes', color: '#EC4899' },
+    { id: 'settings', title: 'Paramètres & Clés API', desc: 'Configuration système (Gemini, DeepSeek, Claude, Groq)', icon: Settings, path: '/admin/settings', color: '#64748B' },
   ];
 
   const filteredActions = defaultActions.filter(action => 
@@ -97,7 +97,7 @@ export default function CommandPalette() {
           <input
             ref={inputRef}
             type="text"
-            placeholder="ابحث عن قسم، فرض، درس، أو أداة بالمنصة... (Ctrl + K)"
+            placeholder="Rechercher une classe, un devoir, un cours ou un outil... (Ctrl + K)"
             value={query}
             onChange={e => { setQuery(e.target.value); setSelectedIndex(0); }}
             onKeyDown={handleInputKeyDown}
@@ -118,7 +118,7 @@ export default function CommandPalette() {
         <div style={{ maxHeight: '380px', overflowY: 'auto', padding: '0.5rem' }}>
           {filteredActions.length === 0 ? (
             <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted, #64748b)', fontSize: '0.85rem' }}>
-              لم يتم العثور على أي نتائج تطابق &quot;{query}&quot;
+              Aucun résultat ne correspond à &quot;{query}&quot;
             </div>
           ) : (
             filteredActions.map((action, idx) => {
@@ -155,7 +155,7 @@ export default function CommandPalette() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: isSelected ? action.color : 'var(--text-subtle, #94a3b8)', fontSize: '0.75rem', fontWeight: 600 }}>
-                    الانتقال <ArrowRight size={14} />
+                    Ouvrir <ArrowRight size={14} />
                   </div>
                 </div>
               );
@@ -166,9 +166,9 @@ export default function CommandPalette() {
         {/* Footer shortcuts helper */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 1.25rem', background: 'rgba(0,0,0,0.15)', borderTop: '1px solid var(--border, rgba(255,255,255,0.05))', fontSize: '0.7rem', color: 'var(--text-subtle, #94a3b8)' }}>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <span>↑↓ للتنقل</span>
-            <span>↵ للاختيار</span>
-            <span>Esc للإغلاق</span>
+            <span>↑↓ Naviguer</span>
+            <span>↵ Sélectionner</span>
+            <span>Esc Fermer</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 700, color: 'var(--violet, #8b5cf6)' }}>
             <Command size={12} /> L&apos;CONQ Platform Suite

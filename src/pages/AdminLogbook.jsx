@@ -1612,7 +1612,7 @@ export default function AdminLogbook() {
 
         {/* Class Selection Dropdown */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <label style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-muted)' }}>Classe / القسم :</label>
+          <label style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-muted)' }}>Classe :</label>
           <select
             className="input-control"
             value={selectedClass ? selectedClass.id : ''}

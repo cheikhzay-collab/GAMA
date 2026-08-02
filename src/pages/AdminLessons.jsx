@@ -520,7 +520,7 @@ ${sectionsContentText}
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)' }}>
                     <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Fiche de Cours</th>
-                    <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Classe (القسم المسند إليه)</th>
+                    <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Classe</th>
                     <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Enseignant</th>
                     <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Statut</th>
                     <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Actions</th>
