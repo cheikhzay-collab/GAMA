@@ -3268,41 +3268,47 @@ export default function LessonViewerPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 
                 {/* Theme Selector Pills */}
-                <div style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', padding: '3px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ display: 'flex', background: boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)', padding: '3px', borderRadius: '10px', border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.1)'}` }}>
                   <button
                     onClick={() => setBoardTheme('dark')}
                     style={{
-                      background: boardTheme === 'dark' ? t.accent : 'transparent',
-                      color: '#fff', border: 'none', padding: '0.25rem 0.6rem', borderRadius: '7px', fontSize: '0.75rem', fontWeight: 800, cursor: 'pointer'
+                      background: boardTheme === 'dark' ? '#6366f1' : 'transparent',
+                      color: boardTheme === 'dark' ? '#ffffff' : (boardTheme === 'whiteboard' ? '#1e293b' : '#94a3b8'),
+                      border: 'none', padding: '0.3rem 0.65rem', borderRadius: '7px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
+                      display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
                     }}
                     title="Mode Cyber Glass Sombre"
                   >
-                    🌙 Cyber
+                    🌙 <span>Sombre</span>
                   </button>
                   <button
                     onClick={() => setBoardTheme('chalkboard')}
                     style={{
                       background: boardTheme === 'chalkboard' ? '#059669' : 'transparent',
-                      color: '#fff', border: 'none', padding: '0.25rem 0.6rem', borderRadius: '7px', fontSize: '0.75rem', fontWeight: 800, cursor: 'pointer'
+                      color: boardTheme === 'chalkboard' ? '#ffffff' : (boardTheme === 'whiteboard' ? '#1e293b' : '#94a3b8'),
+                      border: 'none', padding: '0.3rem 0.65rem', borderRadius: '7px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
+                      display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
                     }}
                     title="Mode السبورة الخضراء (Chalkboard)"
                   >
-                    🌿 السبورة
+                    🌿 <span>السبورة</span>
                   </button>
                   <button
                     onClick={() => setBoardTheme('whiteboard')}
                     style={{
                       background: boardTheme === 'whiteboard' ? '#2563eb' : 'transparent',
-                      color: boardTheme === 'whiteboard' ? '#fff' : t.textSubtle, border: 'none', padding: '0.25rem 0.6rem', borderRadius: '7px', fontSize: '0.75rem', fontWeight: 800, cursor: 'pointer'
+                      color: boardTheme === 'whiteboard' ? '#ffffff' : '#94a3b8',
+                      border: 'none', padding: '0.3rem 0.65rem', borderRadius: '7px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
+                      display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
                     }}
                     title="Mode السبورة البيضاء (Whiteboard)"
                   >
-                    ☀️ البيضاء
+                    ☀️ <span>البيضاء</span>
                   </button>
                 </div>
 
                 {/* Font Size Adjusters */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(255,255,255,0.06)', padding: '3px 8px', borderRadius: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)', border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'transparent'}`, padding: '3px 8px', borderRadius: '10px' }}>
                   <button
                     onClick={() => setBoardFontSize(prev => Math.max(prev - 0.15, 0.9))}
                     style={{ background: 'transparent', border: 'none', color: t.textMain, fontWeight: 900, cursor: 'pointer', fontSize: '0.8rem' }}
@@ -3310,7 +3316,7 @@ export default function LessonViewerPage() {
                   >
                     A-
                   </button>
-                  <span style={{ fontSize: '0.75rem', opacity: 0.6, fontWeight: 700 }}>|</span>
+                  <span style={{ fontSize: '0.75rem', opacity: 0.6, fontWeight: 700, color: t.textMain }}>|</span>
                   <button
                     onClick={() => setBoardFontSize(prev => Math.min(prev + 0.15, 2.2))}
                     style={{ background: 'transparent', border: 'none', color: t.textMain, fontWeight: 900, cursor: 'pointer', fontSize: '0.95rem' }}
@@ -3324,23 +3330,29 @@ export default function LessonViewerPage() {
                 <button
                   onClick={() => setShowSlideDrawer(prev => !prev)}
                   style={{
-                    background: showSlideDrawer ? t.accent : 'rgba(255,255,255,0.08)',
-                    color: '#fff', border: 'none', padding: '0.4rem 0.85rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer'
+                    background: showSlideDrawer ? t.accent : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.08)'),
+                    color: showSlideDrawer ? '#ffffff' : t.textMain,
+                    border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.15)'}`,
+                    padding: '0.4rem 0.85rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer',
+                    display: 'inline-flex', alignItems: 'center', gap: '0.35rem'
                   }}
                   title="Afficher la liste des diapositives"
                 >
-                  📋 Index ({totalSlides})
+                  📋 <span>Index ({totalSlides})</span>
                 </button>
 
                 {/* Solution Toggle Button */}
                 <button
                   onClick={() => setShowSolutionInSlide(prev => !prev)}
                   style={{
-                    background: showSolutionInSlide ? '#059669' : 'rgba(255,255,255,0.08)',
-                    color: '#fff', border: 'none', padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: 800, borderRadius: '8px', cursor: 'pointer'
+                    background: showSolutionInSlide ? '#059669' : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.08)'),
+                    color: showSolutionInSlide ? '#ffffff' : t.textMain,
+                    border: `1px solid ${showSolutionInSlide ? '#059669' : (boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.15)')}`,
+                    padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: 800, borderRadius: '8px', cursor: 'pointer',
+                    display: 'inline-flex', alignItems: 'center', gap: '0.35rem'
                   }}
                 >
-                  {showSolutionInSlide ? '👁️ Masquer Corrigé (S)' : '💡 Afficher Corrigé (S)'}
+                  💡 <span>{showSolutionInSlide ? 'Masquer Corrigé (S)' : 'Afficher Corrigé (S)'}</span>
                 </button>
 
                 {/* Quit Button */}
