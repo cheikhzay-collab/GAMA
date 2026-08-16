@@ -1,10 +1,21 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { UploadCloud, Sparkles, Loader2, CheckCircle2, Trash2, Plus, Send, AlertCircle, FileText, StopCircle, ArrowLeft } from 'lucide-react';
+import { UploadCloud, Sparkles, Loader2, CheckCircle2, Trash2, Plus, Send, AlertCircle, FileText, StopCircle, ArrowLeft, Wand2, RefreshCw, Zap, TrendingUp, Sliders, Check } from 'lucide-react';
 import { getLevelDisplayName } from '../utils/levelHelpers';
 import * as pdfjsLib from 'pdfjs-dist';
 import { generateSubjectHTML, generateCorrectionHTML, openPrintWindow } from '../utils/generateExamPDF';
+import NationalExamTemplate from '../components/NationalExamTemplate';
+import { openNationalExamPrintWindow } from '../utils/generateNationalExamPDF';
+import { 
+  smartNumberQuestions, 
+  fixLinguisticAndOcrErrors, 
+  smartFormatMathAndLatex, 
+  smartNormalizeOptions,
+  generateQuestionVariant,
+  adjustQuestionDifficulty,
+  enrichQuestionExplanation
+} from '../utils/smartExtractorFormatter';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).href;
 
@@ -359,6 +370,11 @@ const SYSTEM_PROMPT = `Tu es un Professeur Agrégé et Inspecteur Pédagogique d
 2. EXTRACTION DU BARÈME DE NOTATION ("points") :
    - Extrais les points totaux du problème/exercice dans "points" (ex: 3.5, 2, 1.5).
 
+3. DÉTECTION AUTOMATIQUE D'EXAMEN NATIONAL MAROCAIN ("is_national_exam" & "national_exam_meta") :
+   - Si le document est un Examen National du Baccalauréat (الامتحان الوطني الموحد للبكالوريا) :
+     • Définis "is_national_exam": true
+     • Extrais "national_exam_meta": {"year", "session", "subject", "branch", "code", "subject_number", "duration", "coefficient", "total_pages", "general_instructions", "subject_components", "notations"}.
+
 ════════════════════════════════════════════════════════════
 RÈGLE ABSOLUE DE LANGUE — CONSERVATION RIGOUREUSE DE LA LANGUE D'ORIGINE
 ════════════════════════════════════════════════════════════
@@ -367,6 +383,26 @@ RÈGLE ABSOLUE DE LANGUE — CONSERVATION RIGOUREUSE DE LA LANGUE D'ORIGINE
 - Si le fichier / PDF / image est rédigé en ARABE (questions, énoncés, options A/B/C/D, explications), TOUT LE JSON PRODUIT (questions, options, astuces, contextes) DOIT ÊTRE EN ARABE ! Ne traduis JAMAIS un document arabe en français.
 - Si le fichier source est en FRANÇAIS, extrais l'intégralité en français.
 - Ne traduis AUCUN mot ou énoncé d'une langue vers une autre. Respecte scrupuleusement la langue d'origine du fichier importé !
+
+════════════════════════════════════════════════════════════
+✨ EXIGENCES D'EXTRACTION INTELLIGENTE : TENSIIQ, NUMÉROTATION ET CORRECTION LINGUISTIQUE
+════════════════════════════════════════════════════════════
+
+1. ✍️ CORRECTION INTEL LINGUISTIQUE, SPELLING ET D'ERREURS OCR (إصلاح الأخطاء اللغوية والنحوية) :
+   - Tu DOIS corriger AUTOMATIQUEMENT toutes les fautes d'orthographe, de grammaire, de frappe et d'extraction OCR dans le texte source (en arabe ET en français).
+   - En ARABE (العربية) : Corriger les fautes d'orthographe et de frappe (الهمزات: أ/إ/آ/ء, التاء المربوطة والهاء: ة/ه, الألف المقصورة: ى/ي), réparer les mots collés ou tronqués par l'OCR (ex: "الامتحان" au lieu de "ألإمتحان" ou "الامتحـان"), et assurer une syntaxe et une grammaire impeccables.
+   - En FRANÇAIS : Corriger les fautes de frappe, d'accords, de ponctuation et les accents manquants (é, è, à, ç, etc.) provoqués par la numérisation.
+   - Préservation absolue du sens scientifique et mathématique originel.
+
+2. 🔢 NUMÉROTATION INTELLIGENTE ET HARMONIEUSE DES QUESTIONS (ترقيم الأسئلة المنظم) :
+   - Assure une numérotation séquentielle et logique stricte (\`question_number\`: 1, 2, 3, 4...).
+   - Si le document d'origine comporte des sous-questions (ex: 1.a, 1.b, 2.a, 2.b ou Q1.1, Q1.2), numérote proprement la question principale dans \`question_number\` tout en conservant clairement le label de sous-question au début du texte de la question (ex: "1.a. ...", "السؤال 1.أ ...").
+   - Élimine tout doublon de numéro, numéro négatif, ou numéro corrompu ("Q??", "0"). Restitue l'ordre logique naturel (1..N).
+
+3. 🎨 TENSIIQ ET FORMATAGE INTELLIGENT DU CONTENU (التنسيق الذكي) :
+   - Applique la syntaxe LaTeX \`$ ... $\` pour TOUT symbole, variable ($x$, $n$, $u_n$, $f(x)$) et expression mathématique inline, et \`$$ ... $$\` pour les équations en bloc.
+   - SÉPARE RIGOUREUSEMENT l'énoncé de la question et ses propositions de réponses si le texte OCR les a fusionnés sur la même ligne.
+   - Structure les explications (\`astuce\`) avec des retours à la ligne clairs (\\n\\n), des titres en gras (\`**...**\`), et des étapes numérotées bien aérées.
 
 Tu rédiges EXACTEMENT comme un inspecteur marocain corrige un examen national : rigueur scientifique absolue, étapes numérotées, connecteurs logiques officiels, citations du cours, et conclusion encadrée. Ton niveau de langage est celui d'un corrigé-type officiel distribué lors des journées pédagogiques des Académies Régionales.
 
@@ -678,6 +714,9 @@ export default function AdminAIImport({ onBack }) {
   const [year, setYear] = useState(draft?.year || '2024');
   const [tier, setTier] = useState(draft?.tier || 'freemium');
   const [examName, setExamName] = useState(draft?.examName || '');
+  const [isNationalExam, setIsNationalExam] = useState(draft?.isNationalExam || false);
+  const [nationalExamMeta, setNationalExamMeta] = useState(draft?.nationalExamMeta || null);
+  const [viewNationalTemplate, setViewNationalTemplate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [progress, setProgress] = useState('');
@@ -685,6 +724,57 @@ export default function AdminAIImport({ onBack }) {
 
   // Review state — restored from draft
   const [questions, setQuestions] = useState(draft?.questions || []);
+  const [copilotLoadingId, setCopilotLoadingId] = useState(null);
+  const [copilotSuccessMsg, setCopilotSuccessMsg] = useState('');
+
+  // ── AI Copilot Actions per Question ──
+  const handleCopilotVariant = async (idx) => {
+    const q = questions[idx];
+    if (!q) return;
+    setCopilotLoadingId(q.id);
+    try {
+      const updated = await generateQuestionVariant(q, geminiKey, geminiModel);
+      setQuestions(qs => qs.map((item, i) => i === idx ? updated : item));
+      setCopilotSuccessMsg(`✓ Variante générée pour la question ${q.question_number} !`);
+      setTimeout(() => setCopilotSuccessMsg(''), 3500);
+    } catch (err) {
+      setError(`Erreur Copilot : ${err.message}`);
+    } finally {
+      setCopilotLoadingId(null);
+    }
+  };
+
+  const handleCopilotDifficulty = async (idx, targetDiff) => {
+    const q = questions[idx];
+    if (!q) return;
+    setCopilotLoadingId(q.id);
+    try {
+      const updated = await adjustQuestionDifficulty(q, targetDiff, geminiKey, geminiModel);
+      setQuestions(qs => qs.map((item, i) => i === idx ? updated : item));
+      setCopilotSuccessMsg(`✓ Difficulté ajustée (${targetDiff === 'harder' ? 'Approfondie' : 'Accessible'}) pour la Q${q.question_number} !`);
+      setTimeout(() => setCopilotSuccessMsg(''), 3500);
+    } catch (err) {
+      setError(`Erreur Copilot : ${err.message}`);
+    } finally {
+      setCopilotLoadingId(null);
+    }
+  };
+
+  const handleCopilotEnrich = async (idx) => {
+    const q = questions[idx];
+    if (!q) return;
+    setCopilotLoadingId(q.id);
+    try {
+      const updated = await enrichQuestionExplanation(q, geminiKey, geminiModel);
+      setQuestions(qs => qs.map((item, i) => i === idx ? updated : item));
+      setCopilotSuccessMsg(`✓ Corrigé modèle & Astuces enrichis pour la Q${q.question_number} !`);
+      setTimeout(() => setCopilotSuccessMsg(''), 3500);
+    } catch (err) {
+      setError(`Erreur Copilot : ${err.message}`);
+    } finally {
+      setCopilotLoadingId(null);
+    }
+  };
 
   const fileRef = useRef();
   const timerRef = useRef(null);
@@ -1121,27 +1211,17 @@ ${pdfText}
       clearInterval(timerRef.current);
       setProgress(`✓ Analyse terminée — ${parsed.length} questions extraites`);
 
-      parsed.sort((a, b) => (a.question_number || 999) - (b.question_number || 999));
-
-      // Deduplicate: reassign question numbers that appear more than once
-      const seenNums = new Set();
-      parsed.forEach((q, i) => {
-        if (!q.question_number || seenNums.has(q.question_number)) {
-          q.question_number = (parsed[i - 1]?.question_number ?? i) + 1;
-        }
-        seenNums.add(q.question_number);
-      });
-
-      const qs = parsed.map((q, i) => ({
+      // Apply smart post-processing: smart numbering, OCR error correction, LaTeX math formatting, clean option mapping
+      const qs = smartNumberQuestions(parsed).map((q, i) => ({
         id: crypto.randomUUID(),
-        question_number: q.question_number || q.num || (i + 1),
-        context: q.context || q.enonce_commun || '',
-        subject: q.subject || q.topic || 'Général',
-        question: q.question || q.text || q.statement || q.enonce || q.énoncé || '',
-        options: normalizeOptions(q.options || q.choices || q.propositions || q.answers),
-        correct_answer: String(q.correct_answer || q.answer || q.correct || q.reponse || q.response || q.correctAnswer || 'A').trim().toUpperCase().replace(/[^A-E]/g, '') || 'A',
-        astuce: q.astuce || q.explanation || q.explication || q.solution || q.justification || '',
-        trick: q.trick || q.astuce_rapide || q.quick_trick || q.shortcut || ''
+        question_number: q.question_number || (i + 1),
+        context: q.context || '',
+        subject: q.subject || 'Général',
+        question: q.question || '',
+        options: q.options || ['A) ', 'B) ', 'C) ', 'D) '],
+        correct_answer: q.correct_answer || 'A',
+        astuce: q.astuce || '',
+        trick: q.trick || ''
       }));
 
       setQuestions(qs);
@@ -1787,7 +1867,74 @@ ${pdfText}
 
       {/* ── PHASE 2: Review Grid ── */}
       {phase === 2 && (
-        <div className="animate-fade-in">
+        <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          
+          {/* National Exam Banner */}
+          {isNationalExam && (
+            <div className="glass-panel" style={{
+              padding: '1.25rem 1.75rem',
+              borderRadius: '16px',
+              border: '1px solid rgba(234, 179, 8, 0.4)',
+              background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.12) 0%, rgba(245, 158, 11, 0.04) 100%)',
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <span style={{ fontSize: '1.75rem' }}>🏆</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                    تم اكتشاف امتحان وطني موحد للبكالوريا (Examen National)
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    تنسيق وتفريغ تلقائي في معمارية الامتحان الوطني الموحد بأسلوب ورموز البكالوريا المغربية.
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className="btn-outline"
+                  onClick={() => setViewNationalTemplate(!viewNationalTemplate)}
+                  style={{
+                    background: viewNationalTemplate ? 'var(--violet)' : 'rgba(255,255,255,0.05)',
+                    color: viewNationalTemplate ? '#fff' : 'inherit',
+                    fontWeight: 700,
+                    padding: '0.5rem 1rem',
+                    fontSize: '0.85rem'
+                  }}
+                >
+                  {viewNationalTemplate ? '✏️ التعديل والتنقيح' : '👁️ المعمارية الرسمية للامتحان الوطني'}
+                </button>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => openNationalExamPrintWindow({
+                    header: { fiche_title: examName, subject: 'الرياضيات', level: '2bac_pc_svt', is_national_exam: isNationalExam, national_exam_meta: nationalExamMeta },
+                    questions: questions
+                  })}
+                  style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', fontWeight: 700, padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+                >
+                  🖨️ طباعة / تصدير التنسيق الرسمي (PDF)
+                </button>
+              </div>
+            </div>
+          )}
+
+          {isNationalExam && viewNationalTemplate ? (
+            <div className="glass-panel" style={{ padding: '2rem', borderRadius: '16px', border: '1px solid var(--border)' }}>
+              <NationalExamTemplate
+                examData={{
+                  header: { fiche_title: examName, subject: 'الرياضيات', level: '2bac_pc_svt', is_national_exam: isNationalExam, national_exam_meta: nationalExamMeta },
+                  questions: questions
+                }}
+              />
+            </div>
+          ) : (
+            <>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
             <div>
               <h2 style={{ margin: 0 }}>👀 Révision — {questions.length} questions extraites</h2>
@@ -1911,6 +2058,8 @@ ${pdfText}
               <Send size={18} /> Valider et Publier 🚀
             </button>
           </div>
+          </>
+          )}
         </div>
       )}
 

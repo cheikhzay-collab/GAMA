@@ -9,6 +9,9 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { getLessonById, updateLesson } from '../services/lessonService';
 import { renderWithMath } from '../utils/mathRenderer';
+import { openLessonPrintWindow } from '../utils/generateLessonPDF';
+import NationalExamTemplate from '../components/NationalExamTemplate';
+import { openNationalExamPrintWindow } from '../utils/generateNationalExamPDF';
 import { generateFichePedagogiquePDF } from '../utils/generateFichePedagogiquePDF';
 import { generateFichePedagogiqueWithAI } from '../utils/aiFicheGenerator';
 
@@ -598,6 +601,14 @@ export default function LessonViewerPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading, profName, profPhone, trackDownload } = useAuth();
 
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [lesson, setLesson] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -1067,7 +1078,13 @@ export default function LessonViewerPage() {
       if (typeof trackDownload === 'function') {
         trackDownload({ type: 'lesson', id: lesson.id, title: lesson.content?.header?.fiche_title || lesson.title || 'Fiche de Cours' });
       }
-      openLessonPrintWindow(lesson, { showSolutions: includeSolutionsInPdf });
+      const isSeriesOrHomework = lesson?.docType === 'exercises' || lesson?.docType === 'homework' || lesson?.content?.doc_type === 'exercises' || lesson?.content?.doc_type === 'homework' || /سلسلة|s[ée]rie|devoir|فرض/i.test(lesson?.title || '');
+      const isNat = !isSeriesOrHomework && Boolean(lesson?.docType === 'national' || lesson?.content?.doc_type === 'national' || lesson?.content?.header?.is_national_exam || lesson?.is_national_exam);
+      if (isNat) {
+        openNationalExamPrintWindow(lesson.content || lesson, { showSolutions: includeSolutionsInPdf });
+      } else {
+        openLessonPrintWindow(lesson, { showSolutions: includeSolutionsInPdf });
+      }
     } catch (err) {
       console.error('[PDF Export] Error:', err);
       alert('Erreur lors de la génération du PDF.');

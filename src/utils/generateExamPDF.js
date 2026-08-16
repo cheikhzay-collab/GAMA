@@ -2250,6 +2250,8 @@ printWhenReady();
   }
 
   const siteUrl = profSite;
+  const premiumQrPayload = profSite ? profSite : 'https://lconq.ma';
+  const premiumQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(premiumQrPayload)}&ecc=H&margin=4`;
   const copyrightLine = profName
     ? `© ${new Date().getFullYear()} L'CONQ × ${profName}. Tous droits réservés.`
     : `© ${new Date().getFullYear()} L'CONQ. Tous droits réservés.`;

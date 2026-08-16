@@ -8,7 +8,9 @@
     "xp": 450,
     "joined": "2026-07-12T17:11:40.177Z",
     "school": "Lycée Qualifiant 18 Novembre",
-    "class_id": "1BACSEF-1"
+    "class_id": null,
+    "updated_at": "2026-08-16T08:33:45.218Z",
+    "updatedAt": "2026-08-16T08:33:45.227Z"
   },
   {
     "id": "2",
@@ -47,10 +49,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.692Z",
-    "updated_at": "2026-07-12T17:50:46.692Z",
-    "joined": "2026-07-12T17:50:46.699Z"
+    "updated_at": "2026-08-16T08:33:41.578Z",
+    "joined": "2026-07-12T17:50:46.699Z",
+    "updatedAt": "2026-08-16T08:33:41.592Z"
   },
   {
     "id": "C160011655",
@@ -69,10 +72,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.712Z",
-    "updated_at": "2026-07-12T17:50:46.712Z",
-    "joined": "2026-07-12T17:50:46.711Z"
+    "updated_at": "2026-08-16T08:33:41.629Z",
+    "joined": "2026-07-12T17:50:46.711Z",
+    "updatedAt": "2026-08-16T08:33:41.638Z"
   },
   {
     "id": "C160018311",
@@ -91,10 +95,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.723Z",
-    "updated_at": "2026-07-12T17:50:46.724Z",
-    "joined": "2026-07-12T17:50:46.718Z"
+    "updated_at": "2026-08-16T08:33:41.660Z",
+    "joined": "2026-07-12T17:50:46.718Z",
+    "updatedAt": "2026-08-16T08:33:41.670Z"
   },
   {
     "id": "C162011294",
@@ -113,10 +118,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.729Z",
-    "updated_at": "2026-07-12T17:50:46.729Z",
-    "joined": "2026-07-12T17:50:46.726Z"
+    "updated_at": "2026-08-16T08:33:41.690Z",
+    "joined": "2026-07-12T17:50:46.726Z",
+    "updatedAt": "2026-08-16T08:33:41.712Z"
   },
   {
     "id": "C162018364",
@@ -135,10 +141,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.739Z",
-    "updated_at": "2026-07-12T17:50:46.739Z",
-    "joined": "2026-07-12T17:50:46.737Z"
+    "updated_at": "2026-08-16T08:33:41.733Z",
+    "joined": "2026-07-12T17:50:46.737Z",
+    "updatedAt": "2026-08-16T08:33:41.740Z"
   },
   {
     "id": "C163011677",
@@ -157,10 +164,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.756Z",
-    "updated_at": "2026-07-12T17:50:46.756Z",
-    "joined": "2026-07-12T17:50:46.754Z"
+    "updated_at": "2026-08-16T08:33:41.761Z",
+    "joined": "2026-07-12T17:50:46.754Z",
+    "updatedAt": "2026-08-16T08:33:41.771Z"
   },
   {
     "id": "C163067664",
@@ -179,10 +187,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.772Z",
-    "updated_at": "2026-07-12T17:50:46.772Z",
-    "joined": "2026-07-12T17:50:46.772Z"
+    "updated_at": "2026-08-16T08:33:41.812Z",
+    "joined": "2026-07-12T17:50:46.772Z",
+    "updatedAt": "2026-08-16T08:33:41.820Z"
   },
   {
     "id": "C164045846",
@@ -201,10 +210,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.794Z",
-    "updated_at": "2026-07-12T17:50:46.794Z",
-    "joined": "2026-07-12T17:50:46.794Z"
+    "updated_at": "2026-08-16T08:33:41.850Z",
+    "joined": "2026-07-12T17:50:46.794Z",
+    "updatedAt": "2026-08-16T08:33:41.857Z"
   },
   {
     "id": "C164071338",
@@ -223,10 +233,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.806Z",
-    "updated_at": "2026-07-12T17:50:46.806Z",
-    "joined": "2026-07-12T17:50:46.800Z"
+    "updated_at": "2026-08-16T08:33:41.878Z",
+    "joined": "2026-07-12T17:50:46.800Z",
+    "updatedAt": "2026-08-16T08:33:41.888Z"
   },
   {
     "id": "C166011583",
@@ -245,10 +256,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.810Z",
-    "updated_at": "2026-07-12T17:50:46.810Z",
-    "joined": "2026-07-12T17:50:46.804Z"
+    "updated_at": "2026-08-16T08:33:41.909Z",
+    "joined": "2026-07-12T17:50:46.804Z",
+    "updatedAt": "2026-08-16T08:33:41.926Z"
   },
   {
     "id": "C168011578",
@@ -267,10 +279,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.814Z",
-    "updated_at": "2026-07-12T17:50:46.814Z",
-    "joined": "2026-07-12T17:50:46.812Z"
+    "updated_at": "2026-08-16T08:33:41.947Z",
+    "joined": "2026-07-12T17:50:46.812Z",
+    "updatedAt": "2026-08-16T08:33:41.958Z"
   },
   {
     "id": "C168011596",
@@ -289,10 +302,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.827Z",
-    "updated_at": "2026-07-12T17:50:46.827Z",
-    "joined": "2026-07-12T17:50:46.824Z"
+    "updated_at": "2026-08-16T08:33:41.981Z",
+    "joined": "2026-07-12T17:50:46.824Z",
+    "updatedAt": "2026-08-16T08:33:41.990Z"
   },
   {
     "id": "C168022286",
@@ -311,10 +325,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.839Z",
-    "updated_at": "2026-07-12T17:50:46.839Z",
-    "joined": "2026-07-12T17:50:46.837Z"
+    "updated_at": "2026-08-16T08:33:42.012Z",
+    "joined": "2026-07-12T17:50:46.837Z",
+    "updatedAt": "2026-08-16T08:33:42.021Z"
   },
   {
     "id": "C168025954",
@@ -333,10 +348,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.847Z",
-    "updated_at": "2026-07-12T17:50:46.847Z",
-    "joined": "2026-07-12T17:50:46.846Z"
+    "updated_at": "2026-08-16T08:33:42.042Z",
+    "joined": "2026-07-12T17:50:46.846Z",
+    "updatedAt": "2026-08-16T08:33:42.050Z"
   },
   {
     "id": "N147088899",
@@ -355,10 +371,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.860Z",
-    "updated_at": "2026-07-12T17:50:46.860Z",
-    "joined": "2026-07-12T17:50:46.858Z"
+    "updated_at": "2026-08-16T08:33:42.070Z",
+    "joined": "2026-07-12T17:50:46.858Z",
+    "updatedAt": "2026-08-16T08:33:42.077Z"
   },
   {
     "id": "N148092981",
@@ -377,10 +394,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.873Z",
-    "updated_at": "2026-07-12T17:50:46.873Z",
-    "joined": "2026-07-12T17:50:46.870Z"
+    "updated_at": "2026-08-16T08:33:42.130Z",
+    "joined": "2026-07-12T17:50:46.870Z",
+    "updatedAt": "2026-08-16T08:33:42.138Z"
   },
   {
     "id": "N154008473",
@@ -399,10 +417,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.887Z",
-    "updated_at": "2026-07-12T17:50:46.887Z",
-    "joined": "2026-07-12T17:50:46.885Z"
+    "updated_at": "2026-08-16T08:33:42.169Z",
+    "joined": "2026-07-12T17:50:46.885Z",
+    "updatedAt": "2026-08-16T08:33:42.176Z"
   },
   {
     "id": "N155008520",
@@ -421,10 +440,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.903Z",
-    "updated_at": "2026-07-12T17:50:46.903Z",
-    "joined": "2026-07-12T17:50:46.901Z"
+    "updated_at": "2026-08-16T08:33:42.201Z",
+    "joined": "2026-07-12T17:50:46.901Z",
+    "updatedAt": "2026-08-16T08:33:42.208Z"
   },
   {
     "id": "N155024316",
@@ -443,10 +463,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.914Z",
-    "updated_at": "2026-07-12T17:50:46.914Z",
-    "joined": "2026-07-12T17:50:46.912Z"
+    "updated_at": "2026-08-16T08:33:42.231Z",
+    "joined": "2026-07-12T17:50:46.912Z",
+    "updatedAt": "2026-08-16T08:33:42.239Z"
   },
   {
     "id": "N155028819",
@@ -465,10 +486,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.927Z",
-    "updated_at": "2026-07-12T17:50:46.927Z",
-    "joined": "2026-07-12T17:50:46.924Z"
+    "updated_at": "2026-08-16T08:33:42.273Z",
+    "joined": "2026-07-12T17:50:46.924Z",
+    "updatedAt": "2026-08-16T08:33:42.287Z"
   },
   {
     "id": "N157008392",
@@ -487,10 +509,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.940Z",
-    "updated_at": "2026-07-12T17:50:46.940Z",
-    "joined": "2026-07-12T17:50:46.937Z"
+    "updated_at": "2026-08-16T08:33:42.312Z",
+    "joined": "2026-07-12T17:50:46.937Z",
+    "updatedAt": "2026-08-16T08:33:42.323Z"
   },
   {
     "id": "N159014345",
@@ -509,10 +532,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.949Z",
-    "updated_at": "2026-07-12T17:50:46.949Z",
-    "joined": "2026-07-12T17:50:46.948Z"
+    "updated_at": "2026-08-16T08:33:42.343Z",
+    "joined": "2026-07-12T17:50:46.948Z",
+    "updatedAt": "2026-08-16T08:33:42.355Z"
   },
   {
     "id": "C164061266",
@@ -531,10 +555,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.961Z",
-    "updated_at": "2026-07-12T17:50:46.961Z",
-    "joined": "2026-07-12T17:50:46.957Z"
+    "updated_at": "2026-08-16T08:33:42.376Z",
+    "joined": "2026-07-12T17:50:46.957Z",
+    "updatedAt": "2026-08-16T08:33:42.384Z"
   },
   {
     "id": "C161011621",
@@ -553,10 +578,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "TCS-1",
+    "class_id": null,
     "created_at": "2026-07-12T17:50:46.972Z",
-    "updated_at": "2026-07-12T17:50:46.972Z",
-    "joined": "2026-07-12T17:50:46.970Z"
+    "updated_at": "2026-08-16T08:33:42.442Z",
+    "joined": "2026-07-12T17:50:46.970Z",
+    "updatedAt": "2026-08-16T08:33:42.451Z"
   },
   {
     "id": "N152008459",
@@ -575,10 +601,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:05.990Z",
-    "updated_at": "2026-07-16T09:51:05.990Z",
-    "joined": "2026-07-16T09:51:06.036Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.183Z",
+    "updated_at": "2026-08-16T09:00:50.183Z",
+    "joined": "2026-07-16T09:51:06.036Z",
+    "updatedAt": "2026-08-16T09:00:50.195Z"
   },
   {
     "id": "H156028102",
@@ -597,10 +624,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.059Z",
-    "updated_at": "2026-07-16T09:51:06.059Z",
-    "joined": "2026-07-16T09:51:06.065Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.019Z",
+    "updated_at": "2026-08-16T09:00:50.019Z",
+    "joined": "2026-07-16T09:51:06.065Z",
+    "updatedAt": "2026-08-16T09:00:50.025Z"
   },
   {
     "id": "M157009199",
@@ -619,10 +647,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.087Z",
-    "updated_at": "2026-07-16T09:51:06.087Z",
-    "joined": "2026-07-16T09:51:06.093Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.034Z",
+    "updated_at": "2026-08-16T09:00:50.034Z",
+    "joined": "2026-07-16T09:51:06.093Z",
+    "updatedAt": "2026-08-16T09:00:50.037Z"
   },
   {
     "id": "N150003772",
@@ -641,10 +670,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.104Z",
-    "updated_at": "2026-07-16T09:51:06.104Z",
-    "joined": "2026-07-16T09:51:06.109Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.057Z",
+    "updated_at": "2026-08-16T09:00:50.057Z",
+    "joined": "2026-07-16T09:51:06.109Z",
+    "updatedAt": "2026-08-16T09:00:50.060Z"
   },
   {
     "id": "N150008405",
@@ -663,10 +693,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.118Z",
-    "updated_at": "2026-07-16T09:51:06.118Z",
-    "joined": "2026-07-16T09:51:06.127Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.066Z",
+    "updated_at": "2026-08-16T09:00:50.066Z",
+    "joined": "2026-07-16T09:51:06.127Z",
+    "updatedAt": "2026-08-16T09:00:50.073Z"
   },
   {
     "id": "N150008414",
@@ -685,10 +716,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.133Z",
-    "updated_at": "2026-07-16T09:51:06.133Z",
-    "joined": "2026-07-16T09:51:06.144Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.082Z",
+    "updated_at": "2026-08-16T09:00:50.082Z",
+    "joined": "2026-07-16T09:51:06.144Z",
+    "updatedAt": "2026-08-16T09:00:50.095Z"
   },
   {
     "id": "N151028626",
@@ -707,10 +739,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.149Z",
-    "updated_at": "2026-07-16T09:51:06.149Z",
-    "joined": "2026-07-16T09:51:06.157Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.112Z",
+    "updated_at": "2026-08-16T09:00:50.112Z",
+    "joined": "2026-07-16T09:51:06.157Z",
+    "updatedAt": "2026-08-16T09:00:50.124Z"
   },
   {
     "id": "N152008436",
@@ -729,10 +762,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.164Z",
-    "updated_at": "2026-07-16T09:51:06.164Z",
-    "joined": "2026-07-16T09:51:06.169Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.133Z",
+    "updated_at": "2026-08-16T09:00:50.133Z",
+    "joined": "2026-07-16T09:51:06.169Z",
+    "updatedAt": "2026-08-16T09:00:50.145Z"
   },
   {
     "id": "N152008452",
@@ -751,10 +785,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.181Z",
-    "updated_at": "2026-07-16T09:51:06.181Z",
-    "joined": "2026-07-16T09:51:06.185Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.160Z",
+    "updated_at": "2026-08-16T09:00:50.160Z",
+    "joined": "2026-07-16T09:51:06.185Z",
+    "updatedAt": "2026-08-16T09:00:50.174Z"
   },
   {
     "id": "N153008498",
@@ -773,10 +808,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.194Z",
-    "updated_at": "2026-07-16T09:51:06.194Z",
-    "joined": "2026-07-16T09:51:06.196Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.203Z",
+    "updated_at": "2026-08-16T09:00:50.203Z",
+    "joined": "2026-07-16T09:51:06.196Z",
+    "updatedAt": "2026-08-16T09:00:50.215Z"
   },
   {
     "id": "N153008499",
@@ -795,10 +831,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.198Z",
-    "updated_at": "2026-07-16T09:51:06.198Z",
-    "joined": "2026-07-16T09:51:06.208Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.228Z",
+    "updated_at": "2026-08-16T09:00:50.229Z",
+    "joined": "2026-07-16T09:51:06.208Z",
+    "updatedAt": "2026-08-16T09:00:50.236Z"
   },
   {
     "id": "N153008501",
@@ -817,10 +854,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.214Z",
-    "updated_at": "2026-07-16T09:51:06.214Z",
-    "joined": "2026-07-16T09:51:06.218Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.246Z",
+    "updated_at": "2026-08-16T09:00:50.246Z",
+    "joined": "2026-07-16T09:51:06.218Z",
+    "updatedAt": "2026-08-16T09:00:50.255Z"
   },
   {
     "id": "N153008503",
@@ -839,10 +877,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.243Z",
-    "updated_at": "2026-07-16T09:51:06.243Z",
-    "joined": "2026-07-16T09:51:06.248Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.264Z",
+    "updated_at": "2026-08-16T09:00:50.265Z",
+    "joined": "2026-07-16T09:51:06.248Z",
+    "updatedAt": "2026-08-16T09:00:50.274Z"
   },
   {
     "id": "N153015802",
@@ -861,10 +900,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.259Z",
-    "updated_at": "2026-07-16T09:51:06.259Z",
-    "joined": "2026-07-16T09:51:06.263Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.282Z",
+    "updated_at": "2026-08-16T09:00:50.282Z",
+    "joined": "2026-07-16T09:51:06.263Z",
+    "updatedAt": "2026-08-16T09:00:50.293Z"
   },
   {
     "id": "N154008477",
@@ -883,10 +923,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.277Z",
-    "updated_at": "2026-07-16T09:51:06.277Z",
-    "joined": "2026-07-16T09:51:06.281Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.306Z",
+    "updated_at": "2026-08-16T09:00:50.306Z",
+    "joined": "2026-07-16T09:51:06.281Z",
+    "updatedAt": "2026-08-16T09:00:50.315Z"
   },
   {
     "id": "N154008488",
@@ -905,10 +946,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
+    "class_id": null,
     "created_at": "2026-07-16T09:51:06.291Z",
-    "updated_at": "2026-07-16T09:51:06.291Z",
-    "joined": "2026-07-16T09:51:06.298Z"
+    "updated_at": "2026-08-16T08:33:45.809Z",
+    "joined": "2026-07-16T09:51:06.298Z",
+    "updatedAt": "2026-08-16T08:33:45.815Z"
   },
   {
     "id": "N155008518",
@@ -927,10 +969,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.304Z",
-    "updated_at": "2026-07-16T09:51:06.304Z",
-    "joined": "2026-07-16T09:51:06.309Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.326Z",
+    "updated_at": "2026-08-16T09:00:50.326Z",
+    "joined": "2026-07-16T09:51:06.309Z",
+    "updatedAt": "2026-08-16T09:00:50.334Z"
   },
   {
     "id": "N155008541",
@@ -949,10 +992,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.313Z",
-    "updated_at": "2026-07-16T09:51:06.313Z",
-    "joined": "2026-07-16T09:51:06.314Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.344Z",
+    "updated_at": "2026-08-16T09:00:50.344Z",
+    "joined": "2026-07-16T09:51:06.314Z",
+    "updatedAt": "2026-08-16T09:00:50.351Z"
   },
   {
     "id": "N156014463",
@@ -971,10 +1015,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.317Z",
-    "updated_at": "2026-07-16T09:51:06.317Z",
-    "joined": "2026-07-16T09:51:06.319Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.361Z",
+    "updated_at": "2026-08-16T09:00:50.361Z",
+    "joined": "2026-07-16T09:51:06.319Z",
+    "updatedAt": "2026-08-16T09:00:50.367Z"
   },
   {
     "id": "N156028636",
@@ -993,10 +1038,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.431Z",
-    "updated_at": "2026-07-16T09:51:06.431Z",
-    "joined": "2026-07-16T09:51:06.440Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.378Z",
+    "updated_at": "2026-08-16T09:00:50.378Z",
+    "joined": "2026-07-16T09:51:06.440Z",
+    "updatedAt": "2026-08-16T09:00:50.386Z"
   },
   {
     "id": "N156029457",
@@ -1015,10 +1061,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.466Z",
-    "updated_at": "2026-07-16T09:51:06.466Z",
-    "joined": "2026-07-16T09:51:06.476Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.396Z",
+    "updated_at": "2026-08-16T09:00:50.396Z",
+    "joined": "2026-07-16T09:51:06.476Z",
+    "updatedAt": "2026-08-16T09:00:50.405Z"
   },
   {
     "id": "N157008389",
@@ -1037,10 +1084,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.510Z",
-    "updated_at": "2026-07-16T09:51:06.510Z",
-    "joined": "2026-07-16T09:51:06.515Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.413Z",
+    "updated_at": "2026-08-16T09:00:50.413Z",
+    "joined": "2026-07-16T09:51:06.515Z",
+    "updatedAt": "2026-08-16T09:00:50.422Z"
   },
   {
     "id": "N157008399",
@@ -1059,10 +1107,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.528Z",
-    "updated_at": "2026-07-16T09:51:06.528Z",
-    "joined": "2026-07-16T09:51:06.535Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.429Z",
+    "updated_at": "2026-08-16T09:00:50.429Z",
+    "joined": "2026-07-16T09:51:06.535Z",
+    "updatedAt": "2026-08-16T09:00:50.438Z"
   },
   {
     "id": "N157027058",
@@ -1081,10 +1130,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.578Z",
-    "updated_at": "2026-07-16T09:51:06.578Z",
-    "joined": "2026-07-16T09:51:06.585Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.446Z",
+    "updated_at": "2026-08-16T09:00:50.446Z",
+    "joined": "2026-07-16T09:51:06.585Z",
+    "updatedAt": "2026-08-16T09:00:50.456Z"
   },
   {
     "id": "N157036623",
@@ -1103,10 +1153,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.605Z",
-    "updated_at": "2026-07-16T09:51:06.605Z",
-    "joined": "2026-07-16T09:51:06.611Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.464Z",
+    "updated_at": "2026-08-16T09:00:50.464Z",
+    "joined": "2026-07-16T09:51:06.611Z",
+    "updatedAt": "2026-08-16T09:00:50.472Z"
   },
   {
     "id": "S149082902",
@@ -1125,10 +1176,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.618Z",
-    "updated_at": "2026-07-16T09:51:06.618Z",
-    "joined": "2026-07-16T09:51:06.625Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.497Z",
+    "updated_at": "2026-08-16T09:00:50.497Z",
+    "joined": "2026-07-16T09:51:06.625Z",
+    "updatedAt": "2026-08-16T09:00:50.503Z"
   },
   {
     "id": "S150037886",
@@ -1147,10 +1199,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.686Z",
-    "updated_at": "2026-07-16T09:51:06.686Z",
-    "joined": "2026-07-16T09:51:06.695Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.513Z",
+    "updated_at": "2026-08-16T09:00:50.513Z",
+    "joined": "2026-07-16T09:51:06.695Z",
+    "updatedAt": "2026-08-16T09:00:50.519Z"
   },
   {
     "id": "S151002573",
@@ -1169,10 +1222,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.725Z",
-    "updated_at": "2026-07-16T09:51:06.725Z",
-    "joined": "2026-07-16T09:51:06.729Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.532Z",
+    "updated_at": "2026-08-16T09:00:50.532Z",
+    "joined": "2026-07-16T09:51:06.729Z",
+    "updatedAt": "2026-08-16T09:00:50.539Z"
   },
   {
     "id": "S153013782",
@@ -1191,10 +1245,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
+    "class_id": null,
     "created_at": "2026-07-16T09:51:06.731Z",
-    "updated_at": "2026-07-16T09:51:06.731Z",
-    "joined": "2026-07-16T09:51:06.732Z"
+    "updated_at": "2026-08-16T08:33:46.170Z",
+    "joined": "2026-07-16T09:51:06.732Z",
+    "updatedAt": "2026-08-16T08:33:46.177Z"
   },
   {
     "id": "S154034486",
@@ -1213,10 +1268,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.735Z",
-    "updated_at": "2026-07-16T09:51:06.735Z",
-    "joined": "2026-07-16T09:51:06.737Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.549Z",
+    "updated_at": "2026-08-16T09:00:50.549Z",
+    "joined": "2026-07-16T09:51:06.737Z",
+    "updatedAt": "2026-08-16T09:00:50.557Z"
   },
   {
     "id": "S155034487",
@@ -1235,10 +1291,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.761Z",
-    "updated_at": "2026-07-16T09:51:06.761Z",
-    "joined": "2026-07-16T09:51:06.766Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.566Z",
+    "updated_at": "2026-08-16T09:00:50.566Z",
+    "joined": "2026-07-16T09:51:06.766Z",
+    "updatedAt": "2026-08-16T09:00:50.576Z"
   },
   {
     "id": "M159045820",
@@ -1257,10 +1314,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.802Z",
-    "updated_at": "2026-07-16T09:51:06.802Z",
-    "joined": "2026-07-16T09:51:06.812Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.045Z",
+    "updated_at": "2026-08-16T09:00:50.045Z",
+    "joined": "2026-07-16T09:51:06.812Z",
+    "updatedAt": "2026-08-16T09:00:50.048Z"
   },
   {
     "id": "N159024066",
@@ -1279,10 +1337,11 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
-    "created_at": "2026-07-16T09:51:06.825Z",
-    "updated_at": "2026-07-16T09:51:06.825Z",
-    "joined": "2026-07-16T09:51:06.828Z"
+    "class_id": "2BACSPF-1",
+    "created_at": "2026-08-16T09:00:50.481Z",
+    "updated_at": "2026-08-16T09:00:50.481Z",
+    "joined": "2026-07-16T09:51:06.828Z",
+    "updatedAt": "2026-08-16T09:00:50.490Z"
   },
   {
     "id": "S146093269",
@@ -1301,9 +1360,1990 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "1BACSEF-1",
+    "class_id": null,
     "created_at": "2026-07-16T09:51:06.833Z",
-    "updated_at": "2026-07-16T09:51:06.833Z",
-    "joined": "2026-07-16T09:51:06.834Z"
+    "updated_at": "2026-08-16T08:33:46.385Z",
+    "joined": "2026-07-16T09:51:06.834Z",
+    "updatedAt": "2026-08-16T08:33:46.392Z"
+  },
+  {
+    "id": "C161046214",
+    "uid": "C161046214",
+    "name": "مقاول أنوار",
+    "email": "c161046214@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.111Z",
+    "updated_at": "2026-08-16T08:34:12.111Z",
+    "joined": "2026-08-16T08:34:12.127Z"
+  },
+  {
+    "id": "C165068238",
+    "uid": "C165068238",
+    "name": "الندوي آية",
+    "email": "c165068238@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.142Z",
+    "updated_at": "2026-08-16T08:34:12.142Z",
+    "joined": "2026-08-16T08:34:12.154Z"
+  },
+  {
+    "id": "C170055135",
+    "uid": "C170055135",
+    "name": "حمدوش ادم",
+    "email": "c170055135@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.169Z",
+    "updated_at": "2026-08-16T08:34:12.169Z",
+    "joined": "2026-08-16T08:34:12.179Z"
+  },
+  {
+    "id": "C170055157",
+    "uid": "C170055157",
+    "name": "شوقي عبد الغفور",
+    "email": "c170055157@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.207Z",
+    "updated_at": "2026-08-16T08:34:12.207Z",
+    "joined": "2026-08-16T08:34:12.218Z"
+  },
+  {
+    "id": "C171025079",
+    "uid": "C171025079",
+    "name": "برادة أبرار",
+    "email": "c171025079@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.226Z",
+    "updated_at": "2026-08-16T08:34:12.226Z",
+    "joined": "2026-08-16T08:34:12.237Z"
+  },
+  {
+    "id": "C171055189",
+    "uid": "C171055189",
+    "name": "العلمي ادم",
+    "email": "c171055189@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.254Z",
+    "updated_at": "2026-08-16T08:34:12.254Z",
+    "joined": "2026-08-16T08:34:12.267Z"
+  },
+  {
+    "id": "C171055406",
+    "uid": "C171055406",
+    "name": "غراس إكرام",
+    "email": "c171055406@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.274Z",
+    "updated_at": "2026-08-16T08:34:12.274Z",
+    "joined": "2026-08-16T08:34:12.288Z"
+  },
+  {
+    "id": "C171055409",
+    "uid": "C171055409",
+    "name": "الهزواري  رجاء",
+    "email": "c171055409@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.299Z",
+    "updated_at": "2026-08-16T08:34:12.299Z",
+    "joined": "2026-08-16T08:34:12.309Z"
+  },
+  {
+    "id": "C171055416",
+    "uid": "C171055416",
+    "name": "ديدوح نهيلة",
+    "email": "c171055416@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.321Z",
+    "updated_at": "2026-08-16T08:34:12.321Z",
+    "joined": "2026-08-16T08:34:12.350Z"
+  },
+  {
+    "id": "C171055521",
+    "uid": "C171055521",
+    "name": "المجاوي وسام",
+    "email": "c171055521@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.369Z",
+    "updated_at": "2026-08-16T08:34:12.369Z",
+    "joined": "2026-08-16T08:34:12.386Z"
+  },
+  {
+    "id": "C171057484",
+    "uid": "C171057484",
+    "name": "العمراني  محمد",
+    "email": "c171057484@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.399Z",
+    "updated_at": "2026-08-16T08:34:12.399Z",
+    "joined": "2026-08-16T08:34:12.407Z"
+  },
+  {
+    "id": "C172020199",
+    "uid": "C172020199",
+    "name": "الوردي عمر",
+    "email": "c172020199@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.426Z",
+    "updated_at": "2026-08-16T08:34:12.426Z",
+    "joined": "2026-08-16T08:34:12.449Z"
+  },
+  {
+    "id": "C172055270",
+    "uid": "C172055270",
+    "name": "خيران  مروى",
+    "email": "c172055270@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.457Z",
+    "updated_at": "2026-08-16T08:34:12.457Z",
+    "joined": "2026-08-16T08:34:12.467Z"
+  },
+  {
+    "id": "C172055420",
+    "uid": "C172055420",
+    "name": "مثاق زينب",
+    "email": "c172055420@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.477Z",
+    "updated_at": "2026-08-16T08:34:12.477Z",
+    "joined": "2026-08-16T08:34:12.493Z"
+  },
+  {
+    "id": "C172055435",
+    "uid": "C172055435",
+    "name": "رجان زينب",
+    "email": "c172055435@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.507Z",
+    "updated_at": "2026-08-16T08:34:12.507Z",
+    "joined": "2026-08-16T08:34:12.521Z"
+  },
+  {
+    "id": "C173055415",
+    "uid": "C173055415",
+    "name": "مومن اية",
+    "email": "c173055415@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.527Z",
+    "updated_at": "2026-08-16T08:34:12.527Z",
+    "joined": "2026-08-16T08:34:12.542Z"
+  },
+  {
+    "id": "C173055519",
+    "uid": "C173055519",
+    "name": "الزاهد مها",
+    "email": "c173055519@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.551Z",
+    "updated_at": "2026-08-16T08:34:12.551Z",
+    "joined": "2026-08-16T08:34:12.566Z"
+  },
+  {
+    "id": "C173081603",
+    "uid": "C173081603",
+    "name": "الغالمة  طه",
+    "email": "c173081603@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.581Z",
+    "updated_at": "2026-08-16T08:34:12.581Z",
+    "joined": "2026-08-16T08:34:12.588Z"
+  },
+  {
+    "id": "C175055398",
+    "uid": "C175055398",
+    "name": "لغليمي يسرى",
+    "email": "c175055398@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.601Z",
+    "updated_at": "2026-08-16T08:34:12.601Z",
+    "joined": "2026-08-16T08:34:12.607Z"
+  },
+  {
+    "id": "C175072095",
+    "uid": "C175072095",
+    "name": "الهواري فاطمة الزهراء",
+    "email": "c175072095@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.619Z",
+    "updated_at": "2026-08-16T08:34:12.619Z",
+    "joined": "2026-08-16T08:34:12.626Z"
+  },
+  {
+    "id": "C176055427",
+    "uid": "C176055427",
+    "name": "سهل فاطمة الزهراء",
+    "email": "c176055427@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.640Z",
+    "updated_at": "2026-08-16T08:34:12.640Z",
+    "joined": "2026-08-16T08:34:12.649Z"
+  },
+  {
+    "id": "C176084931",
+    "uid": "C176084931",
+    "name": "خييلي شيماء",
+    "email": "c176084931@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.658Z",
+    "updated_at": "2026-08-16T08:34:12.658Z",
+    "joined": "2026-08-16T08:34:12.666Z"
+  },
+  {
+    "id": "C177055106",
+    "uid": "C177055106",
+    "name": "شهبون محمد",
+    "email": "c177055106@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.675Z",
+    "updated_at": "2026-08-16T08:34:12.675Z",
+    "joined": "2026-08-16T08:34:12.684Z"
+  },
+  {
+    "id": "C177055114",
+    "uid": "C177055114",
+    "name": "الوافي ادم",
+    "email": "c177055114@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.694Z",
+    "updated_at": "2026-08-16T08:34:12.694Z",
+    "joined": "2026-08-16T08:34:12.703Z"
+  },
+  {
+    "id": "C178055387",
+    "uid": "C178055387",
+    "name": "الزوبعي  خديجة",
+    "email": "c178055387@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.714Z",
+    "updated_at": "2026-08-16T08:34:12.714Z",
+    "joined": "2026-08-16T08:34:12.725Z"
+  },
+  {
+    "id": "C179043849",
+    "uid": "C179043849",
+    "name": "عسال  خولة",
+    "email": "c179043849@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.737Z",
+    "updated_at": "2026-08-16T08:34:12.737Z",
+    "joined": "2026-08-16T08:34:12.746Z"
+  },
+  {
+    "id": "C179055380",
+    "uid": "C179055380",
+    "name": "بناني  صفاء",
+    "email": "c179055380@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.760Z",
+    "updated_at": "2026-08-16T08:34:12.761Z",
+    "joined": "2026-08-16T08:34:12.769Z"
+  },
+  {
+    "id": "C179055499",
+    "uid": "C179055499",
+    "name": "المصباحي دعاء",
+    "email": "c179055499@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.781Z",
+    "updated_at": "2026-08-16T08:34:12.781Z",
+    "joined": "2026-08-16T08:34:12.788Z"
+  },
+  {
+    "id": "E174048655",
+    "uid": "E174048655",
+    "name": "رضه إيناس",
+    "email": "e174048655@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.800Z",
+    "updated_at": "2026-08-16T08:34:12.800Z",
+    "joined": "2026-08-16T08:34:12.821Z"
+  },
+  {
+    "id": "J172004954",
+    "uid": "J172004954",
+    "name": "مكوار فاطمة الزهراء",
+    "email": "j172004954@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-2",
+    "created_at": "2026-08-16T08:34:12.832Z",
+    "updated_at": "2026-08-16T08:34:12.832Z",
+    "joined": "2026-08-16T08:34:12.840Z"
+  },
+  {
+    "id": "B172009185",
+    "uid": "B172009185",
+    "name": "الرتيمي ملاك",
+    "email": "b172009185@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:21.578Z",
+    "updated_at": "2026-08-16T08:34:21.579Z",
+    "joined": "2026-08-16T08:34:21.596Z"
+  },
+  {
+    "id": "C170053737",
+    "uid": "C170053737",
+    "name": "المعتز خليل",
+    "email": "c170053737@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:21.611Z",
+    "updated_at": "2026-08-16T08:34:21.612Z",
+    "joined": "2026-08-16T08:34:21.625Z"
+  },
+  {
+    "id": "C170055133",
+    "uid": "C170055133",
+    "name": "الهزواري يوسف",
+    "email": "c170055133@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:21.642Z",
+    "updated_at": "2026-08-16T08:34:21.642Z",
+    "joined": "2026-08-16T08:34:21.654Z"
+  },
+  {
+    "id": "C170055438",
+    "uid": "C170055438",
+    "name": "المودني فاطمة الزهراء",
+    "email": "c170055438@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:21.670Z",
+    "updated_at": "2026-08-16T08:34:21.670Z",
+    "joined": "2026-08-16T08:34:21.682Z"
+  },
+  {
+    "id": "C171051491",
+    "uid": "C171051491",
+    "name": "داحة سلمى",
+    "email": "c171051491@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:21.692Z",
+    "updated_at": "2026-08-16T08:34:21.692Z",
+    "joined": "2026-08-16T08:34:21.704Z"
+  },
+  {
+    "id": "C171055167",
+    "uid": "C171055167",
+    "name": "البالغي محمد",
+    "email": "c171055167@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:21.713Z",
+    "updated_at": "2026-08-16T08:34:21.713Z",
+    "joined": "2026-08-16T08:34:21.722Z"
+  },
+  {
+    "id": "C171055408",
+    "uid": "C171055408",
+    "name": "صبور جهينة",
+    "email": "c171055408@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:21.734Z",
+    "updated_at": "2026-08-16T08:34:21.734Z",
+    "joined": "2026-08-16T08:34:21.743Z"
+  },
+  {
+    "id": "C171057483",
+    "uid": "C171057483",
+    "name": "العمراني  رميساء",
+    "email": "c171057483@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:21.757Z",
+    "updated_at": "2026-08-16T08:34:21.757Z",
+    "joined": "2026-08-16T08:34:21.771Z"
+  },
+  {
+    "id": "C171064413",
+    "uid": "C171064413",
+    "name": "الهاشمي ملاك",
+    "email": "c171064413@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:21.780Z",
+    "updated_at": "2026-08-16T08:34:21.780Z",
+    "joined": "2026-08-16T08:34:21.833Z"
+  },
+  {
+    "id": "C172055422",
+    "uid": "C172055422",
+    "name": "نظيف رميساء",
+    "email": "c172055422@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:21.846Z",
+    "updated_at": "2026-08-16T08:34:21.846Z",
+    "joined": "2026-08-16T08:34:21.856Z"
+  },
+  {
+    "id": "C172055433",
+    "uid": "C172055433",
+    "name": "العمراني اميمة",
+    "email": "c172055433@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:21.870Z",
+    "updated_at": "2026-08-16T08:34:21.870Z",
+    "joined": "2026-08-16T08:34:21.881Z"
+  },
+  {
+    "id": "C173024780",
+    "uid": "C173024780",
+    "name": "الشافعي نهيلة",
+    "email": "c173024780@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:21.890Z",
+    "updated_at": "2026-08-16T08:34:21.890Z",
+    "joined": "2026-08-16T08:34:21.899Z"
+  },
+  {
+    "id": "C173042283",
+    "uid": "C173042283",
+    "name": "اباديدي زينب",
+    "email": "c173042283@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:21.906Z",
+    "updated_at": "2026-08-16T08:34:21.906Z",
+    "joined": "2026-08-16T08:34:21.915Z"
+  },
+  {
+    "id": "C173055108",
+    "uid": "C173055108",
+    "name": "المسناوي المهدي",
+    "email": "c173055108@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:21.929Z",
+    "updated_at": "2026-08-16T08:34:21.929Z",
+    "joined": "2026-08-16T08:34:21.936Z"
+  },
+  {
+    "id": "C174055267",
+    "uid": "C174055267",
+    "name": "التومي ملاك",
+    "email": "c174055267@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:21.948Z",
+    "updated_at": "2026-08-16T08:34:21.948Z",
+    "joined": "2026-08-16T08:34:21.958Z"
+  },
+  {
+    "id": "C174102925",
+    "uid": "C174102925",
+    "name": "المحبوب ايمان",
+    "email": "c174102925@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:21.970Z",
+    "updated_at": "2026-08-16T08:34:21.970Z",
+    "joined": "2026-08-16T08:34:21.976Z"
+  },
+  {
+    "id": "C175051101",
+    "uid": "C175051101",
+    "name": "الهمامي نجاة",
+    "email": "c175051101@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:21.988Z",
+    "updated_at": "2026-08-16T08:34:21.988Z",
+    "joined": "2026-08-16T08:34:22.006Z"
+  },
+  {
+    "id": "C175055158",
+    "uid": "C175055158",
+    "name": "بلمسكين انس",
+    "email": "c175055158@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:22.014Z",
+    "updated_at": "2026-08-16T08:34:22.014Z",
+    "joined": "2026-08-16T08:34:22.050Z"
+  },
+  {
+    "id": "C175104752",
+    "uid": "C175104752",
+    "name": "السباعي محمد",
+    "email": "c175104752@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:22.063Z",
+    "updated_at": "2026-08-16T08:34:22.063Z",
+    "joined": "2026-08-16T08:34:22.071Z"
+  },
+  {
+    "id": "C176028135",
+    "uid": "C176028135",
+    "name": "الحوات خديجة بنت ع الواحد",
+    "email": "c176028135@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:22.082Z",
+    "updated_at": "2026-08-16T08:34:22.082Z",
+    "joined": "2026-08-16T08:34:22.090Z"
+  },
+  {
+    "id": "C177020389",
+    "uid": "C177020389",
+    "name": "النحيلي سلسبيل",
+    "email": "c177020389@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:22.101Z",
+    "updated_at": "2026-08-16T08:34:22.101Z",
+    "joined": "2026-08-16T08:34:22.108Z"
+  },
+  {
+    "id": "C177055221",
+    "uid": "C177055221",
+    "name": "دحو ادم",
+    "email": "c177055221@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:22.119Z",
+    "updated_at": "2026-08-16T08:34:22.119Z",
+    "joined": "2026-08-16T08:34:22.137Z"
+  },
+  {
+    "id": "C178055194",
+    "uid": "C178055194",
+    "name": "الشهب محمد",
+    "email": "c178055194@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:22.146Z",
+    "updated_at": "2026-08-16T08:34:22.146Z",
+    "joined": "2026-08-16T08:34:22.154Z"
+  },
+  {
+    "id": "C178055392",
+    "uid": "C178055392",
+    "name": "حميدات مروة",
+    "email": "c178055392@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:22.165Z",
+    "updated_at": "2026-08-16T08:34:22.165Z",
+    "joined": "2026-08-16T08:34:22.171Z"
+  },
+  {
+    "id": "C178055477",
+    "uid": "C178055477",
+    "name": "الذهبي هناء",
+    "email": "c178055477@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:22.182Z",
+    "updated_at": "2026-08-16T08:34:22.183Z",
+    "joined": "2026-08-16T08:34:22.198Z"
+  },
+  {
+    "id": "C178092815",
+    "uid": "C178092815",
+    "name": "العشعاشي شيماء",
+    "email": "c178092815@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:22.206Z",
+    "updated_at": "2026-08-16T08:34:22.206Z",
+    "joined": "2026-08-16T08:34:22.226Z"
+  },
+  {
+    "id": "C179010401",
+    "uid": "C179010401",
+    "name": "بوسيف فرح",
+    "email": "c179010401@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:22.236Z",
+    "updated_at": "2026-08-16T08:34:22.236Z",
+    "joined": "2026-08-16T08:34:22.247Z"
+  },
+  {
+    "id": "C179055379",
+    "uid": "C179055379",
+    "name": "بوسراف صفاء",
+    "email": "c179055379@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:22.263Z",
+    "updated_at": "2026-08-16T08:34:22.263Z",
+    "joined": "2026-08-16T08:34:22.269Z"
+  },
+  {
+    "id": "C179055381",
+    "uid": "C179055381",
+    "name": "الصادق وئام",
+    "email": "c179055381@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:22.282Z",
+    "updated_at": "2026-08-16T08:34:22.282Z",
+    "joined": "2026-08-16T08:34:22.289Z"
+  },
+  {
+    "id": "M146108495",
+    "uid": "M146108495",
+    "name": "بلقايد يوسف",
+    "email": "m146108495@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCSF-1",
+    "created_at": "2026-08-16T08:34:22.302Z",
+    "updated_at": "2026-08-16T08:34:22.302Z",
+    "joined": "2026-08-16T08:34:22.315Z"
+  },
+  {
+    "id": "C161067818",
+    "uid": "C161067818",
+    "name": "دراجو أيوب",
+    "email": "c161067818@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.453Z",
+    "updated_at": "2026-08-16T08:34:33.453Z",
+    "joined": "2026-08-16T08:34:33.465Z"
+  },
+  {
+    "id": "C161080056",
+    "uid": "C161080056",
+    "name": "فياش خالد",
+    "email": "c161080056@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.474Z",
+    "updated_at": "2026-08-16T08:34:33.474Z",
+    "joined": "2026-08-16T08:34:33.484Z"
+  },
+  {
+    "id": "C163051195",
+    "uid": "C163051195",
+    "name": "مبرور سهام",
+    "email": "c163051195@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.505Z",
+    "updated_at": "2026-08-16T08:34:33.505Z",
+    "joined": "2026-08-16T08:34:33.518Z"
+  },
+  {
+    "id": "C164055828",
+    "uid": "C164055828",
+    "name": "ربوز علاء الدين",
+    "email": "c164055828@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.526Z",
+    "updated_at": "2026-08-16T08:34:33.526Z",
+    "joined": "2026-08-16T08:34:33.540Z"
+  },
+  {
+    "id": "C164073672",
+    "uid": "C164073672",
+    "name": "بوعفيفة آسية",
+    "email": "c164073672@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.552Z",
+    "updated_at": "2026-08-16T08:34:33.552Z",
+    "joined": "2026-08-16T08:34:33.565Z"
+  },
+  {
+    "id": "C165011619",
+    "uid": "C165011619",
+    "name": "الحمودي سارة",
+    "email": "c165011619@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.574Z",
+    "updated_at": "2026-08-16T08:34:33.574Z",
+    "joined": "2026-08-16T08:34:33.585Z"
+  },
+  {
+    "id": "C165011887",
+    "uid": "C165011887",
+    "name": "قريويط عبدالنور",
+    "email": "c165011887@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.600Z",
+    "updated_at": "2026-08-16T08:34:33.600Z",
+    "joined": "2026-08-16T08:34:33.651Z"
+  },
+  {
+    "id": "C165090781",
+    "uid": "C165090781",
+    "name": "الناجي علاء الدين",
+    "email": "c165090781@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.669Z",
+    "updated_at": "2026-08-16T08:34:33.669Z",
+    "joined": "2026-08-16T08:34:33.680Z"
+  },
+  {
+    "id": "C166059721",
+    "uid": "C166059721",
+    "name": "بن الصغير دعاء",
+    "email": "c166059721@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.688Z",
+    "updated_at": "2026-08-16T08:34:33.688Z",
+    "joined": "2026-08-16T08:34:33.699Z"
+  },
+  {
+    "id": "C166068234",
+    "uid": "C166068234",
+    "name": "النوري شيماء",
+    "email": "c166068234@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.707Z",
+    "updated_at": "2026-08-16T08:34:33.707Z",
+    "joined": "2026-08-16T08:34:33.718Z"
+  },
+  {
+    "id": "C167011897",
+    "uid": "C167011897",
+    "name": "التامري أمين",
+    "email": "c167011897@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.726Z",
+    "updated_at": "2026-08-16T08:34:33.726Z",
+    "joined": "2026-08-16T08:34:33.769Z"
+  },
+  {
+    "id": "C169018317",
+    "uid": "C169018317",
+    "name": "كروم محمد",
+    "email": "c169018317@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.820Z",
+    "updated_at": "2026-08-16T08:34:33.820Z",
+    "joined": "2026-08-16T08:34:33.830Z"
+  },
+  {
+    "id": "C169037008",
+    "uid": "C169037008",
+    "name": "البسام فاطمة الزهراء",
+    "email": "c169037008@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.838Z",
+    "updated_at": "2026-08-16T08:34:33.838Z",
+    "joined": "2026-08-16T08:34:33.847Z"
+  },
+  {
+    "id": "C169068209",
+    "uid": "C169068209",
+    "name": "جباري إسحاق",
+    "email": "c169068209@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.885Z",
+    "updated_at": "2026-08-16T08:34:33.885Z",
+    "joined": "2026-08-16T08:34:33.901Z"
+  },
+  {
+    "id": "C170010506",
+    "uid": "C170010506",
+    "name": "بوحجل هبة",
+    "email": "c170010506@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.913Z",
+    "updated_at": "2026-08-16T08:34:33.913Z",
+    "joined": "2026-08-16T08:34:33.921Z"
+  },
+  {
+    "id": "C170038014",
+    "uid": "C170038014",
+    "name": "بن الملاح رجاء",
+    "email": "c170038014@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.934Z",
+    "updated_at": "2026-08-16T08:34:33.934Z",
+    "joined": "2026-08-16T08:34:33.944Z"
+  },
+  {
+    "id": "C171055404",
+    "uid": "C171055404",
+    "name": "مفتاح آية",
+    "email": "c171055404@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.955Z",
+    "updated_at": "2026-08-16T08:34:33.955Z",
+    "joined": "2026-08-16T08:34:33.964Z"
+  },
+  {
+    "id": "C172024076",
+    "uid": "C172024076",
+    "name": "أشبابوط عماد",
+    "email": "c172024076@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.974Z",
+    "updated_at": "2026-08-16T08:34:33.975Z",
+    "joined": "2026-08-16T08:34:33.982Z"
+  },
+  {
+    "id": "C172043577",
+    "uid": "C172043577",
+    "name": "الوانزي محمد",
+    "email": "c172043577@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:33.994Z",
+    "updated_at": "2026-08-16T08:34:33.994Z",
+    "joined": "2026-08-16T08:34:34.004Z"
+  },
+  {
+    "id": "C172055423",
+    "uid": "C172055423",
+    "name": "بن موسى فاطمة الزهراء",
+    "email": "c172055423@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:34.016Z",
+    "updated_at": "2026-08-16T08:34:34.016Z",
+    "joined": "2026-08-16T08:34:34.023Z"
+  },
+  {
+    "id": "C173055520",
+    "uid": "C173055520",
+    "name": "الغنيمي اية",
+    "email": "c173055520@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:34.035Z",
+    "updated_at": "2026-08-16T08:34:34.035Z",
+    "joined": "2026-08-16T08:34:34.046Z"
+  },
+  {
+    "id": "C176064304",
+    "uid": "C176064304",
+    "name": "كريم  اميمة",
+    "email": "c176064304@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:34.055Z",
+    "updated_at": "2026-08-16T08:34:34.055Z",
+    "joined": "2026-08-16T08:34:34.066Z"
+  },
+  {
+    "id": "C178055126",
+    "uid": "C178055126",
+    "name": "براصة احمد",
+    "email": "c178055126@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:34.074Z",
+    "updated_at": "2026-08-16T08:34:34.074Z",
+    "joined": "2026-08-16T08:34:34.084Z"
+  },
+  {
+    "id": "N140077065",
+    "uid": "N140077065",
+    "name": "اليوسفي مريم",
+    "email": "n140077065@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:34.095Z",
+    "updated_at": "2026-08-16T08:34:34.095Z",
+    "joined": "2026-08-16T08:34:34.103Z"
+  },
+  {
+    "id": "N141084912",
+    "uid": "N141084912",
+    "name": "حدين صفاء",
+    "email": "n141084912@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:34.115Z",
+    "updated_at": "2026-08-16T08:34:34.115Z",
+    "joined": "2026-08-16T08:34:34.124Z"
+  },
+  {
+    "id": "N147077187",
+    "uid": "N147077187",
+    "name": "حروشي حمزة",
+    "email": "n147077187@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:34.135Z",
+    "updated_at": "2026-08-16T08:34:34.135Z",
+    "joined": "2026-08-16T08:34:34.146Z"
+  },
+  {
+    "id": "N150001819",
+    "uid": "N150001819",
+    "name": "التيسي أسامة",
+    "email": "n150001819@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:34.155Z",
+    "updated_at": "2026-08-16T08:34:34.155Z",
+    "joined": "2026-08-16T08:34:34.195Z"
+  },
+  {
+    "id": "N150023602",
+    "uid": "N150023602",
+    "name": "لمتوي انس",
+    "email": "n150023602@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:34.206Z",
+    "updated_at": "2026-08-16T08:34:34.206Z",
+    "joined": "2026-08-16T08:34:34.216Z"
+  },
+  {
+    "id": "N158008140",
+    "uid": "N158008140",
+    "name": "مصواب صلاح الدين",
+    "email": "n158008140@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:34.230Z",
+    "updated_at": "2026-08-16T08:34:34.230Z",
+    "joined": "2026-08-16T08:34:34.238Z"
+  },
+  {
+    "id": "N159025333",
+    "uid": "N159025333",
+    "name": "فيتح أيوب",
+    "email": "n159025333@lconq.ma",
+    "role": "student",
+    "tier": "premium",
+    "xp": 0,
+    "school": "Lycée Qualifiant 18 Novembre",
+    "crm": {
+      "stage": "Lead",
+      "notes": [
+        "Importé via fichier Excel. Date de Naissance : 01/01/2009"
+      ],
+      "reminders": [],
+      "interactions": []
+    },
+    "class_id": "TCLSH-1",
+    "created_at": "2026-08-16T08:34:34.251Z",
+    "updated_at": "2026-08-16T08:34:34.251Z",
+    "joined": "2026-08-16T08:34:34.272Z"
   }
 ]

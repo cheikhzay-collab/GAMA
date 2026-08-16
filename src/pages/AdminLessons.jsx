@@ -491,8 +491,9 @@ ${sectionsContentText}
           >
             <option value="Tous">Tous les types</option>
             <option value="course">📖 Cours (درس)</option>
+            <option value="homework">📑 Devoirs (فرض محروس)</option>
+            <option value="national">🇲🇦 Examen National (امتحان وطني)</option>
             <option value="exercises">📝 Exercices (تمارين)</option>
-            <option value="homework">📑 Devoirs (فرض)</option>
             <option value="concours">🏆 Concours (مباراة)</option>
           </select>
 

@@ -6,8 +6,9 @@ import {
 } from '../services/lessonService';
 import { 
   ArrowLeft, Save, Trash2, Plus, AlertCircle, 
-  CheckCircle, Loader2, ChevronUp, ChevronDown 
+  CheckCircle, Loader2, ChevronUp, ChevronDown, Crop
 } from 'lucide-react';
+import PdfFigureCropperModal from '../components/PdfFigureCropperModal';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
@@ -54,6 +55,46 @@ export default function AdminLessonEdit() {
   
   // Sections state
   const [sections, setSections] = useState([]);
+
+  // PDF Figure Cropper Modal State
+  const [isCropperOpen, setIsCropperOpen] = useState(false);
+  const [cropperTarget, setCropperTarget] = useState({ secIdx: 0, itemIdx: null });
+
+  const handleCropComplete = ({ url, alt, width_pct, align, targetSectionIdx, targetItemIdx }) => {
+    setSections(prev => {
+      const next = [...prev];
+      const secIdx = targetSectionIdx ?? 0;
+      if (!next[secIdx]) return prev;
+      const sec = { ...next[secIdx] };
+      const items = Array.isArray(sec.items) ? [...sec.items] : [];
+
+      const newImageItem = {
+        type: 'image',
+        url,
+        alt: alt || 'Figure géométrique',
+        width_pct: width_pct || 80,
+        align: align || 'center'
+      };
+
+      if (targetItemIdx !== null && targetItemIdx >= 0 && items[targetItemIdx]?.type === 'image') {
+        items[targetItemIdx] = {
+          ...items[targetItemIdx],
+          url,
+          alt: alt || items[targetItemIdx].alt || 'Figure géométrique',
+          width_pct: width_pct || items[targetItemIdx].width_pct || 80,
+          align: align || items[targetItemIdx].align || 'center'
+        };
+      } else if (targetItemIdx !== null && targetItemIdx >= 0) {
+        items.splice(targetItemIdx + 1, 0, newImageItem);
+      } else {
+        items.push(newImageItem);
+      }
+
+      sec.items = items;
+      next[secIdx] = sec;
+      return next;
+    });
+  };
 
   // Fetch Lesson on mount
   useEffect(() => {
@@ -390,6 +431,7 @@ export default function AdminLessonEdit() {
               <select className="input-control" value={docType} onChange={e => setDocType(e.target.value)} style={{ width: '100%' }}>
                 <option value="course">درس (Cours)</option>
                 <option value="homework">فرض محروس (Devoir Surveillé)</option>
+                <option value="national">امتحان وطني (Examen National)</option>
                 <option value="exercises">سلسلة تمارين (Série d'exercices)</option>
                 <option value="concours">مباراة (Concours)</option>
               </select>
@@ -786,13 +828,13 @@ export default function AdminLessonEdit() {
                                 style={{ padding: '0.35rem 0.5rem', fontSize: '0.8rem' }}
                               />
                             </div>
-                            {/* OR upload */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            {/* OR upload / crop from PDF */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                               <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>— ou —</span>
                               <input
                                 type="file"
                                 accept="image/*"
-                                style={{ fontSize: '0.75rem', flex: 1 }}
+                                style={{ fontSize: '0.75rem', flex: 1, minWidth: '130px' }}
                                 onChange={e => {
                                   const file = e.target.files[0];
                                   if (!file) return;
@@ -801,6 +843,18 @@ export default function AdminLessonEdit() {
                                   reader.readAsDataURL(file);
                                 }}
                               />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setCropperTarget({ secIdx, itemIdx });
+                                  setIsCropperOpen(true);
+                                }}
+                                className="btn-outline"
+                                style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem', color: 'var(--emerald)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap' }}
+                                title="قص وتحديد شكل من مستند PDF"
+                              >
+                                <Crop size={13} /> ✂️ قص من PDF
+                              </button>
                             </div>
                             {/* Preview */}
                             {item.url && (
@@ -969,6 +1023,16 @@ export default function AdminLessonEdit() {
           </button>
         </div>
       </div>
+
+      {/* PDF Figure Cropper Modal */}
+      <PdfFigureCropperModal
+        isOpen={isCropperOpen}
+        onClose={() => setIsCropperOpen(false)}
+        sections={sections}
+        targetSectionIdx={cropperTarget.secIdx}
+        targetItemIdx={cropperTarget.itemIdx}
+        onCropComplete={handleCropComplete}
+      />
     </div>
   );
 }

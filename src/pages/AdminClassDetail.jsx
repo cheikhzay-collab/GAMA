@@ -13,7 +13,8 @@ import { exportToMassarCSV } from '../utils/massarBridge';
 import { 
   ArrowLeft, Users, FileSpreadsheet, CheckSquare, Plus, Trash2, 
   Sparkles, CheckCircle2, AlertTriangle, Search, ChevronRight, 
-  TrendingUp, Activity, Award, UserPlus, Save, Check, X, Printer
+  TrendingUp, Activity, Award, UserPlus, Save, Check, X, Printer,
+  BookOpenCheck
 } from 'lucide-react';
 
 const SYSTEM_LEVELS = [
@@ -32,11 +33,6 @@ export default function AdminClassDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, refreshAdminData } = useAuth();
-
-  // Guard role
-  if (user?.role !== 'admin') {
-    return <Navigate to="/dashboard" replace />;
-  }
 
   // Component States
   const [classObj, setClassObj] = useState(null);
@@ -902,6 +898,11 @@ export default function AdminClassDetail() {
     });
     return Array.from(keys);
   }, [classObj]);
+
+  // Guard role
+  if (user?.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   // Print generation handler
   const handlePrint = (printType) => {

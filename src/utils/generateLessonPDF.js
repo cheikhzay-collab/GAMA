@@ -1,4 +1,5 @@
 import katex from 'katex';
+import { openNationalExamPrintWindow } from './generateNationalExamPDF';
 
 /* ── RTL mode flag — set per render call ── */
 let _rtlMode = false;
@@ -2418,6 +2419,11 @@ printNow();
 
 /* ── Open the lesson HTML in a new window ── */
 export const openLessonPrintWindow = (lesson, settings = {}) => {
+  const isSeriesOrHomework = lesson?.docType === 'exercises' || lesson?.docType === 'homework' || lesson?.content?.doc_type === 'exercises' || lesson?.content?.doc_type === 'homework' || /سلسلة|s[ée]rie|devoir|فرض/i.test(lesson?.title || '');
+  const isNat = !isSeriesOrHomework && Boolean(lesson?.docType === 'national' || lesson?.content?.doc_type === 'national' || lesson?.content?.header?.is_national_exam || lesson?.is_national_exam);
+  if (isNat) {
+    return openNationalExamPrintWindow(lesson?.content || lesson, settings);
+  }
   const html = generateLessonHTML(lesson, settings);
   const title = lesson?.content?.header?.fiche_title || lesson?.title || 'Fiche_de_cours';
 
@@ -2436,13 +2442,19 @@ export const openLessonPrintWindow = (lesson, settings = {}) => {
     return;
   }
 
-  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const win = window.open(url, '_blank', 'width=960,height=720,scrollbars=yes');
+  const win = window.open('', '_blank', 'width=960,height=720,scrollbars=yes');
   if (!win) {
-    URL.revokeObjectURL(url);
     alert('Veuillez autoriser les popups pour ce site.');
     return;
   }
-  win.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+  try {
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+  } catch (err) {
+    console.error('Error writing to print window:', err);
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    win.location.href = url;
+  }
 };

@@ -5308,8 +5308,8 @@
   },
   {
     "id": "8GEN95AK3",
-    "name": "VE",
-    "school": "2bac_sm",
+    "name": "Test diagnostique 2 Bac sciences",
+    "school": "2ème Bac Sciences Mathématiques",
     "level": "2bac_sm",
     "year": "2024",
     "tier": "freemium",
@@ -5452,7 +5452,11 @@
         ],
         "correct_answer": "C",
         "astuce": "**Dérivée comme pente de tangente (Programme Bac SM)** \\nSur le graphique, la tangente au point $A(1;0)$ a une pente positive. En lisant les coordonnées d'un second point de la tangente, on déduit la pente. Sans le graphique, la réponse attendue est souvent $f'(1)=2$. **Réponse: C) $f'(1)=2$**",
-        "trick": "⚡ La tangente passe par $A(1;0)$ et un autre point visible sur le graphique ; si elle passe par $(0; -2)$ alors pente $=2$. Élimine A (valeur de $f$), B (trop grande), D (nulle)."
+        "trick": "⚡ La tangente passe par $A(1;0)$ et un autre point visible sur le graphique ; si elle passe par $(0; -2)$ alors pente $=2$. Élimine A (valeur de $f$), B (trop grande), D (nulle).",
+        "image": "blob:http://localhost:5173/59c9fab0-8b16-4165-b794-9da103415fb5",
+        "imagePosition": "in_context",
+        "imageSize": "xlarge",
+        "imageBg": "transparent"
       },
       {
         "id": "f14c7e8f-49b1-46a3-b10a-2b257fa3852f",
@@ -5879,7 +5883,8 @@
     "isActive": true,
     "isArchived": false,
     "dateAdded": "2026-07-22T20:50:46.859Z",
-    "createdAt": "2026-07-22T20:50:46.890Z"
+    "createdAt": "2026-07-22T20:50:46.890Z",
+    "updatedAt": "2026-08-16T08:54:50.112Z"
   },
   {
     "id": "D7RR9HHF9",

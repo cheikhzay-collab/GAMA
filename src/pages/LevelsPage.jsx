@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { renderWithMath } from '../utils/mathRenderer';
 import { mapLegacySchoolToLevel, normalizeLevel } from '../utils/levelHelpers';
+import { generateSubjectHTML, generateCorrectionHTML, openPrintWindow } from '../utils/generateExamPDF';
 
 const MAIN_LEVELS = [
   {

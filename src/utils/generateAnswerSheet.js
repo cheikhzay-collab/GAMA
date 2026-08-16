@@ -14,17 +14,37 @@ const sanitizeFilename = (str) => {
 };
 
 /**
- * Removes non-Latin / Arabic Unicode characters to prevent jsPDF font encoding corruption (Mojibake).
+ * Transliterates Arabic characters to Latin phonetic equivalents for Moroccan names.
  */
-const toLatinOnly = (str) => {
+const transliterateArabic = (str) => {
   if (!str) return '';
+  const map = {
+    'أ': 'A', 'إ': 'I', 'آ': 'A', 'ا': 'A', 'ب': 'B', 'ت': 'T', 'ث': 'Th',
+    'ج': 'J', 'ح': 'H', 'خ': 'Kh', 'د': 'D', 'ذ': 'Dh', 'ر': 'R', 'ز': 'Z',
+    'س': 'S', 'ش': 'Ch', 'ص': 'S', 'ض': 'D', 'ط': 'T', 'ظ': 'Z', 'ع': 'A',
+    'غ': 'Gh', 'ف': 'F', 'ق': 'K', 'ك': 'K', 'ل': 'L', 'م': 'M', 'ن': 'N',
+    'ه': 'H', 'و': 'Ou', 'ي': 'Y', 'ى': 'A', 'ئ': 'E', 'ء': 'A', 'ؤ': 'Ou',
+    'ة': 'e', 'گ': 'G', 'پ': 'P', 'ڤ': 'V'
+  };
   return String(str)
-    .replace(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/g, '') // Strip Arabic range
-    .replace(/[^\x00-\x7F\u00C0-\u00FF]/g, '') // Strip non-Latin-1 characters
+    .split('')
+    .map(ch => map[ch] || ch)
+    .join('');
+};
+
+/**
+ * Removes non-Latin-1 characters and transliterates Arabic Unicode characters
+ * to prevent jsPDF font encoding corruption (Mojibake).
+ */
+const toLatinOnly = (str, fallback = '') => {
+  if (!str) return fallback;
+  let clean = transliterateArabic(str)
+    .replace(/[^\x20-\u00FF]/g, '') // Strictly strip non-Latin-1 characters
     .replace(/\(\s*[-—]?\s*\)/g, '')
     .replace(/\[\s*\]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
+  return clean || fallback;
 };
 
 /**
@@ -126,7 +146,7 @@ export async function renderAnswerSheetPage(doc, exam, student = null, classObj 
     doc.setFontSize(8.5);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...charcoal);
-    const latinVal = toLatinOnly(val) || String(val || '').slice(0, 26);
+    const latinVal = toLatinOnly(val, '___________________________');
     doc.text(latinVal.slice(0, 26), x + 3, y + 10.5);
   };
 
