@@ -1,7 +1,93 @@
 import katex from 'katex';
 import QRCode from 'qrcode';
+import { getLevelDisplayName } from './levelHelpers';
 
 const hasArabic = (str) => /[\u0600-\u06FF]/.test(str || '');
+
+/**
+ * Nettoie et formate le titre de l'examen (espace manquant, tirets de fin, etc.)
+ */
+export const formatExamTitle = (title) => {
+  if (!title) return '';
+  let cleaned = String(title).trim();
+  // Correction des mots collés avec DE/DU (ex: DEMATHÉMATIQUES -> DE MATHÉMATIQUES)
+  cleaned = cleaned.replace(/\bDE(MATH[ÉE]MATIQUES|PHYSIQUE|CHIMIE|SVT|FRAN[ÇC]AIS|PHILOSOPHIE|SCIENCES)\b/gi, 'DE $1');
+  cleaned = cleaned.replace(/\bDU(MATH[ÉE]MATIQUES|DEVOIR|CONCOURS)\b/gi, 'DU $1');
+  // Suppression des tirets, doubles tirets ou caractères parasites à la fin
+  cleaned = cleaned.replace(/[\s—–\-_:]+$/g, '').trim();
+  return cleaned;
+};
+
+/**
+ * Détecte intelligemment les métadonnées et libellés du type de document
+ */
+export const getDocTypeInfo = (examTitle, settings = {}, docType = '') => {
+  const lower = (String(examTitle || '') + ' ' + (docType || '') + ' ' + (settings.docType || '')).toLowerCase();
+  
+  if (lower.includes('diagnostic') || lower.includes('positionnement') || lower.includes('initial')) {
+    return {
+      typeLabel: 'Évaluation Diagnostique',
+      badgeLabel: 'TEST DIAGNOSTIQUE',
+      subTitle: 'ÉVALUATION DIAGNOSTIQUE',
+      coverTag: 'Test Diagnostique'
+    };
+  }
+  if (lower.includes('devoir') || lower.includes('controle') || lower.includes('contrôle') || lower.includes('homework')) {
+    return {
+      typeLabel: 'Devoir Surveillé',
+      badgeLabel: 'DEVOIR SURVEILLÉ',
+      subTitle: 'DEVOIR SURVEILLÉ',
+      coverTag: 'Devoir Surveillé'
+    };
+  }
+  if (lower.includes('national') || lower.includes('baccalauréat') || lower.includes('baccalaureat')) {
+    return {
+      typeLabel: 'Examen National',
+      badgeLabel: 'EXAMEN NATIONAL',
+      subTitle: 'EXAMEN DU BACCALAURÉAT',
+      coverTag: 'Examen National'
+    };
+  }
+  if (lower.includes('exercices') || lower.includes('série') || lower.includes('serie')) {
+    return {
+      typeLabel: "Série d'exercices",
+      badgeLabel: "SÉRIE D'EXERCICES",
+      subTitle: "SÉRIE D'EXERCICES",
+      coverTag: "Série d'exercices"
+    };
+  }
+  if (lower.includes('concours')) {
+    return {
+      typeLabel: 'Concours Officiel',
+      badgeLabel: 'CONCOURS OFFICIEL',
+      subTitle: "CONCOURS D'ACCÈS",
+      coverTag: 'Sujet Officiel'
+    };
+  }
+  
+  return {
+    typeLabel: 'Épreuve Officielle',
+    badgeLabel: 'SUJET OFFICIEL',
+    subTitle: 'ÉPREUVE OFFICIELLE',
+    coverTag: 'Sujet Officiel'
+  };
+};
+
+/**
+ * Convertit un identifiant technique de niveau (ex: 2bac_sm) en libellé officiel français
+ */
+export const formatLevelOrSchool = (school) => {
+  if (!school) return '';
+  const levelDisplay = getLevelDisplayName(school);
+  if (levelDisplay && levelDisplay !== school) {
+    return levelDisplay;
+  }
+  const validKeys = ['common_core_sci', 'common_core_arts', '1bac_sci', '1bac_arts', '2bac_sm', '2bac_pc_svt', '2bac_arts', 'tc', 'tcs', 'tca'];
+  if (validKeys.includes(String(school).toLowerCase().trim())) {
+    return getLevelDisplayName(school);
+  }
+  return school;
+};
 
 /* ── PDF Template Settings configuration (book design expert options) ── */
 const getPdfSettings = (settings = {}) => {
@@ -956,7 +1042,11 @@ const getOptionsLayoutClass = (options) => {
    1. SUJET BLANC — Exam Paper
    ═══════════════════════════════════════════════ */
 export const generateSubjectHTML = async (examTitle, school, year, questions, settings = {}) => {
-  const isArabic = hasArabic(examTitle) || questions.some(q => hasArabic(q.question) || hasArabic(q.context) || (q.options || []).some(o => hasArabic(typeof o === 'string' ? o : (o?.text || ''))));
+  const cleanTitle = formatExamTitle(examTitle);
+  const formattedSchool = formatLevelOrSchool(school);
+  const docInfo = getDocTypeInfo(cleanTitle, settings);
+
+  const isArabic = hasArabic(cleanTitle) || questions.some(q => hasArabic(q.question) || hasArabic(q.context) || (q.options || []).some(o => hasArabic(typeof o === 'string' ? o : (o?.text || ''))));
   const pdfConf = getPdfSettings(settings);
   const marginCSS = getMarginStyle(pdfConf.pageMargins);
   const fontFamilyCSS = getFontFamilyStyle(pdfConf.fontFamily);
@@ -980,7 +1070,7 @@ export const generateSubjectHTML = async (examTitle, school, year, questions, se
   }
   const sidebarTabsHtml = schools.map(sch => {
     const isActive = sch.toLowerCase() === school.toLowerCase();
-    let displayName = sch;
+    let displayName = formatLevelOrSchool(sch);
     if (sch === 'Médecine / Pharmacie') displayName = 'Médecine';
     if (displayName.includes('Général')) displayName = 'Prépa';
     if (displayName.length > 20) displayName = displayName.substring(0, 18) + '…';
@@ -1082,13 +1172,13 @@ export const generateSubjectHTML = async (examTitle, school, year, questions, se
 <div class="cover">
   <div class="cover-frame">
     <div class="cover-logo">L'CONQ</div>
-    <div class="cover-subtitle">EXAMEN BLANC DE PRÉPARATION</div>
+    <div class="cover-subtitle">${docInfo.subTitle}</div>
     <div class="cover-divider"></div>
     
     <div class="cover-header-group">
-      <div class="cover-tag">Sujet Officiel</div>
-      <div class="cover-topic">${examTitle}</div>
-      <div class="cover-desc">${school} &nbsp;·&nbsp; Concours Blanc National</div>
+      <div class="cover-tag">${docInfo.coverTag}</div>
+      <div class="cover-topic">${cleanTitle}</div>
+      <div class="cover-desc">${formattedSchool} &nbsp;·&nbsp; ${docInfo.typeLabel} &nbsp;·&nbsp; ${year || new Date().getFullYear()}</div>
     </div>
     
     <div class="cover-stats">
@@ -2167,11 +2257,11 @@ ${settings.premiumOmr === true ? `
     <div>A.S : <strong>${year || '2025/2026'}</strong></div>
   </div>
   <div class="anisse-col col-center">
-    <div class="main-title">${examTitle || 'Devoir Surveillé N° 1 (Semestre 1)'}</div>
-    <div class="sub-title">DEVOIR SURVEILLÉ</div>
+    <div class="main-title">${cleanTitle || 'Devoir Surveillé N° 1 (Semestre 1)'}</div>
+    <div class="sub-title">${docInfo.subTitle}</div>
   </div>
   <div class="anisse-col col-right">
-    <div>Niveau : <strong>${school || '2ème Bac PC/SVT'}</strong></div>
+    <div>Niveau : <strong>${formattedSchool || '2ème Bac PC/SVT'}</strong></div>
   </div>
   <div class="anisse-col col-qr">
     <img src="${premiumQrUrl}" alt="Solution QR" class="qr-img" />
@@ -2185,11 +2275,11 @@ ${settings.premiumOmr === true ? `
   ` : `
   <div class="ws-doc-header">
     <div class="ws-doc-header-left">
-      <h1 class="ws-doc-title">${examTitle}</h1>
-      <div class="ws-doc-meta">${school} &nbsp;·&nbsp; Concours Officiel &nbsp;·&nbsp; ${year || ''}</div>
+      <h1 class="ws-doc-title">${cleanTitle}</h1>
+      <div class="ws-doc-meta">${formattedSchool} &nbsp;·&nbsp; ${docInfo.typeLabel} &nbsp;·&nbsp; ${year || ''}</div>
     </div>
     <div class="ws-doc-header-right">
-      <span class="ws-doc-type-badge">SUJET OFFICIEL</span>
+      <span class="ws-doc-type-badge">${docInfo.badgeLabel}</span>
     </div>
   </div>
   `}
@@ -2209,7 +2299,11 @@ printWhenReady();
 </script>
 </body></html>`;
 };export const generateCorrectionHTML = (examTitle, school, year, questions, settings = {}) => {
-  const isArabic = hasArabic(examTitle) || questions.some(q => hasArabic(q.question) || hasArabic(q.context) || (q.options || []).some(o => hasArabic(typeof o === 'string' ? o : (o?.text || ''))));
+  const cleanTitle = formatExamTitle(examTitle);
+  const formattedSchool = formatLevelOrSchool(school);
+  const docInfo = getDocTypeInfo(cleanTitle, settings);
+
+  const isArabic = hasArabic(cleanTitle) || questions.some(q => hasArabic(q.question) || hasArabic(q.context) || (q.options || []).some(o => hasArabic(typeof o === 'string' ? o : (o?.text || ''))));
   const pdfConf = getPdfSettings(settings);
   const marginCSS = getMarginStyle(pdfConf.pageMargins);
   const fontFamilyCSS = getFontFamilyStyle(pdfConf.fontFamily);
@@ -2233,7 +2327,7 @@ printWhenReady();
   }
   const sidebarTabsHtml = schools.map(sch => {
     const isActive = sch.toLowerCase() === school.toLowerCase();
-    let displayName = sch;
+    let displayName = formatLevelOrSchool(sch);
     if (sch === 'Médecine / Pharmacie') displayName = 'Médecine';
     if (displayName.includes('Général')) displayName = 'Prépa';
     if (displayName.length > 20) displayName = displayName.substring(0, 18) + '…';
@@ -2262,13 +2356,13 @@ printWhenReady();
 <div class="cover">
   <div class="cover-frame">
     <div class="cover-logo">L'CONQ</div>
-    <div class="cover-subtitle">EXAMEN BLANC - CORRECTION</div>
+    <div class="cover-subtitle">${docInfo.subTitle} — CORRIGÉ DÉTAILLÉ</div>
     <div class="cover-divider"></div>
     
     <div class="cover-header-group">
       <div class="cover-tag">CORRIGÉ DÉTAILLÉ</div>
-      <div class="cover-topic">${examTitle}</div>
-      <div class="cover-desc">${school} &nbsp;·&nbsp; Résolution avec Astuces IA</div>
+      <div class="cover-topic">${cleanTitle}</div>
+      <div class="cover-desc">${formattedSchool} &nbsp;·&nbsp; ${docInfo.typeLabel} (Corrigé) &nbsp;·&nbsp; ${year || new Date().getFullYear()}</div>
     </div>
     
     <div class="cover-stats">
@@ -3038,11 +3132,11 @@ ${coverHtml}
     <div>A.S : <strong>${year || '2025/2026'}</strong></div>
   </div>
   <div class="anisse-col col-center">
-    <div class="main-title">${examTitle || 'Devoir Surveillé N° 1 (Semestre 1)'}</div>
-    <div class="sub-title" style="color: #7c3aed;">CORRIGÉ DÉTAILLÉ DEVOIR</div>
+    <div class="main-title">${cleanTitle || 'Devoir Surveillé N° 1 (Semestre 1)'}</div>
+    <div class="sub-title" style="color: #7c3aed;">${docInfo.subTitle} — CORRIGÉ</div>
   </div>
   <div class="anisse-col col-right">
-    <div>Niveau : <strong>${school || '2ème Bac PC/SVT'}</strong></div>
+    <div>Niveau : <strong>${formattedSchool || '2ème Bac PC/SVT'}</strong></div>
   </div>
   <div class="anisse-col col-qr" style="background: #7c3aed;">
     <img src="${premiumQrUrl}" alt="Solution QR" class="qr-img" />
@@ -3056,8 +3150,8 @@ ${coverHtml}
   ` : `
   <div class="ws-doc-header" style="border-bottom-color: #7c3aed;">
     <div class="ws-doc-header-left">
-      <h1 class="ws-doc-title">${examTitle}</h1>
-      <div class="ws-doc-meta">${school} &nbsp;·&nbsp; Concours Officiel &nbsp;·&nbsp; ${year || ''}</div>
+      <h1 class="ws-doc-title">${cleanTitle}</h1>
+      <div class="ws-doc-meta">${formattedSchool} &nbsp;·&nbsp; ${docInfo.typeLabel} (Corrigé) &nbsp;·&nbsp; ${year || ''}</div>
     </div>
     <div class="ws-doc-header-right">
       <span class="ws-doc-type-badge" style="background: #7c3aed;">CORRIGÉ DÉTAILLÉ</span>
