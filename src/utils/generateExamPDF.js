@@ -1,6 +1,9 @@
 import katex from 'katex';
 import QRCode from 'qrcode';
 import { getLevelDisplayName } from './levelHelpers';
+import { decodeHtmlEntities } from './security';
+
+export { decodeHtmlEntities };
 
 const hasArabic = (str) => /[\u0600-\u06FF]/.test(str || '');
 
@@ -9,7 +12,7 @@ const hasArabic = (str) => /[\u0600-\u06FF]/.test(str || '');
  */
 export const formatExamTitle = (title) => {
   if (!title) return '';
-  let cleaned = String(title).trim();
+  let cleaned = decodeHtmlEntities(title).trim();
   // Correction des mots collés avec DE/DU (ex: DEMATHÉMATIQUES -> DE MATHÉMATIQUES)
   cleaned = cleaned.replace(/\bDE(MATH[ÉE]MATIQUES|PHYSIQUE|CHIMIE|SVT|FRAN[ÇC]AIS|PHILOSOPHIE|SCIENCES)\b/gi, 'DE $1');
   cleaned = cleaned.replace(/\bDU(MATH[ÉE]MATIQUES|DEVOIR|CONCOURS)\b/gi, 'DU $1');
@@ -78,15 +81,16 @@ export const getDocTypeInfo = (examTitle, settings = {}, docType = '') => {
  */
 export const formatLevelOrSchool = (school) => {
   if (!school) return '';
-  const levelDisplay = getLevelDisplayName(school);
-  if (levelDisplay && levelDisplay !== school) {
+  const decoded = decodeHtmlEntities(school);
+  const levelDisplay = getLevelDisplayName(decoded);
+  if (levelDisplay && levelDisplay !== decoded) {
     return levelDisplay;
   }
   const validKeys = ['common_core_sci', 'common_core_arts', '1bac_sci', '1bac_arts', '2bac_sm', '2bac_pc_svt', '2bac_arts', 'tc', 'tcs', 'tca'];
-  if (validKeys.includes(String(school).toLowerCase().trim())) {
-    return getLevelDisplayName(school);
+  if (validKeys.includes(String(decoded).toLowerCase().trim())) {
+    return getLevelDisplayName(decoded);
   }
-  return school;
+  return decoded;
 };
 
 /* ── PDF Template Settings configuration (book design expert options) ── */

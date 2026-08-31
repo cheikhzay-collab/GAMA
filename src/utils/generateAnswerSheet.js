@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
 import { getLevelDisplayName } from './levelHelpers';
+import { decodeHtmlEntities } from './security';
 
 /**
  * Sanitizes strings for safe PDF filenames across OS and browsers.
@@ -39,7 +40,8 @@ const transliterateArabic = (str) => {
  */
 const toLatinOnly = (str, fallback = '') => {
   if (!str) return fallback;
-  let clean = transliterateArabic(str)
+  const decoded = decodeHtmlEntities(str);
+  let clean = transliterateArabic(decoded)
     .replace(/[^\x20-\u00FF]/g, '') // Strictly strip non-Latin-1 characters
     .replace(/\(\s*[-—]?\s*\)/g, '')
     .replace(/\[\s*\]/g, '')

@@ -4,6 +4,7 @@ import { Plus, Trash2, Settings, School, KeyRound, Eye, EyeOff, CheckCircle2, Sp
 import { getLandingArConfig, saveLandingArConfig } from '../services/schoolService';
 import { uploadAsset } from '../services/storageService';
 import { getAllClasses } from '../services/classService';
+import { decodeHtmlEntities } from '../utils/security';
 
 const getSoftColorForClass = (className) => {
   if (!className) return { bg: 'transparent', text: 'var(--text-main)' };
@@ -219,15 +220,6 @@ export default function AdminSettings() {
     });
     setCardSaved(true);
     setTimeout(() => setCardSaved(false), 2500);
-  };
-
-  const decodeHtmlEntities = (str) => {
-    if (!str) return '';
-    return str.replace(/&#x27;/g, "'")
-              .replace(/&amp;/g, "&")
-              .replace(/&quot;/g, '"')
-              .replace(/&lt;/g, '<')
-              .replace(/&gt;/g, '>');
   };
 
   // Branding / Identity / Profile
