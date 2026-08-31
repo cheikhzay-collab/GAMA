@@ -679,18 +679,25 @@ export function AuthProvider({ children }) {
         const { data: { user: serverUser }, error: sessionErr } = await supabase.auth.getUser();
         
         if (sessionErr) {
-          // If the session is missing, it's a normal logged-out state.
+          // If the session is missing, check if we have a locally cached user
           if (sessionErr.message === 'Auth session missing!') {
             if (active) {
-              setUser(null);
-              localStorage.removeItem('user');
+              const cached = localStorage.getItem('user');
+              if (cached && !navigator.onLine) {
+                try {
+                  setUser(JSON.parse(cached));
+                } catch {
+                  setUser(null);
+                }
+              } else {
+                setUser(null);
+                localStorage.removeItem('user');
+              }
             }
             return;
           }
           
-          // Check if it is a real authentication error (e.g. expired or invalid token)
-          // or a server rejection (status 400, 401, 403, 422).
-          // If so, the user is authenticated but their session is invalid. Log them out.
+          // Differentiate between actual expired/invalid auth credentials vs network reachability issues
           const isAuthError = sessionErr.status === 400 || 
                               sessionErr.status === 401 || 
                               sessionErr.status === 403 || 
@@ -707,8 +714,19 @@ export function AuthProvider({ children }) {
             return;
           }
           
-          // Otherwise, it's likely a network error / offline. Throw to fall back to cached user.
-          throw sessionErr;
+          // Otherwise, it is a network connectivity error or temporary reachability issue
+          console.warn('[Auth] Network reachability issue during session recovery; preserving offline cached state:', sessionErr.message);
+          if (active) {
+            const cached = localStorage.getItem('user');
+            if (cached) {
+              try {
+                setUser(JSON.parse(cached));
+              } catch (err) {
+                console.warn('[Auth] Failed to parse cached user:', err);
+              }
+            }
+          }
+          return;
         }
         
         // Wrap into session-like shape for compatibility with the code below
@@ -769,14 +787,18 @@ export function AuthProvider({ children }) {
           setUser(null);
         }
       } catch (e) {
-        console.warn('[Auth] Error during initial session recovery:', e.message);
+        console.warn('[Auth] Network error or exception during initial session recovery:', e.message);
         if (active) {
-          if (SUPABASE_ENABLED) {
-            // Strictly require live validated Supabase session - do not restore stale user cache
-            setUser(null);
-            localStorage.removeItem('user');
-          } else {
-            // Offline fallback when Supabase is completely disabled
+          const isNetworkError = !navigator.onLine ||
+                                 e.name === 'TypeError' ||
+                                 e.message?.includes('Failed to fetch') ||
+                                 e.message?.includes('NetworkError') ||
+                                 e.message?.includes('network') ||
+                                 e.message?.includes('timeout') ||
+                                 e.message?.includes('Load failed');
+
+          if (isNetworkError) {
+            console.log('[Auth] Network unreachable on startup; preserving offline cached session.');
             const cached = localStorage.getItem('user');
             if (cached) {
               try {
@@ -785,6 +807,9 @@ export function AuthProvider({ children }) {
                 console.warn('[Auth] Failed to parse cached user:', err);
               }
             }
+          } else {
+            setUser(null);
+            localStorage.removeItem('user');
           }
         }
       } finally {
@@ -1962,13 +1987,6 @@ export function AuthProvider({ children }) {
         if (schoolsConfig && schoolsConfig.schools && schoolsConfig.schools.length > 0) {
           setSchools(schoolsConfig.schools);
           setSchoolBranding(schoolsConfig.branding || {});
-        } else {
-          // Seed defaults if config document doesn't exist
-          try {
-            await saveSchoolsConfig(schools, schoolBranding);
-          } catch (seedErr) {
-            console.warn('[Supabase] Failed to seed schools config (probably RLS restricted):', seedErr.message);
-          }
         }
 
         // Process General Branding
@@ -1992,16 +2010,6 @@ export function AuthProvider({ children }) {
           if (brandConfig.fbPixelId) {
             import('../utils/facebookPixel').then(m => m.initFacebookPixel());
           }
-        } else {
-          // Seed if not exists in DB
-          try {
-            await saveBrandingConfig({
-              profName, profPhone, profSite,
-              bankName, bankRIB, bankBeneficiary
-            });
-          } catch (seedErr) {
-            console.warn('[Supabase] Failed to seed branding config:', seedErr.message);
-          }
         }
 
         // Process Flashcard Settings
@@ -2015,33 +2023,6 @@ export function AuthProvider({ children }) {
           localStorage.setItem('card_question_weight', flashcardConfig.cardQuestionWeight || '400');
           localStorage.setItem('card_astuce_weight', flashcardConfig.cardAstuceWeight || '400');
           localStorage.setItem('card_options_weight', flashcardConfig.cardOptionsWeight || '400');
-        } else {
-          // Seed default settings if not exists in DB
-          const defaultFlashcard = {
-            cardRevealMode: 'flip',
-            cardFlipEnabled: true,
-            cardSwipeEnabled: true,
-            cardSoundEnabled: true,
-            cardFontFamily: 'Computer Modern Serif',
-            cardFontSize: '1rem',
-            cardQuestionWeight: '400',
-            cardAstuceWeight: '400',
-            cardOptionsWeight: '400'
-          };
-          try {
-            await saveFlashcardSettingsConfig(defaultFlashcard);
-          } catch (seedErr) {
-            console.warn('[Supabase] Failed to seed flashcard settings config:', seedErr.message);
-          }
-          localStorage.setItem('card_reveal_mode', defaultFlashcard.cardRevealMode);
-          localStorage.setItem('card_flip_animation', String(defaultFlashcard.cardFlipEnabled));
-          localStorage.setItem('card_swipe_gesture', String(defaultFlashcard.cardSwipeEnabled));
-          localStorage.setItem('card_sound_effects', String(defaultFlashcard.cardSoundEnabled));
-          localStorage.setItem('card_font_family', defaultFlashcard.cardFontFamily);
-          localStorage.setItem('card_font_size', defaultFlashcard.cardFontSize);
-          localStorage.setItem('card_question_weight', defaultFlashcard.cardQuestionWeight);
-          localStorage.setItem('card_astuce_weight', defaultFlashcard.cardAstuceWeight);
-          localStorage.setItem('card_options_weight', defaultFlashcard.cardOptionsWeight);
         }
 
         // Process PDF Settings
@@ -2053,67 +2034,22 @@ export function AuthProvider({ children }) {
           localStorage.setItem('pdf_avoid_page_breaks', String(pdfConfig.pdfAvoidPageBreaks !== false));
           localStorage.setItem('pdf_force_print_colors', String(pdfConfig.pdfForcePrintColors !== false));
           localStorage.setItem('pdf_show_sidebar', String(pdfConfig.pdfShowSidebar !== false));
-        } else {
-          const defaultPdf = {
-            pdfPageMargins: 'standard',
-            pdfFontSize: '11pt',
-            pdfFontFamily: 'Computer Modern Serif',
-            pdfTemplateStyle: 'classic_latex',
-            pdfAvoidPageBreaks: true,
-            pdfForcePrintColors: true,
-            pdfShowSidebar: true
-          };
-          try {
-            await savePdfSettingsConfig(defaultPdf);
-          } catch (seedErr) {
-            console.warn('[Supabase] Failed to seed PDF settings config:', seedErr.message);
-          }
-          localStorage.setItem('pdf_page_margins', defaultPdf.pdfPageMargins);
-          localStorage.setItem('pdf_font_size', defaultPdf.pdfFontSize);
-          localStorage.setItem('pdf_font_family', defaultPdf.pdfFontFamily);
-          localStorage.setItem('pdf_template_style', defaultPdf.pdfTemplateStyle);
-          localStorage.setItem('pdf_avoid_page_breaks', String(defaultPdf.pdfAvoidPageBreaks));
-          localStorage.setItem('pdf_force_print_colors', String(defaultPdf.pdfForcePrintColors));
-          localStorage.setItem('pdf_show_sidebar', String(defaultPdf.pdfShowSidebar));
         }
 
         // Process OMR Scanner Settings
         if (omrScannerConfig) {
           localStorage.setItem('scanner_direct_capture_enabled', String(omrScannerConfig.scannerDirectCapture !== false));
-        } else {
-          const defaultOmr = {
-            scannerDirectCapture: true
-          };
-          try {
-            await saveOmrScannerSettingsConfig(defaultOmr);
-          } catch (seedErr) {
-            console.warn('[Supabase] Failed to seed OMR scanner settings:', seedErr.message);
-          }
-          localStorage.setItem('scanner_direct_capture_enabled', String(defaultOmr.scannerDirectCapture));
         }
 
         // Process WhatsApp Settings
         if (whatsappConfig) {
           setWhatsappSettings(whatsappConfig);
           localStorage.setItem('whatsappSettings', JSON.stringify(whatsappConfig));
-        } else {
-          try {
-            await saveWhatsAppSettingsConfig(whatsappSettings);
-          } catch (seedErr) {
-            console.warn('[Supabase] Failed to seed WhatsApp settings:', seedErr.message);
-          }
         }
 
         // Process Plans
         if (plansConfig && plansConfig.length > 0) {
           setPlans(plansConfig);
-        } else {
-          // Seed default plans if not present
-          try {
-            await savePlansConfig(plansRef.current);
-          } catch (seedErr) {
-            console.warn('[Plans] Failed to seed default plans:', seedErr.message);
-          }
         }
 
         // Process Exams

@@ -10,10 +10,12 @@ import {
 } from 'lucide-react';
 import { addLesson } from '../services/lessonService';
 import { SafeInlineMath } from '../utils/mathRenderer';
+import SmartTableRenderer, { parseMarkdownTable } from '../components/SmartTableRenderer';
 import NationalExamTemplate from '../components/NationalExamTemplate';
 import PdfFigureCropperModal from '../components/PdfFigureCropperModal';
 import { openNationalExamPrintWindow } from '../utils/generateNationalExamPDF';
 import { loadPdfDocument, renderPdfPageToCanvas, cropPdfRegion } from '../utils/pdfFigureExtractor';
+import { buildPageSnapshotsMap, attachImagesToSections } from '../utils/pdfImageExtractor';
 import { validateExercisePoints, sanitizeMoroccanLatex } from '../utils/scoreBalancingValidator';
 import * as pdfjsLib from 'pdfjs-dist';
 
@@ -305,6 +307,25 @@ Ton objectif UNIQUE est de produire un JSON structuré représentant FIDÈLEMENT
          "width_pct": 80,
          "align": "center"
        }
+
+6. 📊 DÉTECTION ET EXTRACTION HAUTE-PRÉCISION DES TABLEAUX & TABLEAUX DE VARIATIONS ("table") :
+   - Si un cours, une activité ou un exercice contient un tableau (Tableau de valeurs, Tableau statistique, Tableau de vérité, Tableau de signes, Tableau de variation de fonction $f(x)$) :
+     • Tu DOIS INSÉRER un élément de type "table" dans le tableau "items" avec la structure JSON exacte :
+       {
+         "type": "table",
+         "title": "Tableau de variation de f(x)",
+         "table_data": {
+           "headers": ["x", "-\infty", "0", "1", "+\infty"],
+           "rows": [
+             ["f'(x)", "", "-", "0", "+"],
+             ["f(x)", "+\infty", "\searrow", "-2", "\nearrow"]
+           ]
+         }
+       }
+     • Pour les flèches de variation : utilise impérativement "\nearrow" (croissante) et "\searrow" (décroissante).
+     • Pour les valeurs interdites / discontinuités : utilise "||" (double barre).
+     • Pour les zéros sous la dérivée : écris "0".
+     • Chaque cellule doit contenir du LaTeX propre sans balises $ imbriquées.
 
 ⚠️ DÉCOUPAGE RIGOUREUX ET EXTRACTION INTÉGRALE DES EXERCICES & SÉRIES DE TEMARINE ("content" & "items") :
 - Il est STRICTEMENT INTERDIT de n'extraire que la première phrase d'un exercice ou d'omettre les questions !
@@ -694,12 +715,21 @@ SCHÉMA JSON OBLIGATOIRE
   ]
 }
 
-NOTE sur les images :
-Si le document contient une figure géométrique, un graphique ou un schéma, insère un item de type "image" à l'endroit exact de la figure.
-- url: "" (laisser vide — l'image sera ajoutée manuellement par le professeur)
+NOTE CRITIQUE SUR LES IMAGES ET FIGURES :
+Si le document contient une figure géométrique, un graphique, un schéma, une courbe ou toute zone visuelle non-textuelle :
+⚠️ Tu DOIS obligatoirement insérer un item de type "image" À L'EMPLACEMENT EXACT de la figure dans le tableau "items".
+⚠️ Tu DOIS indiquer les coordonnées PRÉCISES du "figure_bbox" sur la page correspondante (échelle 0-1000) :
+  - "page": numéro de la page où se trouve la figure (1-indexé)
+  - "xmin": limite gauche de la figure (entre 0 et 1000, ex: 50 pour 5% depuis la gauche)
+  - "xmax": limite droite (ex: 950 pour 95% depuis la gauche)
+  - "ymin": limite supérieure (ex: 300 pour 30% depuis le haut)
+  - "ymax": limite inférieure (ex: 700 pour 70% depuis le haut)
+- url: "" (laisser vide — sera remplie automatiquement par le système)
 - alt: Description précise de la figure (ex: "Figure — Construction du barycentre G des points A(2) et B(3)")
 - align: "center" par défaut
-- width_pct: 70 par défaut
+- width_pct: 80 par défaut
+EXEMPLE de figure en bas à droite sur la page 2 :
+{ "type": "image", "url": "", "alt": "Courbe représentative de f", "figure_bbox": { "page": 2, "xmin": 500, "ymin": 400, "xmax": 960, "ymax": 850 }, "width_pct": 80, "align": "center" }
 `;
 
 
@@ -772,6 +802,9 @@ export default function AdminLessonsImport({ onBack }) {
   const [topics, setTopics] = useState([]);
   const [totalPoints, setTotalPoints] = useState(20);
 
+  // Page snapshots map — { [pageNum]: dataUrl } — built after AI analysis for figure placeholders
+  const [pageSnapshotsMap, setPageSnapshotsMap] = useState({});
+
   // PDF Document & Interactive Cropping Canvas State
   const [pdfDocProxy, setPdfDocProxy] = useState(null);
   const [pdfPageNum, setPdfPageNum] = useState(1);
@@ -825,11 +858,19 @@ export default function AdminLessonsImport({ onBack }) {
   const [cropModalSecIdx, setCropModalSecIdx] = useState(0);
   const [cropModalItemIdx, setCropModalItemIdx] = useState(null);
 
-  // Open interactive cropper modal for a section/item
+  // Open interactive cropper modal for a section/item, optionally jumping to a specific PDF page
   const handleOpenCropperModal = (secIdx = 0, itemIdx = null) => {
     setCropModalSecIdx(secIdx);
     setCropModalItemIdx(itemIdx);
     setIsCropperModalOpen(true);
+  };
+
+  // Jump to the figure's page in the PDF viewer and open the cropper modal
+  const handleJumpAndCrop = (secIdx, itemIdx, pageNum) => {
+    if (pageNum && pdfDocProxy) {
+      setPdfPageNum(Math.max(1, Math.min(pdfTotalPages, pageNum)));
+    }
+    handleOpenCropperModal(secIdx, itemIdx);
   };
 
   // Handle completed crop from modal
@@ -1334,9 +1375,57 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
         setSelectedLevel(normalizeLevel(detectedLvl));
       }
 
-      const mappedSections = rawSections.map(sec => {
-        const items = Array.isArray(sec.items) ? sec.items : [];
+      let mappedSections = rawSections.map(sec => {
+        const rawItemsList = Array.isArray(sec.items) ? sec.items : [];
         let content = typeof sec.content === 'string' ? sec.content : '';
+
+        // Normalize and preserve table items
+        const items = rawItemsList.map(it => {
+          if (typeof it === 'string') {
+            if (it.trim().startsWith('|') && it.trim().endsWith('|') && it.includes('\n')) {
+              const parsedTbl = parseMarkdownTable(it);
+              if (parsedTbl) {
+                return {
+                  type: 'table',
+                  table_data: { headers: parsedTbl.headers, rows: parsedTbl.rows, alignment: parsedTbl.alignment },
+                  headers: parsedTbl.headers,
+                  rows: parsedTbl.rows,
+                  isVariationTable: parsedTbl.isVariationTable
+                };
+              }
+            }
+            return { type: 'text', text: it };
+          }
+          if (it && typeof it === 'object') {
+            if (it.type === 'table' || it.headers || it.table_data || (it.text && it.text.trim().startsWith('|') && it.text.trim().endsWith('|') && it.text.includes('\n'))) {
+              const headers = it.table_data?.headers || it.headers || [];
+              const rows = it.table_data?.rows || it.rows || [];
+              if (headers.length > 0 && rows.length > 0) {
+                return {
+                  ...it,
+                  type: 'table',
+                  table_data: { headers, rows, alignment: it.alignment || it.table_data?.alignment || [] },
+                  headers,
+                  rows
+                };
+              }
+              if (it.text && it.text.trim().startsWith('|')) {
+                const parsedTbl = parseMarkdownTable(it.text);
+                if (parsedTbl) {
+                  return {
+                    ...it,
+                    type: 'table',
+                    table_data: { headers: parsedTbl.headers, rows: parsedTbl.rows, alignment: parsedTbl.alignment },
+                    headers: parsedTbl.headers,
+                    rows: parsedTbl.rows,
+                    isVariationTable: parsedTbl.isVariationTable
+                  };
+                }
+              }
+            }
+          }
+          return it;
+        });
 
         // If items exist but content is missing or very short, build content from items
         if (items.length > 0 && (!content || content.trim().length < 30)) {
@@ -1363,7 +1452,7 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
         };
       });
 
-      // Autonomous Figure & Diagram Capture Pipeline
+      // Build page snapshots for figure placeholders (lightweight — just for preview thumbnails)
       let activePdfProxy = pdfDocProxy;
       if (!activePdfProxy && uploadFile && (uploadFile.type === 'application/pdf' || uploadFile.name?.endsWith('.pdf'))) {
         try {
@@ -1371,31 +1460,53 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
           setPdfDocProxy(activePdfProxy);
           setPdfTotalPages(activePdfProxy.numPages);
         } catch (pdfErr) {
-          console.warn('[AutoFigureCapture] Failed to load PDF proxy:', pdfErr);
+          console.warn('[FigurePlaceholder] Failed to load PDF proxy:', pdfErr);
         }
       }
 
-      if (activePdfProxy) {
-        setProgress('Détection et découpage automatique des figures géométriques...');
-        for (let sec of mappedSections) {
-          if (sec.items && Array.isArray(sec.items)) {
-            for (let it of sec.items) {
-              if (it.type === 'image' && it.figure_bbox && !it.url) {
-                try {
-                  const bbox = it.figure_bbox;
-                  const pageNum = Math.max(1, Math.min(activePdfProxy.numPages, bbox.page || 1));
-                  const rect = {
-                    x: (bbox.xmin || 0) / 1000,
-                    y: (bbox.ymin || 0) / 1000,
-                    width: Math.max(0.05, ((bbox.xmax || 1000) - (bbox.xmin || 0)) / 1000),
-                    height: Math.max(0.05, ((bbox.ymax || 1000) - (bbox.ymin || 0)) / 1000)
-                  };
-                  const croppedDataUrl = await cropPdfRegion(activePdfProxy, pageNum, rect, true, 2.5);
-                  it.url = croppedDataUrl;
-                } catch (cropErr) {
-                  console.warn('[AutoFigureCapture] Error cropping figure:', cropErr);
-                }
-              }
+      // Count image items that need a placeholder
+      const imageItemsCount = mappedSections.reduce((total, sec) =>
+        total + (Array.isArray(sec.items) ? sec.items.filter(it => it.type === 'image' && !it.url).length : 0), 0
+      );
+
+      if (imageItemsCount > 0 && uploadFile && (uploadFile.type === 'application/pdf' || uploadFile.name?.endsWith('.pdf'))) {
+        setProgress(`🖼️ Préparation des aperçus de ${imageItemsCount} figure(s)...`);
+        try {
+          const snaps = await buildPageSnapshotsMap(uploadFile, Math.min(activePdfProxy?.numPages || 20, 20), 1.2);
+          setPageSnapshotsMap(snaps);
+
+          // Auto-resolve figure_bbox → cropped image URLs
+          setProgress(`🖼️ Extraction automatique de ${imageItemsCount} figure(s)...`);
+          try {
+            const resolvedSections = await attachImagesToSections(
+              mappedSections,
+              activePdfProxy,
+              uploadFile,
+              snaps,
+              cropPdfRegion,
+              (msg) => setProgress(msg)
+            );
+            mappedSections = resolvedSections;
+          } catch (resolveErr) {
+            console.warn('[AutoResolve] attachImagesToSections failed, images will need manual crop:', resolveErr);
+          }
+        } catch (snapErr) {
+          console.warn('[FigurePlaceholder] Snapshot build failed:', snapErr);
+        }
+      } else if (imageItemsCount > 0 && uploadFile && uploadFile.type?.startsWith('image/')) {
+        // For image files: use the full image as the figure source
+        const reader = new FileReader();
+        const imageDataUrl = await new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(uploadFile);
+        });
+        for (const sec of mappedSections) {
+          if (!Array.isArray(sec.items)) continue;
+          for (let i = 0; i < sec.items.length; i++) {
+            const it = sec.items[i];
+            if (it.type === 'image' && !it.url) {
+              sec.items[i] = { ...it, url: imageDataUrl, _isSourceImage: true };
             }
           }
         }
@@ -1582,6 +1693,205 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
     } else {
       setSelectedSchools([...selectedSchools, sch]);
     }
+  };
+
+  // Renders the smart image item editor with thumbnail preview and Jump & Crop button
+  const renderImageItemEditor = (item, secIdx, itemIdx) => {
+    const bbox = item.figure_bbox;
+    const figPage = bbox?.page || 1;
+    const snapUrl = pageSnapshotsMap[figPage];
+    const hasUrl = Boolean(item.url);
+
+    // Compute CSS background-* to zoom into the bbox region as a thumbnail
+    const thumbStyle = (snapUrl && bbox) ? (() => {
+      const x1 = (bbox.xmin || 0) / 10;       // convert 0-1000 → 0-100%
+      const y1 = (bbox.ymin || 0) / 10;
+      const x2 = (bbox.xmax || 1000) / 10;
+      const y2 = (bbox.ymax || 1000) / 10;
+      const w = Math.max(1, x2 - x1);
+      const h = Math.max(1, y2 - y1);
+      const scaleX = 100 / w;
+      const scaleY = 100 / h;
+      return {
+        backgroundImage: `url(${snapUrl})`,
+        backgroundSize: `${scaleX}% ${scaleY}%`,
+        backgroundPosition: `${-(x1 / w) * 100}% ${-(y1 / h) * 100}%`,
+        backgroundRepeat: 'no-repeat'
+      };
+    })() : null;
+
+    return (
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem',
+        background: hasUrl ? 'rgba(16,185,129,0.04)' : 'rgba(99,102,241,0.04)',
+        padding: '0.85rem', borderRadius: '10px',
+        border: `1.5px dashed ${hasUrl ? 'rgba(16,185,129,0.4)' : 'rgba(99,102,241,0.35)'}`
+      }}>
+
+        {/* Header badge */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+            fontSize: '0.72rem', fontWeight: 800, padding: '0.2rem 0.6rem', borderRadius: '99px',
+            background: hasUrl ? 'rgba(16,185,129,0.15)' : 'rgba(99,102,241,0.15)',
+            color: hasUrl ? '#10b981' : 'var(--violet)',
+            border: `1px solid ${hasUrl ? 'rgba(16,185,129,0.3)' : 'rgba(99,102,241,0.25)'}`
+          }}>
+            {hasUrl
+              ? (item._isSourceImage ? '📸 Image source' : '✅ Figure renseignée')
+              : `🖼️ Figure détectée — Page ${figPage}${bbox ? ` (${bbox.xmin},${bbox.ymin}→${bbox.xmax},${bbox.ymax})` : ''}`}
+          </span>
+          {!hasUrl && (
+            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+              Recadrez ou uploadez l'image ci-dessous
+            </span>
+          )}
+        </div>
+
+        {/* Thumbnail + actions OR preview */}
+        {!hasUrl ? (
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'stretch' }}>
+
+            {/* Thumbnail: shows zoomed-in bbox region from page snapshot */}
+            <div
+              onClick={() => handleJumpAndCrop(secIdx, itemIdx, figPage)}
+              title={`Cliquez pour ouvrir le recadreur sur la page ${figPage}`}
+              style={{
+                width: '100px', minWidth: '100px', height: '90px',
+                borderRadius: '8px', overflow: 'hidden',
+                border: '1px solid rgba(99,102,241,0.3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0, cursor: 'pointer', position: 'relative',
+                background: (snapUrl && thumbStyle) ? undefined : 'rgba(99,102,241,0.08)',
+                ...(snapUrl && thumbStyle ? thumbStyle : {})
+              }}
+            >
+              {(!snapUrl || !thumbStyle) && (
+                <div style={{ textAlign: 'center', padding: '0.5rem' }}>
+                  <ImageIcon size={22} style={{ color: 'var(--violet)', opacity: 0.6 }} />
+                  <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>Page {figPage}</div>
+                </div>
+              )}
+              <div style={{
+                position: 'absolute', inset: 0, borderRadius: '8px',
+                background: 'rgba(99,102,241,0.28)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                opacity: 0, transition: 'opacity 0.18s'
+              }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '0'}
+              >
+                <Crop size={20} color="#fff" />
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={() => handleJumpAndCrop(secIdx, itemIdx, figPage)}
+                className="btn"
+                style={{
+                  width: '100%', padding: '0.55rem 0.75rem', fontSize: '0.8rem', fontWeight: 800,
+                  background: 'linear-gradient(135deg, var(--violet), #8b5cf6)',
+                  justifyContent: 'center', gap: '0.4rem'
+                }}
+              >
+                <Crop size={14} />
+                ✂️ Recadrer depuis PDF (Page {figPage})
+              </button>
+
+              <label style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+                width: '100%', padding: '0.45rem 0.75rem', fontSize: '0.78rem', fontWeight: 700,
+                cursor: 'pointer', borderRadius: '8px', border: '1px solid var(--border)',
+                background: 'rgba(255,255,255,0.04)', color: 'var(--text-main)', transition: 'background 0.15s'
+              }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+              >
+                <ImageIcon size={14} />
+                📁 Uploader une image
+                <input type="file" accept="image/*" style={{ display: 'none' }}
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = ev => handleUpdateContentItem(secIdx, itemIdx, 'url', ev.target.result);
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+        ) : (
+          /* Image already set: preview + re-crop button */
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+            <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)', background: '#fff', flexShrink: 0 }}>
+              <img src={item.url} alt={item.alt || 'Figure'}
+                style={{ display: 'block', maxWidth: '120px', maxHeight: '100px', objectFit: 'contain' }} />
+            </div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              <button type="button" onClick={() => handleJumpAndCrop(secIdx, itemIdx, figPage)}
+                className="btn-outline"
+                style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--violet)' }}>
+                <Crop size={12} /> إعادة قص من PDF
+              </button>
+              <label style={{
+                display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+                fontSize: '0.75rem', padding: '0.3rem 0.6rem', cursor: 'pointer',
+                borderRadius: '8px', border: '1px solid var(--border)',
+                background: 'transparent', color: 'var(--text-muted)'
+              }}>
+                <ImageIcon size={12} /> استبدال بصورة أخرى
+                <input type="file" accept="image/*" style={{ display: 'none' }}
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = ev => handleUpdateContentItem(secIdx, itemIdx, 'url', ev.target.result);
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* Legend + size/align controls */}
+        <input type="text" className="input-control"
+          placeholder="عنوان الشكل / Légende (ex: Figure 1 — Courbes de f et g)"
+          value={item.alt || ''}
+          onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'alt', e.target.value)}
+          style={{ padding: '0.35rem', fontSize: '0.8rem' }}
+        />
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>📐 الحجم:</label>
+            <select className="input-control" value={item.width_pct || 80}
+              onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'width_pct', parseInt(e.target.value))}
+              style={{ padding: '0.2rem 0.4rem', fontSize: '0.78rem' }}>
+              <option value={100}>100%</option>
+              <option value={80}>80%</option>
+              <option value={60}>60%</option>
+              <option value={50}>50%</option>
+            </select>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>📍 المحاذاة:</label>
+            <select className="input-control" value={item.align || 'center'}
+              onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'align', e.target.value)}
+              style={{ padding: '0.2rem 0.4rem', fontSize: '0.78rem' }}>
+              <option value="center">الوسط</option>
+              <option value="right">اليمين</option>
+              <option value="left">اليسار</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const isArMode = /[\u0600-\u06FF]/.test(ficheTitle + ' ' + subject + ' ' + (sections || []).map(s => s.title + ' ' + (s.content || '')).join(' '));
@@ -2585,85 +2895,7 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                                       </div>
                                     </div>
                                   ) : item.type === 'image' ? (
-                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.6rem', background: 'rgba(255,255,255,0.01)', padding: '0.75rem', borderRadius: '8px', border: '1px dashed var(--border)' }}>
-                                      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                                        <input
-                                          type="text"
-                                          className="input-control"
-                                          placeholder="رابط الصورة / URL de l'image (ex: https://...)"
-                                          value={item.url || ''}
-                                          onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'url', e.target.value)}
-                                          style={{ flex: 1, padding: '0.35rem', fontSize: '0.8rem' }}
-                                        />
-                                        <label className="btn-outline" style={{ fontSize: '0.75rem', padding: '0.35rem 0.6rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap' }}>
-                                          📁 رفع صورة
-                                          <input
-                                            type="file"
-                                            accept="image/*"
-                                            style={{ display: 'none' }}
-                                            onChange={e => {
-                                              const file = e.target.files?.[0];
-                                              if (file) {
-                                                const reader = new FileReader();
-                                                reader.onload = ev => {
-                                                  handleUpdateContentItem(secIdx, itemIdx, 'url', ev.target.result);
-                                                };
-                                                reader.readAsDataURL(file);
-                                              }
-                                            }}
-                                          />
-                                        </label>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleOpenCropperModal(secIdx, itemIdx)}
-                                          className="btn-outline"
-                                          style={{ fontSize: '0.75rem', padding: '0.35rem 0.6rem', color: 'var(--emerald)', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
-                                          title="اقتصاص أو استبدال هذه الصورة من مستند الـ PDF"
-                                        >
-                                          <Crop size={12} /> ✂️ قص من PDF
-                                        </button>
-                                      </div>
-                                      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                          <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>📐 الحجم:</label>
-                                          <select
-                                            className="input-control"
-                                            value={item.width_pct || 100}
-                                            onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'width_pct', parseInt(e.target.value))}
-                                            style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
-                                          >
-                                            <option value={100}>100% (كامل العرض)</option>
-                                            <option value={90}>90% (كبير جداً)</option>
-                                            <option value={80}>80% (كبير)</option>
-                                            <option value={70}>70% (متوسط)</option>
-                                            <option value={50}>50% (نصف العرض)</option>
-                                          </select>
-                                        </div>
-
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                          <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>📍 المحاذاة:</label>
-                                          <select
-                                            className="input-control"
-                                            value={item.align || 'center'}
-                                            onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'align', e.target.value)}
-                                            style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
-                                          >
-                                            <option value="center">الوسط (Center)</option>
-                                            <option value="right">اليمين (Right)</option>
-                                            <option value="left">اليسار (Left)</option>
-                                          </select>
-                                        </div>
-                                      </div>
-
-                                      <input
-                                        type="text"
-                                        className="input-control"
-                                        placeholder="عنوان الشكل / Légende (ex: Figure 1 — Courbes représentatives de f(x) et g(x))"
-                                        value={item.alt || ''}
-                                        onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'alt', e.target.value)}
-                                        style={{ padding: '0.35rem', fontSize: '0.8rem' }}
-                                      />
-                                    </div>
+                                    renderImageItemEditor(item, secIdx, itemIdx)
                                   ) : (
                                     <textarea
                                       className="input-control"
@@ -2733,87 +2965,52 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                                       <option value="text">Texte Standard</option>
                                       <option value="bullet">Puce / Question</option>
                                       <option value="highlight_box">Formule (Encadré)</option>
+                                      <option value="table">📊 Tableau (جدول/تغيرات)</option>
                                       <option value="image">🖼️ Figure / Image (شكل/مبيان)</option>
                                     </select>
 
-                                    {item.type === 'image' ? (
-                                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.6rem', background: 'rgba(255,255,255,0.01)', padding: '0.75rem', borderRadius: '8px', border: '1px dashed var(--border)' }}>
-                                        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                                          <input
-                                            type="text"
-                                            className="input-control"
-                                            placeholder="رابط الصورة / URL de l'image (ex: https://...)"
-                                            value={item.url || ''}
-                                            onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'url', e.target.value)}
-                                            style={{ flex: 1, padding: '0.35rem', fontSize: '0.8rem' }}
-                                          />
-                                          <label className="btn-outline" style={{ fontSize: '0.75rem', padding: '0.35rem 0.6rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap' }}>
-                                            📁 رفع صورة
-                                            <input
-                                              type="file"
-                                              accept="image/*"
-                                              style={{ display: 'none' }}
-                                              onChange={e => {
-                                                const file = e.target.files?.[0];
-                                                if (file) {
-                                                  const reader = new FileReader();
-                                                  reader.onload = ev => {
-                                                    handleUpdateContentItem(secIdx, itemIdx, 'url', ev.target.result);
-                                                  };
-                                                  reader.readAsDataURL(file);
-                                                }
-                                              }}
-                                            />
-                                          </label>
-                                          <button
-                                            type="button"
-                                            onClick={() => handleOpenCropperModal(secIdx, itemIdx)}
-                                            className="btn-outline"
-                                            style={{ fontSize: '0.75rem', padding: '0.35rem 0.6rem', color: 'var(--emerald)', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
-                                            title="اقتصاص أو استبدال هذه الصورة من مستند الـ PDF"
-                                          >
-                                            <Crop size={12} /> ✂️ قص من PDF
-                                          </button>
-                                        </div>
-                                        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>📐 الحجم:</label>
-                                            <select
-                                              className="input-control"
-                                              value={item.width_pct || 100}
-                                              onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'width_pct', parseInt(e.target.value))}
-                                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
-                                            >
-                                              <option value={100}>100% (كامل العرض)</option>
-                                              <option value={90}>90% (كبير جداً)</option>
-                                              <option value={80}>80% (كبير)</option>
-                                              <option value={70}>70% (متوسط)</option>
-                                              <option value={50}>50% (نصف العرض)</option>
-                                            </select>
-                                          </div>
-                                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>📍 المحاذاة:</label>
-                                            <select
-                                              className="input-control"
-                                              value={item.align || 'center'}
-                                              onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'align', e.target.value)}
-                                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
-                                            >
-                                              <option value="center">الوسط (Center)</option>
-                                              <option value="right">اليمين (Right)</option>
-                                              <option value="left">اليسار (Left)</option>
-                                            </select>
-                                          </div>
-                                        </div>
+                                    {item.type === 'table' ? (
+                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.6rem', background: 'rgba(255,255,255,0.01)', padding: '0.75rem', borderRadius: '8px', border: '1px dashed var(--border)' }}>
+                                      <div>
+                                        <label style={{ fontSize: '0.75rem', fontWeight: 800 }}>En-têtes du Tableau (séparés par | )</label>
                                         <input
                                           type="text"
                                           className="input-control"
-                                          placeholder="عنوان الشكل / Légende (ex: Figure 1 — Représentation graphique)"
-                                          value={item.alt || ''}
-                                          onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'alt', e.target.value)}
+                                          placeholder="ex: x | -\infty | 0 | +\infty"
+                                          value={(item.table_data?.headers || item.headers || []).join(' | ')}
+                                          onChange={e => {
+                                            const headers = e.target.value.split('|').map(s => s.trim());
+                                            const rows = item.table_data?.rows || item.rows || [[]];
+                                            handleUpdateContentItem(secIdx, itemIdx, 'table_data', { headers, rows });
+                                            handleUpdateContentItem(secIdx, itemIdx, 'headers', headers);
+                                            handleUpdateContentItem(secIdx, itemIdx, 'rows', rows);
+                                          }}
                                           style={{ padding: '0.35rem', fontSize: '0.8rem' }}
                                         />
                                       </div>
+                                      <div>
+                                        <label style={{ fontSize: '0.75rem', fontWeight: 800 }}>Lignes du Tableau (une ligne par rangée, cellules séparées par | )</label>
+                                        <textarea
+                                          className="input-control"
+                                          placeholder="ex: f'(x) | - | 0 | +&#10;f(x) | +\infty | \searrow -2 | \nearrow +\infty"
+                                          value={(item.table_data?.rows || item.rows || []).map(r => Array.isArray(r) ? r.join(' | ') : String(r)).join('\n')}
+                                          onChange={e => {
+                                            const rows = e.target.value.split('\n').map(line => line.split('|').map(s => s.trim()));
+                                            const headers = item.table_data?.headers || item.headers || [];
+                                            handleUpdateContentItem(secIdx, itemIdx, 'table_data', { headers, rows });
+                                            handleUpdateContentItem(secIdx, itemIdx, 'headers', headers);
+                                            handleUpdateContentItem(secIdx, itemIdx, 'rows', rows);
+                                          }}
+                                          rows={3}
+                                          style={{ padding: '0.35rem', fontSize: '0.8rem' }}
+                                        />
+                                      </div>
+                                      <div style={{ marginTop: '0.4rem' }}>
+                                        <SmartTableRenderer table={item} />
+                                      </div>
+                                    </div>
+                                  ) : item.type === 'image' ? (
+                                      renderImageItemEditor(item, secIdx, itemIdx)
                                     ) : (
                                       <textarea
                                         className="input-control"

@@ -8,6 +8,8 @@
  * 5. Actions Copilot IA par question : Génération de variante, Ajustement de difficulté, Enrichissement du corrigé.
  */
 
+import { cropPdfRegion } from './pdfFigureExtractor';
+
 // Erreurs courantes d'OCR et de saisie en Arabe
 const ARABIC_OCR_CORRECTIONS = [
   [/\bألا([ا-ي])/g, 'ال$1'], // Correction "ألا" en "ال" dans les mots courants (ex: ألاختبار -> الاختبار)
@@ -309,4 +311,122 @@ Retourne UNIQUEMENT un objet JSON :
     astuce: smartFormatMathAndLatex(fixLinguisticAndOcrErrors(result.astuce || q.astuce)),
     trick: smartFormatMathAndLatex(fixLinguisticAndOcrErrors(result.trick || q.trick))
   };
+}
+
+/**
+ * Corrige l'imbrication bidirectionnelle (Arabe RTL avec formules LaTeX LTR)
+ * pour éviter les inversions de parenthèses ou de symboles comparatifs.
+ */
+export function smartFixBidiMath(text) {
+  if (!text || typeof text !== 'string') return text || '';
+
+  let str = text;
+
+  // Isoler les formules mathématiques $...$ et $$...$$ pour éviter les altérations bidi
+  str = str.replace(/(\$\$[\s\S]*?\$\$|\$[^\$\n]+\$)/g, (match) => {
+    // Nettoyer les espaces inutiles autour des délimiteurs
+    return match.trim();
+  });
+
+  // Empêcher l'inversion des flèches et symboles d'équivalence en contexte arabe
+  if (/[\u0600-\u06FF]/.test(str)) {
+    str = str.replace(/(?<=[\u0600-\u06FF\s])(<=>|==>|->)(?=[\u0600-\u06FF\s])/g, (m) => `$${m}$`);
+  }
+
+  return str;
+}
+
+/**
+ * Normalise les structures de tableaux et tableaux de variations
+ */
+export function smartNormalizeTables(text) {
+  if (!text || typeof text !== 'string') return text || '';
+
+  const lines = text.split('\n');
+  const resultLines = [];
+  let inTable = false;
+  let tableBuffer = [];
+
+  const flushTable = () => {
+    if (tableBuffer.length === 0) return;
+    if (tableBuffer.length >= 2) {
+      // Normaliser chaque ligne du tableau
+      const cleanedRows = tableBuffer.map(row => {
+        let r = row.trim();
+        if (!r.startsWith('|')) r = '| ' + r;
+        if (!r.endsWith('|')) r = r + ' |';
+        return r;
+      });
+      resultLines.push(...cleanedRows);
+    } else {
+      resultLines.push(...tableBuffer);
+    }
+    tableBuffer = [];
+    inTable = false;
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('|') || (trimmed.includes('|') && trimmed.endsWith('|'))) {
+      inTable = true;
+      tableBuffer.push(line);
+    } else {
+      if (inTable) flushTable();
+      resultLines.push(line);
+    }
+  }
+
+  if (inTable) flushTable();
+
+  return resultLines.join('\n');
+}
+
+/**
+ * Découpe et extrait automatiquement les figures et graphiques à partir d'un PDF
+ * en utilisant les boundingBoxes détectées par le modèle de vision.
+ */
+export async function autoCropFiguresFromPdf(items, pdfDocProxy) {
+  if (!Array.isArray(items) || !pdfDocProxy) return items;
+
+  const processed = [];
+
+  for (const item of items) {
+    const clone = { ...item };
+
+    // Vérifier si l'élément possède des métadonnées de figure ou de boundingBox
+    const hasFigureMeta = clone.figure && clone.figure.boundingBox && (clone.figure.pageIndex !== undefined);
+    const hasDirectBox = clone.boundingBox && (clone.pageIndex !== undefined);
+
+    if (hasFigureMeta || hasDirectBox) {
+      const pageNum = (hasFigureMeta ? clone.figure.pageIndex : clone.pageIndex) + 1; // 1-based index
+      const box = hasFigureMeta ? clone.figure.boundingBox : clone.boundingBox;
+
+      try {
+        const cropDataUrl = await cropPdfRegion(pdfDocProxy, pageNum, box, true, 2.5);
+        if (hasFigureMeta) {
+          clone.figure = {
+            ...clone.figure,
+            imageUrl: cropDataUrl
+          };
+        } else {
+          clone.figureUrl = cropDataUrl;
+          clone.imageUrl = cropDataUrl;
+        }
+      } catch (cropErr) {
+        console.warn(`[AutoCrop] Échec de rognage pour l'élément (Page ${pageNum}) :`, cropErr);
+      }
+    }
+
+    // Traiter les sous-questions récursives si existantes
+    if (Array.isArray(clone.questions)) {
+      clone.questions = await autoCropFiguresFromPdf(clone.questions, pdfDocProxy);
+    }
+    if (Array.isArray(clone.sub_questions)) {
+      clone.sub_questions = await autoCropFiguresFromPdf(clone.sub_questions, pdfDocProxy);
+    }
+
+    processed.push(clone);
+  }
+
+  return processed;
 }

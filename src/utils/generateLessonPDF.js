@@ -163,6 +163,11 @@ const repairMathExpression = (latex) => {
   // Case D: number/var / number/var -> \frac{number/var}{number/var}
   repaired = repaired.replace(/(?<![a-zA-Z0-9\\_])([a-zA-Z0-9\\_]+)\s*\/\s*([a-zA-Z0-9\\_]+)(?![a-zA-Z0-9\\_])/g, '\\frac{$1}{$2}');
 
+  // 5. Convert multi-letter vectors to \overrightarrow for standard textbook styling
+  repaired = repaired
+    .replace(/\\vec\{([a-zA-Z0-9]{2,})\}/g, '\\overrightarrow{$1}')
+    .replace(/(?<![a-zA-Z\\])vec\{([a-zA-Z0-9]{2,})\}/g, '\\overrightarrow{$1}');
+
   return repaired;
 };
 
@@ -918,9 +923,10 @@ const calculateTotalPoints = (text, isArabicMode) => {
    ═══════════════════════════════════════════════════════════ */
 export const generateLessonHTML = (lesson, settings = {}) => {
   const showSolutions = settings.showSolutions !== undefined ? settings.showSolutions : true;
-  const { content } = lesson;
-  const { header, sections } = content;
-  const isHomework = lesson.docType === 'homework' || lesson.content?.doc_type === 'homework';
+  const content = lesson?.content || lesson || {};
+  const header = content?.header || {};
+  const sections = Array.isArray(content?.sections) ? content.sections : (Array.isArray(lesson?.sections) ? lesson.sections : (Array.isArray(content) ? content : []));
+  const isHomework = lesson.docType === 'homework' || content?.doc_type === 'homework';
 
   const title = header?.fiche_title || lesson?.title || 'Fiche de Cours';
   const subject = header?.subject || '';
@@ -930,21 +936,21 @@ export const generateLessonHTML = (lesson, settings = {}) => {
   const phone = header?.phone || globalProfPhone || '';
   const prepTitle = header?.prep_title || '';
   const schools = header?.schools || [];
-  const isExercises = lesson.docType === 'exercises' || lesson.content?.doc_type === 'exercises';
-  const isConcours = lesson.docType === 'concours' || lesson.content?.doc_type === 'concours';
+  const isExercises = lesson.docType === 'exercises' || content?.doc_type === 'exercises';
+  const isConcours = lesson.docType === 'concours' || content?.doc_type === 'concours';
   const checkArabicText = () => {
-    if (lesson.content?.metadata?.language === 'ar') return true;
+    if (content?.metadata?.language === 'ar') return true;
     const textToTest = [
       lesson.title,
       subject,
       header?.fiche_title,
       header?.subject,
-      ...(lesson.content?.sections || []).map(s => s.title)
+      ...(sections || []).map(s => s?.title)
     ].filter(Boolean).join(' ');
     return /[\u0600-\u06FF]/.test(textToTest);
   };
   const isArabic = checkArabicText();
-  const levelKey = lesson.level || lesson.content?.level || '';
+  const levelKey = lesson.level || content?.level || '';
   const levelDisplayName = getLevelDisplayName(levelKey, isArabic);
   const levelText = levelDisplayName || prepTitle || '';
   const qrData = (typeof window !== 'undefined' && window.location)
@@ -961,7 +967,7 @@ export const generateLessonHTML = (lesson, settings = {}) => {
 
   const langFilename = isArabic ? 'AR' : 'FR';
   const cleanLevelKey = levelKey || 'Niveau';
-  const cleanTitle = title.replace(/[\\\/:\*\?"<>\|]/g, '');
+  const cleanTitle = (title || 'Fiche').replace(/[\\\/:\*\?"<>\|]/g, '');
   const pdfDocumentTitle = `${cleanLevelKey} - ${docTypeFilename} - ${langFilename} - ${cleanTitle}`;
   const dir = isArabic ? 'rtl' : 'ltr';
   const arabicFontFamily = "'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif";
@@ -969,6 +975,113 @@ export const generateLessonHTML = (lesson, settings = {}) => {
 
   // Set module-level RTL flag for renderLine
   _rtlMode = isArabic;
+
+  const formatTeacherName = (name) => {
+    if (!name) return '';
+    return name.replace(/^prof[:.\s]*/i, '').replace(/^pr[:.\s]*/i, '').replace(/^أستاذ[:.\s]*/i, '').trim();
+  };
+
+  const renderItemHtml = (item) => {
+    if (!item) return '';
+    if (item.type === 'highlight_box') {
+      return `<div class="highlight-box">${renderMath(item.text)}</div>`;
+    } else if (item.type === 'notation_grid') {
+      let colsHtml = '';
+      item.notation_columns?.forEach((col) => {
+        let blocksHtml = '';
+        col.math_blocks?.forEach((block) => {
+          blocksHtml += `<div style="display:block;margin:0.2rem 0">${renderMath(block)}</div>`;
+        });
+        colsHtml += `<div class="notation-column">
+          <strong style="font-size:0.85rem;color:#005086">${esc(col.title)}</strong>
+          ${blocksHtml}
+        </div>`;
+      });
+      return `<div class="notation-grid">${colsHtml}</div>`;
+    } else if (item.type === 'table') {
+      let headersHtml = '';
+      item.table_data?.headers?.forEach(h => { headersHtml += `<th>${renderMath(h)}</th>`; });
+      let rowsHtml = '';
+      item.table_data?.rows?.forEach(row => {
+        let cellsHtml = '';
+        row.forEach(cell => { cellsHtml += `<td>${renderMath(cell)}</td>`; });
+        rowsHtml += `<tr>${cellsHtml}</tr>`;
+      });
+      return `<div style="overflow-x:auto;width:100%;margin:0.4rem 0">
+        <table class="sheet-table">
+          <thead><tr>${headersHtml}</tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>`;
+    } else if (item.type === 'image') {
+      const align = item.align || 'center';
+      const widthPct = item.width_pct || 80;
+      const textAlign = align;
+      const rawUrl = (item.url || '').trim();
+      const altText = item.alt || item.description || '';
+      const altLower = altText.toLowerCase();
+      const urlLower = rawUrl.toLowerCase();
+
+      const isInvalidUrl = !rawUrl || rawUrl.length < 5 || rawUrl.includes('placeholder') || rawUrl.includes('example.com') || rawUrl === 'none' || rawUrl === 'url' || rawUrl === 'image';
+      const isSignTable = altLower.includes('tableau de signe') || altLower.includes('sign_table') || urlLower.includes('sign_table');
+
+      if (isSignTable) {
+        return generateSignTableHtml(altText || rawUrl);
+      } else if (isInvalidUrl) {
+        return `<div style="text-align:${textAlign};margin:0.75rem 0">
+          <div style="display:inline-block;padding:0.75rem 1rem;background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;box-shadow:0 3px 12px rgba(0,0,0,0.04);max-width:${widthPct}%;">
+            <div style="font-size:1.5rem;margin-bottom:0.25rem">📈</div>
+            <div style="font-size:0.82rem;font-weight:700;color:#334155;">${altText ? renderMath(altText) : (isArabic ? 'شكل هندسي / منحنى دالة' : 'Figure / Courbe représentative')}</div>
+          </div>
+        </div>`;
+      } else {
+        return `<div style="text-align:${textAlign};margin:0.75rem 0">
+          <div style="display:inline-block;padding:0.6rem;background:#ffffff;border:1px solid #cbd5e1;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);max-width:${widthPct}%;">
+            <img src="${esc(item.url)}" alt="${esc(altText)}"
+              style="width:100%;max-width:100%;border-radius:8px;object-fit:contain;"
+            />
+            ${altText ? `<div style="font-size:0.8rem;font-weight:700;color:#475569;margin-top:0.4rem;text-align:center">${renderMath(altText)}</div>` : ''}
+          </div>
+        </div>`;
+      }
+    } else if (item.type === 'grid_items' || Array.isArray(item.grid_items)) {
+      const gList = item.grid_items || item.items || [];
+      let tableRows = '';
+      for (let i = 0; i < gList.length; i += 2) {
+        const item1 = gList[i];
+        const item2 = gList[i + 1];
+        const text1 = typeof item1 === 'string' ? item1 : (item1?.text || '');
+        const text2 = item2 ? (typeof item2 === 'string' ? item2 : (item2?.text || '')) : '';
+        tableRows += `
+          <tr>
+            <td style="width:50%; padding: 6px 10px; vertical-align: top; border: none;">
+              <div style="display:flex; align-items:flex-start; gap:0.4rem;">
+                <span style="color:#6366f1; font-weight:800;">•</span>
+                <div style="flex:1;">${renderMath(text1)}</div>
+              </div>
+            </td>
+            <td style="width:50%; padding: 6px 10px; vertical-align: top; border: none;">
+              ${text2 ? `
+              <div style="display:flex; align-items:flex-start; gap:0.4rem;">
+                <span style="color:#6366f1; font-weight:800;">•</span>
+                <div style="flex:1;">${renderMath(text2)}</div>
+              </div>` : ''}
+            </td>
+          </tr>
+        `;
+      }
+      return `<table style="width:100%; border-collapse:collapse; margin: 8px 0; border: none;"><tbody>${tableRows}</tbody></table>`;
+    } else {
+      // bullet or text
+      const bulletDot = item.type === 'bullet'
+        ? `<span class="bullet-dot" style="${isArabic ? 'margin-left:0.4rem;margin-right:0' : ''}">•</span>`
+        : '';
+      const bulletStyle = isArabic
+        ? 'flex-direction:row;text-align:right;'
+        : '';
+      return `<div class="bullet-item" style="${bulletStyle}">${bulletDot}<span style="flex:1;font-family:${isArabic ? arabicFontFamily : 'inherit'}">${renderMath(item.text)}</span></div>`;
+    }
+  };
 
   /* ── Build sections HTML ── */
   let sectionsHtml = '';
@@ -992,107 +1105,6 @@ export const generateLessonHTML = (lesson, settings = {}) => {
       // Theory/content subsection
       const hasImageItem = sec.items?.some(item => item.type === 'image');
       let itemsHtml = '';
-      
-      const renderItemHtml = (item) => {
-        if (item.type === 'highlight_box') {
-          return `<div class="highlight-box">${renderMath(item.text)}</div>`;
-        } else if (item.type === 'notation_grid') {
-          let colsHtml = '';
-          item.notation_columns?.forEach((col) => {
-            let blocksHtml = '';
-            col.math_blocks?.forEach((block) => {
-              blocksHtml += `<div style="display:block;margin:0.2rem 0">${renderMath(block)}</div>`;
-            });
-            colsHtml += `<div class="notation-column">
-              <strong style="font-size:0.85rem;color:#005086">${esc(col.title)}</strong>
-              ${blocksHtml}
-            </div>`;
-          });
-          return `<div class="notation-grid">${colsHtml}</div>`;
-        } else if (item.type === 'table') {
-          let headersHtml = '';
-          item.table_data?.headers?.forEach(h => { headersHtml += `<th>${renderMath(h)}</th>`; });
-          let rowsHtml = '';
-          item.table_data?.rows?.forEach(row => {
-            let cellsHtml = '';
-            row.forEach(cell => { cellsHtml += `<td>${renderMath(cell)}</td>`; });
-            rowsHtml += `<tr>${cellsHtml}</tr>`;
-          });
-          return `<div style="overflow-x:auto;width:100%;margin:0.4rem 0">
-            <table class="sheet-table">
-              <thead><tr>${headersHtml}</tr></thead>
-              <tbody>${rowsHtml}</tbody>
-            </table>
-          </div>`;
-        } else if (item.type === 'image') {
-          const align = item.align || 'center';
-          const widthPct = item.width_pct || 80;
-          const textAlign = align;
-          const rawUrl = (item.url || '').trim();
-          const altText = item.alt || item.description || '';
-          const altLower = altText.toLowerCase();
-          const urlLower = rawUrl.toLowerCase();
-
-          const isInvalidUrl = !rawUrl || rawUrl.length < 5 || rawUrl.includes('placeholder') || rawUrl.includes('example.com') || rawUrl === 'none' || rawUrl === 'url' || rawUrl === 'image';
-          const isSignTable = altLower.includes('tableau de signe') || altLower.includes('sign_table') || urlLower.includes('sign_table');
-
-          if (isSignTable) {
-            return generateSignTableHtml(altText || rawUrl);
-          } else if (isInvalidUrl) {
-            return `<div style="text-align:${textAlign};margin:0.75rem 0">
-              <div style="display:inline-block;padding:0.75rem 1rem;background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;box-shadow:0 3px 12px rgba(0,0,0,0.04);max-width:${widthPct}%;">
-                <div style="font-size:1.5rem;margin-bottom:0.25rem">📈</div>
-                <div style="font-size:0.82rem;font-weight:700;color:#334155;">${altText ? renderMath(altText) : (isArabic ? 'شكل هندسي / منحنى دالة' : 'Figure / Courbe représentative')}</div>
-              </div>
-            </div>`;
-          } else {
-            return `<div style="text-align:${textAlign};margin:0.75rem 0">
-              <div style="display:inline-block;padding:0.6rem;background:#ffffff;border:1px solid #cbd5e1;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);max-width:${widthPct}%;">
-                <img src="${esc(item.url)}" alt="${esc(altText)}"
-                  style="width:100%;max-width:100%;border-radius:8px;object-fit:contain;"
-                />
-                ${altText ? `<div style="font-size:0.8rem;font-weight:700;color:#475569;margin-top:0.4rem;text-align:center">${renderMath(altText)}</div>` : ''}
-              </div>
-            </div>`;
-          }
-        } else if (item.type === 'grid_items' || Array.isArray(item.grid_items)) {
-          const gList = item.grid_items || item.items || [];
-          let tableRows = '';
-          for (let i = 0; i < gList.length; i += 2) {
-            const item1 = gList[i];
-            const item2 = gList[i + 1];
-            const text1 = typeof item1 === 'string' ? item1 : (item1?.text || '');
-            const text2 = item2 ? (typeof item2 === 'string' ? item2 : (item2?.text || '')) : '';
-            tableRows += `
-              <tr>
-                <td style="width:50%; padding: 6px 10px; vertical-align: top; border: none;">
-                  <div style="display:flex; align-items:flex-start; gap:0.4rem;">
-                    <span style="color:#6366f1; font-weight:800;">•</span>
-                    <div style="flex:1;">${renderMath(text1)}</div>
-                  </div>
-                </td>
-                <td style="width:50%; padding: 6px 10px; vertical-align: top; border: none;">
-                  ${text2 ? `
-                  <div style="display:flex; align-items:flex-start; gap:0.4rem;">
-                    <span style="color:#6366f1; font-weight:800;">•</span>
-                    <div style="flex:1;">${renderMath(text2)}</div>
-                  </div>` : ''}
-                </td>
-              </tr>
-            `;
-          }
-          return `<table style="width:100%; border-collapse:collapse; margin: 8px 0; border: none;"><tbody>${tableRows}</tbody></table>`;
-        } else {
-          // bullet or text
-          const bulletDot = item.type === 'bullet'
-            ? `<span class="bullet-dot" style="${isArabic ? 'margin-left:0.4rem;margin-right:0' : ''}">•</span>`
-            : '';
-          const bulletStyle = isArabic
-            ? 'flex-direction:row;text-align:right;'
-            : '';
-          return `<div class="bullet-item" style="${bulletStyle}">${bulletDot}<span style="flex:1;font-family:${isArabic ? arabicFontFamily : 'inherit'}">${renderMath(item.text)}</span></div>`;
-        }
-      };
 
       if (hasImageItem) {
         const imageItem = sec.items.find(item => item.type === 'image');
@@ -1241,7 +1253,22 @@ export const generateLessonHTML = (lesson, settings = {}) => {
     } else {
       // Exercise section
       const { number: exeNumber, label: exeLabel } = parseExerciseTitle(sec.title, idx, isArabic);
-      const isHomework = lesson.docType === 'homework' || lesson.content?.doc_type === 'homework';
+      const isHomework = lesson.docType === 'homework' || content?.doc_type === 'homework';
+
+      // Render any attached images or tables in exercise items
+      let exerciseBeforeHtml = '';
+      let exerciseAfterHtml = '';
+      if (Array.isArray(sec.items)) {
+        sec.items.forEach(it => {
+          if (it.type === 'image' || it.type === 'table') {
+            if (it.position === 'before') {
+              exerciseBeforeHtml += renderItemHtml(it);
+            } else {
+              exerciseAfterHtml += renderItemHtml(it);
+            }
+          }
+        });
+      }
 
       if (isHomework) {
         sectionsHtml += `
@@ -1252,7 +1279,9 @@ export const generateLessonHTML = (lesson, settings = {}) => {
                 ${isArabic ? 'تمرين' : 'Exercice'} ${esc(exeNumber)} ${exeLabel ? ` : ${esc(exeLabel)}` : ''}
               </div>
             </div>
+            ${exerciseBeforeHtml ? `<div class="homework-row" style="padding: 0.5rem 1rem;">${exerciseBeforeHtml}</div>` : ''}
             ${renderHomeworkBody(sec.content, isArabic)}
+            ${exerciseAfterHtml ? `<div class="homework-row" style="padding: 0.5rem 1rem;">${exerciseAfterHtml}</div>` : ''}
             ${(sec.solution && showSolutions) ? `
             <div class="homework-row" style="background: rgba(16,185,129,0.01);">
               <div class="homework-bareme-cell" style="background: rgba(16,185,129,0.03); color: #059669; border-top: 1px solid rgba(16,185,129,0.15)">📖</div>
@@ -1274,7 +1303,11 @@ export const generateLessonHTML = (lesson, settings = {}) => {
               </div>
               ${exeLabel ? `<span class="exercise-label" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>${esc(exeLabel)}</span>` : ''}
             </div>
-            <div class="exercise-body" ${isArabic ? 'style="border-left:none;border-right:4px solid #005086;border-radius:6px 4px 4px 6px;text-align:right;direction:rtl"' : ''}>${renderMath(sec.content)}</div>
+            <div class="exercise-body" ${isArabic ? 'style="border-left:none;border-right:4px solid #005086;border-radius:6px 4px 4px 6px;text-align:right;direction:rtl"' : ''}>
+              ${exerciseBeforeHtml}
+              ${renderMath(sec.content)}
+              ${exerciseAfterHtml}
+            </div>
             ${(sec.solution && showSolutions) ? `
             <div class="solution-block">
               <h4 class="solution-title" ${isArabic ? `style="flex-direction:row;font-family:${arabicFontFamily}"` : ''}>📖 ${isArabic ? 'الحل المفصل' : 'Démonstration rédigée'}</h4>
@@ -1338,14 +1371,14 @@ export const generateLessonHTML = (lesson, settings = {}) => {
 }
 
 html {
-  font-size: 9.5pt;
+  font-size: 10pt;
 }
 
 body {
-  font-family: 'Computer Modern Serif', 'STIX Two Text', 'Times New Roman', serif;
-  color: #1a202c;
+  font-family: 'Cambria', 'STIX Two Text', 'Liberation Serif', 'Times New Roman', serif;
+  color: #0f172a;
   background: #ffffff;
-  line-height: 1.45;
+  line-height: 1.6;
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
   font-feature-settings: 'liga' 1, 'kern' 1;
@@ -1517,19 +1550,20 @@ body {
 }
 
 /* ═══════════════════════════════════════
-   HEADER — Modern 2026 4-zone grid
+   HEADER — Designer 2026 Academic Grid
    ═══════════════════════════════════════ */
 .fiche-header {
   display: grid;
-  grid-template-columns: 1.15fr 1.6fr 1.15fr 0.45fr;
+  grid-template-columns: 1.18fr 1.68fr 1.18fr auto;
   background-color: #005086;
   gap: 1.5px;
   border: 1.5px solid #005086;
-  border-radius: 6px;
-  margin-bottom: 0.75rem;
+  border-radius: 7px;
+  margin-bottom: 0.8rem;
   overflow: hidden;
-  font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0, 80, 134, 0.08);
 }
+
 .fiche-header .hcell {
   padding: 6px 12px;
   display: flex;
@@ -1539,116 +1573,128 @@ body {
   background-color: #ffffff;
 }
 
-/* LEFT — prof info */
+/* Left & Right Info Cells */
 .fiche-header .h-left {
   background-color: #f8fafc;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: #475569;
-  line-height: 1.45;
-}
-.fiche-header .h-left span { display: block; }
-.fiche-header .h-left strong {
-  color: #005086;
-  font-weight: 700;
+  justify-content: center;
 }
 
-/* CENTER — subject + title */
+.fiche-header .h-right {
+  background-color: #f8fafc;
+  justify-content: center;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.header-info-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 8.5pt;
+  line-height: 1.35;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.header-info-row .info-label {
+  font-size: 8pt;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.header-info-row .info-val {
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 8.5pt;
+}
+
+.header-info-row .info-val-level {
+  color: #005086;
+  font-weight: 800;
+  font-size: 8.8pt;
+}
+
+/* Center Hero Title */
 .fiche-header .h-center {
   background-color: #ffffff;
   align-items: center;
+  justify-content: center;
   text-align: center;
+  gap: 4px;
+  padding: 6px 8px;
 }
-.fiche-header .h-center .doc-subject {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-}
-.fiche-header .h-center .header-banner-pill {
-  background: none;
+
+.header-title-text {
   color: #005086;
-  padding: 0.2rem 0;
-  font-weight: 800;
-  font-size: 1.25rem;
-  display: inline-block;
+  font-weight: 900;
+  font-size: 13pt;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
   text-align: center;
-  box-shadow: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   max-width: 100%;
 }
-.fiche-header .h-center .doc-type {
-  font-size: 0.72rem;
-  color: #475569;
-  font-weight: 700;
+
+.header-badge-type {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 80, 134, 0.07);
+  color: #005086;
+  font-size: 7.2pt;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 0.2rem;
+  letter-spacing: 0.08em;
+  padding: 1.5px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 80, 134, 0.2);
 }
 
-/* RIGHT — school name */
-.fiche-header .h-right {
-  background-color: #f8fafc;
-  align-items: flex-end;
-  text-align: right;
-  font-size: 0.8rem;
-  color: #475569;
-}
-.fiche-header .h-right .school-label {
-  font-size: 0.68rem;
-  color: #64748b;
-  text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-}
-.fiche-header .h-right .school-name {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #005086;
-  line-height: 1.25;
-}
-.fiche-header .h-right .level-name {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: #475569;
-  margin-top: 2px;
-}
-.fiche-header .h-right .level-name strong {
-  color: #005086;
-  font-weight: 700;
-}
-
-/* PAGE badge (QR Code) */
+/* QR Code Cell */
 .fiche-header .h-page {
   background-color: #005086;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 4px;
+  padding: 5px 8px;
+  gap: 2px;
 }
+
 .fiche-header .h-page .qr-wrapper {
   background-color: #ffffff;
-  padding: 3px;
+  padding: 2.5px;
   border-radius: 4px;
-  display: inline-block;
-  margin: 0 auto;
+  display: inline-flex;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
+
 .fiche-header .h-page .qr-img {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   display: block;
 }
+
 .fiche-header .h-page .qr-label {
-  font-size: 0.5rem;
-  font-weight: 800;
+  font-size: 6pt;
+  font-weight: 900;
   color: #ffffff;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  margin-top: 2px;
+  letter-spacing: 0.08em;
   line-height: 1;
+}
+
+/* RTL Layout support for Header */
+html[dir="rtl"] .fiche-header .h-left {
+  align-items: flex-start;
+  text-align: right;
+}
+
+html[dir="rtl"] .fiche-header .h-right {
+  align-items: flex-end;
+  text-align: left;
+}
+
+html[dir="rtl"] .header-info-row {
+  flex-direction: row;
 }
 
 /* ═══════════════════════════════════════
@@ -1968,7 +2014,7 @@ body {
 .katex .mpunct,
 .katex .minner,
 .katex .mop {
-  color: #1a202c !important;
+  color: #0f172a !important;
   font-weight: normal !important;
 }
 
@@ -1983,7 +2029,7 @@ body {
 .katex-inline {
   white-space: nowrap !important;
   display: inline-block !important;
-  vertical-align: -0.1em;
+  vertical-align: -0.04em !important;
   font-weight: normal !important;
 }
 
@@ -1994,18 +2040,20 @@ body {
   font-weight: normal !important;
 }
 
-/* Inline math size: slightly larger for academic clarity */
+/* Inline math size: perfectly matches 10pt text size and optical weight */
 .inline-math-container .katex,
 .katex-inline .katex {
-  font-size: 1.08em !important;
+  font-size: 0.95em !important;
+  color: #0f172a !important;
   font-weight: normal !important;
 }
 
 /* Block display-mode math: visible breathing room */
 .katex-display {
-  margin: 0.55rem 0 !important;
+  margin: 0.45rem 0 !important;
   white-space: normal !important;
-  font-size: 1.1em !important;
+  font-size: 1.0em !important;
+  color: #0f172a !important;
 }
 
 /* Strong / bold context must NOT propagate weight into math */
@@ -2056,18 +2104,19 @@ b .katex * {
   max-width: 100% !important;
   overflow-x: visible !important;
   overflow-y: visible !important;
-  font-size: 0.82em !important;
+  font-size: 0.92em !important;
 }
 .exercises-two-columns .katex,
 .exercises-two-columns .katex-html {
   white-space: normal !important;
   display: inline !important;
+  font-size: 0.93em !important;
 }
 .exercises-two-columns .katex .base {
   white-space: nowrap !important;
   display: inline-block !important;
-  margin-top: 2px;
-  margin-bottom: 2px;
+  margin-top: 1px;
+  margin-bottom: 1px;
 }
 
 
@@ -2299,20 +2348,20 @@ html[dir="rtl"] .homework-bareme-header {
 <div class="page-content">
   <!-- HEADER -->
   ${(isExercises || isHomework) ? `
-  <!-- NEW 2026 HEADER: exercises and homework -->
-  <div class="fiche-header">
+  <!-- NEW 2026 DESIGNER HEADER: exercises and homework -->
+  <div class="fiche-header" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>
     <div class="hcell h-left">
-      ${teacher ? `<span>${isArabic ? 'الأستاذ' : 'Prof'} : <strong>${esc(teacher)}</strong></span>` : ''}
-      <span>${isArabic ? 'السنة الدراسية' : 'A.S'} : <strong>${new Date().getFullYear() - 1}/${new Date().getFullYear()}</strong></span>
-      ${schools.length ? `<span><strong>${esc(schools[0])}</strong></span>` : ''}
+      ${teacher ? `<div class="header-info-row"><span class="info-label">${isArabic ? 'الأستاذ' : 'Prof'} :</span><strong class="info-val">${esc(formatTeacherName(teacher))}</strong></div>` : ''}
+      <div class="header-info-row"><span class="info-label">${isArabic ? 'السنة الدراسية' : 'A.S'} :</span><span class="info-val">${new Date().getFullYear() - 1}/${new Date().getFullYear()}</span></div>
+      ${schools.length ? `<div class="header-info-row"><span class="info-label">${isArabic ? 'المؤسسة' : 'Établissement'} :</span><span class="info-val">${esc(schools[0])}</span></div>` : ''}
     </div>
     <div class="hcell h-center">
-      <div class="header-banner-pill">${esc(title)}</div>
-      <span class="doc-type">${isArabic ? (isHomework ? 'فرض محروس' : 'سلسلة تمارين') : (isHomework ? 'Devoir Surveill\u00e9' : 'S\u00e9rie d\'exercices')}</span>
+      <div class="header-title-text">${esc(title)}</div>
+      <div class="header-badge-type">${isArabic ? (isHomework ? 'فرض محروس' : 'سلسلة تمارين') : (isHomework ? 'Devoir Surveillé' : 'Série d\'exercices')}</div>
     </div>
     <div class="hcell h-right">
-      ${schools.length ? `<span class="school-label">${isArabic ? 'المؤسسة' : 'Lyc\u00e9e'} :</span><span class="school-name">${schools.length > 1 ? esc(schools[1]) : esc(schools[0])}</span>` : ''}
-      ${levelText ? `<span class="level-name">${isArabic ? 'المستوى' : 'Niveau'} : <strong>${esc(levelText)}</strong></span>` : ''}
+      ${levelText ? `<div class="header-info-row"><span class="info-label">${isArabic ? 'المستوى' : 'Niveau'} :</span><strong class="info-val-level">${esc(levelText)}</strong></div>` : ''}
+      ${schools.length > 1 ? `<div class="header-info-row"><span class="info-label">${isArabic ? 'المؤسسة' : 'Lycée'} :</span><span class="info-val">${esc(schools[1])}</span></div>` : ''}
     </div>
     <div class="hcell h-page">
       <div class="qr-wrapper">

@@ -9,6 +9,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { getLessonById, updateLesson } from '../services/lessonService';
 import { renderWithMath } from '../utils/mathRenderer';
+import SmartTableRenderer from '../components/SmartTableRenderer';
 import { openLessonPrintWindow } from '../utils/generateLessonPDF';
 import NationalExamTemplate from '../components/NationalExamTemplate';
 import { openNationalExamPrintWindow } from '../utils/generateNationalExamPDF';
@@ -2808,6 +2809,18 @@ export default function LessonViewerPage() {
                             </div>
                           );
                         }
+
+                        if (item.type === 'table') {
+                          return (
+                            <div key={itemIdx} style={{ margin: '1.25rem 0', width: '100%' }}>
+                              <SmartTableRenderer
+                                table={item.table || item.data || item.text || item}
+                                title={item.title}
+                              />
+                            </div>
+                          );
+                        }
+
                         if (item.type === 'image') {
                           const align = item.align || 'center';
                           const widthPct = item.width_pct || 80;
@@ -3154,7 +3167,63 @@ export default function LessonViewerPage() {
                               direction: 'rtl',
                             } : {}}
                           >
+                            {/* Attached images/tables with position === 'before' */}
+                            {sec.items?.filter(it => (it.type === 'image' || it.type === 'table') && it.position === 'before').map((item, itemIdx) => {
+                              if (item.type === 'image') {
+                                const align = item.align || 'center';
+                                const widthPct = item.width_pct || 80;
+                                const justifyMap = { left: 'flex-start', center: 'center', right: 'flex-end' };
+                                const rawUrl = (item.url || '').trim();
+                                const altText = item.alt || item.description || '';
+                                if (!rawUrl) return null;
+                                return (
+                                  <div key={`ex-img-before-${itemIdx}`} style={{ display: 'flex', flexDirection: 'column', alignItems: justifyMap[align], margin: '0.8rem 0', width: '100%' }}>
+                                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '0.6rem', maxWidth: `${widthPct}%`, minWidth: '180px', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
+                                      <img src={rawUrl} alt={altText || 'Figure'} style={{ width: '100%', maxHeight: '350px', borderRadius: '8px', objectFit: 'contain', display: 'block' }} />
+                                      {altText && <div style={{ marginTop: '0.4rem', fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center' }}>{renderWithMath(altText)}</div>}
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              if (item.type === 'table') {
+                                return (
+                                  <div key={`ex-tbl-before-${itemIdx}`} style={{ margin: '0.8rem 0', width: '100%' }}>
+                                    <SmartTableRenderer table={item.table || item.data || item.text || item} title={item.title} />
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })}
+
                             {renderWithMath(sec.content)}
+
+                            {/* Attached images and tables inside exercise (default / after) */}
+                            {sec.items?.filter(it => (it.type === 'image' || it.type === 'table') && it.position !== 'before').map((item, itemIdx) => {
+                              if (item.type === 'image') {
+                                const align = item.align || 'center';
+                                const widthPct = item.width_pct || 80;
+                                const justifyMap = { left: 'flex-start', center: 'center', right: 'flex-end' };
+                                const rawUrl = (item.url || '').trim();
+                                const altText = item.alt || item.description || '';
+                                if (!rawUrl) return null;
+                                return (
+                                  <div key={`ex-img-${itemIdx}`} style={{ display: 'flex', flexDirection: 'column', alignItems: justifyMap[align], margin: '1rem 0', width: '100%' }}>
+                                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '0.6rem', maxWidth: `${widthPct}%`, minWidth: '180px', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
+                                      <img src={rawUrl} alt={altText || 'Figure'} style={{ width: '100%', maxHeight: '350px', borderRadius: '8px', objectFit: 'contain', display: 'block' }} />
+                                      {altText && <div style={{ marginTop: '0.4rem', fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center' }}>{renderWithMath(altText)}</div>}
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              if (item.type === 'table') {
+                                return (
+                                  <div key={`ex-tbl-${itemIdx}`} style={{ margin: '1rem 0', width: '100%' }}>
+                                    <SmartTableRenderer table={item.table || item.data || item.text || item} title={item.title} />
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })}
                           </div>
 
                           {/* Interactive student checks */}

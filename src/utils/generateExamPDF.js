@@ -2076,7 +2076,7 @@ html{counter-reset:page ${startPage - 1}}
     box-shadow: none !important;
   }
 }
-.katex, .katex *, .katex .mathnormal, .katex .mord, .katex .mbin, .katex .mrel, .katex .mopen, .katex .mclose, .katex .mpunct { font-weight: normal !important; white-space: nowrap !important; } .katex .mathbf, .katex .mathbf * { font-weight: bold !important; } .katex-display { margin: 4px 0; white-space: normal !important; }
+.katex, .katex *, .katex .mathnormal, .katex .mord, .katex .mbin, .katex .mrel, .katex .mopen, .katex .mclose, .katex .mpunct { font-size: 0.95em !important; color: inherit !important; font-weight: normal !important; white-space: nowrap !important; } .katex .mathbf, .katex .mathbf * { font-weight: bold !important; } .katex-display { margin: 4px 0; font-size: 1.0em !important; white-space: normal !important; }
 ${templateCSS}
 </style>
 </head><body>
@@ -3009,7 +3009,7 @@ html{counter-reset:page ${startPage - 1}}
     box-shadow: none !important;
   }
 }
-.katex, .katex *, .katex .mathnormal, .katex .mord, .katex .mbin, .katex .mrel, .katex .mopen, .katex .mclose, .katex .mpunct { font-weight: normal !important; white-space: nowrap !important; } .katex .mathbf, .katex .mathbf * { font-weight: bold !important; } .katex-display { margin: 4px 0; white-space: normal !important; }
+.katex, .katex *, .katex .mathnormal, .katex .mord, .katex .mbin, .katex .mrel, .katex .mopen, .katex .mclose, .katex .mpunct { font-size: 0.95em !important; color: inherit !important; font-weight: normal !important; white-space: nowrap !important; } .katex .mathbf, .katex .mathbf * { font-weight: bold !important; } .katex-display { margin: 4px 0; font-size: 1.0em !important; white-space: normal !important; }
 ${templateCSS}
 </style>
 </head><body>
@@ -3664,7 +3664,7 @@ html{counter-reset:page ${startPage - 1}}
   .cover{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   ${!shouldShowCover ? '.cover{display:none!important}' : ''}
 }
-.katex, .katex *, .katex .mathnormal, .katex .mord, .katex .mbin, .katex .mrel, .katex .mopen, .katex .mclose, .katex .mpunct { font-weight: normal !important; white-space: nowrap !important; } .katex .mathbf, .katex .mathbf * { font-weight: bold !important; } .katex-display { margin: 4px 0; white-space: normal !important; }
+.katex, .katex *, .katex .mathnormal, .katex .mord, .katex .mbin, .katex .mrel, .katex .mopen, .katex .mclose, .katex .mpunct { font-size: 0.95em !important; color: inherit !important; font-weight: normal !important; white-space: nowrap !important; } .katex .mathbf, .katex .mathbf * { font-weight: bold !important; } .katex-display { margin: 4px 0; font-size: 1.0em !important; white-space: normal !important; }
 ${templateCSS}
 </style>
 </head><body>

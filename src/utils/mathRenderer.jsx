@@ -18,6 +18,14 @@
 import React from 'react';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
+import SmartTableRenderer, { parseMarkdownTable } from '../components/SmartTableRenderer';
+
+export { SmartTableRenderer, parseMarkdownTable };
+
+export function MathText({ text, children }) {
+  const content = text ?? children;
+  return renderWithMath(content);
+}
 
 /* ─── 1. Master text sanitizer ──────────────────────────────────────────────
  *
@@ -55,7 +63,14 @@ const KATEX_OPTIONS = {
 export const repairMathExpression = (latex) => {
   if (!latex) return '';
   
-  let repaired = latex;
+  let repaired = String(latex).trim();
+
+  // Strip accidental outer dollar signs when passed to KaTeX math renderer
+  if (repaired.startsWith('$$') && repaired.endsWith('$$') && repaired.length >= 4) {
+    repaired = repaired.slice(2, -2).trim();
+  } else if (repaired.startsWith('$') && repaired.endsWith('$') && repaired.length >= 2) {
+    repaired = repaired.slice(1, -1).trim();
+  }
   
   // 1. Repair missing backslashes for Greek letters and standard functions
   repaired = repaired
@@ -843,9 +858,29 @@ function renderWithMathInternal(text) {
     return /^[-•*]\s+/i.test(trimmed) || /^[-•*]?\s*(\*\*|\*)?([a-zA-Z]|\d+)[\.\)]/i.test(trimmed);
   };
 
+  const isTableLine = (str) => {
+    if (!str) return false;
+    const trimmed = str.trim();
+    return trimmed.startsWith('|') && trimmed.endsWith('|') && (trimmed.match(/\|/g) || []).length >= 2;
+  };
+
   const renderLinesGrouped = (lines, baseKey) => {
     const elements = [];
     let currentGridGroup = [];
+    let currentTableLines = [];
+
+    const flushTableGroup = () => {
+      if (currentTableLines.length === 0) return;
+      if (currentTableLines.length >= 2) {
+        const tableText = currentTableLines.map(t => t.lineStr).join('\n');
+        elements.push(<SmartTableRenderer key={`${baseKey}-table-${elements.length}`} table={tableText} />);
+      } else {
+        currentTableLines.forEach(({ lineStr, li }) => {
+          elements.push(renderLine(lineStr, `${baseKey}-${li}`));
+        });
+      }
+      currentTableLines = [];
+    };
 
     const flushGridGroup = () => {
       if (currentGridGroup.length === 0) return;
@@ -874,6 +909,7 @@ function renderWithMathInternal(text) {
     lines.forEach((lineTokens, li) => {
       if (lineTokens.length === 0) return;
       if (lineTokens.length === 1 && lineTokens[0].type === 'block') {
+        flushTableGroup();
         flushGridGroup();
         elements.push(<SafeBlockMath key={`${baseKey}-blk-${li}`} math={lineTokens[0].content} />);
         return;
@@ -884,14 +920,21 @@ function renderWithMathInternal(text) {
         return t.content;
       }).join('');
 
-      if (isSubListItem(reconstructedLine)) {
-        currentGridGroup.push({ lineStr: reconstructedLine, li });
-      } else {
+      if (isTableLine(reconstructedLine)) {
         flushGridGroup();
-        elements.push(renderLine(reconstructedLine, `${baseKey}-${li}`));
+        currentTableLines.push({ lineStr: reconstructedLine, li });
+      } else {
+        flushTableGroup();
+        if (isSubListItem(reconstructedLine)) {
+          currentGridGroup.push({ lineStr: reconstructedLine, li });
+        } else {
+          flushGridGroup();
+          elements.push(renderLine(reconstructedLine, `${baseKey}-${li}`));
+        }
       }
     });
 
+    flushTableGroup();
     flushGridGroup();
     return elements;
   };
