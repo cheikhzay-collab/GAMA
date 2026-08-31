@@ -719,7 +719,7 @@ export default function AdminClasses() {
                 </div>
 
                 <div className="input-group">
-                  <label style={{ fontSize: '0.78rem', color: 'var(--text-subtle)', display: 'block', marginBottom: '0.4rem' }}>Langue d'enseignement / لغة التدريس</label>
+                  <label style={{ fontSize: '0.78rem', color: 'var(--text-subtle)', display: 'block', marginBottom: '0.4rem' }}>Langue d'enseignement</label>
                   <select 
                     className="input-control" 
                     value={parsedClassInfo.language || 'fr'}

@@ -19,19 +19,19 @@ const getLevelLabel = (rawLevel) => {
   const level = normalizeLevel(rawLevel);
   switch (level) {
     case 'common_core_sci':
-      return 'Tronc Commun Sci (جدع مشترك علوم)';
+      return 'Tronc Commun Scientifique';
     case 'common_core_arts':
-      return 'Tronc Commun Lettres (جدع مشترك آداب)';
+      return 'Tronc Commun Lettres';
     case '1bac_sci':
-      return '1ère Bac Sciences (أولى باك علوم)';
+      return '1ère Bac Sciences Expérimentales';
     case '1bac_arts':
-      return '1ère Bac Lettres (أولى باك آداب)';
+      return '1ère Bac Lettres';
     case '2bac_sm':
-      return '2ème Bac SM (ثانية باك علوم رياضية)';
+      return '2ème Bac Sciences Mathématiques';
     case '2bac_pc_svt':
-      return '2ème Bac PC/SVT (ثانية باك علوم تجريبية)';
+      return '2ème Bac Sciences Expérimentales (PC/SVT)';
     case '2bac_arts':
-      return '2ème Bac Lettres (ثانية باك آداب)';
+      return '2ème Bac Lettres';
     default:
       return level || 'Non spécifié';
   }
@@ -523,8 +523,8 @@ ${sectionsContentText}
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)' }}>
                     <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Fiche de Cours</th>
-                    <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Classe</th>
-                    <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Enseignant</th>
+                    <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Niveau / Classe</th>
+                    <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Type</th>
                     <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Statut</th>
                     <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Actions</th>
                   </tr>
@@ -550,113 +550,79 @@ ${sectionsContentText}
                           <div>
                             <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.92rem' }}>{renderWithMath(l.title)}</div>
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', marginTop: '0.2rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                              <span style={{ background: 'rgba(255,255,255,0.04)', padding: '0.1rem 0.4rem', borderRadius: '4px', border: '1px solid var(--border)' }}>
-                                {getLevelLabel(l.level)}
-                              </span>
+                              <span>{l.subject}</span>
+                              {l.teacher && <span>• {l.teacher}</span>}
+                              {l.chapterNumber && <span>• Chapitre {l.chapterNumber}</span>}
                             </div>
                           </div>
                         </div>
                       </td>
 
-                      {/* Classe */}
+                      {/* Niveau / Classe */}
                       <td style={{ padding: '1.25rem 1.5rem' }}>
-                        {(() => {
-                          const levelClasses = classes.filter(c => normalizeLevel(c.level) === normalizeLevel(l.level));
-                          if (levelClasses.length > 0) {
-                            return (
-                              <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
-                                {levelClasses.map(c => (
-                                  <span 
-                                    key={c.id}
-                                    style={{ 
-                                      background: 'var(--violet-soft)',
-                                      color: 'var(--violet)',
-                                      padding: '0.25rem 0.65rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800
-                                    }}
-                                  >
-                                    {c.name}
-                                  </span>
-                                ))}
-                              </div>
-                            );
-                          }
-                          // Fallback to human-readable short level label
-                          const shortLabels = {
-                            'common_core_sci': 'TCS',
-                            'common_core_arts': 'TCA',
-                            '1bac_sci': '1Bac Sci',
-                            '1bac_arts': '1Bac Lettres',
-                            '2bac_sm': '2Bac SM',
-                            '2bac_pc_svt': '2Bac PC/SVT',
-                            '2bac_arts': '2Bac Lettres'
-                          };
-                          return (
-                            <span style={{ 
-                              background: 'rgba(255,255,255,0.04)',
-                              color: 'var(--text-subtle)',
-                              padding: '0.25rem 0.65rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800,
-                              border: '1px solid var(--border)'
-                            }}>
-                              {shortLabels[normalizeLevel(l.level)] || getLevelLabel(l.level)}
-                            </span>
-                          );
-                        })()}
+                        <span style={{ 
+                          background: 'rgba(255,255,255,0.04)',
+                          color: 'var(--text-subtle)',
+                          padding: '0.25rem 0.65rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800,
+                          border: '1px solid var(--border)'
+                        }}>
+                          {getLevelLabel(l.level)}
+                        </span>
                       </td>
 
-                      {/* Teacher */}
-                      <td style={{ padding: '1.25rem 1.5rem', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-                        <div>{l.teacher || profName || 'Non spécifié'}</div>
-                        {(l.phone || profPhone) && <div style={{ fontSize: '0.72rem', opacity: 0.8 }}>{l.phone || profPhone}</div>}
+                      {/* Type */}
+                      <td style={{ padding: '1.25rem 1.5rem' }}>
+                        <span style={{ 
+                          background: l.docType === 'homework' ? 'rgba(239, 68, 68, 0.08)' : l.docType === 'exercises' ? 'rgba(245, 158, 11, 0.08)' : l.docType === 'concours' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(59, 130, 246, 0.08)',
+                          color: l.docType === 'homework' ? 'var(--danger)' : l.docType === 'exercises' ? 'var(--warning)' : l.docType === 'concours' ? 'var(--emerald)' : '#3B82F6',
+                          padding: '0.25rem 0.65rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800
+                        }}>
+                          {l.docType === 'homework' ? 'Devoir surveillé' : l.docType === 'exercises' ? 'Série d\'exercices' : l.docType === 'concours' ? 'Concours' : l.docType === 'national' ? 'Examen National' : 'Cours'}
+                        </span>
                       </td>
 
-                      {/* Active Status Toggle */}
+                      {/* Statut */}
                       <td style={{ padding: '1.25rem 1.5rem' }}>
                         <button
                           onClick={() => handleToggleStatus(l.id, l.isActive)}
                           style={{
-                            background: 'transparent', border: 'none', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', gap: '0.4rem',
-                            color: l.isActive ? 'var(--emerald)' : 'var(--text-subtle)',
-                            fontWeight: 700, fontSize: '0.8rem', padding: '0.2rem 0.5rem',
-                            borderRadius: '6px', transition: 'all 0.2s'
+                            display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                            padding: '0.25rem 0.6rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600,
+                            border: 'none', cursor: 'pointer',
+                            background: l.isActive ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+                            color: l.isActive ? 'var(--emerald)' : 'var(--danger)',
                           }}
-                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
-                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                         >
-                          {l.isActive ? (
-                            <><CheckCircle size={16} /> Publiée (Actif)</>
-                          ) : (
-                            <><XCircle size={16} /> Brouillon (Inactif)</>
-                          )}
+                          {l.isActive ? <CheckCircle size={12} /> : <XCircle size={12} />}
+                          {l.isActive ? 'Actif' : 'Masqué'}
                         </button>
                       </td>
 
-                      {/* Action buttons */}
+                      {/* Actions */}
                       <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', alignItems: 'center' }}>
+                        <div style={{ display: 'inline-flex', gap: '0.35rem', alignItems: 'center' }}>
                           <button
                             onClick={() => navigate(`/admin/lessons/${l.id}`)}
                             className="btn-outline"
-                            title="Lire / Imprimer"
+                            title="Consulter la fiche"
                             style={{ padding: '0.45rem', borderRadius: '8px', border: '1px solid var(--border)' }}
                           >
                             <Eye size={15} />
                           </button>
-                          
+
                           <button
                             onClick={() => navigate(`/admin/lessons/${l.id}/edit`)}
                             className="btn-outline"
-                            title="Modifier"
+                            title="Modifier la fiche"
                             style={{ padding: '0.45rem', borderRadius: '8px', border: '1px solid var(--border)' }}
                           >
                             <Edit size={15} />
                           </button>
 
-                          {/* ── زر الترجمة بالذكاء الاصطناعي ── */}
                           <button
                             onClick={() => setShowTranslateModal(l)}
                             className="btn-outline"
-                            title="ترجمة بالذكاء الاصطناعي"
+                            title="Traduction IA (Arabe / Français)"
                             style={{
                               padding: '0.45rem', borderRadius: '8px',
                               border: '1px solid rgba(66,133,244,0.35)',
@@ -678,11 +644,10 @@ ${sectionsContentText}
                             <Languages size={15} />
                           </button>
 
-                          {/* ── Fiche Pédagogique PDF Button (AI Generated) ── */}
                           <button
                             onClick={() => generateFichePedagogiqueWithAI(l, { profName, profPhone, profSchool })}
                             className="btn-outline"
-                            title="Générer la Fiche Pédagogique par IA (توليد الجذاذة بالذكاء الاصطناعي)"
+                            title="Générer la Fiche Pédagogique par IA"
                             style={{
                               padding: '0.45rem', borderRadius: '8px',
                               border: 'none',
@@ -695,7 +660,6 @@ ${sectionsContentText}
                             <Sparkles size={15} />
                           </button>
 
-                          {/* ── Fiche Pédagogique PDF Button (Standard) ── */}
                           <button
                             onClick={() => generateFichePedagogiquePDF(l, { profName, profPhone, profSchool })}
                             className="btn-outline"
@@ -711,7 +675,6 @@ ${sectionsContentText}
                             <FileText size={15} />
                           </button>
                           
-                          {/* ── زر توليد QCM بالذكاء الاصطناعي ── */}
                           <button
                             onClick={() => handleGenerateQcmFromLesson(l)}
                             className="btn-outline"

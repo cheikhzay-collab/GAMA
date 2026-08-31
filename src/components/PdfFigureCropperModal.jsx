@@ -1,5 +1,5 @@
 // src/components/PdfFigureCropperModal.jsx
-// أداة احترافية لقص الأشكال الهندسية والمنحنيات البيانية من مستندات الـ PDF والصور وإدراجها فورياً
+// Outil professionnel de rognage de figures géométriques et courbes depuis des PDF
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
@@ -57,7 +57,7 @@ export default function PdfFigureCropperModal({
         setTotalPages(doc.numPages);
         setCurrentPage(1);
       }).catch(err => {
-        setErrorMsg('تعذر قراءة ملف الـ PDF: ' + err.message);
+        setErrorMsg('Impossible de lire le fichier PDF : ' + err.message);
       }).finally(() => {
         setLoading(false);
       });
@@ -81,7 +81,7 @@ export default function PdfFigureCropperModal({
       await renderPdfPageToCanvas(pdfDoc, currentPage, canvasRef.current, scale);
     } catch (err) {
       console.error('Error rendering PDF page:', err);
-      setErrorMsg('خطأ في عرض الصفحة: ' + err.message);
+      setErrorMsg('Erreur lors du rendu de la page : ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -107,7 +107,7 @@ export default function PdfFigureCropperModal({
       setCropBox(null);
       setPreviewDataUrl(null);
     } catch (err) {
-      setErrorMsg('تعذر فتح المستند المحدد: ' + err.message);
+      setErrorMsg('Impossible d\'ouvrir le document : ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -194,7 +194,7 @@ export default function PdfFigureCropperModal({
   // Perform Final High-DPI Crop & Insert
   const handleConfirmAndInsert = async () => {
     if (!pdfDoc || !cropBox || cropBox.pxW < 10 || cropBox.pxH < 10) {
-      alert('يرجى سحب الماوس فوق الرسم أو الشكل لتحديده أولاً.');
+      alert('Veuillez d\'abord sélectionner une zone en glissant la souris sur la figure.');
       return;
     }
 
@@ -224,7 +224,7 @@ export default function PdfFigureCropperModal({
       onClose();
     } catch (err) {
       console.error('Error during final crop:', err);
-      alert('حدث خطأ أثناء اقتصاص الشكل: ' + err.message);
+      alert('Erreur lors du rognage : ' + err.message);
     } finally {
       setIsCroppingAction(false);
     }
@@ -244,7 +244,7 @@ export default function PdfFigureCropperModal({
         alignItems: 'center',
         justifyContent: 'center',
         padding: '1rem',
-        direction: 'rtl'
+        direction: 'ltr'
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -293,10 +293,10 @@ export default function PdfFigureCropperModal({
             </div>
             <div>
               <h2 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
-                ✂️ أداة قص وتحديد الأشكال والمنحنيات البيانية
+                Outil de capture et rognage de figures PDF
               </h2>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
-                قم بسحب الفأرة فوق أي شكل أو منحنى دالة $(C_f)$ في المستند لاقتصاصه بدقة فائقة وإدراجه مباشرة
+                Glissez la souris sur n'importe quel schéma, figure ou courbe pour l'extraire en haute résolution
               </p>
             </div>
           </div>
@@ -306,9 +306,9 @@ export default function PdfFigureCropperModal({
               onClick={() => fileInputRef.current?.click()}
               className="btn-outline"
               style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-              title="فتح ملف PDF آخر"
+              title="Ouvrir un autre fichier PDF"
             >
-              <Upload size={14} /> مستند آخر
+              <Upload size={14} /> Autre PDF
             </button>
             <input
               type="file"
@@ -343,7 +343,7 @@ export default function PdfFigureCropperModal({
               display: 'flex',
               flexDirection: 'column',
               background: '#121418',
-              borderLeft: '1px solid var(--border)',
+              borderRight: '1px solid var(--border)',
               position: 'relative',
               overflow: 'hidden'
             }}
@@ -366,7 +366,7 @@ export default function PdfFigureCropperModal({
                   className="btn-outline"
                   style={{ padding: '0.25rem 0.5rem' }}
                   onClick={() => setScale(s => Math.min(2.6, s + 0.2))}
-                  title="تكبير"
+                  title="Zoom avant"
                 >
                   <ZoomIn size={15} />
                 </button>
@@ -377,7 +377,7 @@ export default function PdfFigureCropperModal({
                   className="btn-outline"
                   style={{ padding: '0.25rem 0.5rem' }}
                   onClick={() => setScale(s => Math.max(0.7, s - 0.2))}
-                  title="تصغير"
+                  title="Zoom arrière"
                 >
                   <ZoomOut size={15} />
                 </button>
@@ -385,7 +385,7 @@ export default function PdfFigureCropperModal({
                   className="btn-outline"
                   style={{ padding: '0.25rem 0.5rem' }}
                   onClick={() => setScale(1.3)}
-                  title="إعادة ضبط الحجم"
+                  title="Réinitialiser le zoom"
                 >
                   <Maximize2 size={14} />
                 </button>
@@ -407,7 +407,7 @@ export default function PdfFigureCropperModal({
                     <ChevronLeft size={16} />
                   </button>
                   <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-main)' }}>
-                    الصفحة {currentPage} من {totalPages}
+                    Page {currentPage} sur {totalPages}
                   </span>
                   <button
                     className="btn-outline"
@@ -423,12 +423,12 @@ export default function PdfFigureCropperModal({
                   </button>
                 </div>
               ) : (
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>لم يتم تحديد مستند</span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Aucun document sélectionné</span>
               )}
 
               {/* Hint badge */}
               <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 700 }}>
-                🖱️ اسحب لتحديد الشكل
+                🖱️ Glissez pour sélectionner
               </div>
             </div>
 
@@ -452,13 +452,13 @@ export default function PdfFigureCropperModal({
               {!pdfDoc ? (
                 <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
                   <ImageIcon size={48} style={{ opacity: 0.3, marginBottom: '1rem' }} />
-                  <p style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '1rem' }}>لا يوجد مستند PDF محمّل حالياً</p>
+                  <p style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '1rem' }}>Aucun document PDF chargé</p>
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     className="btn"
                     style={{ background: 'linear-gradient(135deg, #10b981, #059669)', padding: '0.5rem 1.25rem' }}
                   >
-                    <Upload size={16} /> رفع ملف PDF لاقتصاص الأشكال منه
+                    <Upload size={16} /> Charger un fichier PDF
                   </button>
                 </div>
               ) : (
@@ -518,7 +518,7 @@ export default function PdfFigureCropperModal({
             {/* Live Cropped Preview Section */}
             <div className="input-group">
               <label style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <span>🖼️</span> معاينة الشكل المقصوص
+                <span>🖼️</span> Aperçu de la capture
               </label>
               <div
                 style={{
@@ -544,7 +544,7 @@ export default function PdfFigureCropperModal({
                 ) : (
                   <div style={{ textAlign: 'center', color: 'var(--text-subtle)', fontSize: '0.75rem' }}>
                     <Crop size={24} style={{ opacity: 0.3, marginBottom: '0.4rem' }} />
-                    <p style={{ margin: 0 }}>اسحب فوق الرسم في اليسار لرؤية المعاينة هنا</p>
+                    <p style={{ margin: 0 }}>Glissez sur le document à gauche pour afficher l'aperçu ici</p>
                   </div>
                 )}
               </div>
@@ -553,7 +553,7 @@ export default function PdfFigureCropperModal({
             {/* Destination Selector */}
             <div className="input-group">
               <label style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Layers size={14} color="var(--violet)" /> إدراج في التمرين / القسم :
+                <Layers size={14} color="var(--violet)" /> Insérer dans l'exercice / section :
               </label>
               <select
                 className="input-control"
@@ -563,7 +563,7 @@ export default function PdfFigureCropperModal({
               >
                 {sections.map((s, idx) => (
                   <option key={idx} value={idx}>
-                    {s.title ? `${s.title} (${s.type === 'exercise' ? 'تمرين' : 'فقرة'})` : `قسم ${idx + 1}`}
+                    {s.title ? `${s.title} (${s.type === 'exercise' ? 'Exercice' : 'Paragraphe'})` : `Section ${idx + 1}`}
                   </option>
                 ))}
               </select>
@@ -572,12 +572,12 @@ export default function PdfFigureCropperModal({
             {/* Figure Legend / Alt text */}
             <div className="input-group">
               <label style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)' }}>
-                عنوان الشكل / Légende (اختياري)
+                Légende / Titre de la figure (optionnel)
               </label>
               <input
                 type="text"
                 className="input-control"
-                placeholder="ex: Figure 1 — Courbe de la fonction f(x)"
+                placeholder="ex: Figure 1 — Courbe représentative de f(x)"
                 value={figAlt}
                 onChange={e => setFigAlt(e.target.value)}
                 style={{ padding: '0.4rem', fontSize: '0.8rem' }}
@@ -587,31 +587,31 @@ export default function PdfFigureCropperModal({
             {/* Display Width & Alignment */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
               <div className="input-group">
-                <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>📐 العرض في الصفحة</label>
+                <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>📐 Largeur dans la page</label>
                 <select
                   className="input-control"
                   value={figWidth}
                   onChange={e => setFigWidth(parseInt(e.target.value))}
                   style={{ padding: '0.35rem', fontSize: '0.8rem' }}
                 >
-                  <option value={100}>100% (كامل)</option>
-                  <option value={85}>85% (كبير)</option>
-                  <option value={70}>70% (متوسط)</option>
-                  <option value={50}>50% (نصف)</option>
+                  <option value={100}>100% (Pleine largeur)</option>
+                  <option value={85}>85% (Grand)</option>
+                  <option value={70}>70% (Moyen)</option>
+                  <option value={50}>50% (Compact)</option>
                 </select>
               </div>
 
               <div className="input-group">
-                <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>📍 المحاذاة</label>
+                <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>📍 Alignement</label>
                 <select
                   className="input-control"
                   value={figAlign}
                   onChange={e => setFigAlign(e.target.value)}
                   style={{ padding: '0.35rem', fontSize: '0.8rem' }}
                 >
-                  <option value="center">الوسط (Center)</option>
-                  <option value="right">اليمين (Right)</option>
-                  <option value="left">اليسار (Left)</option>
+                  <option value="center">Centré</option>
+                  <option value="left">À gauche</option>
+                  <option value="right">À droite</option>
                 </select>
               </div>
             </div>
@@ -638,11 +638,11 @@ export default function PdfFigureCropperModal({
               >
                 {isCroppingAction ? (
                   <>
-                    <RefreshCw size={16} className="animate-spin" /> جاري الاقتصاص والمعالجة...
+                    <RefreshCw size={16} className="animate-spin" /> Rognage et traitement en cours...
                   </>
                 ) : (
                   <>
-                    <CheckCircle size={16} /> ✂️ تأكيد وقص وإدراج في التمرين
+                    <CheckCircle size={16} /> Valider et insérer la figure
                   </>
                 )}
               </button>

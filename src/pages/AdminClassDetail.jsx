@@ -1447,7 +1447,7 @@ export default function AdminClassDetail() {
                   borderColor: 'var(--violet)', color: 'var(--violet)', fontWeight: 700
                 }}
               >
-                <FileSpreadsheet size={15} /> Grilles OMR (أوراق الإجابة)
+                <FileSpreadsheet size={15} /> Grilles de réponses OMR
               </button>
               <button 
                 onClick={() => handlePrint('list')}
@@ -1473,9 +1473,9 @@ export default function AdminClassDetail() {
                   fontSize: '0.85rem', padding: '0.6rem 1.1rem', borderRadius: '10px',
                   borderColor: 'rgba(16,185,129,0.4)', color: '#10B981', fontWeight: 700
                 }}
-                title="تصدير ملف مسار Excel/CSV لرفع النقط مباشرة"
+                title="Exporter fichier Massar Excel/CSV"
               >
-                <FileSpreadsheet size={15} /> تصدير مسار (Massar CSV)
+                <FileSpreadsheet size={15} /> Exporter Massar (CSV)
               </button>
               <button 
                 onClick={() => setShowAddStudent(true)}
@@ -2131,21 +2131,21 @@ export default function AdminClassDetail() {
                       return (
                         <>
                           {courses.length > 0 && (
-                            <optgroup label="📖 Cours & Chapitres du programme (الدروس والمقررات)">
+                            <optgroup label="📖 Cours & Chapitres du programme">
                               {courses.map(l => (
                                 <option key={l.id} value={l.id}>📖 {l.title} {l.subject ? `(${l.subject})` : ''}</option>
                               ))}
                             </optgroup>
                           )}
                           {series.length > 0 && (
-                            <optgroup label="📝 Séries d'exercices & Fiches TD (سلاسل التمارين)">
+                            <optgroup label="📝 Séries d'exercices & Fiches TD">
                               {series.map(l => (
                                 <option key={l.id} value={l.id}>📝 {l.title} {l.subject ? `(${l.subject})` : ''}</option>
                               ))}
                             </optgroup>
                           )}
                           {homeworks.length > 0 && (
-                            <optgroup label="📑 Devoirs surveillés & Contrôles (الفروض والامتحانات)">
+                            <optgroup label="📑 Devoirs surveillés & Contrôles">
                               {homeworks.map(l => (
                                 <option key={l.id} value={l.id}>📑 {l.title} {l.subject ? `(${l.subject})` : ''}</option>
                               ))}
@@ -2157,10 +2157,10 @@ export default function AdminClassDetail() {
                   </select>
                 </div>
 
-                <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-subtle)', fontWeight: 700, margin: '0.2rem 0' }}>— OU / أو —</div>
+                <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-subtle)', fontWeight: 700, margin: '0.2rem 0' }}>— OU —</div>
 
                 <div className="input-group">
-                  <label style={{ fontSize: '0.78rem', color: 'var(--text-subtle)', display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Titre personnalisé / عنوان خاص</label>
+                  <label style={{ fontSize: '0.78rem', color: 'var(--text-subtle)', display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Titre personnalisé</label>
                   <input
                     type="text"
                     className="input-control"

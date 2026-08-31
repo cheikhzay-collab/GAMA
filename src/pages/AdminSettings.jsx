@@ -184,10 +184,10 @@ export default function AdminSettings() {
             count++;
           }
         });
-        alert(`✅ تم استعادة النسخة الاحتياطية بنجاح! تم استرجاع ${count} عنصراً. سيتم تحديث الصفحة الآن.`);
+        alert(`✅ Sauvegarde restaurée avec succès ! ${count} éléments récupérés. La page va se recharger.`);
         window.location.reload();
       } catch (err) {
-        alert('❌ خطأ في قراءة ملف النسخة الاحتياطية: ' + err.message);
+        alert('❌ Erreur lors de la lecture du fichier de sauvegarde : ' + err.message);
       }
     };
     reader.readAsText(file);
@@ -2563,8 +2563,8 @@ export default function AdminSettings() {
                         <h2 className="settings-title" style={{ margin: 0, fontSize: '1.15rem' }}>
                           Profil du Directeur & Enseignant
                         </h2>
-                        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-subtle)', fontFamily: "'Cairo', sans-serif" }}>
-                          (بطاقة تعريف مدير المنصة والأستاذ)
+                        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-subtle)' }}>
+                          (Fiche d'identité et coordonnées)
                         </span>
                       </div>
                     </div>
@@ -2635,25 +2635,25 @@ export default function AdminSettings() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                       <div className="settings-field" style={{ gridColumn: '1 / -1' }}>
                         <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
-                          Nom de l&apos;Établissement / École (المؤسسة التعليمية) *
+                          Nom de l&apos;Établissement / École *
                         </label>
                         <input className="input-control" dir="auto" placeholder="Ex: Lycée Qualifiant Ibn Khaldoun" value={profSchool} onChange={e => setProfSchool(e.target.value)} />
                       </div>
                       <div className="settings-field">
                         <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
-                          Direction Provinciale (المديرية الإقليمية) *
+                          Direction Provinciale *
                         </label>
                         <input className="input-control" dir="auto" placeholder="Ex: Direction Provinciale de Rabat" value={profDirection} onChange={e => setProfDirection(e.target.value)} />
                       </div>
                       <div className="settings-field">
                         <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
-                          Académie Régionale - AREF (الأكاديمية الجهوية) *
+                          Académie Régionale - AREF *
                         </label>
                         <input className="input-control" dir="auto" placeholder="Ex: AREF Rabat-Salé-Kénitra" value={profAcademy} onChange={e => setProfAcademy(e.target.value)} />
                       </div>
                       <div className="settings-field" style={{ gridColumn: '1 / -1' }}>
                         <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
-                          Ville / Commune (المدينة / الجماعة)
+                          Ville / Commune
                         </label>
                         <input className="input-control" dir="auto" placeholder="Ex: Rabat" value={profCity} onChange={e => setProfCity(e.target.value)} />
                       </div>
@@ -2665,19 +2665,19 @@ export default function AdminSettings() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                       <div className="settings-field">
                         <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
-                          Matière / Discipline (مادة التدريس)
+                          Matière / Discipline
                         </label>
                         <input className="input-control" dir="auto" placeholder="Ex: Mathématiques / PC / SVT" value={profSubject} onChange={e => setProfSubject(e.target.value)} />
                       </div>
                       <div className="settings-field">
                         <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
-                          Matricule SOM / N° PPA (الرقم التأجيري)
+                          Matricule SOM / N° PPA
                         </label>
                         <input className="input-control" dir="auto" placeholder="Ex: 1548923" value={profSOM} onChange={e => setProfSOM(e.target.value)} />
                       </div>
                       <div className="settings-field">
                         <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
-                          Année Scolaire (السنة الدراسية)
+                          Année Scolaire
                         </label>
                         <input className="input-control" dir="auto" placeholder="Ex: 2025/2026" value={profAcademicYear} onChange={e => setProfAcademicYear(e.target.value)} />
                       </div>
@@ -2740,14 +2740,14 @@ export default function AdminSettings() {
                       <Download size={20} />
                     </div>
                     <div>
-                      <h2 className="settings-title" style={{ margin: 0, fontSize: '1.2rem', fontFamily: "'Cairo', 'Inter', sans-serif" }}>
-                        النسخ الاحتياطي واسترجاع البيانات (Sauvegarde & Restauration)
+                      <h2 className="settings-title" style={{ margin: 0, fontSize: '1.2rem' }}>
+                        Sauvegarde et Restauration des données
                       </h2>
                     </div>
                   </div>
                   
-                  <p style={{ fontFamily: "'Cairo', sans-serif", fontSize: '0.92rem', fontWeight: 600, color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-                    احفظ نسخة احتياطية كاملة من بيانات جميع الأقسام، النقط، الفروض، المفاتيح، والدروس في ملف واحد (.json)، أو استرجعها في أي وقت بضغطة زر.
+                  <p style={{ fontSize: '0.92rem', fontWeight: 600, color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+                    Sauvegardez une copie complète de toutes les classes, notes, devoirs, clés et leçons dans un fichier (.json), ou restaurez-la à tout moment en un clic.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -2759,10 +2759,10 @@ export default function AdminSettings() {
                         padding: '0.85rem 1.25rem', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 800,
                         background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
                         color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem',
-                        boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2)', fontFamily: "'Cairo', sans-serif"
+                        boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2)'
                       }}
                     >
-                      <Download size={18} /> تصدير نسخة احتياطية شاملة (.json)
+                      <Download size={18} /> Exporter une sauvegarde globale (.json)
                     </button>
 
                     <label
@@ -2770,17 +2770,17 @@ export default function AdminSettings() {
                         padding: '0.85rem 1.25rem', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 800,
                         background: 'var(--bg-glass)', color: 'var(--text-main)', border: '1.5px solid var(--border)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', cursor: 'pointer',
-                        fontFamily: "'Cairo', sans-serif", transition: 'all 0.2s ease'
+                        transition: 'all 0.2s ease'
                       }}
                     >
-                      <Upload size={18} /> استرجاع نسخة احتياطية من ملف (.json)
+                      <Upload size={18} /> Restaurer une sauvegarde depuis un fichier (.json)
                       <input type="file" accept=".json" onChange={handleImportBackup} style={{ display: 'none' }} />
                     </label>
                   </div>
                 </div>
 
-                <div style={{ marginTop: '1.75rem', padding: '0.75rem 1rem', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-subtle)', fontFamily: "'Cairo', sans-serif" }}>
-                  🛡️ حفظ شامل: يتضمن الملف المحفوظ كل البيانات والتلاميذ والنقط والمفاتيح في ملف آمن ومشفر بترميز نقي.
+                <div style={{ marginTop: '1.75rem', padding: '0.75rem 1rem', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-subtle)' }}>
+                  🛡️ Sauvegarde complète : inclut l'intégralité des données, élèves, notes et clés dans un fichier sécurisé.
                 </div>
               </div>
 

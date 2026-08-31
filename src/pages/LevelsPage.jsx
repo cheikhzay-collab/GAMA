@@ -16,7 +16,7 @@ const MAIN_LEVELS = [
   {
     id: 'tc',
     name: 'Tronc Commun',
-    subName: 'الجدع المشترك',
+    subName: 'Tronc Commun',
     desc: 'Année de tronc commun pour s\'orienter vers les filières du baccalauréat.',
     icon: GraduationCap,
     gradient: 'linear-gradient(135deg, #10B981, #059669)',
@@ -26,13 +26,13 @@ const MAIN_LEVELS = [
       {
         id: 'common_core_sci',
         name: 'Tronc Commun Scientifique',
-        subName: 'جدع مشترك علوم',
+        subName: 'Tronc Commun Sciences',
         desc: 'Bases en Mathématiques, Physique-Chimie et SVT.'
       },
       {
         id: 'common_core_arts',
         name: 'Tronc Commun Littéraire',
-        subName: 'جدع مشترك آداب',
+        subName: 'Tronc Commun Lettres',
         desc: 'Bases en Langues, Littérature et Sciences Humaines.'
       }
     ]
@@ -40,7 +40,7 @@ const MAIN_LEVELS = [
   {
     id: '1bac',
     name: '1ère Année Baccalauréat',
-    subName: 'السنة الأولى بكالوريا',
+    subName: '1ère Année Bac',
     desc: 'Préparation aux examens régionaux marocains.',
     icon: Sparkles,
     gradient: 'linear-gradient(135deg, #3B82F6, #1D4ED8)',
@@ -50,13 +50,13 @@ const MAIN_LEVELS = [
       {
         id: '1bac_sci',
         name: '1ère Bac Sciences Expérimentales',
-        subName: 'أولى باك علوم تجريبية',
+        subName: '1ère Bac Sciences Exp.',
         desc: 'Physique-Chimie, SVT, Mathématiques et Français.'
       },
       {
         id: '1bac_arts',
         name: '1ère Bac Littéraire',
-        subName: 'أولى باك آداب',
+        subName: '1ère Bac Lettres',
         desc: 'Matières littéraires et examen régional.'
       }
     ]
@@ -64,7 +64,7 @@ const MAIN_LEVELS = [
   {
     id: '2bac',
     name: '2ème Année Baccalauréat',
-    subName: 'السنة الثانية بكالوريا',
+    subName: '2ème Année Bac',
     desc: 'Dernière ligne droite pour l\'obtention du diplôme national du Baccalauréat.',
     icon: BookOpenCheck,
     gradient: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
@@ -74,19 +74,19 @@ const MAIN_LEVELS = [
       {
         id: '2bac_sm',
         name: '2ème Bac Sciences Mathématiques',
-        subName: 'ثانية باك علوم رياضية',
+        subName: '2ème Bac Sciences Maths',
         desc: 'Préparation intensive aux écoles d\'ingénieurs (Sciences Maths A & B).'
       },
       {
         id: '2bac_pc_svt',
         name: '2ème Bac Sciences Expérimentales',
-        subName: 'ثانية باك علوم تجريبية (PC / SVT)',
+        subName: '2ème Bac PC / SVT',
         desc: 'Préparation au concours de Médecine, ENSA et facultés des sciences.'
       },
       {
         id: '2bac_arts',
         name: '2ème Bac Lettres & Sciences Humaines',
-        subName: 'ثانية باك آداب وعلوم إنسانية',
+        subName: '2ème Bac Lettres & Sc. Humaines',
         desc: 'Filière littéraire nationale.'
       }
     ]
@@ -886,7 +886,7 @@ export default function LevelsPage() {
                           color: l.docType === 'homework' ? 'var(--danger)' : l.docType === 'exercises' ? 'var(--warning)' : l.docType === 'concours' ? 'var(--emerald)' : '#3B82F6',
                           padding: '0.25rem 0.65rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 800
                         }}>
-                          {l.docType === 'homework' ? 'فرض محروس' : l.docType === 'exercises' ? 'سلسلة تمارين' : l.docType === 'concours' ? 'مباراة' : 'درس'}
+                          {l.docType === 'homework' ? 'Devoir surveillé' : l.docType === 'exercises' ? 'Série d\'exercices' : l.docType === 'concours' ? 'Concours' : 'Cours'}
                         </span>
                       </div>
                       

@@ -2473,7 +2473,7 @@ export default function LessonViewerPage() {
               fontSize: '0.75rem', fontWeight: 700, color: '#4285F4',
               direction: 'rtl', fontFamily: arabicFont,
             }}>
-              🌐 نسخة عربية — مترجمة بالذكاء الاصطناعي
+              🌐 Version Arabe — Traduction IA
             </div>
           )}
           {/* Centered blue banner title (hidden for homework/Devoir Surveillé as it is already in the ANISSE Cartouche Header) */}
@@ -3461,7 +3461,7 @@ export default function LessonViewerPage() {
                       display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
                       boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)', transition: 'all 0.2s ease'
                     }}
-                    title="Mode التركيز الكامل (Z) - إخفاء جميع الأشرطة لعدم التشتت"
+                    title="Mode Plein Écran & Focus (Z) - Masquer toutes les barres"
                   >
                     <Target size={15} />
                     <span>Mode Focus</span>
@@ -3489,9 +3489,9 @@ export default function LessonViewerPage() {
                         border: 'none', padding: '0.35rem 0.65rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
                         display: 'inline-flex', alignItems: 'center', gap: '0.35rem', transition: 'all 0.2s ease'
                       }}
-                      title="Mode السبورة الخضراء (Chalkboard)"
+                      title="Mode Tableau Vert (Chalkboard)"
                     >
-                      <Layers size={14} /> <span>السبورة</span>
+                      <Layers size={14} /> <span>Tableau Vert</span>
                     </button>
                     <button
                       onClick={() => setBoardTheme('whiteboard')}
@@ -3501,9 +3501,9 @@ export default function LessonViewerPage() {
                         border: 'none', padding: '0.35rem 0.65rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
                         display: 'inline-flex', alignItems: 'center', gap: '0.35rem', transition: 'all 0.2s ease'
                       }}
-                      title="Mode السبورة البيضاء (Whiteboard)"
+                      title="Mode Tableau Blanc (Whiteboard)"
                     >
-                      <Sun size={14} /> <span>البيضاء</span>
+                      <Sun size={14} /> <span>Tableau Blanc</span>
                     </button>
                   </div>
 
@@ -3796,7 +3796,7 @@ export default function LessonViewerPage() {
                 </button>
 
                 <div style={{ fontSize: '0.85rem', color: t.textSubtle, fontWeight: 700 }}>
-                  Diapositive <strong style={{ color: t.textMain }}>{currentSlideIndex + 1}</strong> sur <strong style={{ color: t.textMain }}>{totalSlides}</strong> • Naviguez مع <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>←</kbd> <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>→</kbd> أو <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>Espace</kbd>
+                  Diapositive <strong style={{ color: t.textMain }}>{currentSlideIndex + 1}</strong> sur <strong style={{ color: t.textMain }}>{totalSlides}</strong> • Naviguez avec <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>←</kbd> <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>→</kbd> ou <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>Espace</kbd>
                 </div>
 
                 <button

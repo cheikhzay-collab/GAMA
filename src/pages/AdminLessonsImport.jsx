@@ -1836,7 +1836,7 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
               <button type="button" onClick={() => handleJumpAndCrop(secIdx, itemIdx, figPage)}
                 className="btn-outline"
                 style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--violet)' }}>
-                <Crop size={12} /> إعادة قص من PDF
+                <Crop size={12} /> Rogner depuis le PDF
               </button>
               <label style={{
                 display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
@@ -1844,7 +1844,7 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                 borderRadius: '8px', border: '1px solid var(--border)',
                 background: 'transparent', color: 'var(--text-muted)'
               }}>
-                <ImageIcon size={12} /> استبدال بصورة أخرى
+                <ImageIcon size={12} /> Remplacer par une image
                 <input type="file" accept="image/*" style={{ display: 'none' }}
                   onChange={e => {
                     const file = e.target.files?.[0];
@@ -1862,14 +1862,14 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
 
         {/* Legend + size/align controls */}
         <input type="text" className="input-control"
-          placeholder="عنوان الشكل / Légende (ex: Figure 1 — Courbes de f et g)"
+          placeholder="Légende de la figure (ex: Figure 1 — Courbes de f et g)"
           value={item.alt || ''}
           onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'alt', e.target.value)}
           style={{ padding: '0.35rem', fontSize: '0.8rem' }}
         />
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>📐 الحجم:</label>
+            <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>📐 Taille :</label>
             <select className="input-control" value={item.width_pct || 80}
               onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'width_pct', parseInt(e.target.value))}
               style={{ padding: '0.2rem 0.4rem', fontSize: '0.78rem' }}>
@@ -1880,13 +1880,13 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
             </select>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>📍 المحاذاة:</label>
+            <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>📍 Alignement :</label>
             <select className="input-control" value={item.align || 'center'}
               onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'align', e.target.value)}
               style={{ padding: '0.2rem 0.4rem', fontSize: '0.78rem' }}>
-              <option value="center">الوسط</option>
-              <option value="right">اليمين</option>
-              <option value="left">اليسار</option>
+              <option value="center">Centré</option>
+              <option value="right">À droite</option>
+              <option value="left">À gauche</option>
             </select>
           </div>
         </div>
@@ -2191,10 +2191,10 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                 <span style={{ fontSize: '1.75rem' }}>🏆</span>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)' }}>
-                    تم اكتشاف امتحان وطني موحد للبكالوريا (Examen National)
+                    Examen National officiel détecté (Baccalauréat)
                   </h3>
                   <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                    تم تفريغ المستند في معمارية الامتحان الوطني الرسمي (تنسيق الصفحات + الجدول التأطييري + QR Code لكل سؤال)
+                    Mise en page automatique selon la charte officielle des examens nationaux (en-tête ministériel, cadre d'évaluation, QR Code par exercice).
                   </p>
                 </div>
               </div>
@@ -2212,9 +2212,9 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                 onClick={() => handleOpenCropperModal(0)}
                 className="btn-outline"
                 style={{ fontSize: '0.85rem', color: 'var(--emerald)', borderColor: 'rgba(16,185,129,0.35)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
-                title="قص وتحديد الأشكال والمنحنيات من الـ PDF"
+                title="Outil de rognage et capture de figures PDF"
               >
-                <Crop size={15} /> ✂️ أداة قص الأشكال (PDF)
+                <Crop size={15} /> ✂️ Rognage figures (PDF)
               </button>
               {pdfDocProxy && (
                 <button
@@ -2222,7 +2222,7 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                   className={isSplitView ? 'btn' : 'btn-outline'}
                   style={{ fontSize: '0.85rem', background: isSplitView ? 'var(--violet)' : undefined }}
                 >
-                  <Columns size={16} /> {isSplitView ? 'الشاشة المزدوجة (مفعّلة)' : 'تفعيل الشاشة المزدوجة (Split-View)'}
+                  <Columns size={16} /> {isSplitView ? 'Vue scindée (Active)' : 'Activer vue scindée (Split-View)'}
                 </button>
               )}
             </div>
@@ -2239,7 +2239,7 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                   fontSize: '0.85rem'
                 }}
               >
-                {viewNationalTemplate ? '✏️ التعديل والتنقيح' : '👁️ المعمارية الرسمية للامتحان الوطني'}
+                {viewNationalTemplate ? '✏️ Mode édition' : '👁️ Modèle Examen National'}
               </button>
               <button
                 type="button"
@@ -2250,7 +2250,7 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                 })}
                 style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', fontWeight: 700, fontSize: '0.85rem' }}
               >
-                🖨️ طباعة / تصدير التنسيق الرسمي (PDF)
+                🖨️ Imprimer / Exporter format officiel (PDF)
               </button>
             </div>
           </div>
@@ -2273,7 +2273,7 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                 <div className="glass-panel" style={{ padding: '1.25rem', position: 'sticky', top: '1rem', maxHeight: 'calc(100vh - 2rem)', display: 'flex', flexDirection: 'column', gap: '0.75rem', zIndex: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>
                     <span style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--violet)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      📄 مستند المصدر (PDF)
+                      📄 Document source (PDF)
                     </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                       <button
@@ -2308,7 +2308,7 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                       className={isCropping ? 'btn' : 'btn-outline'}
                       style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', flex: 1, background: isCropping ? 'var(--emerald)' : undefined }}
                     >
-                      <Crop size={14} /> {isCropping ? 'إلغاء وضع القص' : '✂️ تفعيل أداة قص الأشكال'}
+                      <Crop size={14} /> {isCropping ? 'Annuler le rognage' : '✂️ Activer outil de capture'}
                     </button>
 
                     <div style={{ display: 'flex', gap: '0.2rem' }}>
@@ -2394,7 +2394,7 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                   {isCropping && cropBox && cropBox.width > 20 && cropBox.height > 20 && (
                     <div style={{ background: 'rgba(0,0,0,0.85)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--emerald)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem' }}>
-                        <span style={{ color: 'var(--emerald)', fontWeight: 800 }}>✂️ تم تحديد المنطقة</span>
+                        <span style={{ color: 'var(--emerald)', fontWeight: 800 }}>✂️ Zone sélectionnée</span>
                         <select
                           className="input-control"
                           style={{ padding: '0.2rem 0.4rem', fontSize: '0.75rem' }}
@@ -2403,7 +2403,7 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                         >
                           {sections.map((s, idx) => (
                             <option key={idx} value={idx}>
-                              إرفاق بـ : {s.title || `قسم ${idx + 1}`}
+                              Associer à : {s.title || `Section ${idx + 1}`}
                             </option>
                           ))}
                         </select>
@@ -2411,10 +2411,10 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
 
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button onClick={handleConfirmCrop} className="btn" style={{ flex: 1, padding: '0.35rem', fontSize: '0.8rem', background: 'var(--emerald)' }}>
-                          <CheckCircle size={14} /> تأكيد وقص الشكل
+                          <CheckCircle size={14} /> Valider et insérer la figure
                         </button>
                         <button onClick={() => setCropBox(null)} className="btn-outline" style={{ padding: '0.35rem', fontSize: '0.8rem' }}>
-                          إلغاء
+                          Annuler
                         </button>
                       </div>
                     </div>
@@ -2464,11 +2464,11 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                           setViewNationalTemplate(true);
                         }
                       }} style={{ width: '100%' }}>
-                        <option value="course">درس (Cours)</option>
-                        <option value="homework">فرض محروس (Devoir Surveillé)</option>
-                        <option value="national">امتحان وطني (Examen National)</option>
-                        <option value="exercises">سلسلة تمارين (Série d'exercices)</option>
-                        <option value="concours">مباراة (Concours)</option>
+                        <option value="course">Cours</option>
+                        <option value="homework">Devoir Surveillé</option>
+                        <option value="national">Examen National</option>
+                        <option value="exercises">Série d'exercices</option>
+                        <option value="concours">Concours</option>
                       </select>
                     </div>
 

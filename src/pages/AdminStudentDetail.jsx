@@ -146,7 +146,7 @@ export default function AdminStudentDetail() {
           {
             id: Date.now().toString(),
             type: 'note',
-            content: `Changement de statut CRM vers: ${newStage} (تعديل مسار العميل)`,
+            content: `Changement de statut CRM vers: ${newStage}`,
             date: new Date().toISOString(),
             by: 'Système'
           },

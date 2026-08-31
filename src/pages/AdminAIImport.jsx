@@ -1886,10 +1886,10 @@ ${pdfText}
                 <span style={{ fontSize: '1.75rem' }}>🏆</span>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)' }}>
-                    تم اكتشاف امتحان وطني موحد للبكالوريا (Examen National)
+                    Examen National officiel détecté (Baccalauréat)
                   </h3>
                   <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                    تنسيق وتفريغ تلقائي في معمارية الامتحان الوطني الموحد بأسلوب ورموز البكالوريا المغربية.
+                    Mise en page automatique selon la charte officielle des examens nationaux marocains.
                   </p>
                 </div>
               </div>
@@ -1907,18 +1907,18 @@ ${pdfText}
                     fontSize: '0.85rem'
                   }}
                 >
-                  {viewNationalTemplate ? '✏️ التعديل والتنقيح' : '👁️ المعمارية الرسمية للامتحان الوطني'}
+                  {viewNationalTemplate ? '✏️ Mode édition' : '👁️ Modèle Examen National'}
                 </button>
                 <button
                   type="button"
                   className="btn"
                   onClick={() => openNationalExamPrintWindow({
-                    header: { fiche_title: examName, subject: 'الرياضيات', level: '2bac_pc_svt', is_national_exam: isNationalExam, national_exam_meta: nationalExamMeta },
+                    header: { fiche_title: examName, subject: 'Mathématiques', level: '2bac_pc_svt', is_national_exam: isNationalExam, national_exam_meta: nationalExamMeta },
                     questions: questions
                   })}
                   style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', fontWeight: 700, padding: '0.5rem 1rem', fontSize: '0.85rem' }}
                 >
-                  🖨️ طباعة / تصدير التنسيق الرسمي (PDF)
+                  🖨️ Imprimer / Exporter format officiel (PDF)
                 </button>
               </div>
             </div>
