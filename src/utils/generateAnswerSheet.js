@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
+import { getLevelDisplayName } from './levelHelpers';
 
 /**
  * Sanitizes strings for safe PDF filenames across OS and browsers.
@@ -97,15 +98,20 @@ export async function renderAnswerSheetPage(doc, exam, student = null, classObj 
   doc.setFillColor(...navy);
   doc.roundedRect(headerMargin, 16, W - headerMargin * 2, 30, 3, 3, 'F');
 
-  // Platform Logo
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(20);
-  doc.setFont('helvetica', 'bold');
-  doc.text("L'CONQ", headerMargin + 6, 26);
+  // School / Establishment Name (Replaces L'CONQ)
+  const profSchool = (typeof window !== 'undefined' && window.localStorage ? localStorage.getItem('profSchool') : '') || exam?.profSchool || 'ÉTABLISSEMENT SCOLAIRE';
+  const cleanSchoolTitle = toLatinOnly(profSchool, 'ÉTABLISSEMENT SCOLAIRE').toUpperCase();
 
-  // Logo gold dot
-  doc.setFillColor(245, 158, 11); // Gold #f59e0b
-  doc.circle(headerMargin + 30, 22.5, 1.2, 'F');
+  doc.setTextColor(255, 255, 255);
+  if (cleanSchoolTitle.length > 25) {
+    doc.setFontSize(13);
+  } else if (cleanSchoolTitle.length > 18) {
+    doc.setFontSize(15);
+  } else {
+    doc.setFontSize(18);
+  }
+  doc.setFont('helvetica', 'bold');
+  doc.text(cleanSchoolTitle, headerMargin + 6, 26, { maxWidth: 130 });
 
   doc.setFontSize(8.5);
   doc.setFont('helvetica', 'normal');
@@ -113,19 +119,21 @@ export async function renderAnswerSheetPage(doc, exam, student = null, classObj 
   doc.text('Feuille de réponses officielle · Correction par Intelligence Artificielle', headerMargin + 6, 32);
 
   // Exam name sanitized for jsPDF Latin-1 helvetica font
-  doc.setFontSize(10.5);
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
   
-  const rawSchool = exam?.school || 'L\'CONQ';
+  const rawSchool = exam?.school || '2ème Bac';
   const rawName = exam?.name || 'Examen QCM';
   const rawYear = exam?.year || '';
 
-  const cleanSchool = toLatinOnly(rawSchool) || 'L\'CONQ';
-  const cleanName = toLatinOnly(rawName) || 'Examen QCM';
+  const cleanLevel = toLatinOnly(getLevelDisplayName(rawSchool) || rawSchool);
+  let cleanName = toLatinOnly(rawName);
+  cleanName = cleanName.replace(/\bDE(MATH[ÉE]MATIQUES|PHYSIQUE|CHIMIE|SVT|FRAN[ÇC]AIS|PHILOSOPHIE|SCIENCES)\b/gi, 'DE $1');
+  cleanName = cleanName.replace(/[\s—–\-_:]+$/g, '').trim();
   const cleanYear = toLatinOnly(rawYear) || '';
 
-  const examLabel = `${cleanSchool} — ${cleanName} ${cleanYear}`.replace(/\s+—\s+$/, '').trim();
+  const examLabel = `${cleanLevel} — ${cleanName} ${cleanYear}`.replace(/\s+—\s+$/, '').trim();
   doc.text(examLabel, headerMargin + 6, 41, { maxWidth: 130 });
 
   // QR Code Image in Header

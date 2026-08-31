@@ -2201,9 +2201,9 @@ ${settings.premiumOmr === true ? `
   <div class="omr-marker br"></div>
 
   <div class="omr-header">
-    <div class="omr-header-logo">L'CONQ<span></span></div>
+    <div class="omr-header-logo">${schoolDisplay.toUpperCase()}<span></span></div>
     <div class="omr-header-subtitle">Grille de Réponses Optique · Scanner Automatique</div>
-    <div class="omr-header-title">${examTitle}</div>
+    <div class="omr-header-title">${cleanTitle}</div>
     <div class="omr-header-qr">
       <img src="${premiumQrUrl}" alt="QR Code" />
     </div>
