@@ -1053,6 +1053,7 @@ export const generateSubjectHTML = async (examTitle, school, year, questions, se
   const fontSizeCSS = pdfConf.fontSize;
 
   let profName = settings.profName || '';
+  let profSchool = settings.profSchool || '';
   let profPhone = settings.profPhone || '';
   let profSite = settings.profSite || 'www.lconq.ma';
   const showCover = settings.showCover !== undefined ? settings.showCover : true;
@@ -1082,9 +1083,13 @@ export const generateSubjectHTML = async (examTitle, school, year, questions, se
 
   if (typeof window !== 'undefined' && window.localStorage) {
     if (!profName) profName = localStorage.getItem('profName') || '';
+    if (!profSchool) profSchool = localStorage.getItem('profSchool') || '';
     if (!profPhone) profPhone = localStorage.getItem('profPhone') || '';
     if (!profSite) profSite = localStorage.getItem('profSite') || 'www.lconq.ma';
   }
+
+  const teacherDisplay = profName ? (profName.toLowerCase().startsWith('prof') ? profName : `Prof. ${profName}`) : 'Enseignant';
+  const schoolDisplay = profSchool || 'Établissement Scolaire';
 
   const siteUrl = profSite;
   const copyrightLine = profName
@@ -2253,12 +2258,12 @@ ${settings.premiumOmr === true ? `
   ${templateStyle === 'anisse_classic' ? `
 <div class="anisse-header-frame">
   <div class="anisse-col col-left">
-    <div>Prof : <strong>${profName || 'Lycée ANISSE'}</strong></div>
+    <div>Prof : <strong>${profName || 'Professeur'}</strong></div>
     <div>A.S : <strong>${year || '2025/2026'}</strong></div>
   </div>
   <div class="anisse-col col-center">
     <div class="main-title">${cleanTitle || 'Devoir Surveillé N° 1 (Semestre 1)'}</div>
-    <div class="sub-title">${docInfo.subTitle}</div>
+    <div class="sub-title">${schoolDisplay}</div>
   </div>
   <div class="anisse-col col-right">
     <div>Niveau : <strong>${formattedSchool || '2ème Bac PC/SVT'}</strong></div>
@@ -2276,10 +2281,10 @@ ${settings.premiumOmr === true ? `
   <div class="ws-doc-header">
     <div class="ws-doc-header-left">
       <h1 class="ws-doc-title">${cleanTitle}</h1>
-      <div class="ws-doc-meta">${formattedSchool} &nbsp;·&nbsp; ${docInfo.typeLabel} &nbsp;·&nbsp; ${year || ''}</div>
+      <div class="ws-doc-meta">${formattedSchool} &nbsp;·&nbsp; ${teacherDisplay} &nbsp;·&nbsp; ${year || new Date().getFullYear()}</div>
     </div>
     <div class="ws-doc-header-right">
-      <span class="ws-doc-type-badge">${docInfo.badgeLabel}</span>
+      <span class="ws-doc-type-badge">${schoolDisplay.toUpperCase()}</span>
     </div>
   </div>
   `}
@@ -2310,6 +2315,7 @@ printWhenReady();
   const fontSizeCSS = pdfConf.fontSize;
 
   let profName = settings.profName || '';
+  let profSchool = settings.profSchool || '';
   let profPhone = settings.profPhone || '';
   let profSite = settings.profSite || 'www.lconq.ma';
   const showCover = settings.showCover !== undefined ? settings.showCover : true;
@@ -2339,9 +2345,13 @@ printWhenReady();
 
   if (typeof window !== 'undefined' && window.localStorage) {
     if (!profName) profName = localStorage.getItem('profName') || '';
+    if (!profSchool) profSchool = localStorage.getItem('profSchool') || '';
     if (!profPhone) profPhone = localStorage.getItem('profPhone') || '';
     if (!profSite) profSite = localStorage.getItem('profSite') || 'www.lconq.ma';
   }
+
+  const teacherDisplay = profName ? (profName.toLowerCase().startsWith('prof') ? profName : `Prof. ${profName}`) : 'Enseignant';
+  const schoolDisplay = profSchool || 'Établissement Scolaire';
 
   const siteUrl = profSite;
   const premiumQrPayload = profSite ? profSite : 'https://lconq.ma';
@@ -3128,12 +3138,12 @@ ${coverHtml}
   ${templateStyle === 'anisse_classic' ? `
 <div class="anisse-header-frame">
   <div class="anisse-col col-left">
-    <div>Prof : <strong>${profName || 'Lycée ANISSE'}</strong></div>
+    <div>Prof : <strong>${profName || 'Professeur'}</strong></div>
     <div>A.S : <strong>${year || '2025/2026'}</strong></div>
   </div>
   <div class="anisse-col col-center">
     <div class="main-title">${cleanTitle || 'Devoir Surveillé N° 1 (Semestre 1)'}</div>
-    <div class="sub-title" style="color: #7c3aed;">${docInfo.subTitle} — CORRIGÉ</div>
+    <div class="sub-title" style="color: #7c3aed;">${schoolDisplay} — CORRIGÉ</div>
   </div>
   <div class="anisse-col col-right">
     <div>Niveau : <strong>${formattedSchool || '2ème Bac PC/SVT'}</strong></div>
@@ -3151,10 +3161,10 @@ ${coverHtml}
   <div class="ws-doc-header" style="border-bottom-color: #7c3aed;">
     <div class="ws-doc-header-left">
       <h1 class="ws-doc-title">${cleanTitle}</h1>
-      <div class="ws-doc-meta">${formattedSchool} &nbsp;·&nbsp; ${docInfo.typeLabel} (Corrigé) &nbsp;·&nbsp; ${year || ''}</div>
+      <div class="ws-doc-meta">${formattedSchool} &nbsp;·&nbsp; ${teacherDisplay} &nbsp;·&nbsp; Corrigé &nbsp;·&nbsp; ${year || new Date().getFullYear()}</div>
     </div>
     <div class="ws-doc-header-right">
-      <span class="ws-doc-type-badge" style="background: #7c3aed;">CORRIGÉ DÉTAILLÉ</span>
+      <span class="ws-doc-type-badge" style="background: #7c3aed;">${schoolDisplay.toUpperCase()}</span>
     </div>
   </div>
   `}
