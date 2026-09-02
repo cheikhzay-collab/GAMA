@@ -923,6 +923,8 @@ const calculateTotalPoints = (text, isArabicMode) => {
    ═══════════════════════════════════════════════════════════ */
 export const generateLessonHTML = (lesson, settings = {}) => {
   const showSolutions = settings.showSolutions !== undefined ? settings.showSolutions : true;
+  const seriesStyle = settings.seriesStyle || (typeof window !== 'undefined' && window.localStorage ? localStorage.getItem('pdf_series_style') : null) || 'modern_pro_2026';
+  const isModernPro = seriesStyle === 'modern_pro_2026';
   const content = lesson?.content || lesson || {};
   const header = content?.header || {};
   const sections = Array.isArray(content?.sections) ? content.sections : (Array.isArray(lesson?.sections) ? lesson.sections : (Array.isArray(content) ? content : []));
@@ -1035,14 +1037,26 @@ export const generateLessonHTML = (lesson, settings = {}) => {
           </div>
         </div>`;
       } else {
-        return `<div style="text-align:${textAlign};margin:0.75rem 0">
-          <div style="display:inline-block;padding:0.6rem;background:#ffffff;border:1px solid #cbd5e1;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);max-width:${widthPct}%;">
-            <img src="${esc(item.url)}" alt="${esc(altText)}"
-              style="width:100%;max-width:100%;border-radius:8px;object-fit:contain;"
-            />
-            ${altText ? `<div style="font-size:0.8rem;font-weight:700;color:#475569;margin-top:0.4rem;text-align:center">${renderMath(altText)}</div>` : ''}
-          </div>
-        </div>`;
+        const isRedundantAlt = !altText || /^(figure(\s*g[ée]om[ée]trique)?|figure|image|photo|dessin|شكل(\s*هندسي)?)$/i.test(String(altText).trim());
+        if (isModernPro) {
+          return `<div class="modern-figure-wrapper" style="text-align:${textAlign};margin:0.35rem 0;">
+            <div style="display:inline-block;padding:4px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.03);max-width:${widthPct}%;">
+              <img src="${esc(item.url)}" alt="${esc(altText)}"
+                style="width:100%;max-width:100%;border-radius:6px;object-fit:contain;display:block;"
+              />
+              ${(!isRedundantAlt) ? `<div style="font-size:0.75rem;font-weight:600;color:#64748b;margin-top:0.25rem;text-align:center">${renderMath(altText)}</div>` : ''}
+            </div>
+          </div>`;
+        } else {
+          return `<div style="text-align:${textAlign};margin:0.75rem 0">
+            <div style="display:inline-block;padding:0.6rem;background:#ffffff;border:1px solid #cbd5e1;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);max-width:${widthPct}%;">
+              <img src="${esc(item.url)}" alt="${esc(altText)}"
+                style="width:100%;max-width:100%;border-radius:8px;object-fit:contain;"
+              />
+              ${altText ? `<div style="font-size:0.8rem;font-weight:700;color:#475569;margin-top:0.4rem;text-align:center">${renderMath(altText)}</div>` : ''}
+            </div>
+          </div>`;
+        }
       }
     } else if (item.type === 'grid_items' || Array.isArray(item.grid_items)) {
       const gList = item.grid_items || item.items || [];
@@ -1087,7 +1101,24 @@ export const generateLessonHTML = (lesson, settings = {}) => {
   let sectionsHtml = '';
   let prevSectionHeader = null;
 
-  sections?.forEach((sec, idx) => {
+  let processedSections = [...(sections || [])];
+  if (isExercises && isModernPro) {
+    processedSections.sort((a, b) => {
+      const getNum = (s, fallback) => {
+        if (s.section_number !== undefined && s.section_number !== null && String(s.section_number).trim() !== '') {
+          const p = parseInt(s.section_number, 10);
+          if (!isNaN(p)) return p;
+        }
+        const parsedTitle = parseExerciseTitle(s.title, fallback, isArabic);
+        const pTitle = parseInt(parsedTitle.number, 10);
+        if (!isNaN(pTitle)) return pTitle;
+        return fallback + 1;
+      };
+      return getNum(a, 0) - getNum(b, 0);
+    });
+  }
+
+  processedSections.forEach((sec, idx) => {
     const isTheory = sec.type !== 'exercise';
 
     // Section header row — shown only for theory/lesson docs, not exercise sheets
@@ -1294,7 +1325,44 @@ export const generateLessonHTML = (lesson, settings = {}) => {
             </div>` : ''}
           </div>`;
       } else {
-        sectionsHtml += `
+        const customBg = sec.bgColor || sec.bg_color || '';
+        const customFontSize = sec.fontSize || sec.font_size || '';
+        const customLineHeight = sec.lineHeight || sec.line_height || '';
+        let customBodyStyle = '';
+        if (customBg && customBg !== 'transparent' && customBg !== '#ffffff') {
+          customBodyStyle += `background:${customBg};padding:0.35rem 0.55rem;border-radius:6px;border:1px solid rgba(0,80,134,0.15);`;
+        }
+        if (customFontSize) {
+          customBodyStyle += `font-size:${customFontSize} !important;`;
+        }
+        if (customLineHeight) {
+          customBodyStyle += `line-height:${customLineHeight} !important;`;
+        }
+
+        if (isModernPro) {
+          sectionsHtml += `
+          <div class="exercise-wrapper modern-exercise-wrapper" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>
+            <div class="exercise-banner modern-exercise-banner" ${isArabic ? 'style="flex-direction:row"' : ''}>
+              <div class="exercise-pill modern-exercise-pill" ${isArabic ? 'style="flex-direction:row"' : ''}>
+                <span class="modern-pill-text">${isArabic ? 'تمرين' : 'Exercice'}</span>
+                <span class="exercise-num modern-exercise-num">${esc(exeNumber)}</span>
+              </div>
+              ${sec.points ? `<span class="modern-exercise-points">${esc(sec.points)} pts</span>` : ''}
+              ${exeLabel ? `<span class="exercise-label modern-exercise-title" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>${esc(exeLabel)}</span>` : ''}
+            </div>
+            <div class="exercise-body modern-exercise-body" style="${customBodyStyle} ${isArabic ? 'border-left:none;border-right:3.5px solid #005086;border-radius:4px;text-align:right;direction:rtl' : ''}">
+              ${exerciseBeforeHtml}
+              ${renderMath(sec.content)}
+              ${exerciseAfterHtml}
+            </div>
+            ${(sec.solution && showSolutions) ? `
+            <div class="solution-block modern-solution-block">
+              <h4 class="solution-title" ${isArabic ? `style="flex-direction:row;font-family:${arabicFontFamily}"` : ''}><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-${isArabic ? 'left' : 'right'}:5px"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>${isArabic ? 'الحل المفصل' : 'Démonstration rédigée'}</h4>
+              <div class="solution-content" ${isArabic ? `style="text-align:right;direction:rtl;font-family:${arabicFontFamily}"` : ''}>${renderMath(sec.solution)}</div>
+            </div>` : ''}
+          </div>`;
+        } else {
+          sectionsHtml += `
           <div class="exercise-wrapper" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>
             <div class="exercise-banner" ${isArabic ? 'style="flex-direction:row"' : ''}>
               <div class="exercise-pill" ${isArabic ? 'style="flex-direction:row"' : ''}>
@@ -1303,7 +1371,7 @@ export const generateLessonHTML = (lesson, settings = {}) => {
               </div>
               ${exeLabel ? `<span class="exercise-label" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>${esc(exeLabel)}</span>` : ''}
             </div>
-            <div class="exercise-body" ${isArabic ? 'style="border-left:none;border-right:4px solid #005086;border-radius:6px 4px 4px 6px;text-align:right;direction:rtl"' : ''}>
+            <div class="exercise-body" style="${customBodyStyle} ${isArabic ? 'border-left:none;border-right:4px solid #005086;border-radius:6px 4px 4px 6px;text-align:right;direction:rtl' : ''}">
               ${exerciseBeforeHtml}
               ${renderMath(sec.content)}
               ${exerciseAfterHtml}
@@ -1314,6 +1382,7 @@ export const generateLessonHTML = (lesson, settings = {}) => {
               <div class="solution-content" ${isArabic ? `style="text-align:right;direction:rtl;font-family:${arabicFontFamily}"` : ''}>${renderMath(sec.solution)}</div>
             </div>` : ''}
           </div>`;
+        }
       }
     }
   });
@@ -1349,7 +1418,7 @@ export const generateLessonHTML = (lesson, settings = {}) => {
 
 @page {
   size: A4 portrait;
-  margin: 6mm 8mm;
+  margin: 6mm 8mm 6mm 8mm;
   @bottom-left {
     content: "${esc(teacher || (isArabic ? 'زياتي محمد' : 'Pr. LATRACH ABDELKBIR'))}";
     font-family: 'Computer Modern Serif', 'STIX Two Text', 'Times New Roman', serif;
@@ -2119,6 +2188,352 @@ b .katex * {
   margin-bottom: 1px;
 }
 
+/* ═══════════════════════════════════════
+   MODERN PRO 2026 DESIGN SYSTEM
+   ═══════════════════════════════════════ */
+.fiche-header-modern-pro {
+  display: grid;
+  grid-template-columns: 1.28fr 1.62fr 1.12fr auto;
+  background: #ffffff;
+  border: 1.5px solid #005086;
+  border-radius: 8px;
+  margin-bottom: 0.85rem;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0, 80, 134, 0.08);
+  font-family: inherit;
+  page-break-inside: avoid;
+}
+
+.fiche-header-modern-pro .modern-header-col {
+  padding: 6px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 1.5px solid rgba(0, 80, 134, 0.22);
+}
+
+.fiche-header-modern-pro .modern-header-left {
+  background: #f8fafc;
+  gap: 3px;
+}
+
+.fiche-header-modern-pro .modern-header-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 8.4pt;
+  line-height: 1.35;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.fiche-header-modern-pro .modern-meta-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  color: #005086;
+  flex-shrink: 0;
+}
+
+.fiche-header-modern-pro .modern-meta-icon svg {
+  width: 13px;
+  height: 13px;
+  stroke: #005086;
+  display: block;
+}
+
+.fiche-header-modern-pro .modern-meta-label {
+  font-size: 8pt;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.fiche-header-modern-pro .modern-meta-val {
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 8.5pt;
+}
+
+.fiche-header-modern-pro .modern-header-center {
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  padding: 6px 10px;
+}
+
+.fiche-header-modern-pro .modern-header-title {
+  color: #005086;
+  font-weight: 900;
+  font-size: 13.5pt;
+  line-height: 1.22;
+  letter-spacing: -0.01em;
+  text-align: center;
+  font-family: 'STIX Two Text', 'Computer Modern Serif', serif;
+}
+
+.fiche-header-modern-pro .modern-header-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(0, 80, 134, 0.08);
+  color: #005086;
+  font-size: 7.2pt;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 1.5px 11px;
+  border-radius: 99px;
+  border: 1px solid rgba(0, 80, 134, 0.22);
+}
+
+.fiche-header-modern-pro .modern-badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #005086;
+}
+
+.fiche-header-modern-pro .modern-header-right {
+  background: #f8fafc;
+  align-items: flex-end;
+  text-align: right;
+  gap: 4px;
+  justify-content: center;
+}
+
+.fiche-header-modern-pro .modern-level-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.fiche-header-modern-pro .modern-level-label {
+  font-size: 7.2pt;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fiche-header-modern-pro .modern-level-val {
+  color: #005086;
+  font-weight: 900;
+  font-size: 9pt;
+}
+
+.fiche-header-modern-pro .modern-subschool {
+  font-size: 7.8pt;
+  color: #475569;
+  font-weight: 600;
+}
+
+.fiche-header-modern-pro .modern-header-qr {
+  border-right: none;
+  background: #005086;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 9px;
+  gap: 3px;
+}
+
+.fiche-header-modern-pro .modern-qr-box {
+  background: #ffffff;
+  padding: 2.5px;
+  border-radius: 4px;
+  display: inline-flex;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+.fiche-header-modern-pro .modern-qr-img {
+  width: 44px;
+  height: 44px;
+  display: block;
+}
+
+.fiche-header-modern-pro .modern-qr-text {
+  font-size: 6pt;
+  font-weight: 900;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+/* Modern Exercise Badges & Cards */
+.modern-exercise-wrapper {
+  margin-bottom: 0.8rem !important;
+}
+
+.modern-exercise-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 2px !important;
+}
+
+.modern-exercise-pill {
+  background: #005086 !important;
+  color: #ffffff !important;
+  padding: 2px 8.5px 2px 9.5px !important;
+  border-radius: 99px !important;
+  font-weight: 800 !important;
+  font-size: 10pt !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  box-shadow: none !important;
+  line-height: 1.25 !important;
+  letter-spacing: 0.01em;
+}
+
+.modern-exercise-num {
+  background: #ffffff !important;
+  color: #005086 !important;
+  min-width: 17px !important;
+  height: 17px !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 8.2pt !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  padding: 0 2px !important;
+  box-shadow: none !important;
+}
+
+.modern-exercise-points {
+  font-size: 7pt;
+  font-weight: 700;
+  color: #005086;
+  background: rgba(0, 80, 134, 0.07);
+  border: 1px solid rgba(0, 80, 134, 0.18);
+  padding: 0.5px 5px;
+  border-radius: 99px;
+  line-height: 1.2;
+}
+
+.modern-exercise-title {
+  font-weight: 800;
+  font-size: 8.5pt;
+  color: #1e293b;
+}
+
+.modern-exercise-body {
+  border: none;
+  background: transparent;
+  padding: 0 !important;
+  margin-top: 2px !important;
+  line-height: 1.55 !important;
+  font-size: 9.2pt;
+  color: #0f172a;
+}
+
+.modern-exercise-body > *:first-child,
+.modern-exercise-body > span:first-child,
+.modern-exercise-body > p:first-child,
+.modern-exercise-body > div:first-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.modern-pro-layout .exercises-two-columns {
+  column-gap: 1.8rem !important;
+  column-rule: 1.2px solid rgba(0, 80, 134, 0.18) !important;
+  column-fill: balance !important;
+}
+
+.modern-pro-layout .exercise-wrapper {
+  margin-bottom: 0.85rem !important;
+}
+
+.fiche-footer-modern-pro {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.45rem;
+  padding-bottom: 0.15rem;
+  border-top: 1.2px solid rgba(0, 80, 134, 0.28);
+  font-size: 7.8pt;
+  color: #475569;
+  font-family: inherit;
+  width: 100%;
+}
+
+.fiche-footer-modern-pro .footer-meta-left {
+  font-weight: 600;
+  color: #334155;
+}
+
+.fiche-footer-modern-pro .footer-meta-center {
+  font-style: italic;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.fiche-footer-modern-pro .footer-meta-right {
+  font-weight: 800;
+  color: #005086;
+}
+
+/* Style switcher in Print Hint bar */
+.style-toggle-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 5px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.hint-style-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 7.6pt;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.hint-style-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+}
+
+.hint-style-btn:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+html[dir="rtl"] .fiche-header-modern-pro .modern-header-col {
+  border-right: none;
+  border-left: 1.5px solid rgba(0, 80, 134, 0.2);
+}
+html[dir="rtl"] .fiche-header-modern-pro .modern-header-qr {
+  border-left: none;
+}
+html[dir="rtl"] .fiche-header-modern-pro .modern-header-left {
+  align-items: flex-start;
+  text-align: right;
+}
+html[dir="rtl"] .fiche-header-modern-pro .modern-header-right {
+  align-items: flex-start;
+  text-align: left;
+}
+html[dir="rtl"] .fiche-header-modern-pro .modern-level-box {
+  align-items: flex-start;
+}
+
 
 /* ═══════════════════════════════════════
    RTL — Arabic Language Support
@@ -2305,6 +2720,33 @@ html[dir="rtl"] .section-header-row {
     background: #005086 !important;
     color: #ffffff !important;
   }
+  .page-content,
+  .modern-pro-layout {
+    min-height: 0 !important;
+    height: auto !important;
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+  .modern-pro-layout .sections-container,
+  .sections-container {
+    flex: none !important;
+    height: auto !important;
+  }
+  .fiche-footer-modern-pro {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin-top: 0.5rem !important;
+    padding-top: 4px !important;
+    padding-bottom: 2px !important;
+    background: #ffffff !important;
+    border-top: 1.2px solid rgba(0, 80, 134, 0.3) !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
 }
 .homework-content-header {
   font-size: 1.02rem;
@@ -2337,18 +2779,52 @@ html[dir="rtl"] .homework-bareme-header {
     <span class="print-hint-icon">🖨️</span>
     <div class="print-hint-text">
       ${isArabic
-        ? '<strong style="color:#38bdf8">الملف جاهز للطباعة</strong><br><span>اضغط على <b>Ctrl+P</b> لطباعة أو حفظ PDF. اختر "حفظ كـ PDF" كوجهة.</span>'
-        : '<strong>Fiche de Cours Pr\u00eate</strong><br><span>Appuyez sur <b>Ctrl+P</b> pour imprimer ou enregistrer en PDF. Choisissez "Enregistrer en PDF" comme destination.</span>'
+        ? '<strong style="color:#38bdf8">الملف جاهز للطباعة أو الحفظ كـ PDF</strong><br><span>اضغط على <b>Ctrl+P</b> للطباعة. يمكنك التبديل الفوري بين النموذج العصري والكلاسيكي أدناه.</span>'
+        : '<strong>Fiche prête pour impression / Export PDF</strong><br><span>Appuyez sur <b>Ctrl+P</b>. Vous pouvez basculer entre le style Moderne Pro et le style Classique à tout moment.</span>'
       }
     </div>
   </div>
-  <button class="hint-badge" onclick="printNow()">${isArabic ? '⚡ طباعة' : '⚡ Imprimer'}</button>
+  <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+    <div class="style-toggle-container">
+      <span style="font-size:0.75rem;color:rgba(255,255,255,0.8);font-weight:700;">${isArabic ? 'النموذج:' : 'Style:'}</span>
+      <button class="hint-style-btn ${isModernPro ? 'active' : ''}" onclick="setSeriesStyle('modern_pro_2026')">✨ ${isArabic ? 'عصري برو' : 'Moderne Pro'}</button>
+      <button class="hint-style-btn ${!isModernPro ? 'active' : ''}" onclick="setSeriesStyle('classic_original')">🏛️ ${isArabic ? 'كلاسيكي أصلي' : 'Classique'}</button>
+    </div>
+    <button class="hint-badge" onclick="printNow()">${isArabic ? '⚡ طباعة' : '⚡ Imprimer'}</button>
+  </div>
 </div>
 
-<div class="page-content">
+<div class="page-content ${isModernPro ? 'modern-pro-layout' : ''}">
   <!-- HEADER -->
-  ${(isExercises || isHomework) ? `
-  <!-- NEW 2026 DESIGNER HEADER: exercises and homework -->
+  ${(isExercises || isHomework) ? (
+    isModernPro ? `
+  <!-- MODERN PRO 2026 HEADER: exercises and homework -->
+  <div class="fiche-header-modern-pro" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>
+    <div class="modern-header-col modern-header-left">
+      ${teacher ? `<div class="modern-header-row"><span class="modern-meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="modern-meta-label">${isArabic ? 'الأستاذ' : 'Prof'} :</span> <strong class="modern-meta-val">${esc(formatTeacherName(teacher))}</strong></div>` : ''}
+      <div class="modern-header-row"><span class="modern-meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="modern-meta-label">${isArabic ? 'السنة الدراسية' : 'A.S'} :</span> <span class="modern-meta-val">${new Date().getFullYear() - 1}/${new Date().getFullYear()}</span></div>
+      ${schools.length ? `<div class="modern-header-row"><span class="modern-meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/></svg></span><span class="modern-meta-label">${isArabic ? 'المؤسسة' : 'Établissement'} :</span> <span class="modern-meta-val">${esc(schools[0])}</span></div>` : ''}
+    </div>
+    <div class="modern-header-col modern-header-center">
+      <div class="modern-header-title">${esc(title)}</div>
+      <div class="modern-header-badge">
+        <span class="modern-badge-dot"></span>
+        <span>${isArabic ? (isHomework ? 'فرض محروس' : 'سلسلة تمارين') : (isHomework ? 'DEVOIR SURVEILLÉ' : 'SÉRIE D\'EXERCICES')}</span>
+      </div>
+    </div>
+    <div class="modern-header-col modern-header-right">
+      ${levelText ? `<div class="modern-level-box"><span class="modern-level-label">${isArabic ? 'المستوى' : 'Niveau'}</span><strong class="modern-level-val">${esc(levelText)}</strong></div>` : ''}
+      ${schools.length > 1 ? `<div class="modern-subschool">${esc(schools[1])}</div>` : ''}
+    </div>
+    <div class="modern-header-col modern-header-qr">
+      <div class="modern-qr-box">
+        <img src="${qrImageUrl}" class="modern-qr-img" alt="QR Solution" />
+      </div>
+      <span class="modern-qr-text">${isArabic ? 'امسح للحل' : 'SOLUTION'}</span>
+    </div>
+  </div>
+  ` : `
+  <!-- CLASSIC ORIGINAL HEADER: exercises and homework -->
   <div class="fiche-header" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>
     <div class="hcell h-left">
       ${teacher ? `<div class="header-info-row"><span class="info-label">${isArabic ? 'الأستاذ' : 'Prof'} :</span><strong class="info-val">${esc(formatTeacherName(teacher))}</strong></div>` : ''}
@@ -2370,7 +2846,7 @@ html[dir="rtl"] .homework-bareme-header {
       <span class="qr-label">${isArabic ? 'التصحيح' : 'Solution'}</span>
     </div>
   </div>
-  ` : `
+  `) : `
   <!-- CLASSIC HEADER: lessons / courses -->
   <table class="fiche-pedagogique-header">
     <tr>
@@ -2445,11 +2921,31 @@ html[dir="rtl"] .homework-bareme-header {
     ${sectionsHtml}
   </div>
 
-  <!-- FOOTER (teacher name left, page number right — handled by @page CSS) -->
-  <div class="fiche-footer" style="display:none"></div>
+  <!-- FOOTER -->
+  ${isModernPro ? `
+  <div class="fiche-footer-modern-pro">
+    <div class="footer-meta-left">
+      <span>${esc(teacher || (isArabic ? 'الأستاذ' : 'L\'CONQ'))}</span>
+      ${schools.length ? ` · <span>${esc(schools[0])}</span>` : ''}
+    </div>
+    <div class="footer-meta-center">
+      <span>${esc(title)}</span>
+    </div>
+    <div class="footer-meta-right">
+      <span>${esc(levelText || "L'CONQ ACADÉMIE")}</span>
+    </div>
+  </div>` : '<div class="fiche-footer" style="display:none"></div>'}
 </div>
 
 <script>
+function setSeriesStyle(style) {
+  try {
+    localStorage.setItem('pdf_series_style', style);
+    window.location.reload();
+  } catch (err) {
+    console.error(err);
+  }
+}
 async function printNow() {
   await document.fonts.ready;
   await new Promise(r => setTimeout(r, 600));

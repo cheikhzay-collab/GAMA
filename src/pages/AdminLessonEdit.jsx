@@ -939,19 +939,120 @@ export default function AdminLessonEdit() {
                   /* Exercise and Solution Block */
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                     <div style={{ background: '#ffffff', padding: '0.75rem', borderRadius: '6px', border: '1px solid #fca5a5' }}>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#b91c1c', marginBottom: '0.3rem' }}>
-                        📌 Énoncé de l'Exercice :
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#b91c1c' }}>
+                          📌 Énoncé de l'Exercice :
+                        </div>
+                        {/* Custom Exercise Style Toolbar */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', background: '#f8fafc', padding: '0.25rem 0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                          {/* Background Color */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <Palette size={13} style={{ color: '#005086' }} />
+                            <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b' }}>الخلفية :</span>
+                            <div style={{ display: 'flex', gap: '2.5px', alignItems: 'center' }}>
+                              {[
+                                { label: 'Sans fond', val: 'transparent', color: '#ffffff', border: '#cbd5e1' },
+                                { label: 'Bleu doux', val: '#f0f9ff', color: '#f0f9ff', border: '#bae6fd' },
+                                { label: 'Jaune doux', val: '#fefce8', color: '#fefce8', border: '#fef08a' },
+                                { label: 'Vert menthe', val: '#f0fdf4', color: '#f0fdf4', border: '#bbf7d0' },
+                                { label: 'Gris élégant', val: '#f8fafc', color: '#f8fafc', border: '#e2e8f0' },
+                                { label: 'Rose pastel', val: '#fff1f2', color: '#fff1f2', border: '#fecdd3' },
+                              ].map(c => (
+                                <button
+                                  key={c.val}
+                                  type="button"
+                                  onClick={() => handleUpdateSection(secIdx, 'bgColor', (sec.bgColor || 'transparent') === c.val ? 'transparent' : c.val)}
+                                  title={c.label}
+                                  style={{
+                                    width: '16px',
+                                    height: '16px',
+                                    borderRadius: '50%',
+                                    background: c.color,
+                                    border: `2px solid ${(sec.bgColor || 'transparent') === c.val ? '#005086' : c.border}`,
+                                    cursor: 'pointer',
+                                    padding: 0
+                                  }}
+                                />
+                              ))}
+                              <input
+                                type="color"
+                                value={sec.bgColor && sec.bgColor !== 'transparent' ? sec.bgColor : '#ffffff'}
+                                onChange={e => handleUpdateSection(secIdx, 'bgColor', e.target.value)}
+                                title="Couleur personnalisée"
+                                style={{ width: '18px', height: '18px', padding: 0, border: 'none', borderRadius: '3px', cursor: 'pointer', background: 'transparent' }}
+                              />
+                            </div>
+                          </div>
+
+                          <span style={{ color: '#cbd5e1' }}>|</span>
+
+                          {/* Font Size */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <Type size={13} style={{ color: '#005086' }} />
+                            <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b' }}>الحجم :</span>
+                            <select
+                              value={sec.fontSize || ''}
+                              onChange={e => handleUpdateSection(secIdx, 'fontSize', e.target.value)}
+                              style={{ fontSize: '0.7rem', padding: '1px 4px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#334155', fontWeight: 600, outline: 'none' }}
+                            >
+                              <option value="">Standard (9.2pt)</option>
+                              <option value="8pt">8pt (Compact)</option>
+                              <option value="8.5pt">8.5pt</option>
+                              <option value="9.2pt">9.2pt (Normal)</option>
+                              <option value="10pt">10pt</option>
+                              <option value="11pt">11pt (Grand)</option>
+                            </select>
+                          </div>
+
+                          <span style={{ color: '#cbd5e1' }}>|</span>
+
+                          {/* Line Spacing */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <Layers size={13} style={{ color: '#005086' }} />
+                            <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b' }}>التباعد :</span>
+                            <select
+                              value={sec.lineHeight || ''}
+                              onChange={e => handleUpdateSection(secIdx, 'lineHeight', e.target.value)}
+                              style={{ fontSize: '0.7rem', padding: '1px 4px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#334155', fontWeight: 600, outline: 'none' }}
+                            >
+                              <option value="">Normal (1.55)</option>
+                              <option value="1.3">1.3 (Serré)</option>
+                              <option value="1.55">1.55 (Standard)</option>
+                              <option value="1.75">1.75 (Aéré)</option>
+                              <option value="2.0">2.0 (Spacieux)</option>
+                            </select>
+                          </div>
+                        </div>
                       </div>
+
                       <textarea
                         value={sec.content || ''}
                         onChange={e => handleUpdateSection(secIdx, 'content', e.target.value)}
                         onFocus={() => setActiveFieldTarget({ secIdx, field: 'exerciseContent' })}
                         placeholder="Écrivez l'énoncé de l'exercice..."
                         rows={3}
-                        style={{ width: '100%', border: '1px dashed #fca5a5', borderRadius: '4px', padding: '0.5rem', fontSize: '0.88rem', outline: 'none', fontFamily: 'inherit' }}
+                        style={{
+                          width: '100%',
+                          border: '1px dashed #fca5a5',
+                          borderRadius: '4px',
+                          padding: '0.5rem',
+                          fontSize: sec.fontSize || '0.88rem',
+                          lineHeight: sec.lineHeight || 1.55,
+                          background: sec.bgColor && sec.bgColor !== 'transparent' ? sec.bgColor : '#ffffff',
+                          outline: 'none',
+                          fontFamily: 'inherit'
+                        }}
                       />
                       {sec.content && (
-                        <div style={{ marginTop: '0.35rem', padding: '0.35rem 0.5rem', background: '#fff5f5', borderRadius: '4px', border: '1px solid #fee2e2', fontSize: '0.85rem' }}>
+                        <div style={{
+                          marginTop: '0.35rem',
+                          padding: '0.45rem 0.65rem',
+                          background: sec.bgColor && sec.bgColor !== 'transparent' ? sec.bgColor : '#fff5f5',
+                          borderRadius: '4px',
+                          border: '1px solid ' + (sec.bgColor && sec.bgColor !== 'transparent' ? 'rgba(0,80,134,0.2)' : '#fee2e2'),
+                          fontSize: sec.fontSize || '0.85rem',
+                          lineHeight: sec.lineHeight || 1.55
+                        }}>
                           <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#b91c1c', display: 'block', marginBottom: '2px' }}>Aperçu Énoncé :</span>
                           <div>{renderWithMath(sec.content)}</div>
                         </div>

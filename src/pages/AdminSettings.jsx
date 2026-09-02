@@ -321,12 +321,14 @@ export default function AdminSettings() {
   const [pdfFontSize, setPdfFontSize] = useState(() => localStorage.getItem('pdf_font_size') || '11pt');
   const [pdfFontFamily, setPdfFontFamily] = useState(() => localStorage.getItem('pdf_font_family') || 'Computer Modern Serif');
   const [pdfTemplateStyle, setPdfTemplateStyle] = useState(() => localStorage.getItem('pdf_template_style') || 'classic_latex');
+  const [pdfSeriesStyle, setPdfSeriesStyle] = useState(() => localStorage.getItem('pdf_series_style') || 'modern_pro_2026');
   const [pdfAvoidPageBreaks, setPdfAvoidPageBreaks] = useState(() => localStorage.getItem('pdf_avoid_page_breaks') !== 'false');
   const [pdfForcePrintColors, setPdfForcePrintColors] = useState(() => localStorage.getItem('pdf_force_print_colors') !== 'false');
   const [pdfShowSidebar, setPdfShowSidebar] = useState(() => localStorage.getItem('pdf_show_sidebar') !== 'false');
   const [pdfSaved, setPdfSaved] = useState(false);
 
   const savePdfSettings = async () => {
+    localStorage.setItem('pdf_series_style', pdfSeriesStyle);
     await updatePdfSettingsConfig({
       pdfPageMargins,
       pdfFontSize,
@@ -1607,7 +1609,7 @@ export default function AdminSettings() {
 
                   {/* Template Style */}
                   <div className="settings-field">
-                    <label className="settings-label">Modèle de mise en page (Template)</label>
+                    <label className="settings-label">Modèle de mise en page Examens</label>
                     <select
                       value={pdfTemplateStyle}
                       onChange={e => setPdfTemplateStyle(e.target.value)}
@@ -1619,6 +1621,19 @@ export default function AdminSettings() {
                       <option value="premium_royal">Royal Institutionnel (Ruban & En-tête officiel)</option>
                       <option value="compact_eco">Économique & Compact (Maximiser l&apos;espace)</option>
                       <option value="super_eco">Super Économique (Sans en-tête, sans matière, avec numéro compact)</option>
+                    </select>
+                  </div>
+
+                  {/* Series & Lesson Template Style */}
+                  <div className="settings-field">
+                    <label className="settings-label">Modèle Séries d&apos;exercices & Cours</label>
+                    <select
+                      value={pdfSeriesStyle}
+                      onChange={e => setPdfSeriesStyle(e.target.value)}
+                      className="input-control"
+                    >
+                      <option value="modern_pro_2026">✨ Moderne Pro 2026 (Équilibré, En-tête raffiné, Tri auto 1→N & Footer)</option>
+                      <option value="classic_original">🏛️ Classique Original (Ancien format à cadre 4 cellules)</option>
                     </select>
                   </div>
 

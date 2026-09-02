@@ -3,8 +3,8 @@ import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { 
   ArrowLeft, Download, Check, X, Eye, EyeOff, Edit,
   BookOpen, Calendar, User, Phone, CheckCircle, AlertCircle,
-  Calculator, BookOpenCheck, Loader, Monitor, FileText, ChevronLeft, ChevronRight, Play,
-  Maximize, Minimize, Target, Moon, Sun, Sparkles, ListFilter, Lightbulb, ZoomIn, ZoomOut, Tv, Settings, Layers
+  Calculator, BookOpenCheck, Loader, FileText, ChevronLeft, ChevronRight,
+  Target, Moon, Sun, ListFilter, Lightbulb, ZoomIn, ZoomOut, Settings, Layers, Palette, Type
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getLessonById, updateLesson } from '../services/lessonService';
@@ -13,8 +13,6 @@ import SmartTableRenderer from '../components/SmartTableRenderer';
 import { openLessonPrintWindow } from '../utils/generateLessonPDF';
 import NationalExamTemplate from '../components/NationalExamTemplate';
 import { openNationalExamPrintWindow } from '../utils/generateNationalExamPDF';
-import { generateFichePedagogiquePDF } from '../utils/generateFichePedagogiquePDF';
-import { generateFichePedagogiqueWithAI } from '../utils/aiFicheGenerator';
 
 /**
  * Convert **bold** markdown to <strong> inline spans, keeping the rest as plain text.
@@ -560,43 +558,6 @@ const calculateTotalPoints = (text, isArabicMode) => {
   return `${totalStr} ${ptsWord}`;
 };
 
-
-
-
-const getSlidesList = (lessonObj) => {
-  if (!lessonObj) return [];
-
-  // 1. Direct array of sections in content.sections, sections, content.exercises, exercises
-  const arraySections = lessonObj.content?.sections || lessonObj.sections || lessonObj.content?.exercises || lessonObj.exercises;
-  if (Array.isArray(arraySections) && arraySections.length > 0) {
-    return arraySections;
-  }
-
-  // 2. String content (markdown body)
-  const rawText = typeof lessonObj.content === 'string'
-    ? lessonObj.content
-    : (lessonObj.content?.body || lessonObj.content?.text || lessonObj.content?.raw || lessonObj.description || '');
-
-  if (!rawText) return [];
-
-  // Split by markdown headers ## or ### or # or double newlines
-  const parts = rawText.split(/(?=\n#{1,3}\s+)/g);
-  return parts.map((part, idx) => {
-    const trimmed = part.trim();
-    const lines = trimmed.split('\n');
-    const firstLine = lines[0] || '';
-    const headerTitle = firstLine.replace(/^#{1,3}\s+/, '').trim() || `Partie ${idx + 1}`;
-    const bodyContent = lines.slice(1).join('\n').trim() || trimmed;
-    return {
-      id: `slide-${idx}`,
-      title: headerTitle,
-      section_header: headerTitle,
-      content: bodyContent,
-      items: [{ type: 'text', text: bodyContent }]
-    };
-  });
-};
-
 export default function LessonViewerPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -625,25 +586,14 @@ export default function LessonViewerPage() {
   const [activeTab, setActiveTab] = useState('theory'); // 'theory' or 'exercises'
   
   // Solutions visibility states (section ID -> boolean)
-  const [visibleSolutions, setVisibleSolutions] = useState({});
-  
-  // Interactive student answers states (sectionID-questionIdx -> string)
-  const [studentAnswers, setStudentAnswers] = useState({});
+  const [visibleSolutions, setVisibleSolutions] = useState({}); // sectionId -> boolean
+  const [answers, setAnswers] = useState({}); // key -> student input
   const [checkResults, setCheckResults] = useState({}); // key -> 'success' | 'error'
   const [includeSolutionsInPdf, setIncludeSolutionsInPdf] = useState(true);
   const [isDirectEdit, setIsDirectEdit] = useState(false);
   const [originalLessonBackup, setOriginalLessonBackup] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // ── Feature 6: Data Show Presentation Mode ──
-  const [presentationMode, setPresentationMode] = useState(false);
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [showSolutionInSlide, setShowSolutionInSlide] = useState(false);
-  const [boardTheme, setBoardTheme] = useState('dark'); // 'dark' | 'chalkboard' | 'whiteboard'
-  const [boardFontSize, setBoardFontSize] = useState(1.25); // rem
-  const [showSlideDrawer, setShowSlideDrawer] = useState(false);
-  const [zenFocusMode, setZenFocusMode] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [isGeneratingAiFiche, setIsGeneratingAiFiche] = useState(false);
 
   const handleGenerateAiFiche = async () => {
@@ -654,64 +604,6 @@ export default function LessonViewerPage() {
       setIsGeneratingAiFiche(false);
     }
   };
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().then(() => {
-        setIsFullscreen(true);
-      }).catch(err => {
-        console.error("Error enabling fullscreen:", err);
-      });
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen().then(() => {
-          setIsFullscreen(false);
-        });
-      }
-    }
-  };
-
-  useEffect(() => {
-    const handleFsChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-    document.addEventListener('fullscreenchange', handleFsChange);
-    return () => document.removeEventListener('fullscreenchange', handleFsChange);
-  }, []);
-
-  useEffect(() => {
-    if (!presentationMode) return;
-    const slides = getSlidesList(lesson);
-    const totalSlides = slides.length || 1;
-    const handleKeyDown = (e) => {
-      if (e.key === 'ArrowRight' || e.key === ' ') {
-        e.preventDefault();
-        setCurrentSlideIndex(prev => Math.min(prev + 1, totalSlides - 1));
-        setShowSolutionInSlide(false);
-      } else if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        setCurrentSlideIndex(prev => Math.max(prev - 1, 0));
-        setShowSolutionInSlide(false);
-      } else if (e.key === 's' || e.key === 'S') {
-        e.preventDefault();
-        setShowSolutionInSlide(prev => !prev);
-      } else if (e.key === 'f' || e.key === 'F') {
-        e.preventDefault();
-        toggleFullscreen();
-      } else if (e.key === 'z' || e.key === 'Z') {
-        e.preventDefault();
-        setZenFocusMode(prev => !prev);
-      } else if (e.key === 'Escape') {
-        if (zenFocusMode) {
-          setZenFocusMode(false);
-        } else {
-          setPresentationMode(false);
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [presentationMode, lesson, zenFocusMode]);
 
   if (!authLoading && !user) {
     return <Navigate to="/login" replace />;
@@ -950,6 +842,28 @@ export default function LessonViewerPage() {
       setOriginalLessonBackup(JSON.parse(JSON.stringify(lesson)));
       setIsDirectEdit(true);
     }
+  };
+
+  const handleUpdateSectionStyle = (secId, key, value) => {
+    setLesson(prev => {
+      if (!prev) return prev;
+      const updatedSections = (prev.content?.sections || []).map(s => {
+        if (s.id !== secId) return s;
+        return { ...s, [key]: value };
+      });
+      return { ...prev, content: { ...prev.content, sections: updatedSections } };
+    });
+  };
+
+  const handleUpdateSectionContent = (secId, newContent) => {
+    setLesson(prev => {
+      if (!prev) return prev;
+      const updatedSections = (prev.content?.sections || []).map(s => {
+        if (s.id !== secId) return s;
+        return { ...s, content: newContent };
+      });
+      return { ...prev, content: { ...prev.content, sections: updatedSections } };
+    });
   };
 
   const handlePointsChange = (secId, lineIdx, newPoints) => {
@@ -2089,73 +2003,6 @@ export default function LessonViewerPage() {
               🚀 Mode Interactif
             </button>
           </div>
-          {/* Data Show Presentation Mode Button (Feature 6) */}
-          <button 
-            onClick={() => { setPresentationMode(true); setCurrentSlideIndex(0); setShowSolutionInSlide(false); }}
-            className="btn"
-            style={{
-              padding: '0.5rem 1.1rem',
-              fontSize: '0.85rem',
-              fontWeight: 800,
-              background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
-              color: '#ffffff',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              boxShadow: '0 4px 14px rgba(124, 58, 237, 0.3)'
-            }}
-            title="Lancer le mode présentation Data Show pour la classe"
-          >
-            <Monitor size={16} /> 📺 Data Show
-          </button>
-
-          {/* AI Fiche Pédagogique Generator Button */}
-          <button 
-            onClick={handleGenerateAiFiche}
-            disabled={isGeneratingAiFiche}
-            className="btn"
-            style={{
-              padding: '0.5rem 1.1rem',
-              fontSize: '0.85rem',
-              fontWeight: 800,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              color: '#ffffff',
-              background: isGeneratingAiFiche ? '#059669' : 'linear-gradient(135deg, #10b981, #059669)',
-              border: 'none',
-              cursor: isGeneratingAiFiche ? 'wait' : 'pointer',
-              boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)'
-            }}
-            title="Générer automatiquement la Fiche Pédagogique Officielle par IA"
-          >
-            {isGeneratingAiFiche ? (
-              <><Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> Analyse IA...</>
-            ) : (
-              <><Sparkles size={16} /> ⚡ Fiche IA</>
-            )}
-          </button>
-
-          {/* Fiche Pédagogique Button (Standard Template) */}
-          <button 
-            onClick={() => generateFichePedagogiquePDF(lesson, { profName, profPhone })}
-            className="btn-outline"
-            style={{
-              padding: '0.5rem 1.1rem',
-              fontSize: '0.85rem',
-              fontWeight: 800,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              color: 'var(--emerald)',
-              background: 'var(--emerald-soft)',
-              border: '1px solid rgba(16,185,129,0.3)'
-            }}
-            title="Imprimer la Fiche Pédagogique Officielle"
-          >
-            <FileText size={16} /> Fiche Standard
-          </button>
 
           {/* PDF Download button */}
           <button 
@@ -3156,46 +3003,176 @@ export default function LessonViewerPage() {
                             </button>
                           </div>
 
-                          <div
-                            className="exercise-body-box"
-                            style={isArabic ? {
-                              borderLeft: 'none',
-                              borderRight: '4px solid #005086',
-                              borderRadius: '8px 4px 4px 8px',
-                              textAlign: 'right',
-                              fontFamily: arabicFont,
-                              direction: 'rtl',
-                            } : {}}
-                          >
-                            {/* Attached images/tables with position === 'before' */}
-                            {sec.items?.filter(it => (it.type === 'image' || it.type === 'table') && it.position === 'before').map((item, itemIdx) => {
-                              if (item.type === 'image') {
-                                const align = item.align || 'center';
-                                const widthPct = item.width_pct || 80;
-                                const justifyMap = { left: 'flex-start', center: 'center', right: 'flex-end' };
-                                const rawUrl = (item.url || '').trim();
-                                const altText = item.alt || item.description || '';
-                                if (!rawUrl) return null;
-                                return (
-                                  <div key={`ex-img-before-${itemIdx}`} style={{ display: 'flex', flexDirection: 'column', alignItems: justifyMap[align], margin: '0.8rem 0', width: '100%' }}>
-                                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '0.6rem', maxWidth: `${widthPct}%`, minWidth: '180px', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
-                                      <img src={rawUrl} alt={altText || 'Figure'} style={{ width: '100%', maxHeight: '350px', borderRadius: '8px', objectFit: 'contain', display: 'block' }} />
-                                      {altText && <div style={{ marginTop: '0.4rem', fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center' }}>{renderWithMath(altText)}</div>}
+                          {(() => {
+                            const customBg = sec.bgColor || sec.bg_color || '';
+                            const customFontSize = sec.fontSize || sec.font_size || '';
+                            const customLineHeight = sec.lineHeight || sec.line_height || '';
+                            const hasCustomBg = customBg && customBg !== 'transparent' && customBg !== '#ffffff';
+
+                            return (
+                              <div
+                                className="exercise-body-box"
+                                style={{
+                                  ...(isArabic ? {
+                                    borderLeft: 'none',
+                                    borderRight: '4px solid #005086',
+                                    borderRadius: '8px 4px 4px 8px',
+                                    textAlign: 'right',
+                                    fontFamily: arabicFont,
+                                    direction: 'rtl',
+                                  } : {}),
+                                  background: hasCustomBg ? customBg : undefined,
+                                  padding: hasCustomBg ? '0.75rem 1rem' : undefined,
+                                  borderRadius: hasCustomBg ? '8px' : undefined,
+                                  border: hasCustomBg ? '1px solid rgba(0,80,134,0.18)' : undefined,
+                                  fontSize: customFontSize || undefined,
+                                  lineHeight: customLineHeight || undefined,
+                                }}
+                              >
+                                {/* Direct Edit Style Toolbar */}
+                                {isDirectEdit && (
+                                  <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.6rem',
+                                    flexWrap: 'wrap',
+                                    background: 'var(--bg-card, #f8fafc)',
+                                    padding: '0.35rem 0.65rem',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--border, #cbd5e1)',
+                                    marginBottom: '0.6rem'
+                                  }}>
+                                    {/* Background color */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                      <Palette size={13} style={{ color: '#005086' }} />
+                                      <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted, #64748b)' }}>{isArabic ? 'الخلفية:' : 'Fond :'}</span>
+                                      <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+                                        {[
+                                          { label: 'Sans fond', val: 'transparent', color: '#ffffff', border: '#cbd5e1' },
+                                          { label: 'Bleu ciel', val: '#f0f9ff', color: '#f0f9ff', border: '#bae6fd' },
+                                          { label: 'Jaune doux', val: '#fefce8', color: '#fefce8', border: '#fef08a' },
+                                          { label: 'Vert menthe', val: '#f0fdf4', color: '#f0fdf4', border: '#bbf7d0' },
+                                          { label: 'Gris élégant', val: '#f8fafc', color: '#f8fafc', border: '#e2e8f0' },
+                                          { label: 'Rose pastel', val: '#fff1f2', color: '#fff1f2', border: '#fecdd3' }
+                                        ].map(c => (
+                                          <button
+                                            key={c.val}
+                                            type="button"
+                                            onClick={() => handleUpdateSectionStyle(sec.id, 'bgColor', (sec.bgColor || 'transparent') === c.val ? 'transparent' : c.val)}
+                                            title={c.label}
+                                            style={{
+                                              width: '16px',
+                                              height: '16px',
+                                              borderRadius: '50%',
+                                              background: c.color,
+                                              border: `2px solid ${(sec.bgColor || 'transparent') === c.val ? '#005086' : c.border}`,
+                                              cursor: 'pointer',
+                                              padding: 0
+                                            }}
+                                          />
+                                        ))}
+                                        <input
+                                          type="color"
+                                          value={sec.bgColor && sec.bgColor !== 'transparent' ? sec.bgColor : '#ffffff'}
+                                          onChange={e => handleUpdateSectionStyle(sec.id, 'bgColor', e.target.value)}
+                                          title="Couleur personnalisée"
+                                          style={{ width: '18px', height: '18px', padding: 0, border: 'none', borderRadius: '3px', cursor: 'pointer', background: 'transparent' }}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    <span style={{ color: '#cbd5e1' }}>|</span>
+
+                                    {/* Font size */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                      <Type size={13} style={{ color: '#005086' }} />
+                                      <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted, #64748b)' }}>{isArabic ? 'الحجم:' : 'Taille :'}</span>
+                                      <select
+                                        value={sec.fontSize || ''}
+                                        onChange={e => handleUpdateSectionStyle(sec.id, 'fontSize', e.target.value)}
+                                        style={{ fontSize: '0.72rem', padding: '1px 5px', borderRadius: '4px', border: '1px solid #cbd5e1', background: 'var(--bg-main, #ffffff)', color: 'var(--text-main, #334155)', fontWeight: 600 }}
+                                      >
+                                        <option value="">{isArabic ? 'افتراضي' : 'Standard (9.2pt)'}</option>
+                                        <option value="8pt">8pt (Compact)</option>
+                                        <option value="8.5pt">8.5pt</option>
+                                        <option value="9.2pt">9.2pt (Normal)</option>
+                                        <option value="10pt">10pt</option>
+                                        <option value="11pt">11pt (Grand)</option>
+                                      </select>
+                                    </div>
+
+                                    <span style={{ color: '#cbd5e1' }}>|</span>
+
+                                    {/* Line height */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                      <Layers size={13} style={{ color: '#005086' }} />
+                                      <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted, #64748b)' }}>{isArabic ? 'التباعد:' : 'Interligne :'}</span>
+                                      <select
+                                        value={sec.lineHeight || ''}
+                                        onChange={e => handleUpdateSectionStyle(sec.id, 'lineHeight', e.target.value)}
+                                        style={{ fontSize: '0.72rem', padding: '1px 5px', borderRadius: '4px', border: '1px solid #cbd5e1', background: 'var(--bg-main, #ffffff)', color: 'var(--text-main, #334155)', fontWeight: 600 }}
+                                      >
+                                        <option value="">{isArabic ? 'عادي (1.55)' : 'Normal (1.55)'}</option>
+                                        <option value="1.3">1.3 ({isArabic ? 'متقارب' : 'Serré'})</option>
+                                        <option value="1.55">1.55 ({isArabic ? 'متوسط' : 'Standard'})</option>
+                                        <option value="1.75">1.75 ({isArabic ? 'متباعد' : 'Aéré'})</option>
+                                        <option value="2.0">2.0 ({isArabic ? 'واسع' : 'Spacieux'})</option>
+                                      </select>
                                     </div>
                                   </div>
-                                );
-                              }
-                              if (item.type === 'table') {
-                                return (
-                                  <div key={`ex-tbl-before-${itemIdx}`} style={{ margin: '0.8rem 0', width: '100%' }}>
-                                    <SmartTableRenderer table={item.table || item.data || item.text || item} title={item.title} />
-                                  </div>
-                                );
-                              }
-                              return null;
-                            })}
+                                )}
 
-                            {renderWithMath(sec.content)}
+                                {/* Attached images/tables with position === 'before' */}
+                                {sec.items?.filter(it => (it.type === 'image' || it.type === 'table') && it.position === 'before').map((item, itemIdx) => {
+                                  if (item.type === 'image') {
+                                    const align = item.align || 'center';
+                                    const widthPct = item.width_pct || 80;
+                                    const justifyMap = { left: 'flex-start', center: 'center', right: 'flex-end' };
+                                    const rawUrl = (item.url || '').trim();
+                                    const altText = item.alt || item.description || '';
+                                    if (!rawUrl) return null;
+                                    return (
+                                      <div key={`ex-img-before-${itemIdx}`} style={{ display: 'flex', flexDirection: 'column', alignItems: justifyMap[align], margin: '0.8rem 0', width: '100%' }}>
+                                        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '0.6rem', maxWidth: `${widthPct}%`, minWidth: '180px', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
+                                          <img src={rawUrl} alt={altText || 'Figure'} style={{ width: '100%', maxHeight: '350px', borderRadius: '8px', objectFit: 'contain', display: 'block' }} />
+                                          {altText && <div style={{ marginTop: '0.4rem', fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center' }}>{renderWithMath(altText)}</div>}
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+                                  if (item.type === 'table') {
+                                    return (
+                                      <div key={`ex-tbl-before-${itemIdx}`} style={{ margin: '0.8rem 0', width: '100%' }}>
+                                        <SmartTableRenderer table={item.table || item.data || item.text || item} title={item.title} />
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                })}
+
+                                {isDirectEdit ? (
+                                  <textarea
+                                    value={sec.content || ''}
+                                    onChange={e => handleUpdateSectionContent(sec.id, e.target.value)}
+                                    placeholder="Énoncé de l'exercice..."
+                                    rows={Math.max(3, (sec.content || '').split('\n').length)}
+                                    style={{
+                                      width: '100%',
+                                      border: '1px dashed #005086',
+                                      borderRadius: '6px',
+                                      padding: '0.6rem',
+                                      fontSize: sec.fontSize || '0.92rem',
+                                      lineHeight: sec.lineHeight || 1.55,
+                                      background: hasCustomBg ? customBg : 'var(--bg-main, #ffffff)',
+                                      color: 'var(--text-main)',
+                                      fontFamily: isArabic ? arabicFont : 'inherit',
+                                      direction: isArabic ? 'rtl' : 'ltr',
+                                      outline: 'none'
+                                    }}
+                                  />
+                                ) : (
+                                  renderWithMath(sec.content)
+                                )}
 
                             {/* Attached images and tables inside exercise (default / after) */}
                             {sec.items?.filter(it => (it.type === 'image' || it.type === 'table') && it.position !== 'before').map((item, itemIdx) => {
@@ -3225,6 +3202,8 @@ export default function LessonViewerPage() {
                               return null;
                             })}
                           </div>
+                        );
+                      })()}
 
                           {/* Interactive student checks */}
                           {sec.interactive_answers?.length > 0 && (
@@ -3321,510 +3300,6 @@ export default function LessonViewerPage() {
             })}
           </div>
         </div>
-
-      {/* ── Feature 6: Data Show Presentation Overlay Modal ── */}
-      {presentationMode && (() => {
-        const slides = getSlidesList(lesson);
-        const totalSlides = slides.length || 1;
-        const currentSec = slides[currentSlideIndex];
-        const progressPct = ((currentSlideIndex + 1) / totalSlides) * 100;
-
-        const themeStyles = {
-          dark: {
-            bgOuter: '#070a12',
-            bgBoard: '#0f172a',
-            borderBoard: '2px solid rgba(99, 102, 241, 0.4)',
-            boxShadow: '0 25px 60px rgba(0,0,0,0.7), 0 0 40px rgba(99, 102, 241, 0.15)',
-            textMain: '#f8fafc',
-            textSubtle: '#94a3b8',
-            accent: '#6366f1',
-            accentGlow: 'linear-gradient(135deg, #6366f1, #a855f7)',
-            headerBg: '#0f172a',
-            footerBg: '#0f172a',
-            cardBg: '#1e293b',
-            solBg: '#064e3b',
-            solBorder: '#10b981',
-            solText: '#ecfdf5'
-          },
-          chalkboard: {
-            bgOuter: '#02140e',
-            bgBoard: '#05261d',
-            borderBoard: '3px solid #0d4736',
-            boxShadow: '0 25px 60px rgba(0,0,0,0.8), 0 0 40px rgba(16, 185, 129, 0.1)',
-            textMain: '#f0fdf4',
-            textSubtle: '#a7f3d0',
-            accent: '#10b981',
-            accentGlow: 'linear-gradient(135deg, #059669, #10b981)',
-            headerBg: '#031912',
-            footerBg: '#031912',
-            cardBg: '#09382b',
-            solBg: '#064e3b',
-            solBorder: '#34d399',
-            solText: '#f0fdf4'
-          },
-          whiteboard: {
-            bgOuter: '#f1f5f9',
-            bgBoard: '#ffffff',
-            borderBoard: '2px solid #cbd5e1',
-            boxShadow: '0 20px 50px rgba(0,0,0,0.1)',
-            textMain: '#0f172a',
-            textSubtle: '#475569',
-            accent: '#2563eb',
-            accentGlow: 'linear-gradient(135deg, #2563eb, #3b82f6)',
-            headerBg: '#ffffff',
-            footerBg: '#ffffff',
-            cardBg: '#f8fafc',
-            solBg: '#ecfdf5',
-            solBorder: '#10b981',
-            solText: '#064e3b'
-          }
-        };
-
-        const t = themeStyles[boardTheme] || themeStyles.dark;
-
-        return (
-          <div
-            style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 99999,
-              background: t.bgOuter,
-              color: t.textMain,
-              display: 'flex',
-              flexDirection: 'column',
-              fontFamily: isArabic ? arabicFont : 'inherit',
-              direction: lessonDir,
-              transition: 'all 0.3s ease'
-            }}
-          >
-            {/* Top Progress Line */}
-            {!zenFocusMode && (
-              <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', position: 'relative' }}>
-                <div style={{ width: `${progressPct}%`, height: '100%', background: t.accentGlow, transition: 'width 0.3s ease' }} />
-              </div>
-            )}
-
-            {/* Top Control Bar (Hidden in Zen Focus Mode) */}
-            {!zenFocusMode && (
-              <div
-                style={{
-                  padding: '0.75rem 1.75rem',
-                  background: t.headerBg,
-                  borderBottom: `1px solid ${boardTheme === 'whiteboard' ? '#e2e8f0' : '#1e293b'}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '1rem',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-                }}
-              >
-                {/* Left side: Lesson Title & Slide Count */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                  <span style={{ background: t.accentGlow, color: '#fff', padding: '0.3rem 0.8rem', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 900, letterSpacing: '0.05em', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', boxShadow: '0 4px 12px rgba(99,102,241,0.25)' }}>
-                    <Tv size={16} /> DATA SHOW
-                  </span>
-                  <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: t.textMain }}>
-                    {renderWithMath(lesson?.title || header?.fiche_title || 'Présentation Classe')}
-                  </h3>
-                  <span style={{ background: boardTheme === 'whiteboard' ? '#e2e8f0' : 'rgba(255,255,255,0.08)', border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.12)'}`, color: t.textMain, padding: '0.25rem 0.65rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800 }}>
-                    {currentSlideIndex + 1} / {totalSlides}
-                  </span>
-                </div>
-
-                {/* Right side: Organized Controls */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                  
-                  {/* Fullscreen Toggle Button */}
-                  <button
-                    onClick={toggleFullscreen}
-                    style={{
-                      background: isFullscreen ? t.accent : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)'),
-                      color: isFullscreen ? '#ffffff' : t.textMain,
-                      border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.15)'}`,
-                      padding: '0.45rem 0.85rem', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer',
-                      display: 'inline-flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s ease'
-                    }}
-                    title="Activer/Désactiver le mode plein écran (F)"
-                  >
-                    {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
-                    <span>{isFullscreen ? 'Quitter Plein Écran' : 'Plein Écran'}</span>
-                  </button>
-
-                  {/* Zen Focus Mode Button */}
-                  <button
-                    onClick={() => setZenFocusMode(true)}
-                    style={{
-                      background: 'linear-gradient(135deg, #10b981, #059669)',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '0.45rem 0.85rem', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer',
-                      display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-                      boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)', transition: 'all 0.2s ease'
-                    }}
-                    title="Mode Plein Écran & Focus (Z) - Masquer toutes les barres"
-                  >
-                    <Target size={15} />
-                    <span>Mode Focus</span>
-                  </button>
-
-                  {/* Theme Selector Pills */}
-                  <div style={{ display: 'flex', background: boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)', padding: '3px', borderRadius: '12px', border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.1)'}` }}>
-                    <button
-                      onClick={() => setBoardTheme('dark')}
-                      style={{
-                        background: boardTheme === 'dark' ? '#6366f1' : 'transparent',
-                        color: boardTheme === 'dark' ? '#ffffff' : (boardTheme === 'whiteboard' ? '#1e293b' : '#94a3b8'),
-                        border: 'none', padding: '0.35rem 0.65rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
-                        display: 'inline-flex', alignItems: 'center', gap: '0.35rem', transition: 'all 0.2s ease'
-                      }}
-                      title="Mode Cyber Glass Sombre"
-                    >
-                      <Moon size={14} /> <span>Sombre</span>
-                    </button>
-                    <button
-                      onClick={() => setBoardTheme('chalkboard')}
-                      style={{
-                        background: boardTheme === 'chalkboard' ? '#059669' : 'transparent',
-                        color: boardTheme === 'chalkboard' ? '#ffffff' : (boardTheme === 'whiteboard' ? '#1e293b' : '#94a3b8'),
-                        border: 'none', padding: '0.35rem 0.65rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
-                        display: 'inline-flex', alignItems: 'center', gap: '0.35rem', transition: 'all 0.2s ease'
-                      }}
-                      title="Mode Tableau Vert (Chalkboard)"
-                    >
-                      <Layers size={14} /> <span>Tableau Vert</span>
-                    </button>
-                    <button
-                      onClick={() => setBoardTheme('whiteboard')}
-                      style={{
-                        background: boardTheme === 'whiteboard' ? '#2563eb' : 'transparent',
-                        color: boardTheme === 'whiteboard' ? '#ffffff' : '#94a3b8',
-                        border: 'none', padding: '0.35rem 0.65rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer',
-                        display: 'inline-flex', alignItems: 'center', gap: '0.35rem', transition: 'all 0.2s ease'
-                      }}
-                      title="Mode Tableau Blanc (Whiteboard)"
-                    >
-                      <Sun size={14} /> <span>Tableau Blanc</span>
-                    </button>
-                  </div>
-
-                  {/* Font Size Adjusters */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)', border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'transparent'}`, padding: '3px 6px', borderRadius: '12px' }}>
-                    <button
-                      onClick={() => setBoardFontSize(prev => Math.max(prev - 0.15, 0.9))}
-                      style={{ background: 'transparent', border: 'none', color: t.textMain, fontWeight: 900, cursor: 'pointer', padding: '0.25rem 0.4rem', borderRadius: '6px', display: 'flex', alignItems: 'center' }}
-                      title="Réduire la taille du texte"
-                    >
-                      <ZoomOut size={15} />
-                    </button>
-                    <span style={{ fontSize: '0.75rem', opacity: 0.4, fontWeight: 700, color: t.textMain }}>|</span>
-                    <button
-                      onClick={() => setBoardFontSize(prev => Math.min(prev + 0.15, 2.2))}
-                      style={{ background: 'transparent', border: 'none', color: t.textMain, fontWeight: 900, cursor: 'pointer', padding: '0.25rem 0.4rem', borderRadius: '6px', display: 'flex', alignItems: 'center' }}
-                      title="Agrandir la taille du texte"
-                    >
-                      <ZoomIn size={15} />
-                    </button>
-                  </div>
-
-                  {/* Drawer Thumbnails Toggle Button */}
-                  <button
-                    onClick={() => setShowSlideDrawer(prev => !prev)}
-                    style={{
-                      background: showSlideDrawer ? t.accent : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)'),
-                      color: showSlideDrawer ? '#ffffff' : t.textMain,
-                      border: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.15)'}`,
-                      padding: '0.45rem 0.85rem', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer',
-                      display: 'inline-flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s ease'
-                    }}
-                    title="Afficher la liste des diapositives"
-                  >
-                    <ListFilter size={15} /> <span>Index</span>
-                  </button>
-
-                  {/* Solution Toggle Button */}
-                  <button
-                    onClick={() => setShowSolutionInSlide(prev => !prev)}
-                    style={{
-                      background: showSolutionInSlide ? '#059669' : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.06)'),
-                      color: showSolutionInSlide ? '#ffffff' : t.textMain,
-                      border: `1px solid ${showSolutionInSlide ? '#059669' : (boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.15)')}`,
-                      padding: '0.45rem 0.85rem', fontSize: '0.8rem', fontWeight: 800, borderRadius: '10px', cursor: 'pointer',
-                      display: 'inline-flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <Lightbulb size={15} /> <span>{showSolutionInSlide ? 'Masquer Corrigé' : 'Corrigé'}</span>
-                  </button>
-
-                  {/* Quit Button */}
-                  <button
-                    onClick={() => setPresentationMode(false)}
-                    style={{
-                      background: 'rgba(239, 68, 68, 0.12)',
-                      border: '1px solid #ef4444', color: '#ef4444',
-                      padding: '0.45rem 0.85rem', borderRadius: '10px', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer',
-                      display: 'inline-flex', alignItems: 'center', gap: '0.35rem', transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <X size={15} /> <span>Quitter</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Main Area: Drawer + Slide View */}
-            <div style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}>
-              
-              {/* Slide Drawer Side Panel (Hidden in Zen Focus Mode) */}
-              {!zenFocusMode && showSlideDrawer && (
-                <div
-                  style={{
-                    width: '320px',
-                    background: t.headerBg,
-                    borderRight: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : '#1e293b'}`,
-                    padding: '1.25rem',
-                    overflowY: 'auto',
-                    zIndex: 10
-                  }}
-                >
-                  <h4 style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: t.accent, fontWeight: 900, textTransform: 'uppercase' }}>
-                    📑 Sommaire des Diapositives
-                  </h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                    {slides.map((s, sIdx) => {
-                      const isActive = sIdx === currentSlideIndex;
-                      return (
-                        <div
-                          key={sIdx}
-                          onClick={() => { setCurrentSlideIndex(sIdx); setShowSolutionInSlide(false); }}
-                          style={{
-                            padding: '0.65rem 0.85rem',
-                            borderRadius: '10px',
-                            background: isActive ? t.accentGlow : (boardTheme === 'whiteboard' ? '#f1f5f9' : 'rgba(255,255,255,0.04)'),
-                            color: isActive ? '#ffffff' : t.textMain,
-                            cursor: 'pointer',
-                            fontSize: '0.85rem',
-                            fontWeight: isActive ? 800 : 600,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.65rem',
-                            transition: 'all 0.2s'
-                          }}
-                        >
-                          <span style={{ background: isActive ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.15)', padding: '2px 7px', borderRadius: '50%', fontSize: '0.75rem', fontWeight: 900 }}>
-                            {sIdx + 1}
-                          </span>
-                          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {s.title || s.section_header || `Diapositive ${sIdx + 1}`}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Main Slide Content Display Board */}
-              <div
-                style={{
-                  flex: 1,
-                  overflowY: 'auto',
-                  padding: zenFocusMode ? '1.5rem' : '2.5rem 3.5rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  width: '100%'
-                }}
-              >
-                {!currentSec ? (
-                  <div style={{ textAlign: 'center', color: t.textSubtle, fontSize: '1.2rem' }}>Aucun contenu à afficher dans cette diapositive.</div>
-                ) : (
-                  <div
-                    style={{
-                      background: t.cardBg,
-                      border: t.borderBoard,
-                      borderRadius: '20px',
-                      padding: zenFocusMode ? '3.5rem 4rem' : '3rem',
-                      boxShadow: t.boxShadow,
-                      maxWidth: zenFocusMode ? '1500px' : '1300px',
-                      width: '100%',
-                      transition: 'all 0.3s ease'
-                    }}
-                  >
-                    {/* Header Banner */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '2rem', borderBottom: `2px dashed ${boardTheme === 'whiteboard' ? '#cbd5e1' : 'rgba(255,255,255,0.15)'}`, paddingBottom: '1.25rem' }}>
-                      <div style={{ background: t.accentGlow, color: '#fff', width: '3.2rem', height: '3.2rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.4rem', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
-                        {currentSlideIndex + 1}
-                      </div>
-                      <h2 style={{ margin: 0, fontSize: `${boardFontSize * 1.4}rem`, fontWeight: 900, color: t.textMain }}>
-                        {renderWithMath(currentSec.title || currentSec.section_header || `Section ${currentSlideIndex + 1}`)}
-                      </h2>
-                    </div>
-
-                    {/* Body Items */}
-                    <div style={{ fontSize: `${boardFontSize * (zenFocusMode ? 1.1 : 1)}rem`, lineHeight: 1.95, color: t.textMain }}>
-                      {currentSec.items?.map((item, idx) => (
-                        <div key={idx} style={{ margin: '1.2rem 0' }}>
-                          {renderWithMath(typeof item === 'string' ? item : (item.text || ''))}
-                        </div>
-                      ))}
-                      {(!currentSec.items || currentSec.items.length === 0) && currentSec.content && (
-                        <div style={{ lineHeight: 1.95 }}>{renderWithMath(currentSec.content)}</div>
-                      )}
-                    </div>
-
-                    {/* Solution section inside Data Show slide */}
-                    {currentSec.solution && (
-                      <div style={{ marginTop: '2.5rem', paddingTop: '1.75rem', borderTop: `2px dashed ${t.accent}` }}>
-                        {!showSolutionInSlide ? (
-                          <button
-                            onClick={() => setShowSolutionInSlide(true)}
-                            style={{ background: '#059669', color: '#fff', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '10px', fontWeight: 800, fontSize: '1rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)' }}
-                          >
-                            🔍 Afficher le Corrigé / Démonstration (S)
-                          </button>
-                        ) : (
-                          <div style={{ background: t.solBg, border: `2px solid ${t.solBorder}`, padding: '1.75rem', borderRadius: '14px', color: t.solText, fontSize: `${boardFontSize * 1.05}rem`, lineHeight: 1.95 }}>
-                            <div style={{ fontWeight: 900, color: t.solBorder, marginBottom: '0.85rem', fontSize: '1.2rem' }}>
-                              💡 Corrigé & Démonstration Rédigée :
-                            </div>
-                            {renderWithMath(currentSec.solution)}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Floating Quick Action Bar for Zen Focus Mode */}
-            {zenFocusMode ? (
-              <div
-                style={{
-                  position: 'fixed',
-                  bottom: '1.5rem',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  background: 'rgba(15, 23, 42, 0.85)',
-                  backdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '30px',
-                  padding: '0.5rem 1.25rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-                  zIndex: 100
-                }}
-              >
-                <button
-                  disabled={currentSlideIndex === 0}
-                  onClick={() => { setCurrentSlideIndex(prev => Math.max(prev - 1, 0)); setShowSolutionInSlide(false); }}
-                  style={{ background: 'transparent', border: 'none', color: '#fff', opacity: currentSlideIndex === 0 ? 0.3 : 1, cursor: 'pointer', fontWeight: 800 }}
-                >
-                  <ChevronLeft size={22} />
-                </button>
-
-                <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#f8fafc' }}>
-                  {currentSlideIndex + 1} / {totalSlides}
-                </span>
-
-                <button
-                  disabled={currentSlideIndex >= totalSlides - 1}
-                  onClick={() => { setCurrentSlideIndex(prev => Math.min(prev + 1, totalSlides - 1)); setShowSolutionInSlide(false); }}
-                  style={{ background: 'transparent', border: 'none', color: '#fff', opacity: currentSlideIndex >= totalSlides - 1 ? 0.3 : 1, cursor: 'pointer', fontWeight: 800 }}
-                >
-                  <ChevronRight size={22} />
-                </button>
-
-                <div style={{ height: '18px', width: '1px', background: 'rgba(255,255,255,0.2)' }} />
-
-                <button
-                  onClick={() => setShowSolutionInSlide(prev => !prev)}
-                  style={{ background: showSolutionInSlide ? '#059669' : 'transparent', border: 'none', color: '#fff', padding: '0.3rem 0.75rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-                >
-                  <Lightbulb size={15} /> <span>Corrigé (S)</span>
-                </button>
-
-                <button
-                  onClick={toggleFullscreen}
-                  style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-                >
-                  {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
-                  <span>{isFullscreen ? 'Fenêtre' : 'Plein Écran'}</span>
-                </button>
-
-                <button
-                  onClick={() => setZenFocusMode(false)}
-                  style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 900, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)' }}
-                >
-                  <Target size={15} /> <span>Quitter Focus (Z)</span>
-                </button>
-              </div>
-            ) : (
-              /* Bottom Footer Bar Navigation */
-              <div
-                style={{
-                  padding: '0.75rem 2.5rem',
-                  background: t.footerBg,
-                  borderTop: `1px solid ${boardTheme === 'whiteboard' ? '#cbd5e1' : '#1e293b'}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
-                }}
-              >
-                <button
-                  disabled={currentSlideIndex === 0}
-                  onClick={() => { setCurrentSlideIndex(prev => Math.max(prev - 1, 0)); setShowSolutionInSlide(false); }}
-                  className="btn"
-                  style={{
-                    background: currentSlideIndex === 0 ? (boardTheme === 'whiteboard' ? '#e2e8f0' : '#1e293b') : t.accent,
-                    color: currentSlideIndex === 0 ? t.textSubtle : '#fff',
-                    opacity: currentSlideIndex === 0 ? 0.5 : 1,
-                    cursor: currentSlideIndex === 0 ? 'not-allowed' : 'pointer',
-                    padding: '0.55rem 1.35rem',
-                    fontSize: '0.9rem',
-                    fontWeight: 800,
-                    borderRadius: '10px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.4rem'
-                  }}
-                >
-                  <ChevronLeft size={18} /> Précédent (←)
-                </button>
-
-                <div style={{ fontSize: '0.85rem', color: t.textSubtle, fontWeight: 700 }}>
-                  Diapositive <strong style={{ color: t.textMain }}>{currentSlideIndex + 1}</strong> sur <strong style={{ color: t.textMain }}>{totalSlides}</strong> • Naviguez avec <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>←</kbd> <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>→</kbd> ou <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '4px' }}>Espace</kbd>
-                </div>
-
-                <button
-                  disabled={currentSlideIndex >= totalSlides - 1}
-                  onClick={() => { setCurrentSlideIndex(prev => Math.min(prev + 1, totalSlides - 1)); setShowSolutionInSlide(false); }}
-                  className="btn"
-                  style={{
-                    background: currentSlideIndex >= totalSlides - 1 ? (boardTheme === 'whiteboard' ? '#e2e8f0' : '#1e293b') : t.accent,
-                    color: currentSlideIndex >= totalSlides - 1 ? t.textSubtle : '#fff',
-                    opacity: currentSlideIndex >= totalSlides - 1 ? 0.5 : 1,
-                    cursor: currentSlideIndex >= totalSlides - 1 ? 'not-allowed' : 'pointer',
-                    padding: '0.55rem 1.35rem',
-                    fontSize: '0.9rem',
-                    fontWeight: 800,
-                    borderRadius: '10px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.4rem'
-                  }}
-                >
-                  Suivant (→) <ChevronRight size={18} />
-                </button>
-              </div>
-            )}
-          </div>
-        );
-      })()}
-
       </div>
     </div>
   );

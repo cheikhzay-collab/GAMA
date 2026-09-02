@@ -667,7 +667,6 @@ export function AuthProvider({ children }) {
 
     const initializeAuthAndListen = async () => {
       try {
-        const { supabase } = await import('../lib/supabase');
         if (!supabase) {
           if (active) setLoading(false);
           return;
@@ -1131,7 +1130,6 @@ export function AuthProvider({ children }) {
     
     const checkAndRefreshSession = async () => {
       try {
-        const { supabase } = await import('../lib/supabase');
         if (supabase) {
           const { data: { session }, error } = await supabase.auth.getSession();
           if (error) throw error;
@@ -1194,7 +1192,6 @@ export function AuthProvider({ children }) {
       if (document.visibilityState === 'visible') {
         console.log('[Auth] Tab became visible. Syncing session from storage...');
         try {
-          const { supabase } = await import('../lib/supabase');
           if (supabase) {
             // getSession reads the latest session from localStorage and updates the client memory
             await supabase.auth.getSession();
@@ -1425,7 +1422,6 @@ export function AuthProvider({ children }) {
         console.warn("[Auth] Failed to update profiles table, falling back to auth metadata:", dbErr.message);
         try {
           // Attempt to update Supabase auth metadata as a fallback
-          const { supabase } = await import('../lib/supabase');
           if (supabase) {
             await supabase.auth.updateUser({
               data: { phone: sanitizedUpdates.phone, city: sanitizedUpdates.city }
@@ -2260,7 +2256,6 @@ export function AuthProvider({ children }) {
     const sendHeartbeat = async () => {
       try {
         const userId = user.uid || user.id;
-        const { supabase } = await import('../lib/supabase');
         if (supabase) {
           await supabase
             .from('profiles')
