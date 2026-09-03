@@ -12,8 +12,10 @@ import { addLesson } from '../services/lessonService';
 import { SafeInlineMath } from '../utils/mathRenderer';
 import SmartTableRenderer, { parseMarkdownTable } from '../components/SmartTableRenderer';
 import NationalExamTemplate from '../components/NationalExamTemplate';
+import CourseSummaryTemplate from '../components/CourseSummaryTemplate';
 import PdfFigureCropperModal from '../components/PdfFigureCropperModal';
 import { openNationalExamPrintWindow } from '../utils/generateNationalExamPDF';
+import { openCourseSummaryPrintWindow } from '../utils/generateCourseSummaryPDF';
 import { loadPdfDocument, renderPdfPageToCanvas, cropPdfRegion } from '../utils/pdfFigureExtractor';
 import { buildPageSnapshotsMap, attachImagesToSections } from '../utils/pdfImageExtractor';
 import { validateExercisePoints, sanitizeMoroccanLatex } from '../utils/scoreBalancingValidator';
@@ -259,8 +261,23 @@ Ton objectif UNIQUE est de produire un JSON structuré représentant FIDÈLEMENT
      - Tout document de contrôle : "Devoir Surveillé", "DS N°", "فرض محروس", "فرض منزلي", "Contrôle continu".
      - Définis "header.doc_type": "homework", "header.is_national_exam": false, "header.total_points": 20.
 
-   • 'course' : (درس / ملخص نظري / بطاقة درس - Fiche de cours / Résumé de cours)
-     - Document comportant du cours théorique, définitions, théorèmes, propriétés, sans être une pure série d'exercices.
+   • 'summary' : (ملخص شامل / ملخص درس / بطاقة ملخص / Résumé de cours / Synthèse de cours)
+     - Tout document condensé récapitulant les définitions, règles, propriétés et exemples d'un cours (ex: "Résumé de cours", "ملخص", "ملخص درس", "Fiche mémo", "Synthèse").
+     - Définis "header.doc_type": "summary" et "header.is_summary": true.
+     - Extrais l'objet "header.summary_meta" avec les informations d'en-tête :
+       - "prof": Nom du professeur avec titre (ex: "Prof : Fayssal el boutkhili")
+       - "website": Site web, lien ou contact (ex: "www.elboutkhili.jimdofree.com")
+       - "title": Titre du résumé (ex: "Résumé de cours 1 : Ensemble ℕ et notion d'arithmétique")
+       - "level_name": Niveau ou filière (ex: "Tronc commun science")
+       - "school": Nom de l'établissement ou lycée (ex: "Lycée ABDE EL MOUMENE")
+     - Organisation en 3 colonnes (Modèle Fiche Résumé) :
+       - Pour chaque section, indique le champ "column" (1, 2, ou 3) pour répartir harmonieusement les notions sur les 3 colonnes du gabarit.
+       - "title": Titre de la notion (ex: "Définitions et notations", "Nombres pairs et impairs", "Multiples d'un entier naturel", etc.).
+       - "content": Texte explicatif, définitions et règles avec formules en LaTeX ($...$).
+       - Les exemples d'application, calculs types, propriétés remarquables et contre-exemples doivent être marqués avec "type": "example" ou "type": "highlight_box" pour être affichés dans les encadrés jaunes signature du modèle.
+
+   • 'course' : (درس كامل / بطاقة درس - Fiche de cours)
+     - Document comportant du cours théorique développé, définitions, théorèmes, activités et démonstrations.
      - Définis "header.doc_type": "course", "header.is_national_exam": false.
 
    • 'concours' : (مباراة ولوج الكليات والمدارس العليا - Épreuve de Concours)
@@ -789,6 +806,9 @@ export default function AdminLessonsImport({ onBack }) {
   const [isNationalExam, setIsNationalExam] = useState(false);
   const [nationalExamMeta, setNationalExamMeta] = useState(null);
   const [viewNationalTemplate, setViewNationalTemplate] = useState(false);
+  const [isSummarySheet, setIsSummarySheet] = useState(false);
+  const [summaryMeta, setSummaryMeta] = useState(null);
+  const [viewSummaryTemplate, setViewSummaryTemplate] = useState(false);
   const [subject, setSubject] = useState('Algèbre');
   const [chapterNumber, setChapterNumber] = useState('');
   const [teacher, setTeacher] = useState('');
@@ -1350,6 +1370,13 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
         /NS\s*\d+|NR\s*\d+/i.test(rawTitle)
       );
 
+      const isSummary = !isSeries && !isHomework && !isConcours && !isOfficialNational && Boolean(
+        header.doc_type === 'summary' ||
+        header.is_summary ||
+        header.summary_meta ||
+        /ملخص|r[ée]sum[ée]|synth[èe]se|fiche m[ée]mo/i.test(rawTitle)
+      );
+
       let finalDocType = header.doc_type || 'course';
       if (isSeries) {
         finalDocType = 'exercises';
@@ -1359,6 +1386,8 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
         finalDocType = 'concours';
       } else if (isOfficialNational) {
         finalDocType = 'national';
+      } else if (isSummary) {
+        finalDocType = 'summary';
       } else if (header.doc_type) {
         finalDocType = header.doc_type;
       }
@@ -1369,6 +1398,12 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
         setNationalExamMeta(header.national_exam_meta);
       }
       setViewNationalTemplate(isOfficialNational);
+
+      setIsSummarySheet(isSummary);
+      if (header.summary_meta) {
+        setSummaryMeta(header.summary_meta);
+      }
+      setViewSummaryTemplate(isSummary);
 
       const detectedLvl = header.detected_level || header.level;
       if (detectedLvl) {
@@ -1643,7 +1678,15 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
     setError('');
 
     try {
-      const effectiveDocType = isNationalExam ? 'national' : docType;
+      const effectiveDocType = isNationalExam ? 'national' : (isSummarySheet ? 'summary' : docType);
+      const effectiveSummaryMeta = isSummarySheet ? (summaryMeta || {
+        prof: teacher,
+        website: phone,
+        title: ficheTitle,
+        level_name: selectedLevel,
+        school: schools?.[0] || 'Lycée ABDE EL MOUMENE'
+      }) : null;
+
       const lessonData = {
         title: ficheTitle,
         subject,
@@ -1654,11 +1697,15 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
         docType: effectiveDocType,
         is_national_exam: isNationalExam,
         national_exam_meta: isNationalExam ? nationalExamMeta : null,
+        is_summary: isSummarySheet,
+        summary_meta: effectiveSummaryMeta,
         content: {
           level: selectedLevel,
           doc_type: effectiveDocType,
           is_national_exam: isNationalExam,
           national_exam_meta: isNationalExam ? nationalExamMeta : null,
+          is_summary: isSummarySheet,
+          summary_meta: effectiveSummaryMeta,
           metadata: {
             language: docLanguage
           },
@@ -1670,7 +1717,9 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
             teacher,
             phone,
             is_national_exam: isNationalExam,
-            national_exam_meta: isNationalExam ? nationalExamMeta : null
+            national_exam_meta: isNationalExam ? nationalExamMeta : null,
+            is_summary: isSummarySheet,
+            summary_meta: effectiveSummaryMeta
           },
           sections
         },
@@ -2228,35 +2277,107 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+              {isNationalExam && (
+                <>
+                  <button
+                    type="button"
+                    className="btn-outline"
+                    onClick={() => {
+                      setViewNationalTemplate(!viewNationalTemplate);
+                      if (viewSummaryTemplate) setViewSummaryTemplate(false);
+                    }}
+                    style={{
+                      background: viewNationalTemplate ? 'var(--violet)' : 'rgba(255,255,255,0.05)',
+                      color: viewNationalTemplate ? '#fff' : 'inherit',
+                      fontWeight: 700,
+                      fontSize: '0.85rem'
+                    }}
+                  >
+                    {viewNationalTemplate ? '✏️ Mode édition' : '👁️ Modèle Examen National'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => openNationalExamPrintWindow({
+                      header: { fiche_title: ficheTitle, subject, level: selectedLevel, is_national_exam: isNationalExam, national_exam_meta: nationalExamMeta },
+                      sections: sections.map(s => ({ title: s.title, points: s.points, content: s.content, items: s.items || s.questions || [] }))
+                    })}
+                    style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', fontWeight: 700, fontSize: '0.85rem' }}
+                  >
+                    🖨️ Imprimer format officiel (PDF)
+                  </button>
+                </>
+              )}
+
+              {/* Course Summary Template Buttons */}
               <button
                 type="button"
                 className="btn-outline"
-                onClick={() => setViewNationalTemplate(!viewNationalTemplate)}
+                onClick={() => {
+                  setViewSummaryTemplate(!viewSummaryTemplate);
+                  if (viewNationalTemplate) setViewNationalTemplate(false);
+                }}
                 style={{
-                  background: viewNationalTemplate ? 'var(--violet)' : 'rgba(255,255,255,0.05)',
-                  color: viewNationalTemplate ? '#fff' : 'inherit',
+                  background: viewSummaryTemplate ? 'linear-gradient(135deg, #0284c7, #0070ba)' : 'rgba(255,255,255,0.05)',
+                  color: viewSummaryTemplate ? '#fff' : 'inherit',
                   fontWeight: 700,
-                  fontSize: '0.85rem'
+                  fontSize: '0.85rem',
+                  borderColor: '#0284c7'
                 }}
               >
-                {viewNationalTemplate ? '✏️ Mode édition' : '👁️ Modèle Examen National'}
+                {viewSummaryTemplate ? '✏️ Mode édition' : '👁️ Modèle Résumé (3 Colonnes)'}
               </button>
               <button
                 type="button"
                 className="btn"
-                onClick={() => openNationalExamPrintWindow({
-                  header: { fiche_title: ficheTitle, subject, level: selectedLevel, is_national_exam: isNationalExam, national_exam_meta: nationalExamMeta },
-                  sections: sections.map(s => ({ title: s.title, points: s.points, content: s.content, items: s.items || s.questions || [] }))
+                onClick={() => openCourseSummaryPrintWindow({
+                  header: {
+                    fiche_title: ficheTitle,
+                    subject,
+                    level: selectedLevel,
+                    teacher,
+                    phone,
+                    summary_meta: summaryMeta || {
+                      prof: teacher,
+                      website: phone,
+                      title: ficheTitle,
+                      level_name: selectedLevel,
+                      school: schools?.[0] || 'Lycée ABDE EL MOUMENE'
+                    }
+                  },
+                  sections
                 })}
-                style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', fontWeight: 700, fontSize: '0.85rem' }}
+                style={{ background: 'linear-gradient(135deg, #0284c7, #0070ba)', color: '#fff', fontWeight: 700, fontSize: '0.85rem' }}
               >
-                🖨️ Imprimer / Exporter format officiel (PDF)
+                🖨️ Imprimer Modèle Résumé (PDF)
               </button>
             </div>
           </div>
 
-          {/* National Exam Template View Mode */}
-          {isNationalExam && viewNationalTemplate ? (
+          {/* Summary Template View Mode */}
+          {viewSummaryTemplate ? (
+            <div className="glass-panel" style={{ padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)', background: '#ffffff', overflowX: 'auto' }}>
+              <CourseSummaryTemplate
+                data={{
+                  header: {
+                    fiche_title: ficheTitle,
+                    subject,
+                    level: selectedLevel,
+                    teacher,
+                    phone,
+                    summary_meta: summaryMeta || {
+                      prof: teacher,
+                      website: phone,
+                      title: ficheTitle,
+                      level_name: selectedLevel,
+                      school: schools?.[0] || 'Lycée ABDE EL MOUMENE'
+                    }
+                  },
+                  sections
+                }}
+              />
+            </div>
+          ) : isNationalExam && viewNationalTemplate ? (
             <div className="glass-panel" style={{ padding: '2rem', borderRadius: '16px', border: '1px solid var(--border)' }}>
               <NationalExamTemplate
                 examData={{

@@ -12,7 +12,9 @@ import { renderWithMath } from '../utils/mathRenderer';
 import SmartTableRenderer from '../components/SmartTableRenderer';
 import { openLessonPrintWindow } from '../utils/generateLessonPDF';
 import NationalExamTemplate from '../components/NationalExamTemplate';
+import CourseSummaryTemplate from '../components/CourseSummaryTemplate';
 import { openNationalExamPrintWindow } from '../utils/generateNationalExamPDF';
+import { openCourseSummaryPrintWindow } from '../utils/generateCourseSummaryPDF';
 
 /**
  * Convert **bold** markdown to <strong> inline spans, keeping the rest as plain text.
@@ -593,6 +595,7 @@ export default function LessonViewerPage() {
   const [isDirectEdit, setIsDirectEdit] = useState(false);
   const [originalLessonBackup, setOriginalLessonBackup] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [viewSummaryMode, setViewSummaryMode] = useState(false);
 
   const [isGeneratingAiFiche, setIsGeneratingAiFiche] = useState(false);
 
@@ -619,9 +622,20 @@ export default function LessonViewerPage() {
           setError("Ce cours n'existe pas ou a été supprimé.");
         } else {
           setLesson(data);
+          const isSum = Boolean(
+            data.docType === 'summary' ||
+            data.content?.doc_type === 'summary' ||
+            data.is_summary ||
+            data.content?.header?.is_summary ||
+            data.content?.header?.summary_meta ||
+            /ملخص|r[ée]sum[ée]|synth[èe]se/i.test(data.title || data.content?.header?.fiche_title || '')
+          );
+          if (isSum) {
+            setViewSummaryMode(true);
+          }
           // Initialise solutions visibility
           const initialSols = {};
-          data.content.sections?.forEach(sec => {
+          data.content?.sections?.forEach(sec => {
             if (sec.type === 'exercise') {
               initialSols[sec.id] = false;
             }
@@ -995,8 +1009,18 @@ export default function LessonViewerPage() {
       }
       const isSeriesOrHomework = lesson?.docType === 'exercises' || lesson?.docType === 'homework' || lesson?.content?.doc_type === 'exercises' || lesson?.content?.doc_type === 'homework' || /سلسلة|s[ée]rie|devoir|فرض/i.test(lesson?.title || '');
       const isNat = !isSeriesOrHomework && Boolean(lesson?.docType === 'national' || lesson?.content?.doc_type === 'national' || lesson?.content?.header?.is_national_exam || lesson?.is_national_exam);
+      const isSummary = !isSeriesOrHomework && Boolean(
+        lesson?.docType === 'summary' ||
+        lesson?.content?.doc_type === 'summary' ||
+        lesson?.is_summary ||
+        lesson?.content?.header?.is_summary ||
+        lesson?.content?.header?.summary_meta ||
+        /ملخص|r[ée]sum[ée]|synth[èe]se/i.test(lesson?.title || lesson?.content?.header?.fiche_title || '')
+      );
       if (isNat) {
         openNationalExamPrintWindow(lesson.content || lesson, { showSolutions: includeSolutionsInPdf });
+      } else if (isSummary) {
+        openCourseSummaryPrintWindow(lesson.content || lesson);
       } else {
         openLessonPrintWindow(lesson, { showSolutions: includeSolutionsInPdf });
       }
@@ -2004,6 +2028,27 @@ export default function LessonViewerPage() {
             </button>
           </div>
 
+          {/* Course Summary Template Mode Toggle */}
+          <button 
+            onClick={() => setViewSummaryMode(!viewSummaryMode)}
+            style={{
+              background: viewSummaryMode ? 'linear-gradient(135deg, #0284c7, #0070ba)' : 'rgba(255, 255, 255, 0.05)',
+              color: viewSummaryMode ? '#ffffff' : 'var(--text-main)',
+              border: '1px solid #0284c7',
+              padding: '0.45rem 0.9rem',
+              borderRadius: '99px',
+              fontSize: '0.78rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              transition: 'all 0.2s'
+            }}
+          >
+            {viewSummaryMode ? '📄 Vue Fiche Standard' : '👁️ Modèle Résumé (3 Colonnes)'}
+          </button>
+
           {/* PDF Download button */}
           <button 
             onClick={handleExportPDF}
@@ -2052,7 +2097,21 @@ export default function LessonViewerPage() {
         </div>
       </div>
 
-      {/* ── MAIN WORKsheet CONTAINER — ref used by html2canvas PDF export ── */}
+      {/* ── COURSE SUMMARY TEMPLATE VIEW MODE ── */}
+      {viewSummaryMode ? (
+        <div style={{
+          background: '#ffffff',
+          borderRadius: '12px',
+          padding: '1.25rem',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+          marginBottom: '2rem',
+          overflowX: 'auto'
+        }}>
+          <CourseSummaryTemplate data={lesson} />
+        </div>
+      ) : (
+
+      /* ── MAIN WORKsheet CONTAINER — ref used by html2canvas PDF export ── */
       <div ref={sheetRef} className={`sheet-container ${includeSolutionsInPdf ? '' : 'hide-solutions-print'}`}>
         
         {/* Print-only header row (3 columns) — hidden on screen, shows on print */}
@@ -3301,6 +3360,7 @@ export default function LessonViewerPage() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

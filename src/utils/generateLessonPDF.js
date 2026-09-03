@@ -1,5 +1,6 @@
 import katex from 'katex';
 import { openNationalExamPrintWindow } from './generateNationalExamPDF';
+import { openCourseSummaryPrintWindow } from './generateCourseSummaryPDF';
 
 /* ── RTL mode flag — set per render call ── */
 let _rtlMode = false;
@@ -2968,6 +2969,16 @@ export const openLessonPrintWindow = (lesson, settings = {}) => {
   const isNat = !isSeriesOrHomework && Boolean(lesson?.docType === 'national' || lesson?.content?.doc_type === 'national' || lesson?.content?.header?.is_national_exam || lesson?.is_national_exam);
   if (isNat) {
     return openNationalExamPrintWindow(lesson?.content || lesson, settings);
+  }
+  const isSummary = !isSeriesOrHomework && Boolean(
+    lesson?.docType === 'summary' ||
+    lesson?.content?.doc_type === 'summary' ||
+    lesson?.is_summary ||
+    lesson?.content?.header?.is_summary ||
+    /ملخص|r[ée]sum[ée]|synth[èe]se/i.test(lesson?.title || lesson?.content?.header?.fiche_title || '')
+  );
+  if (isSummary) {
+    return openCourseSummaryPrintWindow(lesson?.content || lesson, settings);
   }
   const html = generateLessonHTML(lesson, settings);
   const title = lesson?.content?.header?.fiche_title || lesson?.title || 'Fiche_de_cours';

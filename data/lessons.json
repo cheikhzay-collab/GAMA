@@ -12624,5 +12624,322 @@
     "created_at": "2026-08-30T11:11:44.222Z",
     "createdAt": "2026-08-30T11:11:44.601Z",
     "updatedAt": "2026-08-30T11:24:26.536Z"
+  },
+  {
+    "id": "MOCK-L-MQNOQP9A8",
+    "title": "Résumé de cours 1 : Ensemble N et notion d'arithmétique",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": "Fayssal el boutkhili",
+    "phone": null,
+    "schools": [],
+    "content": {
+      "level": "common_core_sci",
+      "doc_type": "course",
+      "is_national_exam": false,
+      "national_exam_meta": null,
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "Lycée ABDE EL MOUMENE",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Résumé de cours 1 : Ensemble N et notion d'arithmétique",
+        "teacher": "Fayssal el boutkhili",
+        "phone": "",
+        "is_national_exam": false,
+        "national_exam_meta": null
+      },
+      "sections": [
+        {
+          "id": "sec-1",
+          "section_header": "",
+          "title": "**Définitions et notations :**",
+          "type": "definition",
+          "section_number": "1",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "$N = \\{0, 1, 2, 3, 4, 5 ... \\}$"
+            },
+            {
+              "type": "text",
+              "text": "$N^* = \\{1, 2, 3, 4 ... \\}$"
+            },
+            {
+              "type": "text",
+              "text": "Si un nombre $a$ appartient à $N$, on écrit $a \\in N$ sinon $a \\notin N$."
+            }
+          ],
+          "content": "$N = \\{0, 1, 2, 3, 4, 5 ... \\}$\n$N^* = \\{1, 2, 3, 4 ... \\}$\nSi un nombre $a$ appartient à $N$, on écrit $a \\in N$ sinon $a \\notin N$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-2",
+          "section_header": "",
+          "title": "**Exemples :**",
+          "type": "example",
+          "section_number": "1",
+          "accent_text": "2 $\\in N$ ; 2019 $\\in N^*$ ; $-6 \\notin N$ ; 0 $\\notin N^*$",
+          "items": [],
+          "content": "",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-3",
+          "section_header": "",
+          "title": "**Nombres pairs et impairs :**",
+          "type": "definition",
+          "section_number": "1",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "On dit qu'un entier naturel $a$ est un nombre pair, si et seulement s'il existe $k \\in N$ tel que : $a = 2k$."
+            },
+            {
+              "type": "bullet",
+              "text": "On dit qu'un entier naturel $b$ est un nombre impair, si et seulement s'il existe $k \\in N$ tel que : $b = 2k + 1$."
+            }
+          ],
+          "content": "On dit qu'un entier naturel $a$ est un nombre pair, si et seulement s'il existe $k \\in N$ tel que : $a = 2k$.\nOn dit qu'un entier naturel $b$ est un nombre impair, si et seulement s'il existe $k \\in N$ tel que : $b = 2k + 1$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-4",
+          "section_header": "",
+          "title": "**Exemple :**",
+          "type": "example",
+          "section_number": "1",
+          "accent_text": "Le nombre $6n + 10$ tel que $n \\in N$ est un nombre toujours pair car $6n + 10 = 2(3n + 5)$ avec $k = (3n + 5)$.",
+          "items": [],
+          "content": "",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-5",
+          "section_header": "",
+          "title": "**Propriétés :**",
+          "type": "property",
+          "section_number": "1",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "Le produit de deux nombres consécutifs est un nombre pair."
+            }
+          ],
+          "content": "Le produit de deux nombres consécutifs est un nombre pair.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-6",
+          "section_header": "",
+          "title": "**Exemples :**",
+          "type": "example",
+          "section_number": "1",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "L'entier $n(n + 1)$ est pair car il est produit de deux entiers consécutifs."
+            },
+            {
+              "type": "bullet",
+              "text": "L'entier $(n + 5)(n + 6)$ est pair car il est produit de deux entiers consécutifs."
+            }
+          ],
+          "content": "L'entier $n(n + 1)$ est pair car il est produit de deux entiers consécutifs.\nL'entier $(n + 5)(n + 6)$ est pair car il est produit de deux entiers consécutifs.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-7",
+          "section_header": "",
+          "title": "**Multiples d'un entier naturel :**",
+          "type": "definition",
+          "section_number": "1",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "On dit que $a$ est un multiple de $b$, s'il existe $k \\in N$ tel que : $a = kb$."
+            },
+            {
+              "type": "bullet",
+              "text": "Le plus petit commun multiple de deux entiers naturels $a$ et $b$, on le note généralement $PPCM(a; b)$ ou $a \\lor b$."
+            }
+          ],
+          "content": "On dit que $a$ est un multiple de $b$, s'il existe $k \\in N$ tel que : $a = kb$.\nLe plus petit commun multiple de deux entiers naturels $a$ et $b$, on le note généralement $PPCM(a; b)$ ou $a \\lor b$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-8",
+          "section_header": "",
+          "title": "**Diviseurs d'un entier naturel :**",
+          "type": "definition",
+          "section_number": "1",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "On dit que $b$ est un diviseur de $a$, ou $b$ divise $a$, ou $a$ est divisible par $b$ s'il existe $k \\in N$ tel que : $a = kb$."
+            },
+            {
+              "type": "bullet",
+              "text": "Le plus grand diviseur commun de $a$ et $b$ on le note $PGCD(a;b)$ ou $a \\land b$."
+            }
+          ],
+          "content": "On dit que $b$ est un diviseur de $a$, ou $b$ divise $a$, ou $a$ est divisible par $b$ s'il existe $k \\in N$ tel que : $a = kb$.\nLe plus grand diviseur commun de $a$ et $b$ on le note $PGCD(a;b)$ ou $a \\land b$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-9",
+          "section_header": "",
+          "title": "**Critères de divisibilité par 2, 3, 5 et 9 :**",
+          "type": "property",
+          "section_number": "1",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1)** Un nombre est divisible par 2 lorsque le chiffre des unités est pair."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** Un nombre est divisible par 5 lorsque le chiffre des unités est 0 ou 5."
+            },
+            {
+              "type": "bullet",
+              "text": "**3)** Un nombre est divisible par 3 lorsque la somme de ses chiffres est un nombre multiple de 3."
+            },
+            {
+              "type": "bullet",
+              "text": "**4)** Un nombre est divisible par 9 lorsque la somme de ses chiffres est un nombre multiple de 9."
+            }
+          ],
+          "content": "**1)** Un nombre est divisible par 2 lorsque le chiffre des unités est pair.\n**2)** Un nombre est divisible par 5 lorsque le chiffre des unités est 0 ou 5.\n**3)** Un nombre est divisible par 3 lorsque la somme de ses chiffres est un nombre multiple de 3.\n**4)** Un nombre est divisible par 9 lorsque la somme de ses chiffres est un nombre multiple de 9.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-10",
+          "section_header": "",
+          "title": "**Exemple :**",
+          "type": "example",
+          "section_number": "1",
+          "accent_text": "Le nombre 124581 est divisible par 3 car la somme de ses chiffres est 21 et 21 est un multiple de 3.",
+          "items": [],
+          "content": "",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-11",
+          "section_header": "",
+          "title": "**Nombres premiers :**",
+          "type": "definition",
+          "section_number": "1",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "Un entier naturel est dit premier, si ses seuls diviseurs sont 1 et lui-même."
+            }
+          ],
+          "content": "Un entier naturel est dit premier, si ses seuls diviseurs sont 1 et lui-même.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-12",
+          "section_header": "",
+          "title": "**Comment savoir qu'un nombre est premier :**",
+          "type": "content",
+          "section_number": "1",
+          "accent_text": "On a : $\\sqrt{217} \\approx 14,7309 ...$ alors $14^2 < 217 < 15^2$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "217 est-il un nombre premier ?"
+            },
+            {
+              "type": "text",
+              "text": "Les nombres premiers inférieurs ou égaux à 14 sont 2, 3, 5, 7, 11, 13."
+            },
+            {
+              "type": "text",
+              "text": "Si l'un de ces nombres divise 217, alors 217 est un nombre composé. Sinon, 217 est premier."
+            },
+            {
+              "type": "text",
+              "text": "On a 2, 3, 5 ne divisent pas 217 mais 7 divise 217."
+            },
+            {
+              "type": "text",
+              "text": "Alors 217 est un nombre composé."
+            }
+          ],
+          "content": "217 est-il un nombre premier ?\nLes nombres premiers inférieurs ou égaux à 14 sont 2, 3, 5, 7, 11, 13.\nSi l'un de ces nombres divise 217, alors 217 est un nombre composé. Sinon, 217 est premier.\nOn a 2, 3, 5 ne divisent pas 217 mais 7 divise 217.\nAlors 217 est un nombre composé.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-13",
+          "section_header": "",
+          "title": "**PPCM(a; b) et PGCD(a; b) :**",
+          "type": "definition",
+          "section_number": "1",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "Le $PGCD$ de $a$ et $b$ est le produit des facteurs premiers communs élevés à la plus petite puissance dans la décomposition."
+            },
+            {
+              "type": "bullet",
+              "text": "Le $PPCM$ de $a$ et $b$ est le produit des facteurs premiers communs et non communs aux deux nombres, élevés à la plus grande puissance."
+            }
+          ],
+          "content": "Le $PGCD$ de $a$ et $b$ est le produit des facteurs premiers communs élevés à la plus petite puissance dans la décomposition.\nLe $PPCM$ de $a$ et $b$ est le produit des facteurs premiers communs et non communs aux deux nombres, élevés à la plus grande puissance.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-14",
+          "section_header": "",
+          "title": "**Exemple :**",
+          "type": "example",
+          "section_number": "1",
+          "accent_text": "Soit : $a = 2^3 \\times 3^2 \\times 5$ et $b = 2^2 \\times 3^3 \\times 7^2$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Alors $PGCD(a; b) = 2^2 \\times 3^2$."
+            },
+            {
+              "type": "text",
+              "text": "Alors : $PPCM(a;b) = 2^3 \\times 3^3 \\times 7^2 \\times 5$."
+            }
+          ],
+          "content": "Alors $PGCD(a; b) = 2^2 \\times 3^2$.\nAlors : $PPCM(a;b) = 2^3 \\times 3^3 \\times 7^2 \\times 5$.",
+          "points": "",
+          "language": "fr"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-03T13:50:40.010Z",
+    "created_at": "2026-09-03T13:50:36.505Z",
+    "createdAt": "2026-09-03T13:50:40.054Z"
   }
 ]
