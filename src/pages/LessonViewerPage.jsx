@@ -1019,10 +1019,12 @@ export default function LessonViewerPage() {
       );
       if (isNat) {
         openNationalExamPrintWindow(lesson.content || lesson, { showSolutions: includeSolutionsInPdf });
-      } else if (isSummary) {
+      } else if (viewSummaryMode) {
+        // Mode 3 Colonnes actif -> Impression au format Résumé (3 Colonnes)
         openCourseSummaryPrintWindow(lesson.content || lesson);
       } else {
-        openLessonPrintWindow(lesson, { showSolutions: includeSolutionsInPdf });
+        // Mode Standard actif -> Impression au format Standard
+        openLessonPrintWindow(lesson, { showSolutions: includeSolutionsInPdf, layoutMode: 'standard', forceStandard: true });
       }
     } catch (err) {
       console.error('[PDF Export] Error:', err);
@@ -1077,7 +1079,7 @@ export default function LessonViewerPage() {
   };
   const isArabic = checkArabicText();
   const lessonDir = isArabic ? 'rtl' : 'ltr';
-  const arabicFont = isArabic ? "'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif" : 'inherit';
+  const arabicFont = isArabic ? "'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif" : 'inherit';
 
   return (
     <div className={`lesson-viewer-container ${uiStyle === 'classic' ? 'classic-view-active' : ''}`} style={{
@@ -1174,7 +1176,7 @@ export default function LessonViewerPage() {
 
         /* ══ RTL — Arabic Lesson Support ═══════════════════════════════════ */
          .sheet-body[dir="rtl"] {
-          font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif !important;
+          font-family: 'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif !important;
           text-align: right;
         }
 
@@ -1183,7 +1185,7 @@ export default function LessonViewerPage() {
         .sheet-body[dir="rtl"] span[style*="display:block"] {
           text-align: right;
           direction: rtl;
-          font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif;
+          font-family: 'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif;
         }
 
         /* Bullet and numbered lists — keep normal row flex direction so numbers are on the right */
@@ -1213,7 +1215,7 @@ export default function LessonViewerPage() {
         .sheet-body[dir="rtl"] div[style*="font-weight: 900"] {
           text-align: right;
           direction: rtl;
-          font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif;
+          font-family: 'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif;
         }
 
         /* Response / Attention callout blocks in RTL */
@@ -1223,7 +1225,7 @@ export default function LessonViewerPage() {
           border-right: 4px solid var(--emerald) !important;
           direction: rtl;
           text-align: right;
-          font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif;
+          font-family: 'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif;
         }
         .sheet-body[dir="rtl"] .mfc-callout-attention {
           border-right-color: var(--warning) !important;
@@ -2060,17 +2062,20 @@ export default function LessonViewerPage() {
               fontWeight: 800,
               background: isExporting
                 ? 'linear-gradient(135deg, #4a6a85, #5a8aab)'
-                : 'linear-gradient(135deg, #005086, #007cc6)',
+                : viewSummaryMode
+                  ? 'linear-gradient(135deg, #0284c7, #0070ba)'
+                  : 'linear-gradient(135deg, #005086, #007cc6)',
               opacity: isExporting ? 0.8 : 1,
               cursor: isExporting ? 'not-allowed' : 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.4rem'
             }}
+            title={viewSummaryMode ? 'Télécharger / Imprimer au format Résumé (3 Colonnes)' : 'Télécharger / Imprimer au format Standard'}
           >
             {isExporting
               ? <><Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> Génération...</>
-              : <><Download size={16} /> Télécharger PDF</>}
+              : <><Download size={16} /> {viewSummaryMode ? 'Télécharger PDF (3 Colonnes)' : 'Télécharger PDF (Standard)'}</>}
           </button>
 
           {/* Edit button options */}

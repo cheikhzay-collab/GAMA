@@ -4,6 +4,7 @@
 
 import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
+import { queryCache } from './queryCache';
 
 // Helper to map camelCase fields to snake_case DB columns
 const mapProfileToDB = (profile) => ({
@@ -58,6 +59,10 @@ const mapDBToProfile = (row) => {
  * Create a new user profile.
  */
 export const createUserDoc = async (uid, userData) => {
+  queryCache.invalidate(`user_doc_${uid}`);
+  queryCache.invalidate('users_all');
+  queryCache.invalidate('leaderboard_all');
+
   if (supabase) {
     try {
       const { error } = await supabase
@@ -90,38 +95,51 @@ export const createUserDoc = async (uid, userData) => {
 };
 
 /**
- * Fetch a user profile by UID.
+ * Fetch a user profile by UID (Optimized with SWR Cache).
  */
-export const getUserDoc = async (uid) => {
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', uid)
-        .maybeSingle();
+export const getUserDoc = async (uid, options = {}) => {
+  if (!uid) return null;
+  const { forceRefresh = false } = options;
 
-      if (!error && data) {
-        return mapDBToProfile(data);
+  return queryCache.fetchWithCache(`user_doc_${uid}`, async () => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', uid)
+          .maybeSingle();
+
+        if (!error && data) {
+          return mapDBToProfile(data);
+        }
+      } catch (err) {
+        console.warn('[Supabase] Network error during getUserDoc (offline fallback):', err.message || err);
       }
-    } catch (err) {
-      console.warn('[Supabase] Network error during getUserDoc (offline fallback):', err.message || err);
     }
-  }
 
-  try {
-    const list = await localDb.get('/users');
-    const found = list.find(u => u.id === uid || u.uid === uid);
-    return found ? mapDBToProfile(found) : null;
-  } catch (err) {
-    return null;
-  }
+    try {
+      const list = await localDb.get('/users');
+      const found = list.find(u => u.id === uid || u.uid === uid);
+      return found ? mapDBToProfile(found) : null;
+    } catch (err) {
+      return null;
+    }
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 2,
+    cacheTime: 1000 * 60 * 30
+  });
 };
 
 /**
  * Update specific fields in a user profile.
  */
 export const updateUserDoc = async (uid, updates) => {
+  queryCache.invalidate(`user_doc_${uid}`);
+  queryCache.invalidate('users_all');
+  queryCache.invalidate('leaderboard_all');
+
   if (supabase) {
     try {
       const dbUpdates = {};
@@ -192,6 +210,9 @@ export const updateUserDoc = async (uid, updates) => {
  * Activate or update a subscription on a user profile.
  */
 export const setUserSubscription = async (uid, subscription, tier = 'premium') => {
+  queryCache.invalidate(`user_doc_${uid}`);
+  queryCache.invalidate('users_all');
+
   if (supabase) {
     try {
       const { error } = await supabase
@@ -444,82 +465,98 @@ export const deleteUser = async (uid) => {
 };
 
 /**
- * Fetch all registered users (Admin only).
+ * Fetch all registered users (Admin only) with SWR caching.
  */
-export const getAllUsers = async () => {
-  if (supabase) {
-    try {
-      const { data: rpcData, error: rpcError } = await supabase.rpc('get_all_profiles');
-      if (!rpcError && rpcData) {
-        return rpcData.map(mapDBToProfile);
+export const getAllUsers = async (options = {}) => {
+  const { forceRefresh = false } = options;
+
+  return queryCache.fetchWithCache('users_all', async () => {
+    if (supabase) {
+      try {
+        const { data: rpcData, error: rpcError } = await supabase.rpc('get_all_profiles');
+        if (!rpcError && rpcData) {
+          return rpcData.map(mapDBToProfile);
+        }
+      } catch (rpcErr) {
+        console.warn('[Supabase] RPC get_all_profiles failed, trying direct select:', rpcErr.message || rpcErr);
       }
-    } catch (rpcErr) {
-      console.warn('[Supabase] RPC get_all_profiles failed, trying direct select:', rpcErr.message || rpcErr);
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('joined', { ascending: false });
+
+        if (!error && data) {
+          return data.map(mapDBToProfile);
+        }
+      } catch (err) {
+        console.warn('[Supabase] Network error during getAllUsers (fallback to local):', err.message || err);
+      }
     }
 
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('joined', { ascending: false });
-
-      if (!error && data) {
-        return data.map(mapDBToProfile);
-      }
+      const list = await localDb.get('/users');
+      return list.map(mapDBToProfile);
     } catch (err) {
-      console.warn('[Supabase] Network error during getAllUsers (fallback to local):', err.message || err);
+      return [];
     }
-  }
-
-  try {
-    const list = await localDb.get('/users');
-    return list.map(mapDBToProfile);
-  } catch (err) {
-    return [];
-  }
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 3,
+    cacheTime: 1000 * 60 * 30
+  });
 };
 
 /**
- * Fetch the public leaderboard of top 100 students.
+ * Fetch the public leaderboard of top 100 students with SWR caching.
  */
-export const getLeaderboard = async () => {
-  if (supabase) {
-    try {
-      const { data: rpcData, error: rpcError } = await supabase.rpc('get_leaderboard');
-      if (!rpcError && rpcData) {
-        return rpcData;
+export const getLeaderboard = async (options = {}) => {
+  const { forceRefresh = false } = options;
+
+  return queryCache.fetchWithCache('leaderboard_all', async () => {
+    if (supabase) {
+      try {
+        const { data: rpcData, error: rpcError } = await supabase.rpc('get_leaderboard');
+        if (!rpcError && rpcData) {
+          return rpcData;
+        }
+      } catch (err) {
+        console.warn('[Supabase] RPC get_leaderboard failed, falling back to direct profiles query:', err.message || err);
       }
-    } catch (err) {
-      console.warn('[Supabase] RPC get_leaderboard failed, falling back to direct profiles query:', err.message || err);
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('name, xp, streak, tier, role')
+          .neq('role', 'admin')
+          .not('name', 'ilike', 'Directeur')
+          .order('xp', { ascending: false })
+          .limit(100);
+
+        if (!error && data) {
+          return data;
+        }
+      } catch (err) {
+        console.warn('[Supabase] Network error during getLeaderboard (fallback to local):', err.message || err);
+      }
     }
 
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('name, xp, streak, tier, role')
-        .neq('role', 'admin')
-        .not('name', 'ilike', 'Directeur')
-        .order('xp', { ascending: false })
-        .limit(100);
-
-      if (!error && data) {
-        return data;
-      }
+      const list = await localDb.get('/users');
+      return list
+        .filter(u => u.role !== 'admin')
+        .map(mapDBToProfile)
+        .sort((a, b) => (b.xp || 0) - (a.xp || 0))
+        .slice(0, 100);
     } catch (err) {
-      console.warn('[Supabase] Network error during getLeaderboard (fallback to local):', err.message || err);
+      return [];
     }
-  }
-
-  try {
-    const list = await localDb.get('/users');
-    return list
-      .filter(u => u.role !== 'admin')
-      .map(mapDBToProfile)
-      .sort((a, b) => (b.xp || 0) - (a.xp || 0))
-      .slice(0, 100);
-  } catch (err) {
-    return [];
-  }
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 30
+  });
 };
 
 /**

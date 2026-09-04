@@ -1,8 +1,10 @@
 // src/services/lessonService.js
-// Multi-tiered resilient CRUD for lessons: Supabase -> Local Companion API -> LocalStorage -> Seed Fallback.
+// High-performance resilient CRUD for lessons with SWR caching and direct single-lesson fetching.
+// Supabase -> Local Companion API -> LocalStorage -> Seed Fallback.
 
 import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
+import { queryCache } from './queryCache';
 
 const STORAGE_KEY = 'lconq_lessons_db';
 
@@ -80,42 +82,16 @@ const INITIAL_SEED_LESSONS = [
     content: {
       level: "1bac_sci",
       doc_type: "course",
-      metadata: { language: "fr" },
       header: {
-        prep_title: "Cours de Mathématiques",
+        prep_title: "1ère Bac Sciences",
         schools: [],
         subject: "Mathématiques",
         fiche_title: "Barycentre",
         teacher: "Pr. LATRACH ABDELKBIR",
         phone: ""
       },
-      sections: [
-        {
-          id: "sec-1",
-          section_header: "I. Barycentre de deux points pondérés",
-          title: "1. Définition",
-          type: "content",
-          section_number: "1",
-          accent_text: "",
-          items: [{ type: "text", text: "Dans cette section, nous étudions le barycentre de deux points pondérés." }],
-          language: "fr"
-        },
-        {
-          id: "def-1",
-          section_header: "I. Barycentre de deux points pondérés",
-          title: "**Définition :** Barycentre de deux points",
-          type: "content",
-          section_number: "1.3",
-          accent_text: "",
-          items: [
-            {
-              type: "highlight_box",
-              text: "Soient $(A; a)$ et $(B; b)$ deux points pondérés tels que $a + b \\neq 0$.\n\nIl existe un unique point $G$ vérifiant : $a\\vec{GA} + b\\vec{GB} = \\vec{0}$. Le point $G$ s'appelle le **barycentre des points pondérés $(A; a)$ et $(B; b)$**."
-            }
-          ],
-          language: "fr"
-        }
-      ]
+      sections: [],
+      metadata: { language: "fr" }
     }
   }
 ];
@@ -178,71 +154,112 @@ const mapDBToLesson = (row) => {
   };
 };
 
-// ─── Read ─────────────────────────────────────────────────────────────────────
+// ─── Read (Optimized with SWR & Direct Single Fetch) ──────────────────────────
 
 /**
- * Fetch ALL lessons (admin view) with fail-proof fallback sequence.
+ * Fetch ALL lessons with SWR caching and fail-proof fallback sequence.
  */
-export const getAllLessons = async () => {
-  // 1. Try Supabase if configured
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('lessons')
-        .select('*')
-        .order('created_at', { ascending: false });
+export const getAllLessons = async (options = {}) => {
+  const { forceRefresh = false } = options;
 
-      if (!error && Array.isArray(data) && data.length > 0) {
+  return queryCache.fetchWithCache('lessons_all', async () => {
+    // 1. Try Supabase if configured
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('lessons')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && Array.isArray(data) && data.length > 0) {
+          const mapped = data.map(mapDBToLesson);
+          saveLocalStorageLessons(mapped);
+          return mapped;
+        }
+      } catch (err) {
+        console.warn('[Supabase] Failed to fetch lessons, trying fallback:', err);
+      }
+    }
+
+    // 2. Try Local Companion DB API (port 5002)
+    try {
+      const data = await localDb.get('/lessons');
+      if (Array.isArray(data) && data.length > 0) {
         const mapped = data.map(mapDBToLesson);
         saveLocalStorageLessons(mapped);
         return mapped;
       }
     } catch (err) {
-      console.warn('[Supabase] Failed to fetch lessons, trying fallback:', err);
+      console.warn('[LocalDB] Companion server offline or unreachable, using local storage backup.');
     }
-  }
 
-  // 2. Try Local Companion DB API (port 5002)
-  try {
-    const data = await localDb.get('/lessons');
-    if (Array.isArray(data) && data.length > 0) {
-      const mapped = data.map(mapDBToLesson);
-      saveLocalStorageLessons(mapped);
-      return mapped;
+    // 3. Try LocalStorage backup
+    const localCache = getLocalStorageLessons();
+    if (localCache && localCache.length > 0) {
+      return localCache.map(mapDBToLesson);
     }
-  } catch (err) {
-    console.warn('[LocalDB] Companion server offline or unreachable, using local storage backup.');
-  }
 
-  // 3. Try LocalStorage backup
-  const localCache = getLocalStorageLessons();
-  if (localCache && localCache.length > 0) {
-    return localCache.map(mapDBToLesson);
-  }
-
-  // 4. Default Seed Fallback
-  saveLocalStorageLessons(INITIAL_SEED_LESSONS);
-  return INITIAL_SEED_LESSONS.map(mapDBToLesson);
+    // 4. Default Seed Fallback
+    saveLocalStorageLessons(INITIAL_SEED_LESSONS);
+    return INITIAL_SEED_LESSONS.map(mapDBToLesson);
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 3, // 3 mins fresh
+    cacheTime: 1000 * 60 * 30
+  });
 };
 
 /**
  * Fetch only active lessons (student view).
  */
-export const getActiveLessons = async () => {
-  const allLessons = await getAllLessons();
+export const getActiveLessons = async (options = {}) => {
+  const allLessons = await getAllLessons(options);
   return allLessons.filter(l => l.isActive === true);
 };
 
 /**
- * Fetch a single lesson by ID.
+ * Fetch a single lesson by ID (Direct Single Lookup + Cached).
  */
-export const getLessonById = async (lessonId) => {
-  const allLessons = await getAllLessons();
-  const found = allLessons.find(l => l.id === lessonId);
-  return found || null;
+export const getLessonById = async (lessonId, options = {}) => {
+  if (!lessonId) return null;
+  const { forceRefresh = false } = options;
+
+  return queryCache.fetchWithCache(`lesson_detail_${lessonId}`, async () => {
+    // 1. Try direct Supabase single query
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('lessons')
+          .select('*')
+          .eq('id', lessonId)
+          .maybeSingle();
+
+        if (!error && data) {
+          return mapDBToLesson(data);
+        }
+      } catch (err) {
+        console.warn(`[Supabase] Failed to fetch single lesson ${lessonId}:`, err);
+      }
+    }
+
+    // 2. Try Companion API
+    try {
+      const data = await localDb.get(`/lessons/${lessonId}`);
+      if (data) return mapDBToLesson(data);
+    } catch {}
+
+    // 3. Fallback to cached list
+    const allLessons = await getAllLessons();
+    const found = allLessons.find(l => l.id === lessonId);
+    return found || null;
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 60
+  });
 };
 
-// ─── Write ────────────────────────────────────────────────────────────────────
+// ─── Write (With Automatic Cache Invalidation) ─────────────────────────────────
 
 /**
  * Add a new lesson.
@@ -271,12 +288,16 @@ export const addLesson = async (lessonData) => {
     updatedAt: now
   };
 
-  // 1. Save to LocalStorage cache immediately (guaranteed local persistence)
+  // 1. Invalidate SWR cache immediately
+  queryCache.invalidate('lessons_all');
+  queryCache.set(`lesson_detail_${id}`, mapped);
+
+  // 2. Save to LocalStorage cache immediately
   const currentLessons = (await getAllLessons()).filter(l => l.id !== id);
   currentLessons.unshift(mapped);
   saveLocalStorageLessons(currentLessons);
 
-  // 2. Push to Local Companion API if available
+  // 3. Push to Local Companion API if available
   const dbLesson = {
     id,
     ...mapLessonToDB(lessonData),
@@ -289,7 +310,7 @@ export const addLesson = async (lessonData) => {
     console.warn('[LocalDB] Could not sync addLesson to Companion server:', err.message);
   }
 
-  // 3. Push to Supabase if configured
+  // 4. Push to Supabase if configured
   if (supabase) {
     try {
       await supabase.from('lessons').insert(dbLesson);
@@ -307,6 +328,10 @@ export const addLesson = async (lessonData) => {
 export const updateLesson = async (lessonId, updates) => {
   const now = new Date().toISOString();
   
+  // Invalidate SWR caches
+  queryCache.invalidate('lessons_all');
+  queryCache.invalidate(`lesson_detail_${lessonId}`);
+
   // 1. Update LocalStorage cache immediately
   const currentLessons = await getAllLessons();
   const idx = currentLessons.findIndex(l => l.id === lessonId);
@@ -385,6 +410,9 @@ export const toggleLessonStatus = async (lessonId, currentStatus) => {
  * Permanently delete a lesson.
  */
 export const deleteLesson = async (lessonId) => {
+  queryCache.invalidate('lessons_all');
+  queryCache.invalidate(`lesson_detail_${lessonId}`);
+
   // 1. Remove from LocalStorage cache immediately
   const currentLessons = await getAllLessons();
   const filtered = currentLessons.filter(l => l.id !== lessonId);

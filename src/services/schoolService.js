@@ -1,9 +1,10 @@
 // src/services/schoolService.js
-// Service for schools list and per-school branding (logos, colors)
+// Service for schools list and per-school branding with SWR caching.
 // Supports both Supabase and Local Companion API with graceful network error handling.
 
 import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
+import { queryCache } from './queryCache';
 
 const DEFAULT_SCHOOLS = [
   '2bac_sm',
@@ -16,46 +17,55 @@ const DEFAULT_SCHOOLS = [
 ];
 
 /**
- * Fetch schools config.
- * Returns { schools: string[], branding: Record<string, Object> }
+ * Fetch schools config with SWR caching.
  */
-export const getSchoolsConfig = async () => {
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('config')
-        .select('value')
-        .eq('key', 'schools')
-        .maybeSingle();
+export const getSchoolsConfig = async (options = {}) => {
+  const { forceRefresh = false } = options;
 
-      if (!error && data?.value) {
-        const val = data.value || {};
-        return {
-          schools: val.schools || DEFAULT_SCHOOLS,
-          branding: val.branding || {},
-        };
+  return queryCache.fetchWithCache('config_schools', async () => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('config')
+          .select('value')
+          .eq('key', 'schools')
+          .maybeSingle();
+
+        if (!error && data?.value) {
+          const val = data.value || {};
+          return {
+            schools: val.schools || DEFAULT_SCHOOLS,
+            branding: val.branding || {},
+          };
+        }
+      } catch (err) {
+        console.warn('[Supabase] Failed to fetch schools config:', err.message || err);
       }
-    } catch (err) {
-      console.warn('[Supabase] Failed to fetch schools config (offline or network error):', err.message || err);
     }
-  }
 
-  try {
-    const config = await localDb.get('/config');
-    const val = config['schools_config'] || {};
-    return {
-      schools: val.schools || config.schools || DEFAULT_SCHOOLS,
-      branding: val.branding || config.schoolBranding || {},
-    };
-  } catch (err) {
-    return { schools: DEFAULT_SCHOOLS, branding: {} };
-  }
+    try {
+      const config = await localDb.get('/config');
+      const val = config['schools_config'] || {};
+      return {
+        schools: val.schools || config.schools || DEFAULT_SCHOOLS,
+        branding: val.branding || config.schoolBranding || {},
+      };
+    } catch (err) {
+      return { schools: DEFAULT_SCHOOLS, branding: {} };
+    }
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 10,
+    cacheTime: 1000 * 60 * 60
+  });
 };
 
 /**
  * Save the full schools config.
  */
 export const saveSchoolsConfig = async (schools, branding) => {
+  queryCache.invalidate('config_schools');
+
   if (supabase) {
     try {
       const { error } = await supabase
@@ -67,7 +77,7 @@ export const saveSchoolsConfig = async (schools, branding) => {
         });
 
       if (!error) return;
-      console.warn('[Supabase] Failed to save schools config remote, falling back locally:', error.message || error);
+      console.warn('[Supabase] Failed to save schools config remote:', error.message || error);
     } catch (err) {
       console.warn('[Supabase] Network error saving schools config:', err.message || err);
     }
@@ -81,35 +91,45 @@ export const saveSchoolsConfig = async (schools, branding) => {
 };
 
 /**
- * Fetch general platform branding.
+ * Fetch general platform branding with SWR caching.
  */
-export const getBrandingConfig = async () => {
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('config')
-        .select('value')
-        .eq('key', 'branding')
-        .maybeSingle();
+export const getBrandingConfig = async (options = {}) => {
+  const { forceRefresh = false } = options;
 
-      if (!error && data) return data.value;
-    } catch (err) {
-      console.warn('[Supabase] Failed to fetch branding config (offline or network error):', err.message || err);
+  return queryCache.fetchWithCache('config_branding', async () => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('config')
+          .select('value')
+          .eq('key', 'branding')
+          .maybeSingle();
+
+        if (!error && data) return data.value;
+      } catch (err) {
+        console.warn('[Supabase] Failed to fetch branding config:', err.message || err);
+      }
     }
-  }
 
-  try {
-    const config = await localDb.get('/config');
-    return config['branding'] || null;
-  } catch (err) {
-    return null;
-  }
+    try {
+      const config = await localDb.get('/config');
+      return config['branding'] || null;
+    } catch (err) {
+      return null;
+    }
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 10,
+    cacheTime: 1000 * 60 * 60
+  });
 };
 
 /**
  * Save general platform branding.
  */
 export const saveBrandingConfig = async (branding) => {
+  queryCache.invalidate('config_branding');
+
   if (supabase) {
     try {
       const { error } = await supabase
@@ -121,7 +141,7 @@ export const saveBrandingConfig = async (branding) => {
         });
 
       if (!error) return;
-      console.warn('[Supabase] Failed to save branding remote, falling back locally:', error.message || error);
+      console.warn('[Supabase] Failed to save branding remote:', error.message || error);
     } catch (err) {
       console.warn('[Supabase] Network error saving branding config:', err.message || err);
     }
@@ -135,35 +155,45 @@ export const saveBrandingConfig = async (branding) => {
 };
 
 /**
- * Fetch flashcard settings.
+ * Fetch flashcard settings with SWR caching.
  */
-export const getFlashcardSettingsConfig = async () => {
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('config')
-        .select('value')
-        .eq('key', 'flashcard_settings')
-        .maybeSingle();
+export const getFlashcardSettingsConfig = async (options = {}) => {
+  const { forceRefresh = false } = options;
 
-      if (!error && data) return data.value;
-    } catch (err) {
-      console.warn('[Supabase] Failed to fetch flashcard settings (offline or network error):', err.message || err);
+  return queryCache.fetchWithCache('config_flashcard_settings', async () => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('config')
+          .select('value')
+          .eq('key', 'flashcard_settings')
+          .maybeSingle();
+
+        if (!error && data) return data.value;
+      } catch (err) {
+        console.warn('[Supabase] Failed to fetch flashcard settings:', err.message || err);
+      }
     }
-  }
 
-  try {
-    const config = await localDb.get('/config');
-    return config['flashcard_settings'] || null;
-  } catch (err) {
-    return null;
-  }
+    try {
+      const config = await localDb.get('/config');
+      return config['flashcard_settings'] || null;
+    } catch (err) {
+      return null;
+    }
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 10,
+    cacheTime: 1000 * 60 * 60
+  });
 };
 
 /**
  * Save flashcard settings.
  */
 export const saveFlashcardSettingsConfig = async (settings) => {
+  queryCache.invalidate('config_flashcard_settings');
+
   if (supabase) {
     try {
       const { error } = await supabase
@@ -175,7 +205,7 @@ export const saveFlashcardSettingsConfig = async (settings) => {
         });
 
       if (!error) return;
-      console.warn('[Supabase] Failed to save flashcard settings remote, falling back locally:', error.message || error);
+      console.warn('[Supabase] Failed to save flashcard settings remote:', error.message || error);
     } catch (err) {
       console.warn('[Supabase] Network error saving flashcard settings:', err.message || err);
     }
@@ -189,35 +219,45 @@ export const saveFlashcardSettingsConfig = async (settings) => {
 };
 
 /**
- * Fetch PDF styling settings.
+ * Fetch PDF styling settings with SWR caching.
  */
-export const getPdfSettingsConfig = async () => {
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('config')
-        .select('value')
-        .eq('key', 'pdf_settings')
-        .maybeSingle();
+export const getPdfSettingsConfig = async (options = {}) => {
+  const { forceRefresh = false } = options;
 
-      if (!error && data) return data.value;
-    } catch (err) {
-      console.warn('[Supabase] Failed to fetch PDF settings (offline or network error):', err.message || err);
+  return queryCache.fetchWithCache('config_pdf_settings', async () => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('config')
+          .select('value')
+          .eq('key', 'pdf_settings')
+          .maybeSingle();
+
+        if (!error && data) return data.value;
+      } catch (err) {
+        console.warn('[Supabase] Failed to fetch PDF settings:', err.message || err);
+      }
     }
-  }
 
-  try {
-    const config = await localDb.get('/config');
-    return config['pdf_settings'] || null;
-  } catch (err) {
-    return null;
-  }
+    try {
+      const config = await localDb.get('/config');
+      return config['pdf_settings'] || null;
+    } catch (err) {
+      return null;
+    }
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 10,
+    cacheTime: 1000 * 60 * 60
+  });
 };
 
 /**
  * Save PDF styling settings.
  */
 export const savePdfSettingsConfig = async (settings) => {
+  queryCache.invalidate('config_pdf_settings');
+
   if (supabase) {
     try {
       const { error } = await supabase
@@ -229,7 +269,7 @@ export const savePdfSettingsConfig = async (settings) => {
         });
 
       if (!error) return;
-      console.warn('[Supabase] Failed to save PDF settings remote, falling back locally:', error.message || error);
+      console.warn('[Supabase] Failed to save PDF settings remote:', error.message || error);
     } catch (err) {
       console.warn('[Supabase] Network error saving PDF settings:', err.message || err);
     }
@@ -243,35 +283,45 @@ export const savePdfSettingsConfig = async (settings) => {
 };
 
 /**
- * Fetch OMR scanner settings.
+ * Fetch OMR scanner settings with SWR caching.
  */
-export const getOmrScannerSettingsConfig = async () => {
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('config')
-        .select('value')
-        .eq('key', 'omr_scanner_settings')
-        .maybeSingle();
+export const getOmrScannerSettingsConfig = async (options = {}) => {
+  const { forceRefresh = false } = options;
 
-      if (!error && data) return data.value;
-    } catch (err) {
-      console.warn('[Supabase] Failed to fetch OMR scanner settings (offline or network error):', err.message || err);
+  return queryCache.fetchWithCache('config_omr_scanner_settings', async () => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('config')
+          .select('value')
+          .eq('key', 'omr_scanner_settings')
+          .maybeSingle();
+
+        if (!error && data) return data.value;
+      } catch (err) {
+        console.warn('[Supabase] Failed to fetch OMR scanner settings:', err.message || err);
+      }
     }
-  }
 
-  try {
-    const config = await localDb.get('/config');
-    return config['omr_scanner_settings'] || null;
-  } catch (err) {
-    return null;
-  }
+    try {
+      const config = await localDb.get('/config');
+      return config['omr_scanner_settings'] || null;
+    } catch (err) {
+      return null;
+    }
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 10,
+    cacheTime: 1000 * 60 * 60
+  });
 };
 
 /**
  * Save OMR scanner settings.
  */
 export const saveOmrScannerSettingsConfig = async (settings) => {
+  queryCache.invalidate('config_omr_scanner_settings');
+
   if (supabase) {
     try {
       const { error } = await supabase
@@ -283,7 +333,7 @@ export const saveOmrScannerSettingsConfig = async (settings) => {
         });
 
       if (!error) return;
-      console.warn('[Supabase] Failed to save OMR scanner settings remote, falling back locally:', error.message || error);
+      console.warn('[Supabase] Failed to save OMR scanner settings remote:', error.message || error);
     } catch (err) {
       console.warn('[Supabase] Network error saving OMR scanner settings:', err.message || err);
     }
@@ -297,35 +347,45 @@ export const saveOmrScannerSettingsConfig = async (settings) => {
 };
 
 /**
- * Fetch WhatsApp floating button settings.
+ * Fetch WhatsApp floating button settings with SWR caching.
  */
-export const getWhatsAppSettingsConfig = async () => {
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('config')
-        .select('value')
-        .eq('key', 'whatsapp_settings')
-        .maybeSingle();
+export const getWhatsAppSettingsConfig = async (options = {}) => {
+  const { forceRefresh = false } = options;
 
-      if (!error && data) return data.value;
-    } catch (err) {
-      console.warn('[Supabase] Failed to fetch WhatsApp settings (offline or network error):', err.message || err);
+  return queryCache.fetchWithCache('config_whatsapp_settings', async () => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('config')
+          .select('value')
+          .eq('key', 'whatsapp_settings')
+          .maybeSingle();
+
+        if (!error && data) return data.value;
+      } catch (err) {
+        console.warn('[Supabase] Failed to fetch WhatsApp settings:', err.message || err);
+      }
     }
-  }
 
-  try {
-    const config = await localDb.get('/config');
-    return config['whatsapp_settings'] || null;
-  } catch (err) {
-    return null;
-  }
+    try {
+      const config = await localDb.get('/config');
+      return config['whatsapp_settings'] || null;
+    } catch (err) {
+      return null;
+    }
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 10,
+    cacheTime: 1000 * 60 * 60
+  });
 };
 
 /**
  * Save WhatsApp floating button settings.
  */
 export const saveWhatsAppSettingsConfig = async (settings) => {
+  queryCache.invalidate('config_whatsapp_settings');
+
   if (supabase) {
     try {
       const { error } = await supabase
@@ -337,7 +397,7 @@ export const saveWhatsAppSettingsConfig = async (settings) => {
         });
 
       if (!error) return;
-      console.warn('[Supabase] Failed to save WhatsApp settings remote, falling back locally:', error.message || error);
+      console.warn('[Supabase] Failed to save WhatsApp settings remote:', error.message || error);
     } catch (err) {
       console.warn('[Supabase] Network error saving WhatsApp settings:', err.message || err);
     }
@@ -353,27 +413,35 @@ export const saveWhatsAppSettingsConfig = async (settings) => {
 /**
  * Fetch subscription plans shared by the admin dashboard and sales pages.
  */
-export const getPlansConfig = async () => {
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('config')
-        .select('value')
-        .eq('key', 'plans')
-        .maybeSingle();
+export const getPlansConfig = async (options = {}) => {
+  const { forceRefresh = false } = options;
 
-      if (!error && data && Array.isArray(data.value)) return data.value;
-    } catch (err) {
-      console.warn('[Supabase] Failed to fetch plans config (offline or network error):', err.message || err);
+  return queryCache.fetchWithCache('config_plans', async () => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('config')
+          .select('value')
+          .eq('key', 'plans')
+          .maybeSingle();
+
+        if (!error && data && Array.isArray(data.value)) return data.value;
+      } catch (err) {
+        console.warn('[Supabase] Failed to fetch plans config:', err.message || err);
+      }
     }
-  }
 
-  try {
-    const config = await localDb.get('/config');
-    return Array.isArray(config.plans) ? config.plans : null;
-  } catch (err) {
-    return null;
-  }
+    try {
+      const config = await localDb.get('/config');
+      return Array.isArray(config.plans) ? config.plans : null;
+    } catch (err) {
+      return null;
+    }
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 10,
+    cacheTime: 1000 * 60 * 60
+  });
 };
 
 export const getPlans = getPlansConfig;
@@ -382,6 +450,8 @@ export const getPlans = getPlansConfig;
  * Persist subscription plans in the active data source.
  */
 export const savePlansConfig = async (plans) => {
+  queryCache.invalidate('config_plans');
+
   if (supabase) {
     try {
       const { error } = await supabase
@@ -393,7 +463,7 @@ export const savePlansConfig = async (plans) => {
         });
 
       if (!error) return;
-      console.warn('[Supabase] Failed to save plans remote, falling back locally:', error.message || error);
+      console.warn('[Supabase] Failed to save plans remote:', error.message || error);
     } catch (err) {
       console.warn('[Supabase] Network error saving plans config:', err.message || err);
     }
@@ -409,35 +479,45 @@ export const savePlansConfig = async (plans) => {
 export const savePlans = savePlansConfig;
 
 /**
- * Fetch dynamic Arabic sales page config.
+ * Fetch dynamic Arabic sales page config with SWR caching.
  */
-export const getLandingArConfig = async () => {
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('config')
-        .select('value')
-        .eq('key', 'landing_ar_settings')
-        .maybeSingle();
+export const getLandingArConfig = async (options = {}) => {
+  const { forceRefresh = false } = options;
 
-      if (!error && data) return data.value;
-    } catch (err) {
-      console.warn('[Supabase] Failed to fetch landing AR settings (offline or network error):', err.message || err);
+  return queryCache.fetchWithCache('config_landing_ar', async () => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('config')
+          .select('value')
+          .eq('key', 'landing_ar_settings')
+          .maybeSingle();
+
+        if (!error && data) return data.value;
+      } catch (err) {
+        console.warn('[Supabase] Failed to fetch landing AR settings:', err.message || err);
+      }
     }
-  }
 
-  try {
-    const config = await localDb.get('/config');
-    return config['landing_ar_settings'] || null;
-  } catch (err) {
-    return null;
-  }
+    try {
+      const config = await localDb.get('/config');
+      return config['landing_ar_settings'] || null;
+    } catch (err) {
+      return null;
+    }
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 10,
+    cacheTime: 1000 * 60 * 60
+  });
 };
 
 /**
  * Save dynamic Arabic sales page config.
  */
 export const saveLandingArConfig = async (landingConfig) => {
+  queryCache.invalidate('config_landing_ar');
+
   if (supabase) {
     try {
       const { error } = await supabase
@@ -449,7 +529,7 @@ export const saveLandingArConfig = async (landingConfig) => {
         });
 
       if (!error) return;
-      console.warn('[Supabase] Failed to save landing AR settings remote, falling back locally:', error.message || error);
+      console.warn('[Supabase] Failed to save landing AR settings remote:', error.message || error);
     } catch (err) {
       console.warn('[Supabase] Network error saving landing AR settings:', err.message || err);
     }

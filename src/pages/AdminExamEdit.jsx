@@ -130,7 +130,7 @@ function CardPreview({ question, side, onFlip }) {
                 lineHeight: 1.5,
                 direction: isQuestionArabic ? 'rtl' : 'ltr',
                 textAlign: isQuestionArabic ? 'right' : 'left',
-                fontFamily: isQuestionArabic ? "'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit'
+                fontFamily: isQuestionArabic ? "'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit'
               }}>
                 <span style={{ fontWeight: 800, display: 'block', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: 2 }}>Contexte / Énoncé commun</span>
                 {renderWithMath(q.context)}
@@ -208,7 +208,7 @@ function CardPreview({ question, side, onFlip }) {
                   lineHeight: 1.55,
                   fontWeight: 500,
                   flex: 1,
-                  fontFamily: isQuestionArabic ? "'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit',
+                  fontFamily: isQuestionArabic ? "'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit',
                   direction: isQuestionArabic ? 'rtl' : 'ltr',
                   textAlign: isQuestionArabic ? 'right' : 'left'
                 }}>
@@ -249,7 +249,7 @@ function CardPreview({ question, side, onFlip }) {
                     color: isCorrect ? 'var(--emerald)' : 'var(--text-main)',
                     direction: isQuestionArabic ? 'rtl' : 'ltr',
                     textAlign: isQuestionArabic ? 'right' : 'left',
-                    fontFamily: isQuestionArabic ? "'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit'
+                    fontFamily: isQuestionArabic ? "'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit'
                   }}>
                     <span style={{
                       width: 20, height: 20, borderRadius: 6, display: 'flex', alignItems: 'center',
@@ -303,7 +303,7 @@ function CardPreview({ question, side, onFlip }) {
               lineHeight: 1.5,
               direction: isQuestionArabic ? 'rtl' : 'ltr',
               textAlign: isQuestionArabic ? 'right' : 'left',
-              fontFamily: isQuestionArabic ? "'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit'
+              fontFamily: isQuestionArabic ? "'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit'
             }}>
               {renderWithMath(q.question || '')}
             </div>
@@ -321,7 +321,7 @@ function CardPreview({ question, side, onFlip }) {
                   borderRadius: isQuestionArabic ? '6px 0 0 6px' : '0 6px 6px 0',
                   direction: isQuestionArabic ? 'rtl' : 'ltr',
                   textAlign: isQuestionArabic ? 'right' : 'left',
-                  fontFamily: isQuestionArabic ? "'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit'
+                  fontFamily: isQuestionArabic ? "'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit'
                 }}>
                   {renderWithMath(q.astuce)}
                   {q.imagePosition === 'in_correction' && (() => {
@@ -365,7 +365,7 @@ function CardPreview({ question, side, onFlip }) {
                   borderRadius: isQuestionArabic ? '6px 0 0 6px' : '0 6px 6px 0',
                   direction: isQuestionArabic ? 'rtl' : 'ltr',
                   textAlign: isQuestionArabic ? 'right' : 'left',
-                  fontFamily: isQuestionArabic ? "'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit'
+                  fontFamily: isQuestionArabic ? "'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', sans-serif" : 'inherit'
                 }}>
                   {renderWithMath(q.trick)}
                 </div>

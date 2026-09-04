@@ -12941,5 +12941,1279 @@
     "updated_at": "2026-09-03T13:50:40.010Z",
     "created_at": "2026-09-03T13:50:36.505Z",
     "createdAt": "2026-09-03T13:50:40.054Z"
+  },
+  {
+    "id": "MOCK-L-VA62CQJ4S",
+    "title": "ملخص الدرس 1: المجموعة N ومفهوم الحسابيات (نسخة عربية)",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": "Fayssal el boutkhili",
+    "phone": null,
+    "schools": [],
+    "content": {
+      "level": "common_core_sci",
+      "header": {
+        "phone": "",
+        "schools": [],
+        "subject": "الرياضيات",
+        "teacher": "فيصل البوتخيلي",
+        "prep_title": "ثانوية عبد المومن",
+        "fiche_title": "ملخص الدرس 1: المجموعة N ومفهوم الحسابيات",
+        "is_national_exam": false,
+        "national_exam_meta": null
+      },
+      "doc_type": "course",
+      "metadata": {
+        "language": "ar",
+        "translatedFrom": "MOCK-L-MQNOQP9A8",
+        "translatedFromTitle": "Résumé de cours 1 : Ensemble N et notion d'arithmétique",
+        "dir": "rtl",
+        "translatedAt": "2026-09-04T10:03:00.489Z",
+        "translatedBy": "gemini"
+      },
+      "sections": [
+        {
+          "id": "sec-1",
+          "type": "definition",
+          "items": [
+            {
+              "text": "$N = \\{0, 1, 2, 3, 4, 5 ... \\}$",
+              "type": "text"
+            },
+            {
+              "text": "$N^* = \\{1, 2, 3, 4 ... \\}$",
+              "type": "text"
+            },
+            {
+              "text": "إذا كان عدد $a$ ينتمي إلى $N$، نكتب $a \\in N$ وإلا نكتب $a \\notin N$.",
+              "type": "text"
+            }
+          ],
+          "title": "**تعاريف ورموز:**",
+          "points": "",
+          "content": "$N = \\{0, 1, 2, 3, 4, 5 ... \\}$\n$N^* = \\{1, 2, 3, 4 ... \\}$\nإذا كان عدد $a$ ينتمي إلى $N$، نكتب $a \\in N$ وإلا نكتب $a \\notin N$.",
+          "language": "fr",
+          "accent_text": "",
+          "section_header": "",
+          "section_number": "1"
+        },
+        {
+          "id": "sec-2",
+          "type": "example",
+          "items": [],
+          "title": "**أمثلة:**",
+          "points": "",
+          "content": "",
+          "language": "fr",
+          "accent_text": "2 $\\in N$ ; 2019 $\\in N^*$ ; $-6 \\notin N$ ; 0 $\\notin N^*$",
+          "section_header": "",
+          "section_number": "1"
+        },
+        {
+          "id": "sec-3",
+          "type": "definition",
+          "items": [
+            {
+              "text": "نقول إن عدداً صحيحاً طبيعياً $a$ هو عدد زوجي، إذا وفقط إذا كان يوجد $k \\in N$ حيث: $a = 2k$.",
+              "type": "bullet"
+            },
+            {
+              "text": "نقول إن عدداً صحيحاً طبيعياً $b$ هو عدد فردي، إذا وفقط إذا كان يوجد $k \\in N$ حيث: $b = 2k + 1$.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**الأعداد الزوجية والفردية:**",
+          "points": "",
+          "content": "نقول إن عدداً صحيحاً طبيعياً $a$ هو عدد زوجي، إذا وفقط إذا كان يوجد $k \\in N$ حيث: $a = 2k$.\nنقول إن عدداً صحيحاً طبيعياً $b$ هو عدد فردي، إذا وفقط إذا كان يوجد $k \\in N$ حيث: $b = 2k + 1$.",
+          "language": "fr",
+          "accent_text": "",
+          "section_header": "",
+          "section_number": "1"
+        },
+        {
+          "id": "sec-4",
+          "type": "example",
+          "items": [],
+          "title": "**مثال:**",
+          "points": "",
+          "content": "",
+          "language": "fr",
+          "accent_text": "العدد $6n + 10$ حيث $n \\in N$ هو عدد زوجي دائماً لأن $6n + 10 = 2(3n + 5)$ مع $k = (3n + 5)$.",
+          "section_header": "",
+          "section_number": "1"
+        },
+        {
+          "id": "sec-5",
+          "type": "property",
+          "items": [
+            {
+              "text": "جداء عددين متتابعين هو عدد زوجي.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**خاصيات:**",
+          "points": "",
+          "content": "جداء عددين متتابعين هو عدد زوجي.",
+          "language": "fr",
+          "accent_text": "",
+          "section_header": "",
+          "section_number": "1"
+        },
+        {
+          "id": "sec-6",
+          "type": "example",
+          "items": [
+            {
+              "text": "العدد الصحيح $n(n + 1)$ هو عدد زوجي لأنه جداء عددين صحيحين متتابعين.",
+              "type": "bullet"
+            },
+            {
+              "text": "العدد الصحيح $(n + 5)(n + 6)$ هو عدد زوجي لأنه جداء عددين صحيحين متتابعين.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**أمثلة:**",
+          "points": "",
+          "content": "العدد الصحيح $n(n + 1)$ هو عدد زوجي لأنه جداء عددين صحيحين متتابعين.\nالعدد الصحيح $(n + 5)(n + 6)$ هو عدد زوجي لأنه جداء عددين صحيحين متتابعين.",
+          "language": "fr",
+          "accent_text": "",
+          "section_header": "",
+          "section_number": "1"
+        },
+        {
+          "id": "sec-7",
+          "type": "definition",
+          "items": [
+            {
+              "text": "نقول إن $a$ مضاعف لـ $b$، إذا كان يوجد $k \\in N$ حيث: $a = kb$.",
+              "type": "bullet"
+            },
+            {
+              "text": "المضاعف المشترك الأصغر لعددين صحيحين طبيعيين $a$ و $b$، نرمز له عادة بـ $PPCM(a; b)$ أو $a \\lor b$.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**مضاعفات عدد صحيح طبيعي:**",
+          "points": "",
+          "content": "نقول إن $a$ مضاعف لـ $b$، إذا كان يوجد $k \\in N$ حيث: $a = kb$.\nالمضاعف المشترك الأصغر لعددين صحيحين طبيعيين $a$ و $b$، نرمز له عادة بـ $PPCM(a; b)$ أو $a \\lor b$.",
+          "language": "fr",
+          "accent_text": "",
+          "section_header": "",
+          "section_number": "1"
+        },
+        {
+          "id": "sec-8",
+          "type": "definition",
+          "items": [
+            {
+              "text": "نقول إن $b$ قاسم لـ $a$، أو $b$ يقسم $a$، أو $a$ قابل للقسمة على $b$ إذا كان يوجد $k \\in N$ حيث: $a = kb$.",
+              "type": "bullet"
+            },
+            {
+              "text": "القاسم المشترك الأكبر لـ $a$ و $b$ نرمز له بـ $PGCD(a;b)$ أو $a \\land b$.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**قواسم عدد صحيح طبيعي:**",
+          "points": "",
+          "content": "نقول إن $b$ قاسم لـ $a$، أو $b$ يقسم $a$، أو $a$ قابل للقسمة على $b$ إذا كان يوجد $k \\in N$ حيث: $a = kb$.\nالقاسم المشترك الأكبر لـ $a$ و $b$ نرمز له بـ $PGCD(a;b)$ أو $a \\land b$.",
+          "language": "fr",
+          "accent_text": "",
+          "section_header": "",
+          "section_number": "1"
+        },
+        {
+          "id": "sec-9",
+          "type": "property",
+          "items": [
+            {
+              "text": "**1)** يكون عدد قابل للقسمة على 2 عندما يكون رقم وحداته زوجياً.",
+              "type": "bullet"
+            },
+            {
+              "text": "**2)** يكون عدد قابل للقسمة على 5 عندما يكون رقم وحداته 0 أو 5.",
+              "type": "bullet"
+            },
+            {
+              "text": "**3)** يكون عدد قابل للقسمة على 3 عندما يكون مجموع أرقامه مضاعفاً لـ 3.",
+              "type": "bullet"
+            },
+            {
+              "text": "**4)** يكون عدد قابل للقسمة على 9 عندما يكون مجموع أرقامه مضاعفاً لـ 9.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**معايير قابلية القسمة على 2، 3، 5 و 9:**",
+          "points": "",
+          "content": "**1)** يكون عدد قابل للقسمة على 2 عندما يكون رقم وحداته زوجياً.\n**2)** يكون عدد قابل للقسمة على 5 عندما يكون رقم وحداته 0 أو 5.\n**3)** يكون عدد قابل للقسمة على 3 عندما يكون مجموع أرقامه مضاعفاً لـ 3.\n**4)** يكون عدد قابل للقسمة على 9 عندما يكون مجموع أرقامه مضاعفاً لـ 9.",
+          "language": "fr",
+          "accent_text": "",
+          "section_header": "",
+          "section_number": "1"
+        },
+        {
+          "id": "sec-10",
+          "type": "example",
+          "items": [],
+          "title": "**مثال:**",
+          "points": "",
+          "content": "",
+          "language": "fr",
+          "accent_text": "العدد 124581 قابل للقسمة على 3 لأن مجموع أرقامه هو 21 و 21 مضاعف لـ 3.",
+          "section_header": "",
+          "section_number": "1"
+        },
+        {
+          "id": "sec-11",
+          "type": "definition",
+          "items": [
+            {
+              "text": "نقول إن عدداً صحيحاً طبيعياً أولي، إذا كانت قواسمه الوحيدة هي 1 والعدد نفسه.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**الأعداد الأولية:**",
+          "points": "",
+          "content": "نقول إن عدداً صحيحاً طبيعياً أولي، إذا كانت قواسمه الوحيدة هي 1 والعدد نفسه.",
+          "language": "fr",
+          "accent_text": "",
+          "section_header": "",
+          "section_number": "1"
+        },
+        {
+          "id": "sec-12",
+          "type": "content",
+          "items": [
+            {
+              "text": "هل 217 عدد أولي؟",
+              "type": "text"
+            },
+            {
+              "text": "الأعداد الأولية الأصغر أو تساوي 14 هي 2، 3، 5، 7، 11، 13.",
+              "type": "text"
+            },
+            {
+              "text": "إذا كان أحد هذه الأعداد يقسم 217، فإن 217 عدد غير أولي (مركب). وإلا، فإن 217 عدد أولي.",
+              "type": "text"
+            },
+            {
+              "text": "لدينا 2، 3، 5 لا تقسم 217 لكن 7 تقسم 217.",
+              "type": "text"
+            },
+            {
+              "text": "إذاً 217 عدد غير أولي (مركب).",
+              "type": "text"
+            }
+          ],
+          "title": "**كيف نعرف أن عدداً أولياً:**",
+          "points": "",
+          "content": "هل 217 عدد أولي؟\nالأعداد الأولية الأصغر أو تساوي 14 هي 2، 3، 5، 7، 11، 13.\nإذا كان أحد هذه الأعداد يقسم 217، فإن 217 عدد غير أولي (مركب). وإلا، فإن 217 عدد أولي.\nلدينا 2، 3، 5 لا تقسم 217 لكن 7 تقسم 217.\nإذاً 217 عدد غير أولي (مركب).",
+          "language": "fr",
+          "accent_text": "لدينا: $\\sqrt{217} \\approx 14,7309 ...$ إذن $14^2 < 217 < 15^2$.",
+          "section_header": "",
+          "section_number": "1"
+        },
+        {
+          "id": "sec-13",
+          "type": "definition",
+          "items": [
+            {
+              "text": "القاسم المشترك الأكبر ($PGCD$) لـ $a$ و $b$ هو جداء العوامل الأولية المشتركة مرفوعة لأصغر أس في التفكيك.",
+              "type": "bullet"
+            },
+            {
+              "text": "المضاعف المشترك الأصغر ($PPCM$) لـ $a$ و $b$ هو جداء العوامل الأولية المشتركة وغير المشتركة للعددين، مرفوعة لأكبر أس.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**المضاعف المشترك الأصغر (PPCM) والقاسم المشترك الأكبر (PGCD) لـ (a; b):**",
+          "points": "",
+          "content": "القاسم المشترك الأكبر ($PGCD$) لـ $a$ و $b$ هو جداء العوامل الأولية المشتركة مرفوعة لأصغر أس في التفكيك.\nالمضاعف المشترك الأصغر ($PPCM$) لـ $a$ و $b$ هو جداء العوامل الأولية المشتركة وغير المشتركة للعددين، مرفوعة لأكبر أس.",
+          "language": "fr",
+          "accent_text": "",
+          "section_header": "",
+          "section_number": "1"
+        },
+        {
+          "id": "sec-14",
+          "type": "example",
+          "items": [
+            {
+              "text": "إذاً $PGCD(a; b) = 2^2 \\times 3^2$.",
+              "type": "text"
+            },
+            {
+              "text": "إذاً: $PPCM(a;b) = 2^3 \\times 3^3 \\times 7^2 \\times 5$.",
+              "type": "text"
+            }
+          ],
+          "title": "**مثال:**",
+          "points": "",
+          "content": "إذاً $PGCD(a; b) = 2^2 \\times 3^2$.\nإذاً: $PPCM(a;b) = 2^3 \\times 3^3 \\times 7^2 \\times 5$.",
+          "language": "fr",
+          "accent_text": "ليكن: $a = 2^3 \\times 3^2 \\times 5$ و $b = 2^2 \\times 3^3 \\times 7^2$.",
+          "section_header": "",
+          "section_number": "1"
+        }
+      ],
+      "is_national_exam": false,
+      "national_exam_meta": null
+    },
+    "is_active": false,
+    "updated_at": "2026-09-04T10:03:42.343Z",
+    "created_at": "2026-09-04T10:03:40.694Z",
+    "createdAt": "2026-09-04T10:03:42.498Z"
+  },
+  {
+    "id": "MOCK-L-CY2QQCC55",
+    "title": "Continuité d'une fonction",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": "fayssal",
+    "phone": null,
+    "schools": [],
+    "content": {
+      "level": "2bac_pc_svt",
+      "doc_type": "summary",
+      "is_national_exam": false,
+      "national_exam_meta": null,
+      "is_summary": true,
+      "summary_meta": {
+        "prof": "Prof : fayssal",
+        "website": "www.elboutkhili.jimdofree.com",
+        "title": "Résumé 01 : Continuité d'une fonction",
+        "level_name": "2 Bac sx",
+        "school": ""
+      },
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "Résumé 01",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Continuité d'une fonction",
+        "teacher": "fayssal",
+        "phone": "",
+        "is_national_exam": false,
+        "national_exam_meta": null,
+        "is_summary": true,
+        "summary_meta": {
+          "prof": "Prof : fayssal",
+          "website": "www.elboutkhili.jimdofree.com",
+          "title": "Résumé 01 : Continuité d'une fonction",
+          "level_name": "2 Bac sx",
+          "school": ""
+        }
+      },
+      "sections": [
+        {
+          "id": "sec-1",
+          "section_header": "1) Continuité d'une fonction en un point",
+          "title": "Continuité d'une fonction en un point d'abscisse $x_0$",
+          "type": "definition",
+          "section_number": "1",
+          "accent_text": "",
+          "column": 1,
+          "items": [
+            {
+              "type": "highlight_box",
+              "text": "Soit $f$ une fonction définie sur un intervalle ouvert $I$ et $x_0 \\in I$.\\nLa fonction $f$ est continue en $x_0 \\Leftrightarrow \\lim_{x \\to x_0} f(x) = f(x_0)$."
+            }
+          ],
+          "content": "Soit $f$ une fonction définie sur un intervalle ouvert $I$ et $x_0 \\in I$.\\nLa fonction $f$ est continue en $x_0 \\Leftrightarrow \\lim_{x \\to x_0} f(x) = f(x_0)$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-2",
+          "section_header": "1) Continuité d'une fonction en un point",
+          "title": "Continuité d'une fonction à droite et à gauche d'un point $a$",
+          "type": "definition",
+          "section_number": "1",
+          "accent_text": "la fonction $f$ est continue en $a \\Leftrightarrow f$ est continue à droite et à gauche du point $a$",
+          "column": 1,
+          "items": [
+            {
+              "type": "bullet",
+              "text": "La fonction $f$ est continue à droite de $a \\Leftrightarrow \\lim_{x \\to a^+} f(x) = f(a)$"
+            },
+            {
+              "type": "bullet",
+              "text": "La fonction $f$ est continue à gauche de $a \\Leftrightarrow \\lim_{x \\to a^-} f(x) = f(a)$"
+            }
+          ],
+          "content": "La fonction $f$ est continue à droite de $a \\Leftrightarrow \\lim_{x \\to a^+} f(x) = f(a)$\nLa fonction $f$ est continue à gauche de $a \\Leftrightarrow \\lim_{x \\to a^-} f(x) = f(a)$",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-3",
+          "section_header": "2) Continuité d'une fonction sur un intervalle",
+          "title": "$f$ une fonction définie sur un intervalle $[a; b]$",
+          "type": "definition",
+          "section_number": "2",
+          "accent_text": "",
+          "column": 1,
+          "items": [
+            {
+              "type": "bullet",
+              "text": "La fonction $f$ est continue sur l'intervalle ouvert $]a; b[$ ssi $f$ est continue en chaque point de l'intervalle $]a; b[$."
+            },
+            {
+              "type": "bullet",
+              "text": "La fonction $f$ est continue sur l'intervalle $[a; b]$ ssi $f$ est continue sur l'intervalle $]a; b[$ et continue à droite de $a$ et à gauche de $b$."
+            }
+          ],
+          "content": "La fonction $f$ est continue sur l'intervalle ouvert $]a; b[$ ssi $f$ est continue en chaque point de l'intervalle $]a; b[$.\nLa fonction $f$ est continue sur l'intervalle $[a; b]$ ssi $f$ est continue sur l'intervalle $]a; b[$ et continue à droite de $a$ et à gauche de $b$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-4",
+          "section_header": "2) Continuité d'une fonction sur un intervalle",
+          "title": "Exemple des fonction usuelles continue sur un intervalle",
+          "type": "example",
+          "section_number": "2",
+          "accent_text": "",
+          "column": 1,
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1)** Toute fonction polynomiale est continue sur $\\mathbb{R}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** Les fonctions rationnelles sont continues en tout intervalles inclus dans leurs domaines de définitions"
+            },
+            {
+              "type": "bullet",
+              "text": "**3)** La fonction $x \\to \\sqrt{x}$ est continue sur $[0; +\\infty[$"
+            },
+            {
+              "type": "bullet",
+              "text": "**4)** Les fonctions $x \\to \\cos x$ et $x \\to \\sin x$ sont continues sur $\\mathbb{R}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**5)** La fonction $x \\to \\tan x$ est continue sur tout intervalle inclus dans l'ensemble $\\mathbb{R} - \\left\\{ \\frac{\\pi}{2} + k\\pi / k \\in \\mathbb{Z} \\right\\}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**6)** La fonction $x \\to |x|$ est continue sur $\\mathbb{R}$"
+            }
+          ],
+          "content": "**1)** Toute fonction polynomiale est continue sur $\\mathbb{R}$\n**2)** Les fonctions rationnelles sont continues en tout intervalles inclus dans leurs domaines de définitions\n**3)** La fonction $x \\to \\sqrt{x}$ est continue sur $[0; +\\infty[$\n**4)** Les fonctions $x \\to \\cos x$ et $x \\to \\sin x$ sont continues sur $\\mathbb{R}$\n**5)** La fonction $x \\to \\tan x$ est continue sur tout intervalle inclus dans l'ensemble $\\mathbb{R} - \\left\\{ \\frac{\\pi}{2} + k\\pi / k \\in \\mathbb{Z} \\right\\}$\n**6)** La fonction $x \\to |x|$ est continue sur $\\mathbb{R}$",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-5",
+          "section_header": "Opérations sur les fonctions continues",
+          "title": "Somme -produit-quotient-composée",
+          "type": "property",
+          "section_number": "",
+          "accent_text": "",
+          "column": 2,
+          "items": [
+            {
+              "type": "bullet",
+              "text": "La fonction $f = (u + v)$ est continue sur l'intervalle $I$ **ssi** les fonctions $u$ et $v$ sont continues sur l'intervalle $I$"
+            },
+            {
+              "type": "bullet",
+              "text": "La fonction $f = (\\alpha. u)$ est continue sur $I$ **ssi** la fonction $u$ est continue sur $I$"
+            },
+            {
+              "type": "bullet",
+              "text": "La fonction $f = (u. v)$ est continue sur $I$ **ssi** $u$ et $v$ sont continues sur $I$"
+            },
+            {
+              "type": "bullet",
+              "text": "La fonction $f = \\frac{u}{v}$ est continue sur $I$ **ssi** $u$ est continue sur $I$ et $v$ continue sur $I$ et $(\\forall x \\in I) ; v(x) \\neq 0$"
+            },
+            {
+              "type": "bullet",
+              "text": "La fonction $f = \\sqrt{u}$ est continue sur $I$ **ssi** la fonction $u$ est continue sur $I$ et $(\\forall x \\in I) ; u(x) \\geq 0$"
+            }
+          ],
+          "content": "La fonction $f = (u + v)$ est continue sur l'intervalle $I$ **ssi** les fonctions $u$ et $v$ sont continues sur l'intervalle $I$\nLa fonction $f = (\\alpha. u)$ est continue sur $I$ **ssi** la fonction $u$ est continue sur $I$\nLa fonction $f = (u. v)$ est continue sur $I$ **ssi** $u$ et $v$ sont continues sur $I$\nLa fonction $f = \\frac{u}{v}$ est continue sur $I$ **ssi** $u$ est continue sur $I$ et $v$ continue sur $I$ et $(\\forall x \\in I) ; v(x) \\neq 0$\nLa fonction $f = \\sqrt{u}$ est continue sur $I$ **ssi** la fonction $u$ est continue sur $I$ et $(\\forall x \\in I) ; u(x) \\geq 0$",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-6",
+          "section_header": "3) Image d'un intervalle -Théorème des valeurs intermédiaire",
+          "title": "Image d'un intervalle par une fonction continue",
+          "type": "property",
+          "section_number": "3",
+          "accent_text": "",
+          "column": 2,
+          "items": [
+            {
+              "type": "bullet",
+              "text": "L'image d'un intervalle par une fonction continue est un intervalle"
+            },
+            {
+              "type": "bullet",
+              "text": "Si $f$ est continue sur un segment $[a, b]$ et $M$ est le maximum de $f$ sur $[a, b]$ et $m$ est le minimum de $f$ sur $[a, b]$. Alors $f([a, b]) = [m, M]$"
+            }
+          ],
+          "content": "L'image d'un intervalle par une fonction continue est un intervalle\nSi $f$ est continue sur un segment $[a, b]$ et $M$ est le maximum de $f$ sur $[a, b]$ et $m$ est le minimum de $f$ sur $[a, b]$. Alors $f([a, b]) = [m, M]$",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-7",
+          "section_header": "Image d'un intervalle par fonction continue et strictement monotone",
+          "title": "Image d'un intervalle par fonction continue et strictement monotone",
+          "type": "property",
+          "section_number": "",
+          "accent_text": "",
+          "column": 1,
+          "items": [
+            {
+              "type": "grid_items",
+              "cols": 2,
+              "grid_items": [
+                "**$f$ est strictement croissante sur $I$**",
+                "**$f$ est strictement décroissante**",
+                "$f([a; b]) = [f(a); f(b)]$",
+                "$f([a; b]) = [f(b); f(a)]$",
+                "$f([a; +\\infty[) = [f(a); \\lim_{x \\to +\\infty} f(x)[$",
+                "$f([a; +\\infty[) = ]\\lim_{x \\to +\\infty} f(x); f(a)]$",
+                "$f([a; b[) = [f(a); \\lim_{x \\to b^-} f(x)[$",
+                "$f([a; b[) = ]\\lim_{x \\to b^-} f(x); f(a)]$",
+                "$f(]a; b]) = ]\\lim_{x \\to a^+} f(x); f(b)]$",
+                "$f(]a; b]) = [f(b); \\lim_{x \\to a^+} f(x)[$",
+                "$f(]-\\infty; b]) = ]\\lim_{x \\to -\\infty} f(x); f(b)]$",
+                "$f(]-\\infty; b]) = [f(b); \\lim_{x \\to -\\infty} f(x)[$"
+              ]
+            }
+          ],
+          "content": "",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-8",
+          "section_header": "Théorème des valeurs intermédiaires (TVI)",
+          "title": "Théorème des valeurs intermédiaires (TVI)",
+          "type": "theorem",
+          "section_number": "",
+          "accent_text": "",
+          "column": 1,
+          "items": [
+            {
+              "type": "highlight_box",
+              "text": "Si $f$ une fonction continue sur $[a; b]$, alors pour tout réel $k$ compris entre $f(a)$ et $f(b)$, il existe un réel $c$ dans $[a; b]$ tel que $f(c) = k$."
+            },
+            {
+              "type": "text",
+              "text": "En d'autres termes : l'équation $f(x) = k$ d'inconnue $x$ admet au moins une solution dans $[a, b]$ pour tout $k$ compris entre $f(a)$ et $f(b)$."
+            }
+          ],
+          "content": "Si $f$ une fonction continue sur $[a; b]$, alors pour tout réel $k$ compris entre $f(a)$ et $f(b)$, il existe un réel $c$ dans $[a; b]$ tel que $f(c) = k$.\nEn d'autres termes : l'équation $f(x) = k$ d'inconnue $x$ admet au moins une solution dans $[a, b]$ pour tout $k$ compris entre $f(a)$ et $f(b)$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-9",
+          "section_header": "Théorème des valeurs intermédiaires (TVI)",
+          "title": "Corollaire 01",
+          "type": "corollary",
+          "section_number": "",
+          "accent_text": "",
+          "column": 1,
+          "items": [
+            {
+              "type": "highlight_box",
+              "text": "Si $f$ une fonction continue sur $[a; b]$ et $f(a) \\times f(b) < 0$; alors l'équation $f(x) = 0$ admet au moins une solution $a$ dans $]a; b[$."
+            },
+            {
+              "type": "bullet",
+              "text": "De plus si $f$ est **strictement monotone** sur $[a; b]$ alors $a$ est unique."
+            }
+          ],
+          "content": "Si $f$ une fonction continue sur $[a; b]$ et $f(a) \\times f(b) < 0$; alors l'équation $f(x) = 0$ admet au moins une solution $a$ dans $]a; b[$.\nDe plus si $f$ est **strictement monotone** sur $[a; b]$ alors $a$ est unique.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-10",
+          "section_header": "Théorème des valeurs intermédiaires (TVI)",
+          "title": "Corollaire 02",
+          "type": "corollary",
+          "section_number": "",
+          "accent_text": "",
+          "column": 1,
+          "items": [
+            {
+              "type": "text",
+              "text": "Si la fonction $f$ est **continue** et **strictement monotone** sur l'intervalle $I$ et $k \\in f(I)$."
+            },
+            {
+              "type": "text",
+              "text": "Alors l'équation $f(x) = k$ admet une unique solution $a$ dans $I$."
+            }
+          ],
+          "content": "Si la fonction $f$ est **continue** et **strictement monotone** sur l'intervalle $I$ et $k \\in f(I)$.\nAlors l'équation $f(x) = k$ admet une unique solution $a$ dans $I$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-11",
+          "section_header": "4) Fonction Réciproque d'une fonction continue et strictement monotone",
+          "title": "4) Fonction Réciproque d'une fonction continue et strictement monotone",
+          "type": "definition",
+          "section_number": "4",
+          "accent_text": "",
+          "column": 2,
+          "items": [
+            {
+              "type": "highlight_box",
+              "text": "Si $f$ une fonction **continue** et **strictement monotone** sur $I$; Alors la fonction $f$ admet une fonction réciproque, notée $f^{-1}$ définie sur l'intervalle $J = f(I)$."
+            }
+          ],
+          "content": "Si $f$ une fonction **continue** et **strictement monotone** sur $I$; Alors la fonction $f$ admet une fonction réciproque, notée $f^{-1}$ définie sur l'intervalle $J = f(I)$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-12",
+          "section_header": "4) Fonction Réciproque d'une fonction continue et strictement monotone",
+          "title": "Propriétés de fonction réciproque $f^{-1}$",
+          "type": "property",
+          "section_number": "4",
+          "accent_text": "",
+          "column": 2,
+          "items": [
+            {
+              "type": "bullet",
+              "text": "Si $f$ est continue et strictement monotone sur un $I$ alors : $\\begin{cases} f^{-1}(x) = y \\\\ x \\in f(I) \\end{cases} \\Leftrightarrow \\begin{cases} f(y) = x \\\\ y \\in I \\end{cases}$"
+            },
+            {
+              "type": "bullet",
+              "text": "$f^{-1}$ est continue sur $f(I)$ et a même sens de variation que $f$."
+            },
+            {
+              "type": "bullet",
+              "text": "Les courbes représentatives de $f$ et de $f^{-1}$, sont symétriques par rapport la droite d'équation $y=x$."
+            },
+            {
+              "type": "bullet",
+              "text": "$(\\forall x \\in I); f^{-1} \\circ f(x) = x \\quad ; \\quad (\\forall x \\in J); f \\circ f^{-1}(x) = x$"
+            }
+          ],
+          "content": "Si $f$ est continue et strictement monotone sur un $I$ alors : $\\begin{cases} f^{-1}(x) = y \\\\ x \\in f(I) \\end{cases} \\Leftrightarrow \\begin{cases} f(y) = x \\\\ y \\in I \\end{cases}$\n$f^{-1}$ est continue sur $f(I)$ et a même sens de variation que $f$.\nLes courbes représentatives de $f$ et de $f^{-1}$, sont symétriques par rapport la droite d'équation $y=x$.\n$(\\forall x \\in I); f^{-1} \\circ f(x) = x \\quad ; \\quad (\\forall x \\in J); f \\circ f^{-1}(x) = x$",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-13",
+          "section_header": "5) Fonction racine n-ième",
+          "title": "5) Fonction racine n-ième",
+          "type": "definition",
+          "section_number": "5",
+          "accent_text": "",
+          "column": 2,
+          "items": [
+            {
+              "type": "text",
+              "text": "La fonction $x \\to x^n$ est continue et strictement monotone sur $[0; +\\infty[$ donc admet une fonction réciproque sur $[0; +\\infty[$."
+            },
+            {
+              "type": "text",
+              "text": "Cette fonction est appelée la fonction racine n-ième, et elle est notée par : $x \\to \\sqrt[n]{x}$."
+            }
+          ],
+          "content": "La fonction $x \\to x^n$ est continue et strictement monotone sur $[0; +\\infty[$ donc admet une fonction réciproque sur $[0; +\\infty[$.\nCette fonction est appelée la fonction racine n-ième, et elle est notée par : $x \\to \\sqrt[n]{x}$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-14",
+          "section_header": "5) Fonction racine n-ième",
+          "title": "Propriété : Soient $x$ et $y$ dans $[0; +\\infty[$ et $m$ et $n$ dans $\\mathbb{N}^*$ :",
+          "type": "property",
+          "section_number": "5",
+          "accent_text": "",
+          "column": 2,
+          "items": [
+            {
+              "type": "grid_items",
+              "cols": 2,
+              "grid_items": [
+                "**1)** $x^n = y \\Leftrightarrow x = \\sqrt[n]{y}$",
+                "**5)** $\\sqrt[n]{x^m} = (\\sqrt[n]{x})^m$",
+                "**2)** $\\sqrt{x} = \\sqrt[2]{x}$ et $\\sqrt[2]{x^2} = x$ (pour $x \\ge 0$)",
+                "**6)** $\\sqrt[m]{\\sqrt[n]{x}} = \\sqrt[mn]{x}$",
+                "**3)** $\\lim_{x \\to +\\infty} \\sqrt[n]{x} = +\\infty$",
+                "**7)** $\\sqrt[n]{x} = \\sqrt[n]{y} \\Leftrightarrow x = y$",
+                "**4)** $(\\sqrt[n]{x})^n = \\sqrt[n]{x^n} = x$",
+                "**8)** $\\sqrt[n]{x} \\times \\sqrt[n]{y} = \\sqrt[n]{xy}$"
+              ]
+            }
+          ],
+          "content": "",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-15",
+          "section_header": "5) Fonction racine n-ième",
+          "title": "Puissances rationnelles d'un nombre réel strictement positif :",
+          "type": "definition",
+          "section_number": "5",
+          "accent_text": "",
+          "column": 2,
+          "items": [
+            {
+              "type": "text",
+              "text": "Soient $a$ un réel strictement positif et $p \\in \\mathbb{Z}$ et $q \\in \\mathbb{N}^*$ on a: $\\sqrt[q]{a^p} = a^{\\frac{p}{q}}$."
+            }
+          ],
+          "content": "Soient $a$ un réel strictement positif et $p \\in \\mathbb{Z}$ et $q \\in \\mathbb{N}^*$ on a: $\\sqrt[q]{a^p} = a^{\\frac{p}{q}}$.",
+          "points": "",
+          "language": "fr"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-04T11:04:22.412Z",
+    "created_at": "2026-09-04T11:04:20.835Z",
+    "createdAt": "2026-09-04T11:04:22.539Z"
+  },
+  {
+    "id": "MOCK-L-22IZSI8WY",
+    "title": "Limite et continuité",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": "Prof : Zayani",
+    "phone": null,
+    "schools": [],
+    "content": {
+      "level": "2bac_pc_svt",
+      "doc_type": "exercises",
+      "is_national_exam": false,
+      "national_exam_meta": null,
+      "is_summary": false,
+      "summary_meta": null,
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "Série d'exercices 1",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Limite et continuité",
+        "teacher": "Prof : Zayani",
+        "phone": "",
+        "is_national_exam": false,
+        "national_exam_meta": null,
+        "is_summary": false,
+        "summary_meta": null
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "section_header": "Exercice 01",
+          "title": "**Exercice 01 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "1",
+          "accent_text": "",
+          "content": "Étudier la continuité des fonctions suivantes en $x_0$ :\n**1)** $f(x) = \\begin{cases} \\dfrac{2-\\sqrt{x+4}}{x} & ; x \\neq 0 \\\\ f(0) = -\\dfrac{1}{2} & ; \\text{en } x_0 = 0 \\end{cases}$\n**2)** $f(x) = \\begin{cases} \\dfrac{2x+1}{7-3x} & ; x \\leq 2 \\\\ \\dfrac{x^2+x-6}{x-2} & ; x > 2 \\\\ \\text{en } x_0 = 2 \\end{cases}$\n**3)** $f(x) = \\begin{cases} \\dfrac{\\sin(\\sqrt{3}x)}{12x} & ; x > 0 \\\\ \\dfrac{\\sqrt{3}-\\sqrt{2+\\cos x}}{x^2} & ; x < 0 \\\\ f(0) = \\dfrac{\\sqrt{3}}{12} & ; \\text{en } x_0 = 0 \\end{cases}$",
+          "items": [
+            {
+              "type": "text",
+              "text": "Étudier la continuité des fonctions suivantes en $x_0$ :"
+            },
+            {
+              "type": "bullet",
+              "text": "**1)** $f(x) = \\begin{cases} \\dfrac{2-\\sqrt{x+4}}{x} & ; x \\neq 0 \\\\ f(0) = -\\dfrac{1}{2} & ; \\text{en } x_0 = 0 \\end{cases}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** $f(x) = \\begin{cases} \\dfrac{2x+1}{7-3x} & ; x \\leq 2 \\\\ \\dfrac{x^2+x-6}{x-2} & ; x > 2 \\\\ \\text{en } x_0 = 2 \\end{cases}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**3)** $f(x) = \\begin{cases} \\dfrac{\\sin(\\sqrt{3}x)}{12x} & ; x > 0 \\\\ \\dfrac{\\sqrt{3}-\\sqrt{2+\\cos x}}{x^2} & ; x < 0 \\\\ f(0) = \\dfrac{\\sqrt{3}}{12} & ; \\text{en } x_0 = 0 \\end{cases}$"
+            }
+          ],
+          "solution": "",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-2",
+          "section_header": "Exercice 02",
+          "title": "**Exercice 02 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "2",
+          "accent_text": "",
+          "content": "**1)** $f$ une fonction définie sur $\\mathbb{R}$ par : $f(x) = \\begin{cases} ax+b & ; x > 2 \\\\ x^2-b-3a & ; x < 2 \\\\ f(2) = 0 \\end{cases}$\\nDéterminer les réels $a$ et $b$ pour que $f$ soit continue en $2$.\n**2)** $f$ une fonction définie sur $\\mathbb{R}$ par : $f(x) = \\begin{cases} \\dfrac{x^3+x^2+x-a}{x-1} & ; x \\neq 1 \\\\ f(1) = b \\end{cases}$\\nDéterminer les réels $a$ et $b$ pour que $f$ soit continue en $1$.\n**3)** $f$ une fonction définie sur $\\mathbb{R}$ : $f(x) = \\begin{cases} \\dfrac{\\sin(\\pi x)}{x-3} & ; x \\neq 3 \\\\ f(3) = a \\end{cases}$\\nDéterminer la valeur du réel $a$ pour que $f$ soit continue en $3$.",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1)** $f$ une fonction définie sur $\\mathbb{R}$ par : $f(x) = \\begin{cases} ax+b & ; x > 2 \\\\ x^2-b-3a & ; x < 2 \\\\ f(2) = 0 \\end{cases}$\\nDéterminer les réels $a$ et $b$ pour que $f$ soit continue en $2$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** $f$ une fonction définie sur $\\mathbb{R}$ par : $f(x) = \\begin{cases} \\dfrac{x^3+x^2+x-a}{x-1} & ; x \\neq 1 \\\\ f(1) = b \\end{cases}$\\nDéterminer les réels $a$ et $b$ pour que $f$ soit continue en $1$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3)** $f$ une fonction définie sur $\\mathbb{R}$ : $f(x) = \\begin{cases} \\dfrac{\\sin(\\pi x)}{x-3} & ; x \\neq 3 \\\\ f(3) = a \\end{cases}$\\nDéterminer la valeur du réel $a$ pour que $f$ soit continue en $3$."
+            }
+          ],
+          "solution": "",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-3",
+          "section_header": "Exercice 03",
+          "title": "**Exercice 03 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "3",
+          "accent_text": "",
+          "content": "Étudier la continuité de la fonction $f$ sur $I$ dans les cas suivants :\n**1)** $f(x) = \\dfrac{5x+6}{x+4}$, $I = ]-4;1[$\n**2)** $f(x) = \\sqrt{x^2+x+1}$, $I = \\mathbb{R}$\n**3)** $I = ]0, +\\infty[ ; f(x) = \\dfrac{x^2+5x^3+8}{\\sqrt{2x^2+x+1}}$\n**4)** $I = [1,+ \\infty[ ; f(x) = x + \\sqrt{x^2-1}$",
+          "items": [
+            {
+              "type": "text",
+              "text": "Étudier la continuité de la fonction $f$ sur $I$ dans les cas suivants :"
+            },
+            {
+              "type": "bullet",
+              "text": "**1)** $f(x) = \\dfrac{5x+6}{x+4}$, $I = ]-4;1[$"
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** $f(x) = \\sqrt{x^2+x+1}$, $I = \\mathbb{R}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**3)** $I = ]0, +\\infty[ ; f(x) = \\dfrac{x^2+5x^3+8}{\\sqrt{2x^2+x+1}}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**4)** $I = [1,+ \\infty[ ; f(x) = x + \\sqrt{x^2-1}$"
+            }
+          ],
+          "solution": "",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-4",
+          "section_header": "Exercice 04",
+          "title": "**Exercice 04 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "4",
+          "accent_text": "",
+          "content": "Soit $f$ une fonction définie sur $]-2; +\\infty[$ par $f(x) = \\begin{cases} \\dfrac{3x^2-4x-4}{x^2-x-2} & ; x > 2 \\\\ \\dfrac{\\sqrt{x^2+5}-3}{\\sqrt{x+2}-2} & ; x < 2 \\\\ f(2) = \\dfrac{8}{3} \\end{cases}$\n**1)** Montrer que $f$ est continue en $2$.\n**2)** Montrer que $f$ est continue sur l'intervalle $]-2; +\\infty[$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $f$ une fonction définie sur $]-2; +\\infty[$ par $f(x) = \\begin{cases} \\dfrac{3x^2-4x-4}{x^2-x-2} & ; x > 2 \\\\ \\dfrac{\\sqrt{x^2+5}-3}{\\sqrt{x+2}-2} & ; x < 2 \\\\ f(2) = \\dfrac{8}{3} \\end{cases}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**1)** Montrer que $f$ est continue en $2$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** Montrer que $f$ est continue sur l'intervalle $]-2; +\\infty[$."
+            }
+          ],
+          "solution": "",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-5",
+          "section_header": "Exercice 05",
+          "title": "**Exercice 05 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "5",
+          "accent_text": "",
+          "content": "Soient $f$ une fonction définie par $f(x) = \\dfrac{3x-7}{x-2}$.\n**1)** Déterminer $D_f$ puis étudier les variations de $f$.\n**2)** Déterminer $f(]- \\infty,2[)$, $f(]2, +\\infty[)$, $f([-3,1])$ et $f([3,4])$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soient $f$ une fonction définie par $f(x) = \\dfrac{3x-7}{x-2}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1)** Déterminer $D_f$ puis étudier les variations de $f$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** Déterminer $f(]- \\infty,2[)$, $f(]2, +\\infty[)$, $f([-3,1])$ et $f([3,4])$."
+            }
+          ],
+          "solution": "",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-6",
+          "section_header": "Exercice 06",
+          "title": "**Exercice 06 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "6",
+          "accent_text": "",
+          "content": "**1)** Montrer que l'équation $6\\cos(x) = x$, admet au moins une solution $\\alpha$ dans $[0;\\pi]$.\n**2)** Montrer que l'équation $x^3 - \\dfrac{1}{x} - 7 = 0$, admet une solution unique $\\alpha$ dans l'intervalle $]0, +\\infty[$ puis vérifier que $\\alpha \\in [3/2,2]$.\n**3)** Montrer que l'équation $\\sin(x)+x+\\dfrac{1}{2}=0$, admet une solution unique $\\alpha$ dans l'intervalle $[-\\pi/6,0]$.\n**4)** Montrer que l'équation $x+\\tan x=1$, admet une solution unique $\\alpha$ dans l'intervalle $[0;\\pi/4]$.",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1)** Montrer que l'équation $6\\cos(x) = x$, admet au moins une solution $\\alpha$ dans $[0;\\pi]$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** Montrer que l'équation $x^3 - \\dfrac{1}{x} - 7 = 0$, admet une solution unique $\\alpha$ dans l'intervalle $]0, +\\infty[$ puis vérifier que $\\alpha \\in [3/2,2]$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3)** Montrer que l'équation $\\sin(x)+x+\\dfrac{1}{2}=0$, admet une solution unique $\\alpha$ dans l'intervalle $[-\\pi/6,0]$."
+            },
+            {
+              "type": "bullet",
+              "text": "**4)** Montrer que l'équation $x+\\tan x=1$, admet une solution unique $\\alpha$ dans l'intervalle $[0;\\pi/4]$."
+            }
+          ],
+          "solution": "",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-7",
+          "section_header": "Exercice 07",
+          "title": "**Exercice 07 :** (4 pts)",
+          "type": "exercise",
+          "points": 4,
+          "section_number": "7",
+          "accent_text": "",
+          "content": "Soit $f$ la fonction numérique définie sur $\\mathbb{R}$ par : $f(x) = x^3-3x^2-5$.\n**1)** Étudier le sens des variations de $f$ sur $\\mathbb{R}$.\n**2.a)** Montrer que l'équation $f(x) = 0$ admet une seule solution $\\beta$ dans $\\mathbb{R}$ puis vérifier que $\\beta \\in ]2;4[$.\n**2.b)** Étudier le signe de $f(x)$ pour tout $x$ de $\\mathbb{R}$.\n**3)** Par la méthode de dichotomie, donner un encadrement de $\\beta$ d'amplitude $0,5$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $f$ la fonction numérique définie sur $\\mathbb{R}$ par : $f(x) = x^3-3x^2-5$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1)** Étudier le sens des variations de $f$ sur $\\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.a)** Montrer que l'équation $f(x) = 0$ admet une seule solution $\\beta$ dans $\\mathbb{R}$ puis vérifier que $\\beta \\in ]2;4[$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.b)** Étudier le signe de $f(x)$ pour tout $x$ de $\\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3)** Par la méthode de dichotomie, donner un encadrement de $\\beta$ d'amplitude $0,5$."
+            }
+          ],
+          "solution": "",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-8",
+          "section_header": "Exercice 08",
+          "title": "**Exercice 08 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "8",
+          "accent_text": "",
+          "content": "Soit $f$ une fonction définie sur $I = [1;+\\infty[$ par : $f(x) = x^2-2x+3$.\n**1)** Montrer que $f$ admet une fonction réciproque $f^{-1}$ définie sur $J$ que l'on déterminera.\n**2)** Déterminer la fonction $f^{-1}$ pour tout $x$ dans $J$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $f$ une fonction définie sur $I = [1;+\\infty[$ par : $f(x) = x^2-2x+3$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1)** Montrer que $f$ admet une fonction réciproque $f^{-1}$ définie sur $J$ que l'on déterminera."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** Déterminer la fonction $f^{-1}$ pour tout $x$ dans $J$."
+            }
+          ],
+          "solution": "",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-9",
+          "section_header": "Exercice 09",
+          "title": "**Exercice 09 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "9",
+          "accent_text": "",
+          "content": "Soit $f$ la fonction définie sur $[0;+\\infty[$ par : $f(x)=x-2\\sqrt{x}$.\n**1)** Calculer $\\lim_{x \\to +\\infty} f(x)$ puis étudier le sens des variations de $f$.\n**2)** Soit $g$ la restriction de $f$ sur $I = [1;+\\infty[$.\n**a)** Montrer que $g$ admet une fonction réciproque $g^{-1}$ définie sur $J$ que l'on déterminera.\n**b)** Déterminer la fonction $g^{-1}$, la fonction réciproque de $g$ sur $J$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $f$ la fonction définie sur $[0;+\\infty[$ par : $f(x)=x-2\\sqrt{x}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1)** Calculer $\\lim_{x \\to +\\infty} f(x)$ puis étudier le sens des variations de $f$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** Soit $g$ la restriction de $f$ sur $I = [1;+\\infty[$."
+            },
+            {
+              "type": "bullet",
+              "text": "**a)** Montrer que $g$ admet une fonction réciproque $g^{-1}$ définie sur $J$ que l'on déterminera."
+            },
+            {
+              "type": "bullet",
+              "text": "**b)** Déterminer la fonction $g^{-1}$, la fonction réciproque de $g$ sur $J$."
+            }
+          ],
+          "solution": "",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-10",
+          "section_header": "Exercice 10",
+          "title": "**Exercice 10 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "10",
+          "accent_text": "",
+          "content": "Soit $h$ une fonction définie sur $]-1; 1[$ par : $h(x) = \\dfrac{2x}{1-x^2}$.\n**1)** Calculer $\\lim_{x \\to -1^+} h(x)$ et $\\lim_{x \\to 1^-} h(x)$ puis étudier les variations de $h$.\n**2)** Montrer que $h$ admet une fonction réciproque $h^{-1}$ sur $J$ (à déterminer).\n**3)** Déterminer $h^{-1}(x)$ pour tout $x \\in J$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $h$ une fonction définie sur $]-1; 1[$ par : $h(x) = \\dfrac{2x}{1-x^2}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1)** Calculer $\\lim_{x \\to -1^+} h(x)$ et $\\lim_{x \\to 1^-} h(x)$ puis étudier les variations de $h$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** Montrer que $h$ admet une fonction réciproque $h^{-1}$ sur $J$ (à déterminer)."
+            },
+            {
+              "type": "bullet",
+              "text": "**3)** Déterminer $h^{-1}(x)$ pour tout $x \\in J$."
+            }
+          ],
+          "solution": "",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-11",
+          "section_header": "Exercice 11",
+          "title": "**Exercice 11 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "11",
+          "accent_text": "",
+          "content": "**1.a)** Comparer $\\sqrt{3}$ et $\\sqrt[3]{4}$.\n**1.b)** Mettre les nombres en ordre croissant : $\\sqrt{2} ; \\sqrt[3]{4} ; \\sqrt[4]{6}$.\n**2)** Résoudre dans $\\mathbb{R}$ les équations suivantes :\n**(E₁)** : $(x-3)^2-8=0$\n**(E₂)** : $\\sqrt{x+2}-4\\sqrt[4]{x+2}+3=0$\n**(E₃)** : $\\sqrt[3]{1-2x} = \\sqrt{x+1}$\n**3)** Résoudre dans $\\mathbb{R}$ les inéquations $\\sqrt{x+1}-2 \\leq 0$ et $\\sqrt[4]{24-2x} \\geq \\sqrt{x+1}$.",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1.a)** Comparer $\\sqrt{3}$ et $\\sqrt[3]{4}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1.b)** Mettre les nombres en ordre croissant : $\\sqrt{2} ; \\sqrt[3]{4} ; \\sqrt[4]{6}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** Résoudre dans $\\mathbb{R}$ les équations suivantes :"
+            },
+            {
+              "type": "bullet",
+              "text": "**(E₁)** : $(x-3)^2-8=0$"
+            },
+            {
+              "type": "bullet",
+              "text": "**(E₂)** : $\\sqrt{x+2}-4\\sqrt[4]{x+2}+3=0$"
+            },
+            {
+              "type": "bullet",
+              "text": "**(E₃)** : $\\sqrt[3]{1-2x} = \\sqrt{x+1}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**3)** Résoudre dans $\\mathbb{R}$ les inéquations $\\sqrt{x+1}-2 \\leq 0$ et $\\sqrt[4]{24-2x} \\geq \\sqrt{x+1}$."
+            }
+          ],
+          "solution": "",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-12",
+          "section_header": "Exercice 12",
+          "title": "**Exercice 12 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "12",
+          "accent_text": "",
+          "content": "Calculer les limites suivantes :\n**1)** $\\lim_{x \\to 9} \\dfrac{\\sqrt{x-1}-2}{x-9}$\n**2)** $\\lim_{x \\to +\\infty} \\dfrac{\\sqrt[3]{x^3+2x^2+1}}{x}$\n**3)** $\\lim_{x \\to 1} \\dfrac{\\sqrt{x^2-1}}{x-1}$\n**4)** $\\lim_{x \\to +\\infty} \\dfrac{\\sqrt{x+1}}{3x^2+3}$\n**5)** $\\lim_{x \\to +\\infty} \\sqrt{x^3+x}-8x$\n**6)** $\\lim_{x \\to 2^+} \\dfrac{x-1-2}{x-2}$\n**7)** $\\lim_{x \\to +\\infty} \\sqrt{x^3+x^2+1}-x$",
+          "items": [
+            {
+              "type": "text",
+              "text": "Calculer les limites suivantes :"
+            },
+            {
+              "type": "grid_items",
+              "cols": 2,
+              "grid_items": [
+                "**1)** $\\lim_{x \\to 9} \\dfrac{\\sqrt{x-1}-2}{x-9}$",
+                "**2)** $\\lim_{x \\to +\\infty} \\dfrac{\\sqrt[3]{x^3+2x^2+1}}{x}$",
+                "**3)** $\\lim_{x \\to 1} \\dfrac{\\sqrt{x^2-1}}{x-1}$",
+                "**4)** $\\lim_{x \\to +\\infty} \\dfrac{\\sqrt{x+1}}{3x^2+3}$",
+                "**5)** $\\lim_{x \\to +\\infty} \\sqrt{x^3+x}-8x$",
+                "**6)** $\\lim_{x \\to 2^+} \\dfrac{x-1-2}{x-2}$",
+                "**7)** $\\lim_{x \\to +\\infty} \\sqrt{x^3+x^2+1}-x$"
+              ]
+            }
+          ],
+          "solution": "",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-13",
+          "section_header": "Exercice 13",
+          "title": "**Exercice 13 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "13",
+          "accent_text": "",
+          "content": "Montrer que : $\\dfrac{\\sqrt[3]{10^5} \\times 6^2}{\\sqrt[3]{15^2} \\times \\sqrt{2^4}} = 1$ ; Et que $\\dfrac{\\sqrt{2} \\times \\sqrt[4]{4}}{\\sqrt[3]{2^8} \\times \\sqrt[4]{32}} = \\dfrac{1}{2^{3/2}}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Montrer que : $\\dfrac{\\sqrt[3]{10^5} \\times 6^2}{\\sqrt[3]{15^2} \\times \\sqrt{2^4}} = 1$ ; Et que $\\dfrac{\\sqrt{2} \\times \\sqrt[4]{4}}{\\sqrt[3]{2^8} \\times \\sqrt[4]{32}} = \\dfrac{1}{2^{3/2}}$."
+            }
+          ],
+          "solution": "",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-14",
+          "section_header": "Exercice 14",
+          "title": "**Exercice 14 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "14",
+          "accent_text": "",
+          "content": "Soit $f$ une fonction définie par : $f(x)=2-\\sqrt{x^2-1}$.\n**1)** Déterminer $D_f$, puis calculer $\\lim_{x \\to +\\infty} f(x)$.\n**2)** Soit $g$ la restriction de la fonction $f$ sur $I = [1;+\\infty[$.\n**a)** Étudier le sens de variations de $g$ sur $I$.\n**b)** Montrer que $g$ admet une fonction réciproque $g^{-1}$ sur $J$ que l'on déterminera.\n**c)** Déterminer $g^{-1}(x)$ pour tout $x \\in J$.\n**3.a)** Montrer que l'équation $g(x) = x$ admet une unique solution $\\alpha$ tel que : $1 < \\alpha < 2$.\n**3.b)** En utilisant la méthode de dichotomie trouver un encadrement de $\\alpha$ d'amplitude $0,5$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $f$ une fonction définie par : $f(x)=2-\\sqrt{x^2-1}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1)** Déterminer $D_f$, puis calculer $\\lim_{x \\to +\\infty} f(x)$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** Soit $g$ la restriction de la fonction $f$ sur $I = [1;+\\infty[$."
+            },
+            {
+              "type": "bullet",
+              "text": "**a)** Étudier le sens de variations de $g$ sur $I$."
+            },
+            {
+              "type": "bullet",
+              "text": "**b)** Montrer que $g$ admet une fonction réciproque $g^{-1}$ sur $J$ que l'on déterminera."
+            },
+            {
+              "type": "bullet",
+              "text": "**c)** Déterminer $g^{-1}(x)$ pour tout $x \\in J$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3.a)** Montrer que l'équation $g(x) = x$ admet une unique solution $\\alpha$ tel que : $1 < \\alpha < 2$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3.b)** En utilisant la méthode de dichotomie trouver un encadrement de $\\alpha$ d'amplitude $0,5$."
+            }
+          ],
+          "solution": "",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-15",
+          "section_header": "Exercice 15",
+          "title": "**Exercice 15 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "15",
+          "accent_text": "",
+          "content": "Soit $f$ la fonction définie sur $\\mathbb{R}$ par : $f(x)=x^3-x^2+3x+1$.\n**1)** Montrer que $f$ est strictement croissante sur $\\mathbb{R}$.\\nMontrer que $f$ admet une fonction réciproque $f^{-1}$ définie sur un intervalle $J$ à déterminer.\n**2.a)** Montrer que l'équation $f(x) = 0$ admet une unique solution $\\alpha$ tel que $-1 < \\alpha < 0$.\n**2.b)** Calculer $f\\left(-\\dfrac{1}{4}\\right)$ puis en déduire un encadrement de $\\alpha$ d'amplitude $0,25$.\n**2.c)** Montrer que $\\sqrt{\\alpha+1} = \\dfrac{-2\\alpha}{\\alpha+1}$.\n**3)** Étudier le signe de $f$ sur $\\mathbb{R}$.\n**4)** Résoudre dans $\\mathbb{R}$ l'équation (E) : $x^{12}-x^8+3x^4+1=0$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $f$ la fonction définie sur $\\mathbb{R}$ par : $f(x)=x^3-x^2+3x+1$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1)** Montrer que $f$ est strictement croissante sur $\\mathbb{R}$."
+            },
+            {
+              "type": "text",
+              "text": "Montrer que $f$ admet une fonction réciproque $f^{-1}$ définie sur un intervalle $J$ à déterminer."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.a)** Montrer que l'équation $f(x) = 0$ admet une unique solution $\\alpha$ tel que $-1 < \\alpha < 0$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.b)** Calculer $f\\left(-\\dfrac{1}{4}\\right)$ puis en déduire un encadrement de $\\alpha$ d'amplitude $0,25$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.c)** Montrer que $\\sqrt{\\alpha+1} = \\dfrac{-2\\alpha}{\\alpha+1}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3)** Étudier le signe de $f$ sur $\\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**4)** Résoudre dans $\\mathbb{R}$ l'équation (E) : $x^{12}-x^8+3x^4+1=0$."
+            }
+          ],
+          "solution": "",
+          "interactive_answers": [],
+          "language": "fr"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-04T11:15:04.292Z",
+    "created_at": "2026-09-04T11:15:01.855Z",
+    "createdAt": "2026-09-04T11:15:04.418Z"
   }
 ]

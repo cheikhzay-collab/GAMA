@@ -1,8 +1,10 @@
 // src/services/examService.js
-// Multi-tiered CRUD for exams with fail-safe persistence (Supabase -> LocalDb -> LocalStorage -> Seed Fallback).
+// High-performance multi-tiered CRUD for exams with SWR caching and projection optimization.
+// Supabase -> LocalDb Companion -> LocalStorage -> Seed Fallback.
 
 import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
+import { queryCache } from './queryCache';
 
 const STORAGE_KEY = 'lconq_exams_db';
 
@@ -80,7 +82,9 @@ const mapDBToExam = (row) => {
     year: row.year,
     tier: row.tier,
     questions: row.questions || [],
-    questionsCount: row.questions_count !== undefined ? row.questions_count : (row.questions ? row.questions.length : 0),
+    questionsCount: row.questions_count !== undefined 
+      ? row.questions_count 
+      : (row.questions ? row.questions.length : 0),
     pdfUrl: row.pdf_url || row.pdfUrl,
     isActive: row.is_active !== undefined ? row.is_active : (row.isActive !== undefined ? row.isActive : true),
     isArchived: row.is_archived !== undefined ? row.is_archived : (row.isArchived !== undefined ? row.isArchived : false),
@@ -89,63 +93,125 @@ const mapDBToExam = (row) => {
   };
 };
 
-// ─── Read ─────────────────────────────────────────────────────────────────────
+// ─── Read (Optimized with SWR & Projections) ──────────────────────────────────
 
 /**
- * Fetch ALL exams (admin view) with fail-safe fallback.
+ * Fetch ALL exams (metadata-only for ultra-fast list & overview rendering)
  */
-export const getAllExams = async () => {
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('exams_metadata')
-        .select('*')
-        .order('date_added', { ascending: false });
+export const getAllExams = async (options = {}) => {
+  const { forceRefresh = false } = options;
 
-      if (!error && Array.isArray(data) && data.length > 0) {
+  return queryCache.fetchWithCache('exams_all', async () => {
+    // 1. Supabase attempt (Try metadata view first, fallback to lightweight projection)
+    if (supabase) {
+      try {
+        let { data, error } = await supabase
+          .from('exams_metadata')
+          .select('*')
+          .order('date_added', { ascending: false });
+
+        if (error || !data) {
+          // Fallback to exams table with lightweight columns (skips questions JSON)
+          const fallback = await supabase
+            .from('exams')
+            .select('id, name, school, year, tier, pdf_url, is_active, is_archived, date_added, updated_at')
+            .order('date_added', { ascending: false });
+          data = fallback.data;
+          error = fallback.error;
+        }
+
+        if (!error && Array.isArray(data) && data.length > 0) {
+          const mapped = data.map(mapDBToExam);
+          saveLocalStorageExams(mapped);
+          return mapped;
+        }
+      } catch (err) {
+        console.warn('[Supabase] Failed to fetch exams:', err);
+      }
+    }
+
+    // 2. Local Companion DB API fallback
+    try {
+      const data = await localDb.get('/exams');
+      if (Array.isArray(data) && data.length > 0) {
         const mapped = data.map(mapDBToExam);
         saveLocalStorageExams(mapped);
         return mapped;
       }
     } catch (err) {
-      console.warn('[Supabase] Failed to fetch exams:', err);
+      console.warn('[LocalDB] Companion server offline for exams, using local storage backup.');
     }
-  }
 
-  try {
-    const data = await localDb.get('/exams');
-    if (Array.isArray(data) && data.length > 0) {
-      const mapped = data.map(mapDBToExam);
-      saveLocalStorageExams(mapped);
-      return mapped;
+    // 3. LocalStorage fallback
+    const cache = getLocalStorageExams();
+    if (cache && cache.length > 0) {
+      return cache.map(mapDBToExam);
     }
-  } catch (err) {
-    console.warn('[LocalDB] Companion server offline for exams, using local storage backup.');
-  }
 
-  const cache = getLocalStorageExams();
-  if (cache && cache.length > 0) {
-    return cache.map(mapDBToExam);
-  }
-
-  saveLocalStorageExams(INITIAL_SEED_EXAMS);
-  return INITIAL_SEED_EXAMS.map(mapDBToExam);
+    // 4. Initial seed fallback
+    saveLocalStorageExams(INITIAL_SEED_EXAMS);
+    return INITIAL_SEED_EXAMS.map(mapDBToExam);
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 3, // 3 minutes fresh cache
+    cacheTime: 1000 * 60 * 30
+  });
 };
 
 /**
  * Fetch only active, non-archived exams (student view).
  */
-export const getActiveExams = async () => {
-  const exams = await getAllExams();
+export const getActiveExams = async (options = {}) => {
+  const exams = await getAllExams(options);
   return exams.filter(e => e.isActive && !e.isArchived);
 };
 
 /**
- * Fetch a single exam by ID.
+ * Fetch a single exam by ID (Loads full details + questions).
  */
-export const getExamById = async (examId) => {
-  const exams = await getAllExams();
-  return exams.find(e => e.id === examId) || null;
+export const getExamById = async (examId, options = {}) => {
+  if (!examId) return null;
+  const { forceRefresh = false } = options;
+
+  return queryCache.fetchWithCache(`exam_detail_${examId}`, async () => {
+    // 1. Fetch exact single record from Supabase
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('exams')
+          .select('*')
+          .eq('id', examId)
+          .maybeSingle();
+
+        if (!error && data) {
+          return mapDBToExam(data);
+        }
+      } catch (err) {
+        console.warn(`[Supabase] Failed to fetch single exam ${examId}:`, err);
+      }
+    }
+
+    // 2. Try Local Companion API
+    try {
+      const data = await localDb.get(`/exams/${examId}`);
+      if (data) return mapDBToExam(data);
+    } catch {}
+
+    // 3. Try LocalStorage cached list
+    const cachedList = getLocalStorageExams() || [];
+    const found = cachedList.find(e => e.id === examId);
+    if (found && found.questions && found.questions.length > 0) {
+      return mapDBToExam(found);
+    }
+
+    // 4. Fallback to initial seed
+    const seed = INITIAL_SEED_EXAMS.find(e => e.id === examId);
+    return seed ? mapDBToExam(seed) : (found ? mapDBToExam(found) : null);
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 60
+  });
 };
 
 /**
@@ -156,7 +222,7 @@ export const getExamQuestionsOnly = async (examId) => {
   return exam ? (exam.questions || []) : [];
 };
 
-// ─── Write ────────────────────────────────────────────────────────────────────
+// ─── Write (With Automatic Cache Invalidation) ─────────────────────────────────
 
 /**
  * Add a new exam.
@@ -180,19 +246,23 @@ export const addExam = async (examData) => {
     updatedAt: now
   };
 
-  // 1. Save to LocalStorage cache immediately
+  // 1. Invalidate SWR queries immediately
+  queryCache.invalidate('exams_all');
+  queryCache.set(`exam_detail_${id}`, newExam);
+
+  // 2. Save to LocalStorage cache
   const currentExams = (await getAllExams()).filter(e => e.id !== id);
   currentExams.unshift(newExam);
   saveLocalStorageExams(currentExams);
 
-  // 2. Sync to Local Companion API
+  // 3. Sync to Local Companion API
   try {
     await localDb.post('/exams', newExam);
   } catch (err) {
     console.warn('[LocalDB] Could not sync addExam to Companion server:', err.message);
   }
 
-  // 3. Sync to Supabase if configured
+  // 4. Sync to Supabase
   if (supabase) {
     try {
       await supabase.from('exams').insert({ id, ...mapExamToDB(examData) });
@@ -209,6 +279,10 @@ export const addExam = async (examData) => {
  */
 export const updateExam = async (examId, updates) => {
   const now = new Date().toISOString();
+
+  // Invalidate queries
+  queryCache.invalidate('exams_all');
+  queryCache.invalidate(`exam_detail_${examId}`);
 
   // 1. Update LocalStorage cache immediately
   const currentExams = await getAllExams();
@@ -274,6 +348,9 @@ export const toggleArchiveExam = async (examId, currentArchived) => {
  * Permanently delete an exam.
  */
 export const deleteExam = async (examId) => {
+  queryCache.invalidate('exams_all');
+  queryCache.invalidate(`exam_detail_${examId}`);
+
   // 1. Remove from LocalStorage cache immediately
   const currentExams = await getAllExams();
   const filtered = currentExams.filter(e => e.id !== examId);

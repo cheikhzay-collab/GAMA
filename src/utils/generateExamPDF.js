@@ -1273,7 +1273,7 @@ ${getFontImportLinks()}
   font-style: normal;
 }
 html[dir="rtl"] body {
-  font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif !important;
+  font-family: 'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif !important;
   direction: rtl !important;
   text-align: right !important;
 }
@@ -2485,7 +2485,7 @@ printWhenReady();
   font-style: normal;
 }
 html[dir="rtl"] body {
-  font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif !important;
+  font-family: 'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif !important;
   direction: rtl !important;
   text-align: right !important;
 }

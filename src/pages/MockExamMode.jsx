@@ -369,7 +369,7 @@ export default function MockExamMode() {
                 lineHeight: '1.65', 
                 color: 'var(--text-main)', 
                 paddingRight: '4px',
-                fontFamily: isQuestionArabic ? "'UKIJMerdaneRegular', 'Cairo', sans-serif" : "'Computer Modern Serif', 'STIX Two Text', Georgia, serif",
+                fontFamily: isQuestionArabic ? "'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', sans-serif" : "'Computer Modern Serif', 'STIX Two Text', Georgia, serif",
                 direction: isQuestionArabic ? 'rtl' : 'ltr',
                 textAlign: isQuestionArabic ? 'right' : 'left'
               }}>
@@ -496,7 +496,7 @@ export default function MockExamMode() {
                     color: 'var(--text-main)',
                     letterSpacing: '-0.01em',
                     flex: 1,
-                    fontFamily: isQuestionArabic ? "'UKIJMerdaneRegular', 'Cairo', sans-serif" : "'Computer Modern Serif', 'STIX Two Text', Georgia, serif",
+                    fontFamily: isQuestionArabic ? "'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', sans-serif" : "'Computer Modern Serif', 'STIX Two Text', Georgia, serif",
                     direction: isQuestionArabic ? 'rtl' : 'ltr',
                     textAlign: isQuestionArabic ? 'right' : 'left'
                   }}>
@@ -533,7 +533,7 @@ export default function MockExamMode() {
                       style={isQuestionArabic ? {
                         direction: 'rtl',
                         textAlign: 'right',
-                        fontFamily: "'UKIJMerdaneRegular', 'Cairo', sans-serif"
+                        fontFamily: "'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', sans-serif"
                       } : {}}
                     >
                       <span className="option-letter" style={isQuestionArabic ? { marginLeft: '0.5rem', marginRight: '0' } : {}}>{opt.id}</span>

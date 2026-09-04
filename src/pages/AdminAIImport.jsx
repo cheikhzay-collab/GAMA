@@ -1328,16 +1328,26 @@ ${pdfText}
       {isArMode && (
         <style>{`
           @font-face {
+            font-family: 'UKIJ Merdane';
+            src: local('UKIJ Merdane'), local('UKIJMerdane'), url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+            font-weight: 100 900;
+            font-style: normal;
+            font-display: swap;
+          }
+          @font-face {
             font-family: 'UKIJMerdaneRegular';
-            src: url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+            src: local('UKIJ Merdane'), local('UKIJMerdane'), url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+            font-weight: 100 900;
+            font-style: normal;
+            font-display: swap;
           }
           input, textarea, select {
-            font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif !important;
+            font-family: 'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif !important;
             direction: rtl !important;
             text-align: right !important;
           }
           label, th, td, h2, h3, h4 {
-            font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif !important;
+            font-family: 'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif !important;
             direction: rtl !important;
             text-align: right !important;
           }

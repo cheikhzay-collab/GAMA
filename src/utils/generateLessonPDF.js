@@ -114,7 +114,18 @@ function tokenizeMath(text) {
     if (text[i] === '$') {
       let j = i + 1; let found = false;
       while (j < text.length) { if (text[j] === '\\') { j += 2; continue; } if (text[j] === '$') { found = true; break; } j++; }
-      if (!found || j === i + 1) { buf += '$'; i++; }
+      if (!found || j === i + 1) {
+        // Fallback resilience: If unclosed $ is followed by LaTeX commands or math environments,
+        // treat remainder of expression as inline math rather than dumping raw code to screen!
+        const remainder = text.slice(i + 1);
+        if (!found && remainder.trim().length > 0 && (LATEX_COMMAND_RE.test(remainder) || /\\begin\{/.test(remainder))) {
+          if (buf) { tokens.push({ type: 'text', content: buf }); buf = ''; }
+          tokens.push({ type: 'inline', content: remainder });
+          i = text.length;
+          break;
+        }
+        buf += '$'; i++;
+      }
       else { if (buf) { tokens.push({ type: 'text', content: buf }); buf = ''; } tokens.push({ type: 'inline', content: text.slice(i + 1, j) }); i = j + 1; }
       continue;
     }
@@ -219,7 +230,11 @@ const repairCorruptedLatex = (text) => {
     // Replace "dfrac{" (not preceded by letter/backslash) with "\dfrac{"
     .replace(/(?<![a-zA-Z\\])dfrac\{/g, '\\dfrac{')
     // Replace "rac{" (not preceded by letter/backslash) with "\frac{" (in case f was stripped as form feed)
-    .replace(/(?<![a-zA-Z\\])rac\{/g, '\\frac{');
+    .replace(/(?<![a-zA-Z\\])rac\{/g, '\\frac{')
+    // Repair unclosed math environments missing trailing $ (e.g., "$... \begin{cases} ... \end{cases}" with no closing $)
+    .replace(/(\$(?:(?!\$).)*?\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\}[\s\S]*?\\end\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\})(?!\$)/g, '$1$')
+    // Wrap bare math environments without any dollar delimiters
+    .replace(/(?<![\$\\])(\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\}[\s\S]*?\\end\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\})(?!\$)/g, '$$$1$$');
 };
 
 const renderLine = (line) => {
@@ -973,7 +988,7 @@ export const generateLessonHTML = (lesson, settings = {}) => {
   const cleanTitle = (title || 'Fiche').replace(/[\\\/:\*\?"<>\|]/g, '');
   const pdfDocumentTitle = `${cleanLevelKey} - ${docTypeFilename} - ${langFilename} - ${cleanTitle}`;
   const dir = isArabic ? 'rtl' : 'ltr';
-  const arabicFontFamily = "'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif";
+  const arabicFontFamily = "'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif";
   const bodyFont = isArabic ? arabicFontFamily : "'Computer Modern Serif', 'STIX Two Text', 'Times New Roman', serif";
 
   // Set module-level RTL flag for renderLine
@@ -2540,7 +2555,7 @@ html[dir="rtl"] .fiche-header-modern-pro .modern-level-box {
    RTL — Arabic Language Support
    ═══════════════════════════════════════ */
 html[dir="rtl"] body {
-  font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif;
+  font-family: 'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif;
   direction: rtl;
   text-align: right;
 }
@@ -2553,13 +2568,13 @@ html[dir="rtl"] .fiche-header-classic,
 html[dir="rtl"] .fiche-footer,
 html[dir="rtl"] .print-hint {
   direction: rtl;
-  font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif !important;
+  font-family: 'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', 'Noto Naskh Arabic', Arial, sans-serif !important;
 }
 html[dir="rtl"] span[style*="display:block"],
 html[dir="rtl"] span[style*="display: block"] {
   text-align: right;
   direction: rtl;
-  font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif;
+  font-family: 'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif;
 }
 /* Bullet and numbered lists reverse in RTL */
 html[dir="rtl"] div[style*="display:flex"][style*="align-items:flex-start"],
@@ -2575,7 +2590,7 @@ html[dir="rtl"] .katex-display {
 }
 /* Arabic badge in translated lessons */
 html[dir="rtl"] .banner-title {
-  font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif;
+  font-family: 'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif;
   direction: rtl;
 }
 /* Callout blocks — flip border */
@@ -2970,16 +2985,24 @@ export const openLessonPrintWindow = (lesson, settings = {}) => {
   if (isNat) {
     return openNationalExamPrintWindow(lesson?.content || lesson, settings);
   }
-  const isSummary = !isSeriesOrHomework && Boolean(
-    lesson?.docType === 'summary' ||
-    lesson?.content?.doc_type === 'summary' ||
-    lesson?.is_summary ||
-    lesson?.content?.header?.is_summary ||
-    /ملخص|r[ée]sum[ée]|synth[èe]se/i.test(lesson?.title || lesson?.content?.header?.fiche_title || '')
-  );
-  if (isSummary) {
-    return openCourseSummaryPrintWindow(lesson?.content || lesson, settings);
+
+  // Check explicit layout mode
+  const isForceStandard = settings?.layoutMode === 'standard' || settings?.forceStandard === true;
+  const isForceSummary = settings?.layoutMode === 'summary' || settings?.layoutMode === 'three_columns';
+
+  if (!isForceStandard) {
+    const isSummary = isForceSummary || (!isSeriesOrHomework && Boolean(
+      lesson?.docType === 'summary' ||
+      lesson?.content?.doc_type === 'summary' ||
+      lesson?.is_summary ||
+      lesson?.content?.header?.is_summary ||
+      /ملخص|r[ée]sum[ée]|synth[èe]se/i.test(lesson?.title || lesson?.content?.header?.fiche_title || '')
+    ));
+    if (isSummary) {
+      return openCourseSummaryPrintWindow(lesson?.content || lesson, settings);
+    }
   }
+
   const html = generateLessonHTML(lesson, settings);
   const title = lesson?.content?.header?.fiche_title || lesson?.title || 'Fiche_de_cours';
 

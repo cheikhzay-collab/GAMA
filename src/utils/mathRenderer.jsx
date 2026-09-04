@@ -274,6 +274,15 @@ function tokenizeMath(text) {
         j++;
       }
       if (!found || j === i + 1) {
+        // Fallback resilience: If unclosed $ is followed by LaTeX commands or math environments,
+        // treat remainder of expression as inline math rather than dumping raw code to screen!
+        const remainder = text.slice(i + 1);
+        if (!found && remainder.trim().length > 0 && (LATEX_COMMAND_RE.test(remainder) || /\\begin\{/.test(remainder))) {
+          if (buf) { tokens.push({ type: 'text', content: buf }); buf = ''; }
+          tokens.push({ type: 'inline', content: remainder });
+          i = text.length;
+          break;
+        }
         buf += '$';
         i++;
       } else {
@@ -297,39 +306,73 @@ function tokenizeMath(text) {
  */
 const LATEX_COMMAND_RE = /\\(?:lim|frac|dfrac|left|right|cdot|sqrt|sum|int|prod|infty|to|ln|log|exp|sin|cos|tan|arcsin|arccos|arctan|alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|lambda|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|chi|psi|omega|Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Upsilon|Phi|Psi|Omega|mathbb|mathcal|mathbf|mathrm|text|vec|hat|bar|tilde|overline|underline|widehat|widetilde|dot|ddot|pm|mp|times|div|cap|cup|in|notin|subset|supset|leq|geq|le|ge|neq|approx|equiv|sim|forall|exists|partial|nabla|rightarrow|leftarrow|Rightarrow|Leftarrow|Leftrightarrow|iff|implies|quad|qquad|ell|Re|Im|max|min|sup|inf|det|dim|ker|rank|mod|circ|bullet|star|oplus|otimes|begin|end)\b/;
 
+/**
+ * Automatically wraps standalone LaTeX commands found in regular sentences or titles
+ * (e.g. \mathbb{N}, \mathbb{R}, \mathbb{Z}, \in, \notin, \sqrt{x}, \vec{u}, unicode ℕ)
+ * into $...$ delimiters so KaTeX parses and renders them elegantly.
+ */
+export const wrapStandaloneLatexCommands = (text) => {
+  if (!text || typeof text !== 'string') return '';
+  const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[^\$\n]+?\$)/g);
+  return parts.map((part, idx) => {
+    if (idx % 2 === 1) return part; // inside existing math block, leave as-is
+    return part
+      .replace(/[\u2115]/g, '$\\mathbb{N}$')
+      .replace(/[\u211D]/g, '$\\mathbb{R}$')
+      .replace(/[\u2124]/g, '$\\mathbb{Z}$')
+      .replace(/[\u211A]/g, '$\\mathbb{Q}$')
+      .replace(/[\u2102]/g, '$\\mathbb{C}$')
+      .replace(/(?<![$\w\\])(\\(?:mathbb|mathbf|mathcal|mathrm)\{[a-zA-Z0-9]+\})(?![$\w\\])/g, (_, m) => `$${m}$`)
+      .replace(/(?<![$\w\\])(\\mathbb[a-zA-Z0-9])(?![$\w\\])/g, (_, m) => `$${m}$`)
+      .replace(/(?<![$\w\\])(\\(?:sqrt|vec|overrightarrow)\{[^{}]+\})(?![$\w\\])/g, (_, m) => `$${m}$`)
+      .replace(/(?<![$\w\\])(\\(?:notin|in|subset|subseteq|cap|cup|emptyset|implies|iff|to|rightarrow|leftarrow|leq|geq|neq|approx|pm|mp|times|cdot))\b(?![$\w\\])/g, (_, m) => `$${m}$`);
+  }).join('');
+};
+
 function autoWrapLatex(text) {
-  if (text.includes('$')) return text;
+  if (!text) return '';
+  
+  // First, always wrap any standalone LaTeX commands (like \mathbb{N}, \in, etc.) in $...$
+  const withMathCommands = wrapStandaloneLatexCommands(text);
+  if (withMathCommands !== text || withMathCommands.includes('$')) {
+    return withMathCommands;
+  }
   
   // Don't auto-wrap if it's a markdown bullet point or contains markdown bold/italic
-  if (/^\s*[\*\-+]\s+/.test(text) || text.includes('**') || /(?<!\*)\*[^*]+\*/.test(text)) {
-    return text;
+  if (/^\s*[\*\-+]\s+/.test(withMathCommands) || withMathCommands.includes('**') || /(?<!\*)\*[^*]+\*/.test(withMathCommands)) {
+    return withMathCommands;
+  }
+  
+  // Any text containing Arabic characters is a textual sentence/instruction, NEVER wrap the whole string in $...$
+  if (/[\u0600-\u06FF]/.test(withMathCommands)) {
+    return withMathCommands;
   }
   
   // Check if it looks like a sentence (contains spaces and regular alphabetic words)
-  if (text.includes(' ')) {
-    const words = text.split(/\s+/);
+  if (withMathCommands.includes(' ')) {
+    const words = withMathCommands.split(/\s+/);
     const mathCommands = new Set(['sin', 'cos', 'tan', 'lim', 'log', 'ln', 'exp', 'max', 'min', 'det', 'dim', 'ker', 'mod']);
     for (const word of words) {
       if (/^[a-zA-Z]{3,}$/.test(word) && !mathCommands.has(word.toLowerCase())) {
-        return text; // Do not wrap sentences!
+        return withMathCommands; // Do not wrap sentences!
       }
     }
   }
 
   const mathWords = /\b(?:sqrt|pi|theta|infty|sin|cos|tan|ln|log|exp|lim)\b/i;
-  const hasDivision = /\b\d+\s*\/\s*\d+\b/.test(text) || 
-                      /\b[a-zA-Z0-9_]\s*\/\s*[a-zA-Z0-9(]/.test(text) ||
-                      /\)\s*\/\s*[\d(a-zA-Z]/.test(text) ||
-                      /[\d(a-zA-Z]\s*\/\s*\(/.test(text);
+  const hasDivision = /\b\d+\s*\/\s*\d+\b/.test(withMathCommands) || 
+                      /\b[a-zA-Z0-9_]\s*\/\s*[a-zA-Z0-9(]/.test(withMathCommands) ||
+                      /\)\s*\/\s*[\d(a-zA-Z]/.test(withMathCommands) ||
+                      /[\d(a-zA-Z]\s*\/\s*\(/.test(withMathCommands);
 
-  if (/[\\^_{}]/.test(text) || 
-      LATEX_COMMAND_RE.test(text) || 
-      mathWords.test(text) || 
-      text.includes('*') || 
+  if (/[\\^_{}]/.test(withMathCommands) || 
+      LATEX_COMMAND_RE.test(withMathCommands) || 
+      mathWords.test(withMathCommands) || 
+      withMathCommands.includes('*') || 
       hasDivision) {
-    return `$${text}$`;
+    return `$${withMathCommands}$`;
   }
-  return text;
+  return withMathCommands;
 }
 
 function renderTextWithBold(text) {
@@ -360,7 +403,11 @@ const repairCorruptedLatex = (text) => {
     // Replace "dfrac{" (not preceded by letter/backslash) with "\dfrac{"
     .replace(/(?<![a-zA-Z\\])dfrac\{/g, '\\dfrac{')
     // Replace "rac{" (not preceded by letter/backslash) with "\frac{" (in case f was stripped as form feed)
-    .replace(/(?<![a-zA-Z\\])rac\{/g, '\\frac{');
+    .replace(/(?<![a-zA-Z\\])rac\{/g, '\\frac{')
+    // Repair unclosed math environments missing trailing $ (e.g., "$... \begin{cases} ... \end{cases}" with no closing $)
+    .replace(/(\$(?:(?!\$).)*?\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\}[\s\S]*?\\end\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\})(?!\$)/g, '$1$')
+    // Wrap bare math environments without any dollar delimiters
+    .replace(/(?<![\$\\])(\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\}[\s\S]*?\\end\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\})(?!\$)/g, '$$$1$$');
 };
 
 /* ─── 8. Main render function ────────────────────────────────────────────────

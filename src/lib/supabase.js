@@ -26,42 +26,36 @@ if (supabaseUrl && supabaseAnonKey) {
       detectSessionInUrl:  true,   // handles OAuth /auth/callback redirects
     },
     global: {
-      // Reasonable timeout — avoids hanging requests on flaky mobile networks
-        fetch: (url, options = {}) => {
-          const controller = new AbortController();
-          const id = setTimeout(() => controller.abort(), 45_000); // 45s timeout for slow mobile networks
-          
-          // Link the caller's signal to our AbortController
-          if (options.signal) {
-            if (options.signal.aborted) {
-              controller.abort();
-            } else {
-              options.signal.addEventListener('abort', () => controller.abort());
-            }
+      // Fast timeout and resilient network handling
+      fetch: (url, options = {}) => {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), 30_000); // 30s timeout
+
+        // Link caller's signal to AbortController
+        if (options.signal) {
+          if (options.signal.aborted) {
+            controller.abort();
+          } else {
+            options.signal.addEventListener('abort', () => controller.abort());
           }
-          
-          // Safely merge headers regardless of whether options.headers is a Headers object or a plain object.
-          const mergedHeaders = new Headers(options.headers || {});
-          mergedHeaders.set('Cache-Control', 'no-cache');
-  
-          const newOptions = {
-            ...options,
-            signal: controller.signal,
-            cache: 'no-store', // Bypasses HTTP cache completely
-            headers: mergedHeaders
-          };
-  
-          return fetch(url, newOptions)
-            .then(response => {
-              // Intercept 401 responses (except refresh token requests) to signal invalid auth session
-              if (response.status === 401 && !url.includes('/auth/v1/token')) {
-                console.warn('[Supabase API] 401 Unauthorized response detected. Dispatching unauthorized event.');
-                window.dispatchEvent(new CustomEvent('supabase-auth-unauthorized'));
-              }
-              return response;
-            })
-            .finally(() => clearTimeout(id));
-        },
+        }
+
+        const newOptions = {
+          ...options,
+          signal: controller.signal
+        };
+
+        return fetch(url, newOptions)
+          .then(response => {
+            // Intercept 401 responses (except refresh token requests) to signal invalid auth session
+            if (response.status === 401 && !url.includes('/auth/v1/token')) {
+              console.warn('[Supabase API] 401 Unauthorized response detected. Dispatching unauthorized event.');
+              window.dispatchEvent(new CustomEvent('supabase-auth-unauthorized'));
+            }
+            return response;
+          })
+          .finally(() => clearTimeout(id));
+      },
     },
   });
 } else {

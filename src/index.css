@@ -1,3 +1,54 @@
+/* ─── ARABIC FONT DECLARATIONS ──────────────────────────────────── */
+@font-face {
+  font-family: 'UKIJ Merdane';
+  src: local('UKIJ Merdane'), local('UKIJMerdane'), url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'UKIJ Merdane';
+  src: local('UKIJ Merdane'), local('UKIJMerdane'), url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'UKIJ Merdane';
+  src: local('UKIJ Merdane'), local('UKIJMerdane'), url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'UKIJMerdane';
+  src: local('UKIJ Merdane'), local('UKIJMerdane'), url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'UKIJMerdaneRegular';
+  src: local('UKIJ Merdane'), local('UKIJMerdane'), url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'UKIJMerdaneRegular';
+  src: local('UKIJ Merdane'), local('UKIJMerdane'), url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'UKIJMerdaneRegular';
+  src: local('UKIJ Merdane'), local('UKIJMerdane'), url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ─── DESIGN TOKENS — DARK (default) ────────────────────────────── */
 :root {
   /* Colors */
@@ -2093,7 +2144,7 @@ body.light-theme select.input-control {
 .rtl-section .input-control,
 .rtl-section textarea,
 .rtl-section select {
-  font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif !important;
+  font-family: 'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif !important;
   direction: rtl !important;
   text-align: right !important;
 }
@@ -7506,4 +7557,18 @@ body.light-theme .settings-content .bento-card .settings-title {
     padding: 1.25rem;
     border-radius: 16px;
   }
+}
+
+
+/* ─── UKIJ Merdane Global Support ─── */
+.arabic-font,
+[dir="rtl"],
+[lang="ar"],
+.rtl-text {
+  font-family: 'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', sans-serif;
+}
+[dir="rtl"] .katex,
+[dir="rtl"] .katex * {
+  font-family: KaTeX_Main, KaTeX_Math, 'STIX Two Text', serif !important;
+  direction: ltr !important;
 }

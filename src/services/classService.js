@@ -1,8 +1,9 @@
 // src/services/classService.js
-// Service for managing school classes and student assignments with fail-safe persistence.
+// Service for managing school classes and student assignments with SWR caching & fail-safe persistence.
 
 import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
+import { queryCache } from './queryCache';
 
 const STORAGE_KEY = 'lconq_classes_db';
 
@@ -42,46 +43,55 @@ const mapDBToClass = (row) => ({
 });
 
 /**
- * Fetch all classes.
+ * Fetch all classes with SWR caching.
  */
-export const getAllClasses = async () => {
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('classes')
-        .select('*')
-        .order('created_at', { ascending: false });
+export const getAllClasses = async (options = {}) => {
+  const { forceRefresh = false } = options;
 
-      if (!error && Array.isArray(data) && data.length > 0) {
+  return queryCache.fetchWithCache('classes_all', async () => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('classes')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && Array.isArray(data) && data.length > 0) {
+          const mapped = data.map(mapDBToClass);
+          saveLocalStorageClasses(mapped);
+          return mapped;
+        }
+      } catch (err) {
+        console.warn('[Supabase] Failed to fetch classes:', err);
+      }
+    }
+
+    try {
+      const data = await localDb.get('/classes');
+      if (Array.isArray(data) && data.length > 0) {
         const mapped = data.map(mapDBToClass);
         saveLocalStorageClasses(mapped);
         return mapped;
       }
     } catch (err) {
-      console.warn('[Supabase] Failed to fetch classes:', err);
+      console.warn('[LocalDB] Companion server offline for classes, using local storage backup.');
     }
-  }
 
-  try {
-    const data = await localDb.get('/classes');
-    if (Array.isArray(data) && data.length > 0) {
-      const mapped = data.map(mapDBToClass);
-      saveLocalStorageClasses(mapped);
-      return mapped;
-    }
-  } catch (err) {
-    console.warn('[LocalDB] Companion server offline for classes, using local storage backup.');
-  }
-
-  const cache = getLocalStorageClasses();
-  return cache || [];
+    const cache = getLocalStorageClasses();
+    return cache || [];
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 3,
+    cacheTime: 1000 * 60 * 30
+  });
 };
 
 /**
  * Fetch a single class by ID.
  */
-export const getClassById = async (classId) => {
-  const classes = await getAllClasses();
+export const getClassById = async (classId, options = {}) => {
+  if (!classId) return null;
+  const classes = await getAllClasses(options);
   return classes.find(c => c.id === classId) || null;
 };
 
@@ -107,6 +117,9 @@ export const addClass = async (classData) => {
     program: classData.program || [],
     createdAt: classData.createdAt || now
   };
+
+  // Invalidate SWR Cache
+  queryCache.invalidate('classes_all');
 
   // 1. LocalStorage
   const currentClasses = (await getAllClasses()).filter(c => c.id !== id);
@@ -152,6 +165,8 @@ export const addClass = async (classData) => {
 export const updateClass = async (classId, updates) => {
   const now = new Date().toISOString();
 
+  queryCache.invalidate('classes_all');
+
   // 1. LocalStorage
   const currentClasses = await getAllClasses();
   const idx = currentClasses.findIndex(c => c.id === classId);
@@ -195,6 +210,8 @@ export const updateClass = async (classId, updates) => {
  * Delete a class by ID.
  */
 export const deleteClass = async (classId) => {
+  queryCache.invalidate('classes_all');
+
   // 1. LocalStorage
   const currentClasses = await getAllClasses();
   const filtered = currentClasses.filter(c => c.id !== classId);

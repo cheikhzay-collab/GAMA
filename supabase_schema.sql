@@ -389,7 +389,7 @@ REVOKE EXECUTE ON FUNCTION public.redeem_code(text, text, uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.redeem_code(text, text, uuid) TO authenticated;
 
 
--- ─── 10. Performance Indexes ──────────────────────────────────────────────────
+-- ─── 10. Performance Indexes & Views ──────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_progress_user_id ON public.progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_mock_history_user_id ON public.mock_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_activity_user_id ON public.activity(user_id);
@@ -398,6 +398,29 @@ CREATE INDEX IF NOT EXISTS idx_activity_user_id ON public.activity(user_id);
 CREATE INDEX IF NOT EXISTS idx_profiles_xp ON public.profiles(xp DESC);
 CREATE INDEX IF NOT EXISTS idx_progress_user_next_review ON public.progress(user_id, next_review_date);
 CREATE INDEX IF NOT EXISTS idx_mock_history_user_date ON public.mock_history(user_id, date DESC);
+
+-- Fast Filtering & Sorting Indexes for Exams, Lessons, and Classes
+CREATE INDEX IF NOT EXISTS idx_exams_active_school ON public.exams (is_active, is_archived, school, year);
+CREATE INDEX IF NOT EXISTS idx_exams_date_added ON public.exams (date_added DESC);
+CREATE INDEX IF NOT EXISTS idx_lessons_active_level ON public.lessons (is_active, level, subject);
+CREATE INDEX IF NOT EXISTS idx_lessons_created_at ON public.lessons (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_classes_created_at ON public.classes (created_at DESC);
+
+-- Lightweight Metadata View for Ultra-Fast Exam List Queries
+CREATE OR REPLACE VIEW public.exams_metadata AS
+SELECT 
+  id,
+  name,
+  school,
+  year,
+  tier,
+  pdf_url,
+  is_active,
+  is_archived,
+  date_added,
+  updated_at,
+  COALESCE(jsonb_array_length(questions), 0) AS questions_count
+FROM public.exams;
 
 
 -- ─── 11. Storage Bucket and Policies ──────────────────────────────────────────

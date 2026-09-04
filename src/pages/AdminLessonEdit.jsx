@@ -55,6 +55,16 @@ const MATH_SNIPPETS = [
   { label: 'Matrix', latex: '\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}', title: 'Matrice 2x2' }
 ];
 
+const autoRepairMathText = (str) => {
+  if (!str || typeof str !== 'string') return str;
+  let res = str;
+  // Repair unclosed math environments missing trailing $ (e.g. "$... \begin{cases} ... \end{cases}" with no closing $)
+  res = res.replace(/(\$(?:(?!\$).)*?\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\}[\s\S]*?\\end\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\})(?!\$)/g, '$1$');
+  // Wrap bare math environments without any dollar delimiters
+  res = res.replace(/(?<![\$\\])(\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\}[\s\S]*?\\end\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\})(?!\$)/g, '$$$1$$');
+  return res;
+};
+
 export default function AdminLessonEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -184,6 +194,12 @@ export default function AdminLessonEdit() {
             const hasAr = /[\u0600-\u06FF]/.test((sec.title || '') + ' ' + (sec.content || '') + ' ' + (sec.solution || '') + ' ' + (sec.items || []).map(it => it.text || '').join(' '));
             return {
               ...sec,
+              content: autoRepairMathText(sec.content),
+              solution: autoRepairMathText(sec.solution),
+              items: (sec.items || []).map(it => ({
+                ...it,
+                text: autoRepairMathText(it.text || it.content)
+              })),
               language: sec.language || (hasAr ? 'ar' : 'fr')
             };
           });
@@ -386,6 +402,17 @@ export default function AdminLessonEdit() {
     setSuccess('');
 
     try {
+      const cleanedSections = sections.map(sec => ({
+        ...sec,
+        content: autoRepairMathText(sec.content),
+        solution: autoRepairMathText(sec.solution),
+        items: (sec.items || []).map(it => ({
+          ...it,
+          text: autoRepairMathText(it.text || it.content)
+        }))
+      }));
+      setSections(cleanedSections);
+
       const lessonData = {
         title: ficheTitle,
         subject,
@@ -412,7 +439,7 @@ export default function AdminLessonEdit() {
             contenus: contenus,
             le_contenu: leContenu
           },
-          sections
+          sections: cleanedSections
         },
         isActive: lesson ? lesson.isActive : true
       };

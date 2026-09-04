@@ -16,6 +16,7 @@ import CourseSummaryTemplate from '../components/CourseSummaryTemplate';
 import PdfFigureCropperModal from '../components/PdfFigureCropperModal';
 import { openNationalExamPrintWindow } from '../utils/generateNationalExamPDF';
 import { openCourseSummaryPrintWindow } from '../utils/generateCourseSummaryPDF';
+import { openLessonPrintWindow } from '../utils/generateLessonPDF';
 import { loadPdfDocument, renderPdfPageToCanvas, cropPdfRegion } from '../utils/pdfFigureExtractor';
 import { buildPageSnapshotsMap, attachImagesToSections } from '../utils/pdfImageExtractor';
 import { validateExercisePoints, sanitizeMoroccanLatex } from '../utils/scoreBalancingValidator';
@@ -1950,11 +1951,21 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
       {isArMode && (
         <style>{`
           @font-face {
+            font-family: 'UKIJ Merdane';
+            src: local('UKIJ Merdane'), local('UKIJMerdane'), url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+            font-weight: 100 900;
+            font-style: normal;
+            font-display: swap;
+          }
+          @font-face {
             font-family: 'UKIJMerdaneRegular';
-            src: url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+            src: local('UKIJ Merdane'), local('UKIJMerdane'), url('/fonts/UKIJMerdaneRegular.ttf') format('truetype');
+            font-weight: 100 900;
+            font-style: normal;
+            font-display: swap;
           }
           .input-control, textarea, select {
-            font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif !important;
+            font-family: 'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif !important;
             direction: rtl !important;
             text-align: right !important;
           }
@@ -1964,7 +1975,7 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
             padding-right: 1rem !important;
           }
           label, h2, h3, h4 {
-            font-family: 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif !important;
+            font-family: 'UKIJ Merdane', 'UKIJMerdane', 'UKIJMerdaneRegular', 'Cairo', 'Amiri', Arial, sans-serif !important;
             direction: rtl !important;
             text-align: right !important;
           }
@@ -2325,31 +2336,49 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                   borderColor: '#0284c7'
                 }}
               >
-                {viewSummaryTemplate ? '✏️ Mode édition' : '👁️ Modèle Résumé (3 Colonnes)'}
+                {viewSummaryTemplate ? '📄 Mode Fiche Standard' : '👁️ Modèle Résumé (3 Colonnes)'}
               </button>
               <button
                 type="button"
                 className="btn"
-                onClick={() => openCourseSummaryPrintWindow({
-                  header: {
-                    fiche_title: ficheTitle,
+                onClick={() => {
+                  const lessonPayload = {
+                    title: ficheTitle,
                     subject,
                     level: selectedLevel,
-                    teacher,
-                    phone,
-                    summary_meta: summaryMeta || {
-                      prof: teacher,
-                      website: phone,
-                      title: ficheTitle,
-                      level_name: selectedLevel,
-                      school: schools?.[0] || 'Lycée ABDE EL MOUMENE'
+                    content: {
+                      header: {
+                        fiche_title: ficheTitle,
+                        subject,
+                        level: selectedLevel,
+                        teacher,
+                        phone,
+                        summary_meta: summaryMeta || {
+                          prof: teacher,
+                          website: phone,
+                          title: ficheTitle,
+                          level_name: selectedLevel,
+                          school: schools?.[0] || 'Lycée ABDE EL MOUMENE'
+                        }
+                      },
+                      sections
                     }
-                  },
-                  sections
-                })}
-                style={{ background: 'linear-gradient(135deg, #0284c7, #0070ba)', color: '#fff', fontWeight: 700, fontSize: '0.85rem' }}
+                  };
+                  if (viewSummaryTemplate) {
+                    openCourseSummaryPrintWindow(lessonPayload.content);
+                  } else {
+                    openLessonPrintWindow(lessonPayload, { layoutMode: 'standard', forceStandard: true });
+                  }
+                }}
+                style={{
+                  background: viewSummaryTemplate ? 'linear-gradient(135deg, #0284c7, #0070ba)' : 'linear-gradient(135deg, #005086, #007cc6)',
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: '0.85rem'
+                }}
+                title={viewSummaryTemplate ? 'Imprimer / Télécharger au format Résumé (3 Colonnes)' : 'Imprimer / Télécharger au format Fiche Standard'}
               >
-                🖨️ Imprimer Modèle Résumé (PDF)
+                {viewSummaryTemplate ? '🖨️ Imprimer Résumé (3 Colonnes)' : '🖨️ Imprimer Format Standard'}
               </button>
             </div>
           </div>
