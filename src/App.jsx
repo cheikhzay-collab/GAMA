@@ -1,7 +1,8 @@
-import React, { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import React, { lazy, Suspense, useTransition, useCallback } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import { queryCache } from './services/queryCache';
 
 // Keep only the public entry screen in the initial bundle.
 import Login from './pages/Login';
@@ -33,6 +34,52 @@ const OMRScannerPage     = lazy(() => import('./pages/OMRScannerPage'));
 const RankingPage        = lazy(() => import('./pages/RankingPage'));
 const AuthCallback       = lazy(() => import('./pages/AuthCallback'));
 const PrintView          = lazy(() => import('./pages/PrintView'));
+
+// ─── Prefetch Map: route → data keys to warm ─────────────────────────────────
+// When a user hovers a nav link, prefetch the data that page needs.
+const ROUTE_PREFETCH = {
+  '/admin/classes':   ['classes_all', 'users_all'],
+  '/admin/lessons':   ['lessons_all'],
+  '/admin/exams':     ['exams_all'],
+  '/admin/dashboard': ['users_all', 'classes_all'],
+  '/levels':          ['lessons_all'],
+  '/study':           ['exams_all'],
+  '/ranking':         ['leaderboard_all'],
+};
+
+/**
+ * usePrefetch — prefetches data for a route on mouse hover.
+ * Call the returned handler in an onMouseEnter on nav links.
+ */
+export function usePrefetch(route) {
+  return useCallback(() => {
+    const keys = ROUTE_PREFETCH[route];
+    if (!keys) return;
+    // Lazy-import the services only when needed (avoids circular imports)
+    keys.forEach((key) => {
+      const cached = queryCache.getSync(key);
+      if (cached) return; // Already in memory
+      // Trigger the right fetcher based on key prefix
+      if (key.startsWith('lessons')) {
+        import('./services/lessonService').then(m => {
+          queryCache.prefetch(key, () => m.getAllLessons());
+        });
+      } else if (key.startsWith('class')) {
+        import('./services/classService').then(m => {
+          queryCache.prefetch(key, () => m.getAllClasses());
+        });
+      } else if (key.startsWith('users')) {
+        import('./services/userService').then(m => {
+          queryCache.prefetch(key, () => m.getAllUsers());
+        });
+      } else if (key.startsWith('exams')) {
+        import('./services/examService').then(m => {
+          queryCache.prefetch(key, () => m.getAllExams());
+        });
+      }
+    });
+  }, [route]);
+}
 
 // ─── Route Guards ─────────────────────────────────────────────────────────────
 
@@ -102,65 +149,69 @@ function OAuthRedirectGuard() {
   return null;
 }
 
-// ─── App Content ───────────────────────────────────────────────────────────────
+// ─── App Content ─────────────────────────────────────────────────────────────
 
 function AppContent() {
   const location = useLocation();
+  const [, startTransition] = useTransition();
 
   React.useEffect(() => {
-    const path = location.pathname;
-    let title = "L'CONQ";
+    // Wrap title update in startTransition to avoid blocking renders
+    startTransition(() => {
+      const path = location.pathname;
+      let title = "L'CONQ";
 
-    if (path === '/login' || path === '/') {
-      title = "Connexion — L'CONQ";
-    } else if (path === '/register') {
-      title = "Inscription — L'CONQ";
-    } else if (path === '/dashboard') {
-      title = "Tableau de Bord — L'CONQ";
-    } else if (path === '/study/suites-numeriques') {
-      title = "Fiche Interactive : Suites Numériques — L'CONQ";
-    } else if (path === '/study') {
-      title = "Mode Révision (SRS) — L'CONQ";
-    } else if (path === '/exam') {
-      title = "Examen Blanc Chronométré — L'CONQ";
-    } else if (path === '/scanner') {
-      title = "Scanner Intelligent OMR — L'CONQ";
-    } else if (path === '/ranking') {
-      title = "Classement — L'CONQ";
-    } else if (path === '/admin/dashboard') {
-      title = "Admin : Vue d'ensemble — L'CONQ";
-    } else if (path === '/admin/exams') {
-      title = "Admin : Bibliothèque Examens — L'CONQ";
-    } else if (path.startsWith('/admin/exams/') && path.endsWith('/edit')) {
-      title = "Admin : Édition de l'Examen — L'CONQ";
-    } else if (path === '/admin/users') {
-      title = "Admin : Gestion des Élèves — L'CONQ";
-    } else if (path.startsWith('/admin/users/')) {
-      title = "Admin : Dossier de l'Élève — L'CONQ";
-    } else if (path === '/admin/upload') {
-      title = "Admin : Upload de Sujets — L'CONQ";
-    } else if (path === '/admin/ai-import' || path === '/admin/ai-lessons' || path === '/admin/ai-generator') {
-      title = "Admin : Générateur de Contenu IA — L'CONQ";
-    } else if (path === '/admin/lessons') {
-      title = "Admin : Fiches de Cours — L'CONQ";
-    } else if (path === '/levels') {
-      title = "Niveaux & Cours — L'CONQ";
-    } else if (path.startsWith('/admin/lessons/') && path.endsWith('/edit')) {
-      title = "Admin : Édition de la Fiche — L'CONQ";
-    } else if (path.startsWith('/admin/lessons/')) {
-      title = "Fiche Interactive — L'CONQ";
-    } else if (path === '/admin/ebooks') {
-      title = "Admin : Générateur d'E-Books — L'CONQ";
-    } else if (path === '/admin/settings') {
-      title = "Admin : Paramètres Système — L'CONQ";
-    } else if (path === '/admin/logbook') {
-      title = "Admin : Cahier de Textes — L'CONQ";
-    } else if (path === '/admin/classes') {
-      title = "Admin : Gestion des Classes — L'CONQ";
-    }
+      if (path === '/login' || path === '/') {
+        title = "Connexion — L'CONQ";
+      } else if (path === '/register') {
+        title = "Inscription — L'CONQ";
+      } else if (path === '/dashboard') {
+        title = "Tableau de Bord — L'CONQ";
+      } else if (path === '/study/suites-numeriques') {
+        title = "Fiche Interactive : Suites Numériques — L'CONQ";
+      } else if (path === '/study') {
+        title = "Mode Révision (SRS) — L'CONQ";
+      } else if (path === '/exam') {
+        title = "Examen Blanc Chronométré — L'CONQ";
+      } else if (path === '/scanner') {
+        title = "Scanner Intelligent OMR — L'CONQ";
+      } else if (path === '/ranking') {
+        title = "Classement — L'CONQ";
+      } else if (path === '/admin/dashboard') {
+        title = "Admin : Vue d'ensemble — L'CONQ";
+      } else if (path === '/admin/exams') {
+        title = "Admin : Bibliothèque Examens — L'CONQ";
+      } else if (path.startsWith('/admin/exams/') && path.endsWith('/edit')) {
+        title = "Admin : Édition de l'Examen — L'CONQ";
+      } else if (path === '/admin/users') {
+        title = "Admin : Gestion des Élèves — L'CONQ";
+      } else if (path.startsWith('/admin/users/')) {
+        title = "Admin : Dossier de l'Élève — L'CONQ";
+      } else if (path === '/admin/upload') {
+        title = "Admin : Upload de Sujets — L'CONQ";
+      } else if (path === '/admin/ai-import' || path === '/admin/ai-lessons' || path === '/admin/ai-generator') {
+        title = "Admin : Générateur de Contenu IA — L'CONQ";
+      } else if (path === '/admin/lessons') {
+        title = "Admin : Fiches de Cours — L'CONQ";
+      } else if (path === '/levels') {
+        title = "Niveaux & Cours — L'CONQ";
+      } else if (path.startsWith('/admin/lessons/') && path.endsWith('/edit')) {
+        title = "Admin : Édition de la Fiche — L'CONQ";
+      } else if (path.startsWith('/admin/lessons/')) {
+        title = "Fiche Interactive — L'CONQ";
+      } else if (path === '/admin/ebooks') {
+        title = "Admin : Générateur d'E-Books — L'CONQ";
+      } else if (path === '/admin/settings') {
+        title = "Admin : Paramètres Système — L'CONQ";
+      } else if (path === '/admin/logbook') {
+        title = "Admin : Cahier de Textes — L'CONQ";
+      } else if (path === '/admin/classes') {
+        title = "Admin : Gestion des Classes — L'CONQ";
+      }
 
-    document.title = title;
-  }, [location]);
+      document.title = title;
+    });
+  }, [location, startTransition]);
 
   return (
     <>

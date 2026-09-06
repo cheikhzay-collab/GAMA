@@ -112,18 +112,18 @@ const saveLocalStorageLessons = (lessons) => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(lessons));
   } catch (e) {
-    console.warn('[LocalStorage] Failed to save lessons:', e);
+    console.warn('[LocalStorage] Failed to save lessons — quota exceeded, storing trimmed copy.');
     try {
       if (Array.isArray(lessons) && lessons.length > 5) {
-        // Save only recent items without heavy payloads if quota is exceeded
         const trimmed = lessons.slice(0, 5);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
       }
-    } catch (_) {
-      // Ignore further quota errors gracefully
-    }
+    } catch (_) {}
   }
 };
+
+// Direct localStorage read (sync, no cache overhead) used by write ops
+const readRawLessons = () => getLocalStorageLessons() || [];
 
 // Helper to map lesson fields to DB columns
 const mapLessonToDB = (l) => ({
@@ -190,6 +190,7 @@ export const getAllLessons = async (options = {}) => {
     }
 
     // 2. Try Local Companion DB API (port 5002)
+    // NOTE: localDb returns lessons in camelCase (as saved), so mapDBToLesson handles both.
     try {
       const data = await localDb.get('/lessons');
       if (Array.isArray(data) && data.length > 0) {
@@ -198,7 +199,7 @@ export const getAllLessons = async (options = {}) => {
         return mapped;
       }
     } catch (err) {
-      console.warn('[LocalDB] Companion server offline or unreachable, using local storage backup.');
+      console.warn('[LocalDB] Companion server offline, using local storage backup.');
     }
 
     // 3. Try LocalStorage backup
@@ -296,35 +297,26 @@ export const addLesson = async (lessonData) => {
     updatedAt: now
   };
 
-  // 1. Invalidate SWR cache immediately
+  // 1. LocalStorage first (sync, fastest, no await-getAllLessons penalty)
+  const rawLessons = readRawLessons().filter(l => l.id !== id);
+  rawLessons.unshift(mapped);
+  saveLocalStorageLessons(rawLessons);
+
+  // 2. Invalidate + seed in-memory cache
   queryCache.invalidate('lessons_all');
   queryCache.set(`lesson_detail_${id}`, mapped);
 
-  // 2. Save to LocalStorage cache immediately
-  const currentLessons = (await getAllLessons()).filter(l => l.id !== id);
-  currentLessons.unshift(mapped);
-  saveLocalStorageLessons(currentLessons);
+  // 3. Companion API (fire-and-forget)
+  const dbLesson = { id, ...mapLessonToDB(lessonData), created_at: now };
+  localDb.post('/lessons', dbLesson).catch(err => {
+    console.warn('[LocalDB] Could not sync addLesson:', err.message);
+  });
 
-  // 3. Push to Local Companion API if available
-  const dbLesson = {
-    id,
-    ...mapLessonToDB(lessonData),
-    created_at: now
-  };
-
-  try {
-    await localDb.post('/lessons', dbLesson);
-  } catch (err) {
-    console.warn('[LocalDB] Could not sync addLesson to Companion server:', err.message);
-  }
-
-  // 4. Push to Supabase if configured
+  // 4. Supabase (fire-and-forget)
   if (supabase) {
-    try {
-      await supabase.from('lessons').insert(dbLesson);
-    } catch (err) {
-      console.warn('[Supabase] Could not sync addLesson to Supabase:', err.message);
-    }
+    supabase.from('lessons').insert(dbLesson).then(({ error }) => {
+      if (error) console.warn('[Supabase] Could not sync addLesson:', error.message);
+    });
   }
 
   return id;
@@ -336,16 +328,12 @@ export const addLesson = async (lessonData) => {
 export const updateLesson = async (lessonId, updates) => {
   const now = new Date().toISOString();
   
-  // Invalidate SWR caches
-  queryCache.invalidate('lessons_all');
-  queryCache.invalidate(`lesson_detail_${lessonId}`);
-
-  // 1. Update LocalStorage cache immediately
-  const currentLessons = await getAllLessons();
-  const idx = currentLessons.findIndex(l => l.id === lessonId);
+  // 1. LocalStorage first (direct, no await-getAllLessons penalty)
+  const rawLessons = readRawLessons();
+  const idx = rawLessons.findIndex(l => l.id === lessonId);
   if (idx !== -1) {
-    const original = currentLessons[idx];
-    const updated = {
+    const original = rawLessons[idx];
+    rawLessons[idx] = {
       ...original,
       ...updates,
       content: {
@@ -358,54 +346,48 @@ export const updateLesson = async (lessonId, updates) => {
       docType: updates.docType || updates.content?.doc_type || original.docType,
       updatedAt: now
     };
-    currentLessons[idx] = updated;
-    saveLocalStorageLessons(currentLessons);
+    saveLocalStorageLessons(rawLessons);
   }
 
-  // 2. Prepare DB update payload
-  const dbUpdates = {};
-  if (updates.title !== undefined) dbUpdates.title = updates.title;
-  if (updates.subject !== undefined) dbUpdates.subject = updates.subject;
+  // 2. Invalidate cache after localStorage write
+  queryCache.invalidate('lessons_all');
+  queryCache.invalidate(`lesson_detail_${lessonId}`);
+
+  // 3. Build DB-shaped payload
+  const dbUpdates = { updated_at: now };
+  if (updates.title     !== undefined) dbUpdates.title          = updates.title;
+  if (updates.subject   !== undefined) dbUpdates.subject        = updates.subject;
   if (updates.chapterNumber !== undefined) dbUpdates.chapter_number = updates.chapterNumber;
-  if (updates.teacher !== undefined) dbUpdates.teacher = updates.teacher;
-  if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
-  if (updates.schools !== undefined) dbUpdates.schools = updates.schools;
-  if (updates.level !== undefined) dbUpdates.level = updates.level;
-  if (updates.docType !== undefined) dbUpdates.doc_type = updates.docType;
+  if (updates.teacher   !== undefined) dbUpdates.teacher        = updates.teacher;
+  if (updates.phone     !== undefined) dbUpdates.phone          = updates.phone;
+  if (updates.schools   !== undefined) dbUpdates.schools        = updates.schools;
+  if (updates.level     !== undefined) dbUpdates.level          = updates.level;
+  if (updates.docType   !== undefined) dbUpdates.doc_type       = updates.docType;
+  if (updates.isActive  !== undefined) dbUpdates.is_active      = updates.isActive;
   if (updates.content !== undefined || updates.level !== undefined || updates.docType !== undefined) {
     dbUpdates.content = {
       ...(updates.content || {}),
-      level: updates.level || updates.content?.level || null,
-      doc_type: updates.docType || updates.content?.doc_type || null
+      level:    updates.level    || updates.content?.level    || null,
+      doc_type: updates.docType  || updates.content?.doc_type || null
     };
   }
-  if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
-  dbUpdates.updated_at = now;
 
-  // 3. Sync to Local Companion API
-  try {
-    const localLessons = await localDb.get('/lessons');
-    const lIdx = localLessons.findIndex(l => l.id === lessonId);
-    if (lIdx !== -1) {
-      const orig = localLessons[lIdx];
-      const merged = {
-        ...orig,
-        ...dbUpdates,
-        content: { ...(orig.content || {}), ...(dbUpdates.content || {}) }
-      };
-      await localDb.post('/lessons', merged);
-    }
-  } catch (err) {
-    console.warn('[LocalDB] Could not sync updateLesson to Companion server:', err.message);
-  }
+  // 4. Companion API (fire-and-forget)
+  localDb.get('/lessons').then(list => {
+    if (!Array.isArray(list)) return;
+    const lesson = list.find(l => l.id === lessonId);
+    if (!lesson) return;
+    const merged = { ...lesson, ...dbUpdates, content: { ...(lesson.content || {}), ...(dbUpdates.content || {}) } };
+    localDb.post('/lessons', merged).catch(err => {
+      console.warn('[LocalDB] Could not sync updateLesson:', err.message);
+    });
+  }).catch(() => {});
 
-  // 4. Sync to Supabase
+  // 5. Supabase (fire-and-forget)
   if (supabase) {
-    try {
-      await supabase.from('lessons').update(dbUpdates).eq('id', lessonId);
-    } catch (err) {
-      console.warn('[Supabase] Could not sync updateLesson to Supabase:', err.message);
-    }
+    supabase.from('lessons').update(dbUpdates).eq('id', lessonId).then(({ error }) => {
+      if (error) console.warn('[Supabase] Could not sync updateLesson:', error.message);
+    });
   }
 };
 
@@ -420,27 +402,23 @@ export const toggleLessonStatus = async (lessonId, currentStatus) => {
  * Permanently delete a lesson.
  */
 export const deleteLesson = async (lessonId) => {
+  // 1. LocalStorage first (direct, no getAllLessons overhead)
+  const rawLessons = readRawLessons();
+  saveLocalStorageLessons(rawLessons.filter(l => l.id !== lessonId));
+
+  // 2. Invalidate cache
   queryCache.invalidate('lessons_all');
   queryCache.invalidate(`lesson_detail_${lessonId}`);
 
-  // 1. Remove from LocalStorage cache immediately
-  const currentLessons = await getAllLessons();
-  const filtered = currentLessons.filter(l => l.id !== lessonId);
-  saveLocalStorageLessons(filtered);
+  // 3. Companion API (fire-and-forget)
+  localDb.delete('/lessons', lessonId).catch(err => {
+    console.warn('[LocalDB] Could not sync deleteLesson:', err.message);
+  });
 
-  // 2. Sync delete to Companion server
-  try {
-    await localDb.delete('/lessons', lessonId);
-  } catch (err) {
-    console.warn('[LocalDB] Could not sync deleteLesson to Companion server:', err.message);
-  }
-
-  // 3. Sync delete to Supabase
+  // 4. Supabase (fire-and-forget)
   if (supabase) {
-    try {
-      await supabase.from('lessons').delete().eq('id', lessonId);
-    } catch (err) {
-      console.warn('[Supabase] Could not sync deleteLesson to Supabase:', err.message);
-    }
+    supabase.from('lessons').delete().eq('id', lessonId).then(({ error }) => {
+      if (error) console.warn('[Supabase] Could not sync deleteLesson:', error.message);
+    });
   }
 };

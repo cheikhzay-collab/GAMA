@@ -8,18 +8,15 @@ export default defineConfig({
     react(),
     VitePWA({
       selfDestroying: true,
-      // Use 'injectManifest' so we provide our own SW file,
-      // bypassing the Workbox path-apostrophe bug on Windows.
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'sw.js',
       registerType: 'autoUpdate',
       injectManifest: {
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB to handle compiled index bundle size
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
       },
       includeAssets: ['favicon.svg', 'icons/*.png'],
 
-      // ── Manifest ──────────────────────────────────────────────────────────
       manifest: {
         name: "L'CONQ — Concours Médecine",
         short_name: "L'CONQ",
@@ -33,76 +30,127 @@ export default defineConfig({
         lang: 'fr',
         categories: ['education', 'medical', 'productivity'],
         icons: [
-          {
-            src: '/icons/icon-192.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any maskable',
-          },
-          {
-            src: '/icons/icon-512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable',
-          },
-          {
-            src: '/favicon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
-            purpose: 'any',
-          },
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
         ],
         shortcuts: [
-          {
-            name: 'Réviser maintenant',
-            short_name: 'Réviser',
-            url: '/study',
-          },
-          {
-            name: 'Tableau de bord',
-            short_name: 'Dashboard',
-            url: '/dashboard',
-          },
+          { name: 'Réviser maintenant', short_name: 'Réviser', url: '/study' },
+          { name: 'Tableau de bord', short_name: 'Dashboard', url: '/dashboard' },
         ],
       },
 
-      // ── Dev mode: disabled (avoids Workbox Windows path bug) ─────────────
-      devOptions: {
-        enabled: false,
-      },
+      devOptions: { enabled: false },
     }),
   ],
 
   build: {
-    chunkSizeWarningLimit: 1500,
+    // Vite 8 uses Oxc by default (faster than esbuild, no extra install needed)
+    // minify: 'oxc' is the default — no need to specify
+
+    // Target modern browsers — drops legacy polyfills
+    target: 'es2020',
+
+    // Warn only on truly large chunks (admin pages can be big)
+    chunkSizeWarningLimit: 800,
+
+    // Inline small assets (< 4KB) directly — saves round-trips
+    assetsInlineLimit: 4096,
+
+    // Split CSS per chunk — only load styles for the active route
+    cssCodeSplit: true,
+
     rollupOptions: {
       output: {
+        // Stable file names for better CDN/browser caching
+        entryFileNames:  'assets/[name]-[hash].js',
+        chunkFileNames:  'assets/[name]-[hash].js',
+        assetFileNames:  'assets/[name]-[hash].[ext]',
+
+        // Inject modulepreload links for all chunks → browser prefetches before navigation
+        generatedCode: { preset: 'es2015' },
+
         manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
-              return 'vendor-react';
-            }
-            if (id.includes('katex')) {
-              return 'vendor-katex';
-            }
-            if (id.includes('jspdf') || id.includes('html2canvas')) {
-              return 'vendor-pdf';
-            }
-            if (id.includes('recharts')) {
-              return 'vendor-charts';
-            }
-            if (id.includes('xlsx') || id.includes('papaparse')) {
-              return 'vendor-sheets';
-            }
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons';
-            }
-            if (id.includes('@supabase')) {
-              return 'vendor-supabase';
-            }
+          if (!id.includes('node_modules')) return;
+
+          // ── Core React ────────────────────────────────────────────
+          if (id.includes('react/') || id.includes('react-dom/') || id.includes('scheduler/')) {
+            return 'vendor-react';
           }
-        }
-      }
-    }
+          // ── Router ────────────────────────────────────────────────
+          if (id.includes('react-router')) {
+            return 'vendor-router';
+          }
+          // ── Math rendering (heavy, KaTeX) ─────────────────────────
+          if (id.includes('katex')) {
+            return 'vendor-katex';
+          }
+          // ── PDF generation (heavy, jsPDF + html2canvas) ───────────
+          if (id.includes('jspdf') || id.includes('html2canvas')) {
+            return 'vendor-pdf';
+          }
+          // ── PDF.js viewer ─────────────────────────────────────────
+          if (id.includes('pdfjs-dist')) {
+            return 'vendor-pdfjs';
+          }
+          // ── Charts ────────────────────────────────────────────────
+          if (id.includes('recharts') || id.includes('d3-') || id.includes('victory')) {
+            return 'vendor-charts';
+          }
+          // ── Spreadsheet parsing ───────────────────────────────────
+          if (id.includes('xlsx') || id.includes('papaparse')) {
+            return 'vendor-sheets';
+          }
+          // ── Icons (lucide-react is large) ─────────────────────────
+          if (id.includes('lucide-react')) {
+            return 'vendor-icons';
+          }
+          // ── Supabase client ───────────────────────────────────────
+          if (id.includes('@supabase')) {
+            return 'vendor-supabase';
+          }
+          // ── QR & barcode ──────────────────────────────────────────
+          if (id.includes('qrcode') || id.includes('jsqr') || id.includes('zxing')) {
+            return 'vendor-qr';
+          }
+          // ── All remaining node_modules → shared vendor chunk ──────
+          return 'vendor-misc';
+        },
+      },
+    },
+  },
+
+  // Dev server: faster HMR
+  server: {
+    warmup: {
+      // Pre-bundle these on server start to avoid first-request lag
+      clientFiles: [
+        './src/App.jsx',
+        './src/context/AuthContext.jsx',
+        './src/services/queryCache.js',
+        './src/services/lessonService.js',
+        './src/services/classService.js',
+      ],
+    },
+  },
+
+  // Dependency pre-bundling — prevents waterfall on first load
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'lucide-react',
+      '@supabase/supabase-js',
+    ],
+    exclude: [
+      // These are loaded lazily — don't prebundle
+      'katex',
+      'jspdf',
+      'html2canvas',
+      'pdfjs-dist',
+      'recharts',
+      'xlsx',
+    ],
   },
 })

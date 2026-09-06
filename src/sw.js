@@ -1,13 +1,15 @@
 /**
- * L'CONQ — Custom Service Worker
+ * L'CONQ — High-Performance Service Worker v3
  * Strategy: injectManifest (Vite Plugin PWA)
- * 
- * The precache manifest is injected by vite-plugin-pwa at build time
- * into the self.__WB_MANIFEST placeholder below.
- * 
- * This file is used as-is in PRODUCTION builds.
- * In DEV mode, the SW is disabled (devOptions.enabled: false in vite.config.js)
- * to avoid the Workbox Windows path/apostrophe bug.
+ *
+ * Cache Layers:
+ * - Precache:   All build assets (JS/CSS/HTML) — CacheFirst, immutable
+ * - Fonts:      Google Fonts — CacheFirst, 1 year
+ * - Images:     External images — StaleWhileRevalidate, 14 days, 50 entries
+ * - App assets: JS/CSS chunks — StaleWhileRevalidate, 7 days
+ * - LocalDB API: /api/* from companion — NetworkFirst with IDB fallback, 5 min
+ * - Supabase:   NEVER cache (always network)
+ * - Auth:       NEVER cache (always network)
  */
 
 import { clientsClaim } from 'workbox-core';
@@ -20,47 +22,49 @@ import { registerRoute, NavigationRoute } from 'workbox-routing';
 import {
   CacheFirst,
   StaleWhileRevalidate,
+  NetworkFirst,
   NetworkOnly,
 } from 'workbox-strategies';
-import { ExpirationPlugin } from 'workbox-expiration';
+import { ExpirationPlugin }        from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
+import { BackgroundSyncPlugin }    from 'workbox-background-sync';
 
 // ── Activate immediately ───────────────────────────────────────────────────
 self.skipWaiting();
 clientsClaim();
 
-// ── Precache all build assets (injected by vite-plugin-pwa) ───────────────
+// ── Precache all build assets ──────────────────────────────────────────────
 precacheAndRoute(self.__WB_MANIFEST || []);
 cleanupOutdatedCaches();
 
-// ── Versioned Cache Names to prevent PWA quota exhaustion on mobile ─────────
-const CACHE_VERSION = 'v2';
-const CACHE_NAMES = {
-  fonts: `lconq-fonts-${CACHE_VERSION}`,
-  images: `lconq-images-${CACHE_VERSION}`,
-  assets: `lconq-assets-${CACHE_VERSION}`,
+// ── Versioned Cache Names ──────────────────────────────────────────────────
+const CACHE_VERSION = 'v3';
+const CACHE = {
+  fonts:    `lconq-fonts-${CACHE_VERSION}`,
+  images:   `lconq-images-${CACHE_VERSION}`,
+  assets:   `lconq-assets-${CACHE_VERSION}`,
+  api:      `lconq-api-${CACHE_VERSION}`,
 };
 
-// ── Clean up old versioned caches on SW activation ──────────────────────────
+// ── Cleanup old versioned caches ───────────────────────────────────────────
 self.addEventListener('activate', (event) => {
-  const currentCacheNames = Object.values(CACHE_NAMES);
+  const current = Object.values(CACHE);
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName.startsWith('lconq-') && !currentCacheNames.includes(cacheName)) {
-            console.log('[Service Worker] Deleting outdated cache:', cacheName);
-            return caches.delete(cacheName);
+    caches.keys().then((names) =>
+      Promise.all(
+        names.map((name) => {
+          if (name.startsWith('lconq-') && !current.includes(name)) {
+            console.log('[SW] Deleting outdated cache:', name);
+            return caches.delete(name);
           }
         })
-      );
-    }).then(() => self.clients.claim())
+      )
+    ).then(() => self.clients.claim())
   );
 });
 
-// ── FIX #1: Supabase API — NEVER cache, always network ────────────────────
-// Caching Supabase responses would return stale auth/data and cause the
-// "can't fetch from Supabase after cache accumulation" freeze bug.
+// ── NEVER cache: Supabase API ──────────────────────────────────────────────
+// Caching Supabase responses would return stale auth/data.
 registerRoute(
   ({ url }) =>
     url.hostname.includes('supabase.co') ||
@@ -68,67 +72,117 @@ registerRoute(
   new NetworkOnly()
 );
 
-// ── FIX #2: Auth routes — always network (no cached login pages) ──────────
+// ── NEVER cache: Auth routes ───────────────────────────────────────────────
 registerRoute(
   ({ url }) =>
-    url.pathname.startsWith('/auth/') ||
-    url.pathname.startsWith('/api/'),
+    url.pathname.startsWith('/auth/'),
   new NetworkOnly()
 );
 
-// ── SPA fallback: all navigation requests → index.html ────────────────────
+// ── Local Companion API (/api/*) — NetworkFirst with 5-min cache ───────────
+// When the companion server is running: always try network first (fresh data).
+// When offline/server down: serve cached response (up to 5 min old).
+registerRoute(
+  ({ url }) =>
+    (url.hostname === 'localhost' || url.hostname === '127.0.0.1') &&
+    url.pathname.startsWith('/api/'),
+  new NetworkFirst({
+    cacheName: CACHE.api,
+    networkTimeoutSeconds: 3, // Fall back to cache after 3s
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [200] }),
+      new ExpirationPlugin({
+        maxEntries: 20,
+        maxAgeSeconds: 60 * 5, // 5 minutes
+        purgeOnQuotaError: true,
+      }),
+    ],
+  })
+);
+
+// ── SPA fallback: navigation → index.html ─────────────────────────────────
 const handler = createHandlerBoundToURL('/index.html');
 const navigationRoute = new NavigationRoute(handler, {
-  denylist: [/\/api\//, /\/_/, /\/admin\/.+\.(json|csv|pdf)$/, /\/print/],
+  denylist: [
+    /\/api\//,
+    /\/_/,
+    /\/admin\/.+\.(json|csv|pdf)$/,
+    /\/print/,
+  ],
 });
 registerRoute(navigationRoute);
 
-// ── Google Fonts — Cache First (1 year) ───────────────────────────────────
+// ── Google Fonts — CacheFirst (1 year) ────────────────────────────────────
 registerRoute(
   ({ url }) =>
     url.origin === 'https://fonts.googleapis.com' ||
     url.origin === 'https://fonts.gstatic.com',
   new CacheFirst({
-    cacheName: CACHE_NAMES.fonts,
+    cacheName: CACHE.fonts,
     plugins: [
       new CacheableResponsePlugin({ statuses: [0, 200] }),
-      new ExpirationPlugin({ maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 }),
+      new ExpirationPlugin({
+        maxEntries: 15,
+        maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+      }),
     ],
   })
 );
 
-// ── External question images — Stale While Revalidate (7 days) ────────────
-// Reduced from 30 days to limit cache growth on mobile devices.
+// ── Images — StaleWhileRevalidate (14 days, 50 entries) ───────────────────
+// Increased from 7 days / 25 entries for better offline experience.
 registerRoute(
   ({ request }) => request.destination === 'image',
   new StaleWhileRevalidate({
-    cacheName: CACHE_NAMES.images,
+    cacheName: CACHE.images,
     plugins: [
       new CacheableResponsePlugin({ statuses: [0, 200] }),
-      new ExpirationPlugin({ maxEntries: 25, maxAgeSeconds: 60 * 60 * 24 * 7 }),
+      new ExpirationPlugin({
+        maxEntries: 50,
+        maxAgeSeconds: 60 * 60 * 24 * 14, // 14 days
+        purgeOnQuotaError: true,
+      }),
     ],
   })
 );
 
-// ── App JS/CSS assets — Stale While Revalidate (3 days) ──────────────────
-// FIX #5: Added CacheableResponsePlugin to prevent caching opaque/error responses.
-// Without it, failed network requests (opaque responses) were stored in cache on iOS,
-// gradually filling the ~50MB mobile storage quota and causing fetch failures.
+// ── App JS/CSS chunks — StaleWhileRevalidate (7 days) ────────────────────
+// Increased from 3 days since Vite uses content-hashed filenames (safe to cache longer).
 registerRoute(
   ({ request }) =>
     request.destination === 'script' || request.destination === 'style',
   new StaleWhileRevalidate({
-    cacheName: CACHE_NAMES.assets,
+    cacheName: CACHE.assets,
     plugins: [
-      new CacheableResponsePlugin({ statuses: [0, 200] }), // ← only cache valid responses
-      new ExpirationPlugin({ maxEntries: 15, maxAgeSeconds: 60 * 60 * 24 * 3 }),
+      new CacheableResponsePlugin({ statuses: [0, 200] }),
+      new ExpirationPlugin({
+        maxEntries: 30,
+        maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+        purgeOnQuotaError: true,
+      }),
     ],
   })
 );
 
-// ── Listen for skip-waiting message from the client ───────────────────────
+// ── Background Sync for offline writes ───────────────────────────────────
+// If a POST to /api/* fails while offline, it is queued and replayed
+// automatically when the network comes back.
+const bgSyncPlugin = new BackgroundSyncPlugin('lconq-offline-queue', {
+  maxRetentionTime: 24 * 60, // Retain for 24 hours (in minutes)
+});
+
+registerRoute(
+  ({ url, request }) =>
+    (url.hostname === 'localhost' || url.hostname === '127.0.0.1') &&
+    url.pathname.startsWith('/api/') &&
+    request.method === 'POST',
+  new NetworkOnly({ plugins: [bgSyncPlugin] }),
+  'POST'
+);
+
+// ── Listen for skip-waiting message ──────────────────────────────────────
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
+  if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
