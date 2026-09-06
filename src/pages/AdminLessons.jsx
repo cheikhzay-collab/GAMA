@@ -2,14 +2,18 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
-  getAllLessons, toggleLessonStatus, deleteLesson 
+  getAllLessons, toggleLessonStatus, deleteLesson, updateLesson
 } from '../services/lessonService';
+import { queryCache } from '../services/queryCache';
 import { getAllClasses } from '../services/classService';
 import { 
   BookOpen, Sparkles, Search, Trash2, Eye, Edit, FileText,
-  CheckCircle, XCircle, Library, PlusCircle, AlertCircle, Languages 
+  CheckCircle, XCircle, Library, PlusCircle, AlertCircle, Languages,
+  Edit3, CheckSquare, Square, MinusSquare, X, Check, Filter, Layers,
+  CheckCheck, HelpCircle, Loader2
 } from 'lucide-react';
 import TranslateModal from '../components/TranslateModal';
+import LessonBulkEditModal from '../components/LessonBulkEditModal';
 import { renderWithMath } from '../utils/mathRenderer';
 import { normalizeLevel } from '../utils/levelHelpers';
 import { generateFichePedagogiquePDF } from '../utils/generateFichePedagogiquePDF';
@@ -41,17 +45,11 @@ export default function AdminLessons() {
   const { user, loading, profName, profPhone, addExam } = useAuth();
   const navigate = useNavigate();
 
-  // Role Guard
-  if (!loading && user?.role !== 'admin') {
-    return <Navigate to="/dashboard" replace />;
-  }
-
   // Component States
   const [lessons, setLessons] = useState([]);
   const [classes, setClasses] = useState([]);
   const [loadingLessons, setLoadingLessons] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSubject, setSelectedSubject] = useState('Tous');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [selectedLevelFilter, setSelectedLevelFilter] = useState('Tous');
@@ -59,6 +57,13 @@ export default function AdminLessons() {
   const [showConfirmDelete, setShowConfirmDelete] = useState(null); // id of lesson to delete
   const [showTranslateModal, setShowTranslateModal] = useState(null);
   const [generatingQcmLessonId, setGeneratingQcmLessonId] = useState(null);
+
+  // Bulk selection and operations state
+  const [selectedLessonIds, setSelectedLessonIds] = useState([]);
+  const [showBulkEditModal, setShowBulkEditModal] = useState(false);
+  const [showConfirmBulkDelete, setShowConfirmBulkDelete] = useState(false);
+  const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'active' | 'inactive'
 
   const handleGenerateQcmFromLesson = async (lesson) => {
     const geminiKey = localStorage.getItem('geminiApiKey') || '';
@@ -248,11 +253,11 @@ ${sectionsContentText}
   };
 
   // Fetch Lessons
-  const fetchLessonsList = async () => {
+  const fetchLessonsList = async (force = true) => {
     setLoadingLessons(true);
     try {
-      const data = await getAllLessons();
-      setLessons(data);
+      const data = await getAllLessons({ forceRefresh: force });
+      setLessons(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
       setError('Erreur lors du chargement des fiches de cours.');
@@ -271,8 +276,16 @@ ${sectionsContentText}
   };
 
   useEffect(() => {
-    fetchLessonsList();
+    fetchLessonsList(true);
     fetchClassesList();
+
+    const unsubscribe = queryCache.subscribe('lessons_all', (updated) => {
+      if (Array.isArray(updated) && updated.length > 0) {
+        setLessons(updated);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // Handle Toggle Active/Inactive Status
@@ -305,25 +318,140 @@ ${sectionsContentText}
     }
   };
 
-  // Unique list of subjects for filters
-  const subjects = ['Tous', ...new Set(lessons.map(l => l.subject).filter(Boolean))];
-
-  // Filtering Logic
+  // Filtering Logic (All lessons are Mathematics)
   const filteredLessons = lessons.filter(l => {
     const matchesSearch = l.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          l.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           l.teacher?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSubject = selectedSubject === 'Tous' || l.subject === selectedSubject;
     const matchesLevel = selectedLevelFilter === 'Tous' || normalizeLevel(l.level) === selectedLevelFilter;
     const matchesDocType = selectedDocTypeFilter === 'Tous' || l.docType === selectedDocTypeFilter;
-    return matchesSearch && matchesSubject && matchesLevel && matchesDocType;
+    const matchesStatus = statusFilter === 'all' || 
+                          (statusFilter === 'active' && l.isActive) || 
+                          (statusFilter === 'inactive' && !l.isActive);
+    return matchesSearch && matchesLevel && matchesDocType && matchesStatus;
   });
+
+  // Selection state helpers
+  const isAllSelected = filteredLessons.length > 0 && filteredLessons.every(l => selectedLessonIds.includes(l.id));
+  const isSomeSelected = filteredLessons.some(l => selectedLessonIds.includes(l.id)) && !isAllSelected;
+
+  const handleToggleSelectAll = () => {
+    if (isAllSelected) {
+      const filteredIds = new Set(filteredLessons.map(l => l.id));
+      setSelectedLessonIds(prev => prev.filter(id => !filteredIds.has(id)));
+    } else {
+      const newIds = new Set([...selectedLessonIds, ...filteredLessons.map(l => l.id)]);
+      setSelectedLessonIds(Array.from(newIds));
+    }
+  };
+
+  const handleToggleSelectLesson = (id) => {
+    setSelectedLessonIds(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleClearSelection = () => {
+    setSelectedLessonIds([]);
+  };
+
+  // Bulk Actions
+  const handleBulkToggleStatus = async (newStatus) => {
+    if (selectedLessonIds.length === 0) return;
+    setIsBulkProcessing(true);
+    setError('');
+    try {
+      await Promise.all(
+        selectedLessonIds.map(id => updateLesson(id, { isActive: newStatus }))
+      );
+      setLessons(prev => prev.map(l => selectedLessonIds.includes(l.id) ? { ...l, isActive: newStatus } : l));
+      setSuccess(`${selectedLessonIds.length} fiche(s) ${newStatus ? 'activée(s)' : 'masquée(s)'} avec succès.`);
+      setTimeout(() => setSuccess(''), 3500);
+      handleClearSelection();
+    } catch (err) {
+      console.error(err);
+      setError('Erreur lors de la modification du statut.');
+    } finally {
+      setIsBulkProcessing(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedLessonIds.length === 0) return;
+    setIsBulkProcessing(true);
+    setError('');
+    try {
+      await Promise.all(
+        selectedLessonIds.map(id => deleteLesson(id))
+      );
+      setLessons(prev => prev.filter(l => !selectedLessonIds.includes(l.id)));
+      setSuccess(`${selectedLessonIds.length} fiche(s) de cours supprimée(s) définitivement.`);
+      setTimeout(() => setSuccess(''), 3500);
+      setShowConfirmBulkDelete(false);
+      handleClearSelection();
+    } catch (err) {
+      console.error(err);
+      setError('Erreur lors de la suppression des fiches.');
+    } finally {
+      setIsBulkProcessing(false);
+    }
+  };
+
+  const handleApplyBulkEdit = async (payload) => {
+    if (selectedLessonIds.length === 0) return;
+    setIsBulkProcessing(true);
+    setError('');
+    try {
+      await Promise.all(
+        selectedLessonIds.map(async (id) => {
+          const updates = {};
+          if (payload.level) updates.level = payload.level;
+          if (payload.docType) updates.docType = payload.docType;
+          if (payload.subject) updates.subject = payload.subject;
+          if (payload.teacher) updates.teacher = payload.teacher;
+          if (payload.isActive !== undefined) updates.isActive = payload.isActive;
+          
+          if (payload.schoolUpdate) {
+            const currentLesson = lessons.find(l => l.id === id);
+            let currentSchools = Array.isArray(currentLesson?.schools) ? [...currentLesson.schools] : [];
+            if (payload.schoolUpdate.action === 'add' && payload.schoolUpdate.schoolName) {
+              if (!currentSchools.includes(payload.schoolUpdate.schoolName)) {
+                currentSchools.push(payload.schoolUpdate.schoolName);
+              }
+            } else if (payload.schoolUpdate.action === 'replace' && payload.schoolUpdate.schoolName) {
+              currentSchools = [payload.schoolUpdate.schoolName];
+            } else if (payload.schoolUpdate.action === 'clear') {
+              currentSchools = [];
+            }
+            updates.schools = currentSchools;
+          }
+
+          return updateLesson(id, updates);
+        })
+      );
+
+      await fetchLessonsList(true);
+      setShowBulkEditModal(false);
+      setSuccess(`Mise à jour en masse appliquée à ${selectedLessonIds.length} fiche(s) de cours ✓`);
+      setTimeout(() => setSuccess(''), 4000);
+      handleClearSelection();
+    } catch (err) {
+      console.error(err);
+      setError('Erreur lors de la mise à jour en masse.');
+    } finally {
+      setIsBulkProcessing(false);
+    }
+  };
 
   // Stats
   const totalCount = lessons.length;
   const activeCount = lessons.filter(l => l.isActive).length;
   const inactiveCount = totalCount - activeCount;
   const uniqueLevelsCount = new Set(lessons.map(l => normalizeLevel(l.level)).filter(Boolean)).size;
+
+  // Role Guard (Must run after all hooks)
+  if (!loading && user?.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
@@ -381,45 +509,94 @@ ${sectionsContentText}
           </div>
         )}
 
-        {/* ── Stats Indicators ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
-          <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        {/* ── Stats Indicators (Clickable Filters) ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
+          {/* Total Fiches */}
+          <div 
+            onClick={() => setStatusFilter('all')}
+            className="glass-panel" 
+            style={{ 
+              padding: '1.25rem', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '1rem',
+              cursor: 'pointer',
+              border: statusFilter === 'all' ? '1.5px solid var(--violet)' : '1px solid var(--border)',
+              background: statusFilter === 'all' ? 'rgba(99, 102, 241, 0.05)' : undefined,
+              boxShadow: statusFilter === 'all' ? '0 4px 20px rgba(99, 102, 241, 0.12)' : undefined,
+              transition: 'all 0.2s ease'
+            }}
+            title="Afficher toutes les fiches de cours"
+          >
             <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'var(--violet-soft)', color: 'var(--violet)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <BookOpen size={20} />
             </div>
             <div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Total Fiches</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 900 }}>{totalCount}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700 }}>Total Fiches</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--text-main)' }}>{totalCount}</div>
             </div>
           </div>
           
-          <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {/* Fiches Actives */}
+          <div 
+            onClick={() => setStatusFilter(prev => prev === 'active' ? 'all' : 'active')}
+            className="glass-panel" 
+            style={{ 
+              padding: '1.25rem', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '1rem',
+              cursor: 'pointer',
+              border: statusFilter === 'active' ? '1.5px solid var(--emerald)' : '1px solid var(--border)',
+              background: statusFilter === 'active' ? 'rgba(16, 185, 129, 0.06)' : undefined,
+              boxShadow: statusFilter === 'active' ? '0 4px 20px rgba(16, 185, 129, 0.15)' : undefined,
+              transition: 'all 0.2s ease'
+            }}
+            title="Filtrer uniquement les fiches actives (publiées)"
+          >
             <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--emerald)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <CheckCircle size={20} />
             </div>
             <div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Fiches Actives</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 900 }}>{activeCount}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700 }}>Fiches Actives</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--emerald)' }}>{activeCount}</div>
             </div>
           </div>
 
-          <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {/* Fiches Inactives */}
+          <div 
+            onClick={() => setStatusFilter(prev => prev === 'inactive' ? 'all' : 'inactive')}
+            className="glass-panel" 
+            style={{ 
+              padding: '1.25rem', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '1rem',
+              cursor: 'pointer',
+              border: statusFilter === 'inactive' ? '1.5px solid var(--danger)' : '1px solid var(--border)',
+              background: statusFilter === 'inactive' ? 'rgba(239, 68, 68, 0.06)' : undefined,
+              boxShadow: statusFilter === 'inactive' ? '0 4px 20px rgba(239, 68, 68, 0.15)' : undefined,
+              transition: 'all 0.2s ease'
+            }}
+            title="Filtrer uniquement les fiches inactives (masquées)"
+          >
+            <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--danger)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <XCircle size={20} />
             </div>
             <div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Fiches Inactives</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 900 }}>{inactiveCount}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700 }}>Fiches Inactives</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--danger)' }}>{inactiveCount}</div>
             </div>
           </div>
 
+          {/* Niveaux Gérés */}
           <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Sparkles size={20} />
             </div>
             <div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Niveaux Gérés</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 900 }}>{uniqueLevelsCount}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700 }}>Niveaux Gérés</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--text-main)' }}>{uniqueLevelsCount}</div>
             </div>
           </div>
         </div>
@@ -442,24 +619,6 @@ ${sectionsContentText}
               }}
             />
           </div>
-
-          {/* Subject Filter Dropdown */}
-          {subjects.length > 2 && (
-            <select
-              value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
-              className="input-control"
-              style={{
-                fontSize: '0.85rem', minWidth: '160px', flex: '1'
-              }}
-            >
-              {subjects.map(sub => (
-                <option key={sub} value={sub}>
-                  {sub === 'Tous' ? 'Toutes les matières' : sub}
-                </option>
-              ))}
-            </select>
-          )}
 
           {/* Level Filter Dropdown */}
           <select
@@ -490,11 +649,11 @@ ${sectionsContentText}
             }}
           >
             <option value="Tous">Tous les types</option>
-            <option value="course">📖 Cours (درس)</option>
-            <option value="homework">📑 Devoirs (فرض محروس)</option>
-            <option value="national">🇲🇦 Examen National (امتحان وطني)</option>
-            <option value="exercises">📝 Exercices (تمارين)</option>
-            <option value="concours">🏆 Concours (مباراة)</option>
+            <option value="course">Cours (درس)</option>
+            <option value="homework">Devoirs (فرض محروس)</option>
+            <option value="national">Examen National (امتحان وطني)</option>
+            <option value="exercises">Exercices (تمارين)</option>
+            <option value="concours">Concours (مباراة)</option>
           </select>
 
         </div>
@@ -519,204 +678,193 @@ ${sectionsContentText}
             </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '780px' }}>
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)' }}>
-                    <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Fiche de Cours</th>
-                    <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Niveau / Classe</th>
-                    <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Type</th>
-                    <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Statut</th>
-                    <th style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Actions</th>
+                    {/* Checkbox column */}
+                    <th style={{ width: '46px', padding: '1.25rem 0.85rem', textAlign: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={isAllSelected}
+                        ref={el => { if (el) el.indeterminate = isSomeSelected; }}
+                        onChange={handleToggleSelectAll}
+                        style={{ width: '16px', height: '16px', accentColor: 'var(--violet)', cursor: 'pointer' }}
+                        title={isAllSelected ? "Tout désélectionner" : "Tout sélectionner"}
+                      />
+                    </th>
+                    <th style={{ padding: '1.25rem 1.25rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Fiche de Cours</th>
+                    <th style={{ padding: '1.25rem 1.25rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Niveau / Classe</th>
+                    <th style={{ padding: '1.25rem 1.25rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Type</th>
+                    <th style={{ padding: '1.25rem 1.25rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Statut</th>
+                    <th style={{ padding: '1.25rem 1.25rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredLessons.map(l => (
-                    <tr 
-                      key={l.id} 
-                      style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.2s' }}
-                      className="table-row-hover"
-                    >
-                      {/* Fiche details */}
-                      <td style={{ padding: '1.25rem 1.5rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
-                          <div style={{ 
-                            width: '38px', height: '38px', borderRadius: '10px', 
-                            background: l.isActive ? 'rgba(99, 102, 241, 0.08)' : 'rgba(255,255,255,0.04)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: l.isActive ? 'var(--violet)' : 'var(--text-muted)', flexShrink: 0
-                          }}>
-                            <BookOpen size={16} />
-                          </div>
-                          <div>
-                            <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.92rem' }}>{renderWithMath(l.title)}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', marginTop: '0.2rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                              <span>{l.subject}</span>
-                              {l.teacher && <span>• {l.teacher}</span>}
-                              {l.chapterNumber && <span>• Chapitre {l.chapterNumber}</span>}
+                  {filteredLessons.map(l => {
+                    const isSelected = selectedLessonIds.includes(l.id);
+                    return (
+                      <tr 
+                        key={l.id} 
+                        style={{ 
+                          borderBottom: '1px solid var(--border)', 
+                          background: isSelected ? 'rgba(99, 102, 241, 0.08)' : undefined,
+                          transition: 'background 0.15s ease' 
+                        }}
+                        className="table-row-hover"
+                      >
+                        {/* Checkbox */}
+                        <td style={{ width: '46px', padding: '1.15rem 0.85rem', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleToggleSelectLesson(l.id)}
+                            style={{ width: '16px', height: '16px', accentColor: 'var(--violet)', cursor: 'pointer' }}
+                          />
+                        </td>
+
+                        {/* Fiche details */}
+                        <td style={{ padding: '1.15rem 1.25rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+                            <div style={{ 
+                              width: '38px', height: '38px', borderRadius: '10px', 
+                              background: l.isActive ? 'rgba(99, 102, 241, 0.08)' : 'rgba(255,255,255,0.04)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              color: l.isActive ? 'var(--violet)' : 'var(--text-muted)', flexShrink: 0
+                            }}>
+                              <BookOpen size={16} />
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.92rem' }}>
+                                {renderWithMath(l.title)}
+                              </div>
+                              {(l.teacher || l.chapterNumber) && (
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', marginTop: '0.2rem', display: 'flex', gap: '0.45rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                                  {l.chapterNumber && (
+                                    <span style={{ color: 'var(--violet)', fontWeight: 700 }}>Ch. {l.chapterNumber}</span>
+                                  )}
+                                  {l.teacher && (
+                                    <span style={{ color: 'var(--text-muted)' }}>{l.chapterNumber ? '• ' : ''}{l.teacher}</span>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Niveau / Classe */}
-                      <td style={{ padding: '1.25rem 1.5rem' }}>
-                        <span style={{ 
-                          background: 'rgba(255,255,255,0.04)',
-                          color: 'var(--text-subtle)',
-                          padding: '0.25rem 0.65rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800,
-                          border: '1px solid var(--border)'
-                        }}>
-                          {getLevelLabel(l.level)}
-                        </span>
-                      </td>
+                        {/* Niveau / Classe */}
+                        <td style={{ padding: '1.15rem 1.25rem' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'flex-start' }}>
+                            <span style={{ 
+                              background: 'rgba(255,255,255,0.04)',
+                              color: 'var(--text-main)',
+                              padding: '0.2rem 0.55rem', borderRadius: '6px', fontSize: '0.74rem', fontWeight: 800,
+                              border: '1px solid var(--border)'
+                            }}>
+                              {getLevelLabel(l.level)}
+                            </span>
+                            {Array.isArray(l.schools) && l.schools.length > 0 && (
+                              <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+                                {l.schools.map((sc, scIdx) => (
+                                  <span key={scIdx} style={{ fontSize: '0.68rem', color: 'var(--violet)', background: 'rgba(99, 102, 241, 0.1)', padding: '0.05rem 0.4rem', borderRadius: '4px', fontWeight: 700 }}>
+                                    {sc}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </td>
 
-                      {/* Type */}
-                      <td style={{ padding: '1.25rem 1.5rem' }}>
-                        <span style={{ 
-                          background: l.docType === 'homework' ? 'rgba(239, 68, 68, 0.08)' : l.docType === 'exercises' ? 'rgba(245, 158, 11, 0.08)' : l.docType === 'concours' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(59, 130, 246, 0.08)',
-                          color: l.docType === 'homework' ? 'var(--danger)' : l.docType === 'exercises' ? 'var(--warning)' : l.docType === 'concours' ? 'var(--emerald)' : '#3B82F6',
-                          padding: '0.25rem 0.65rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800
-                        }}>
-                          {l.docType === 'homework' ? 'Devoir surveillé' : l.docType === 'exercises' ? 'Série d\'exercices' : l.docType === 'concours' ? 'Concours' : l.docType === 'national' ? 'Examen National' : 'Cours'}
-                        </span>
-                      </td>
+                        {/* Type */}
+                        <td style={{ padding: '1.15rem 1.25rem' }}>
+                          <span style={{ 
+                            background: l.docType === 'homework' ? 'rgba(239, 68, 68, 0.08)' : l.docType === 'exercises' ? 'rgba(245, 158, 11, 0.08)' : l.docType === 'concours' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(59, 130, 246, 0.08)',
+                            color: l.docType === 'homework' ? 'var(--danger)' : l.docType === 'exercises' ? 'var(--warning)' : l.docType === 'concours' ? 'var(--emerald)' : '#3B82F6',
+                            padding: '0.25rem 0.65rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800
+                          }}>
+                            {l.docType === 'homework' ? 'Devoir surveillé' : l.docType === 'exercises' ? 'Série d\'exercices' : l.docType === 'concours' ? 'Concours' : l.docType === 'national' ? 'Examen National' : 'Cours'}
+                          </span>
+                        </td>
 
-                      {/* Statut */}
-                      <td style={{ padding: '1.25rem 1.5rem' }}>
-                        <button
-                          onClick={() => handleToggleStatus(l.id, l.isActive)}
-                          style={{
-                            display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
-                            padding: '0.25rem 0.6rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600,
-                            border: 'none', cursor: 'pointer',
-                            background: l.isActive ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-                            color: l.isActive ? 'var(--emerald)' : 'var(--danger)',
-                          }}
-                        >
-                          {l.isActive ? <CheckCircle size={12} /> : <XCircle size={12} />}
-                          {l.isActive ? 'Actif' : 'Masqué'}
-                        </button>
-                      </td>
-
-                      {/* Actions */}
-                      <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
-                        <div style={{ display: 'inline-flex', gap: '0.35rem', alignItems: 'center' }}>
+                        {/* Statut */}
+                        <td style={{ padding: '1.15rem 1.25rem' }}>
                           <button
-                            onClick={() => navigate(`/admin/lessons/${l.id}`)}
-                            className="btn-outline"
-                            title="Consulter la fiche"
-                            style={{ padding: '0.45rem', borderRadius: '8px', border: '1px solid var(--border)' }}
-                          >
-                            <Eye size={15} />
-                          </button>
-
-                          <button
-                            onClick={() => navigate(`/admin/lessons/${l.id}/edit`)}
-                            className="btn-outline"
-                            title="Modifier la fiche"
-                            style={{ padding: '0.45rem', borderRadius: '8px', border: '1px solid var(--border)' }}
-                          >
-                            <Edit size={15} />
-                          </button>
-
-                          <button
-                            onClick={() => setShowTranslateModal(l)}
-                            className="btn-outline"
-                            title="Traduction IA (Arabe / Français)"
+                            onClick={() => handleToggleStatus(l.id, l.isActive)}
                             style={{
-                              padding: '0.45rem', borderRadius: '8px',
-                              border: '1px solid rgba(66,133,244,0.35)',
-                              color: '#4285F4',
-                              background: 'rgba(66,133,244,0.04)',
-                              transition: 'all 0.2s',
+                              display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                              padding: '0.25rem 0.65rem', borderRadius: '20px', fontSize: '0.74rem', fontWeight: 700,
+                              border: 'none', cursor: 'pointer',
+                              background: l.isActive ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)',
+                              color: l.isActive ? 'var(--emerald)' : 'var(--danger)',
+                              transition: 'all 0.15s ease'
                             }}
-                            onMouseEnter={e => {
-                              e.currentTarget.style.borderColor = '#4285F4';
-                              e.currentTarget.style.background = 'rgba(66,133,244,0.12)';
-                              e.currentTarget.style.transform = 'scale(1.05)';
-                            }}
-                            onMouseLeave={e => {
-                              e.currentTarget.style.borderColor = 'rgba(66,133,244,0.35)';
-                              e.currentTarget.style.background = 'rgba(66,133,244,0.04)';
-                              e.currentTarget.style.transform = 'scale(1)';
-                            }}
+                            title="Cliquer pour basculer le statut"
                           >
-                            <Languages size={15} />
+                            {l.isActive ? <CheckCircle size={12} /> : <XCircle size={12} />}
+                            {l.isActive ? 'Actif' : 'Masqué'}
                           </button>
+                        </td>
 
-                          <button
-                            onClick={() => generateFichePedagogiqueWithAI(l, { profName, profPhone, profSchool })}
-                            className="btn-outline"
-                            title="Générer la Fiche Pédagogique par IA"
-                            style={{
-                              padding: '0.45rem', borderRadius: '8px',
-                              border: 'none',
-                              color: '#ffffff',
-                              background: 'linear-gradient(135deg, #10b981, #059669)',
-                              transition: 'all 0.2s',
-                              boxShadow: '0 2px 8px rgba(16,185,129,0.3)'
-                            }}
-                          >
-                            <Sparkles size={15} />
-                          </button>
+                        {/* Actions */}
+                        <td style={{ padding: '1.15rem 1.25rem', textAlign: 'right' }}>
+                          <div style={{ display: 'inline-flex', gap: '0.35rem', alignItems: 'center', justifyContent: 'flex-end' }}>
+                            <button
+                              onClick={() => navigate(`/admin/lessons/${l.id}`)}
+                              className="btn-outline"
+                              title="Consulter la fiche"
+                              style={{ padding: '0.42rem', borderRadius: '7px', border: '1px solid var(--border)' }}
+                            >
+                              <Eye size={15} />
+                            </button>
 
-                          <button
-                            onClick={() => generateFichePedagogiquePDF(l, { profName, profPhone, profSchool })}
-                            className="btn-outline"
-                            title="Imprimer Fiche Pédagogique Standard"
-                            style={{
-                              padding: '0.45rem', borderRadius: '8px',
-                              border: '1px solid rgba(16,185,129,0.35)',
-                              color: 'var(--emerald)',
-                              background: 'var(--emerald-soft)',
-                              transition: 'all 0.2s',
-                            }}
-                          >
-                            <FileText size={15} />
-                          </button>
-                          
-                          <button
-                            onClick={() => handleGenerateQcmFromLesson(l)}
-                            className="btn-outline"
-                            title="Générer un QCM de 20 questions via l'IA"
-                            style={{
-                              padding: '0.45rem', borderRadius: '8px',
-                              border: '1px solid rgba(16,185,129,0.35)',
-                              color: 'var(--emerald)',
-                              background: 'rgba(16,185,129,0.04)',
-                              transition: 'all 0.2s',
-                            }}
-                            onMouseEnter={e => {
-                              e.currentTarget.style.borderColor = 'var(--emerald)';
-                              e.currentTarget.style.background = 'rgba(16,185,129,0.12)';
-                              e.currentTarget.style.transform = 'scale(1.05)';
-                            }}
-                            onMouseLeave={e => {
-                              e.currentTarget.style.borderColor = 'rgba(16,185,129,0.35)';
-                              e.currentTarget.style.background = 'rgba(16,185,129,0.04)';
-                              e.currentTarget.style.transform = 'scale(1)';
-                            }}
-                          >
-                            <Sparkles size={15} />
-                          </button>
-                          
-                          <button
-                            onClick={() => setShowConfirmDelete(l.id)}
-                            className="btn-outline"
-                            title="Supprimer"
-                            style={{ 
-                              padding: '0.45rem', borderRadius: '8px', border: '1px solid var(--border)',
-                              color: 'var(--danger)', background: 'rgba(239, 68, 68, 0.02)'
-                            }}
-                            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--danger)'}
-                            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            <button
+                              onClick={() => navigate(`/admin/lessons/${l.id}/edit`)}
+                              className="btn-outline"
+                              title="Modifier dans l'éditeur complet"
+                              style={{ padding: '0.42rem', borderRadius: '7px', border: '1px solid rgba(99, 102, 241, 0.3)', color: 'var(--violet)' }}
+                            >
+                              <Edit size={15} />
+                            </button>
+
+                            <button
+                              onClick={() => setShowTranslateModal(l)}
+                              className="btn-outline"
+                              title="Traduction IA (Arabe / Français)"
+                              style={{ padding: '0.42rem', borderRadius: '7px', border: '1px solid rgba(66, 133, 244, 0.3)', color: '#4285F4' }}
+                            >
+                              <Languages size={15} />
+                            </button>
+
+                            <button
+                              onClick={() => generateFichePedagogiqueWithAI(l, { profName, profPhone, profSchool: classes[0]?.name })}
+                              className="btn-outline"
+                              title="Générer Fiche Pédagogique (IA)"
+                              style={{ padding: '0.42rem', borderRadius: '7px', border: 'none', background: 'linear-gradient(135deg, #10b981, #059669)', color: '#ffffff' }}
+                            >
+                              <Sparkles size={15} />
+                            </button>
+
+                            <button
+                              onClick={() => handleGenerateQcmFromLesson(l)}
+                              className="btn-outline"
+                              title="Générer QCM de révision par IA"
+                              style={{ padding: '0.42rem', borderRadius: '7px', border: '1px solid var(--border)', color: 'var(--warning)' }}
+                            >
+                              <HelpCircle size={15} />
+                            </button>
+                            
+                            <button
+                              onClick={() => setShowConfirmDelete(l.id)}
+                              className="btn-outline"
+                              title="Supprimer la fiche"
+                              style={{ padding: '0.42rem', borderRadius: '7px', border: '1px solid rgba(239, 68, 68, 0.3)', color: 'var(--danger)' }}
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -724,6 +872,204 @@ ${sectionsContentText}
         </div>
 
       </div>
+
+      {/* ── FLOATING BULK ACTION BAR ── */}
+      {selectedLessonIds.length > 0 && (
+        <div style={{
+          position: 'fixed',
+          bottom: '2rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 9999,
+          background: 'rgba(15, 23, 42, 0.94)',
+          backdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255, 255, 255, 0.18)',
+          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(99, 102, 241, 0.25)',
+          borderRadius: '16px',
+          padding: '0.65rem 1.25rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.85rem',
+          maxWidth: '94vw',
+          flexWrap: 'wrap'
+        }}>
+          {/* Badge with count */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRight: '1px solid rgba(255,255,255,0.15)', paddingRight: '0.85rem' }}>
+            <span style={{
+              background: 'linear-gradient(135deg, var(--violet), #8b5cf6)',
+              color: '#ffffff',
+              borderRadius: '8px',
+              padding: '0.2rem 0.6rem',
+              fontSize: '0.8rem',
+              fontWeight: 900
+            }}>
+              {selectedLessonIds.length}
+            </span>
+            <span style={{ fontSize: '0.82rem', color: '#ffffff', fontWeight: 700 }}>
+              sélectionnée{selectedLessonIds.length > 1 ? 's' : ''}
+            </span>
+          </div>
+
+          {/* Bulk Edit Button */}
+          <button
+            type="button"
+            onClick={() => setShowBulkEditModal(true)}
+            disabled={isBulkProcessing}
+            style={{
+              background: 'linear-gradient(135deg, var(--violet), #8b5cf6)',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '0.45rem 0.95rem',
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)'
+            }}
+          >
+            <Edit3 size={14} />
+            <span>Modifier en masse (Bulk Edit)</span>
+          </button>
+
+          {/* Bulk Activate */}
+          <button
+            type="button"
+            onClick={() => handleBulkToggleStatus(true)}
+            disabled={isBulkProcessing}
+            style={{
+              background: 'rgba(16, 185, 129, 0.15)',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              color: '#34d399',
+              borderRadius: '8px',
+              padding: '0.45rem 0.8rem',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem'
+            }}
+          >
+            <CheckCircle size={13} />
+            <span>Activer</span>
+          </button>
+
+          {/* Bulk Deactivate */}
+          <button
+            type="button"
+            onClick={() => handleBulkToggleStatus(false)}
+            disabled={isBulkProcessing}
+            style={{
+              background: 'rgba(245, 158, 11, 0.15)',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              color: '#fbbf24',
+              borderRadius: '8px',
+              padding: '0.45rem 0.8rem',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem'
+            }}
+          >
+            <XCircle size={13} />
+            <span>Masquer</span>
+          </button>
+
+          {/* Bulk Delete */}
+          <button
+            type="button"
+            onClick={() => setShowConfirmBulkDelete(true)}
+            disabled={isBulkProcessing}
+            style={{
+              background: 'rgba(239, 68, 68, 0.15)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              color: '#f87171',
+              borderRadius: '8px',
+              padding: '0.45rem 0.8rem',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem'
+            }}
+          >
+            <Trash2 size={13} />
+            <span>Supprimer</span>
+          </button>
+
+          {/* Clear selection */}
+          <button
+            type="button"
+            onClick={handleClearSelection}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'rgba(255,255,255,0.6)',
+              cursor: 'pointer',
+              padding: '0.35rem',
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            title="Désélectionner tout"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
+      {/* ── Bulk Edit Modal ── */}
+      <LessonBulkEditModal
+        isOpen={showBulkEditModal}
+        onClose={() => setShowBulkEditModal(false)}
+        selectedCount={selectedLessonIds.length}
+        availableClasses={classes}
+        onApply={handleApplyBulkEdit}
+        loading={isBulkProcessing}
+      />
+
+      {/* ── Confirmation Modal for Bulk Deletion ── */}
+      {showConfirmBulkDelete && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', 
+          backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', 
+          justifyContent: 'center', zIndex: 99999, padding: '1rem'
+        }}>
+          <div className="glass-panel" style={{ maxWidth: '440px', width: '100%', padding: '2rem', textAlign: 'center' }}>
+            <Trash2 size={44} style={{ color: 'var(--danger)', margin: '0 auto 1.25rem', display: 'block' }} />
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: '0 0 0.5rem 0' }}>
+              Suppression en masse ({selectedLessonIds.length} fiches)
+            </h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', lineHeight: 1.5, margin: '0 0 2rem 0' }}>
+              Êtes-vous sûr de vouloir supprimer définitivement ces <strong>{selectedLessonIds.length} fiches de cours</strong> ? Cette action est irréversible.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button 
+                onClick={() => setShowConfirmBulkDelete(false)} 
+                disabled={isBulkProcessing}
+                className="btn-outline" 
+                style={{ flex: 1, padding: '0.75rem' }}
+              >
+                Annuler
+              </button>
+              <button 
+                onClick={handleBulkDelete} 
+                disabled={isBulkProcessing}
+                className="btn" 
+                style={{ flex: 1, padding: '0.75rem', background: 'linear-gradient(135deg, var(--danger) 0%, #b91c1c 100%)', border: 'none' }}
+              >
+                {isBulkProcessing ? 'Suppression...' : `Supprimer (${selectedLessonIds.length})`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Modal Traduction IA ── */}
       {showTranslateModal && (

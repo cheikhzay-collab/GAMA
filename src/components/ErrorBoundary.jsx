@@ -113,7 +113,7 @@ export default class ErrorBoundary extends React.Component {
               Une erreur inattendue est survenue lors de l'affichage de cette page. Notre équipe a été notifiée et travaille à sa résolution.
             </p>
 
-            {/* Error Details (Optional, collapsed/small) */}
+            {/* Error Details */}
             {this.state.error && (
               <div style={{
                 background: 'rgba(0, 0, 0, 0.25)',
@@ -126,9 +126,14 @@ export default class ErrorBoundary extends React.Component {
                 textAlign: 'left',
                 overflowX: 'auto',
                 marginBottom: '2rem',
-                maxHeight: '120px'
+                maxHeight: '200px'
               }}>
                 <strong>Error:</strong> {this.state.error.toString()}
+                {this.state.errorInfo?.componentStack && (
+                  <pre style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.5rem', whiteSpace: 'pre-wrap' }}>
+                    {this.state.errorInfo.componentStack}
+                  </pre>
+                )}
               </div>
             )}
 

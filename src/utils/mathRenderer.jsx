@@ -137,6 +137,14 @@ export const repairMathExpression = (latex) => {
     .replace(/(?<![a-zA-Z\\])implies\b/g, '\\implies')
     .replace(/(?<![a-zA-Z\\])iff\b/g, '\\iff');
 
+  // 8. Ensure words with spaces inside \boxed{} are wrapped in \text{} for crisp KaTeX rendering
+  repaired = repaired.replace(/\\boxed\{([^{}]+)\}/g, (match, inner) => {
+    if (/[a-zA-Z]{2,}\s+[a-zA-Z]/.test(inner) && !inner.includes('\\text{')) {
+      return `\\boxed{\\text{${inner}}}`;
+    }
+    return match;
+  });
+
   return repaired;
 };
 
@@ -322,6 +330,13 @@ export const wrapStandaloneLatexCommands = (text) => {
       .replace(/[\u2124]/g, '$\\mathbb{Z}$')
       .replace(/[\u211A]/g, '$\\mathbb{Q}$')
       .replace(/[\u2102]/g, '$\\mathbb{C}$')
+      .replace(/(?<![$\w\\])(\\boxed\{[^{}]+\})(?![$\w\\])/g, (_, m) => {
+        const inner = m.slice(7, -1).trim();
+        const formattedInner = (/[a-zA-Z]{2,}\s+[a-zA-Z]/.test(inner) && !inner.includes('\\text{'))
+          ? `\\text{${inner}}`
+          : inner;
+        return `$\\boxed{${formattedInner}}$`;
+      })
       .replace(/(?<![$\w\\])(\\(?:mathbb|mathbf|mathcal|mathrm)\{[a-zA-Z0-9]+\})(?![$\w\\])/g, (_, m) => `$${m}$`)
       .replace(/(?<![$\w\\])(\\mathbb[a-zA-Z0-9])(?![$\w\\])/g, (_, m) => `$${m}$`)
       .replace(/(?<![$\w\\])(\\(?:sqrt|vec|overrightarrow)\{[^{}]+\})(?![$\w\\])/g, (_, m) => `$${m}$`)
@@ -504,27 +519,29 @@ const renderTableSegment = (segment, key) => {
   };
   
   return (
-    <div key={key} style={{ display: 'flex', justifyContent: 'center', margin: '2rem 0', width: '100%', overflowX: 'auto' }}>
-      <table style={{
+    <div key={key} className="markdown-table-wrapper" style={{ display: 'flex', justifyContent: 'center', margin: '0.75rem 0', width: '100%', maxWidth: '100%', overflowX: 'auto' }}>
+      <table className="markdown-table" style={{
         borderCollapse: 'collapse',
-        minWidth: '70%',
+        width: '100%',
         maxWidth: '100%',
         border: '1px solid #cbd5e1',
-        fontSize: '1.15rem',
-        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.04)',
-        borderRadius: '12px',
+        fontSize: '0.85rem',
+        borderRadius: '8px',
         overflow: 'hidden',
-        background: '#ffffff'
+        background: '#ffffff',
+        tableLayout: 'auto'
       }}>
         <thead>
-          <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1' }}>
+          <tr style={{ background: '#f1f5f9', borderBottom: '1.5px solid #cbd5e1' }}>
             {headerCells.map((cell, idx) => (
               <th key={idx} style={{
-                padding: '14px 22px',
+                padding: '6px 10px',
                 border: '1px solid #cbd5e1',
                 fontWeight: '800',
                 color: '#005086',
-                textAlign: alignments[idx] || 'center'
+                textAlign: alignments[idx] || 'center',
+                fontSize: '0.85rem',
+                lineHeight: 1.3
               }}>
                 {renderCellContent(cell)}
               </th>
@@ -539,10 +556,12 @@ const renderTableSegment = (segment, key) => {
               <tr key={rIdx} style={{ backgroundColor: isAlt ? '#f8fafc' : '#ffffff' }}>
                 {cells.map((cell, idx) => (
                   <td key={idx} style={{
-                    padding: '14px 22px',
+                    padding: '5px 10px',
                     border: '1px solid #cbd5e1',
                     textAlign: alignments[idx] || 'center',
-                    color: '#334155'
+                    color: '#334155',
+                    fontSize: '0.85rem',
+                    lineHeight: 1.3
                   }}>
                     {renderCellContent(cell)}
                   </td>

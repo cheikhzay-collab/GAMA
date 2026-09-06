@@ -108,12 +108,20 @@ const getLocalStorageLessons = () => {
   }
 };
 
-// Helper to write to LocalStorage
 const saveLocalStorageLessons = (lessons) => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(lessons));
   } catch (e) {
     console.warn('[LocalStorage] Failed to save lessons:', e);
+    try {
+      if (Array.isArray(lessons) && lessons.length > 5) {
+        // Save only recent items without heavy payloads if quota is exceeded
+        const trimmed = lessons.slice(0, 5);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
+      }
+    } catch (_) {
+      // Ignore further quota errors gracefully
+    }
   }
 };
 
@@ -147,7 +155,7 @@ const mapDBToLesson = (row) => {
     schools: row.schools || [],
     content: row.content || {},
     level: row.level || row.content?.level || null,
-    docType: row.docType || row.content?.doc_type || 'course',
+    docType: row.docType || row.doc_type || row.content?.doc_type || 'course',
     isActive: row.is_active !== undefined ? row.is_active : (row.isActive !== undefined ? row.isActive : true),
     createdAt: row.created_at || row.createdAt,
     updatedAt: row.updated_at || row.updatedAt,
@@ -362,6 +370,8 @@ export const updateLesson = async (lessonId, updates) => {
   if (updates.teacher !== undefined) dbUpdates.teacher = updates.teacher;
   if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
   if (updates.schools !== undefined) dbUpdates.schools = updates.schools;
+  if (updates.level !== undefined) dbUpdates.level = updates.level;
+  if (updates.docType !== undefined) dbUpdates.doc_type = updates.docType;
   if (updates.content !== undefined || updates.level !== undefined || updates.docType !== undefined) {
     dbUpdates.content = {
       ...(updates.content || {}),

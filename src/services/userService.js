@@ -5,6 +5,28 @@
 import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
+import initialUsersData from '../../data/users.json';
+
+const STORAGE_KEY = 'lconq_users_db';
+
+const getLocalStorageUsers = () => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+const saveLocalStorageUsers = (users) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
+  } catch (e) {
+    console.warn('[LocalStorage] Failed to save users:', e);
+  }
+};
 
 // Helper to map camelCase fields to snake_case DB columns
 const mapProfileToDB = (profile) => ({
@@ -23,33 +45,38 @@ const mapProfileToDB = (profile) => ({
   school: profile.school,
   downloads: profile.downloads,
   crm: profile.crm,
-  class_id: profile.classId || null,
+  class_id: profile.classId || profile.class_id || null,
+  class_name: profile.className || null,
 });
 
 // Helper to map snake_case DB columns to camelCase fields
 const mapDBToProfile = (row) => {
   if (!row) return null;
+  const classId = row.class_id || row.classId || null;
   return {
     id: row.id,
-    uid: row.id,
+    uid: row.id || row.uid,
     name: row.name,
     email: row.email,
-    role: row.role,
-    tier: row.tier,
-    xp: row.xp,
-    streak: row.streak,
-    rank: row.rank,
-    totalStudents: row.total_students,
-    joined: row.joined,
+    role: row.role || 'student',
+    tier: row.tier || 'freemium',
+    xp: row.xp || 0,
+    streak: row.streak || 0,
+    rank: row.rank || 0,
+    totalStudents: row.total_students || row.totalStudents,
+    joined: row.joined || row.created_at,
     subscription: row.subscription,
-    createdAt: row.created_at,
+    createdAt: row.created_at || row.joined,
     updatedAt: row.updated_at,
     phone: row.phone,
     city: row.city,
     school: row.school,
     downloads: row.downloads,
     crm: row.crm || { stage: 'Lead', notes: [], reminders: [], interactions: [] },
-    classId: row.class_id || null,
+    classId: classId,
+    class_id: classId,
+    className: row.class_name || row.className || classId,
+    massarCode: row.massarCode || row.id
   };
 };
 
@@ -63,6 +90,23 @@ export const createUserDoc = async (uid, userData) => {
   queryCache.invalidate('users_all');
   queryCache.invalidate('leaderboard_all');
 
+  const now = new Date().toISOString();
+  const profile = {
+    id: uid,
+    uid: uid,
+    ...userData,
+    classId: userData.classId || userData.class_id || null,
+    class_id: userData.classId || userData.class_id || null,
+    createdAt: userData.joined || now,
+    updatedAt: now,
+  };
+
+  // 1. LocalStorage (immediate fail-safe)
+  const currentUsers = (getLocalStorageUsers() || []).filter(u => u.id !== uid && u.uid !== uid);
+  currentUsers.unshift(profile);
+  saveLocalStorageUsers(currentUsers);
+
+  // 2. Supabase
   if (supabase) {
     try {
       const { error } = await supabase
@@ -70,27 +114,29 @@ export const createUserDoc = async (uid, userData) => {
         .upsert({
           id: uid,
           ...mapProfileToDB(userData),
-          updated_at: new Date().toISOString(),
+          updated_at: now,
         }, { onConflict: 'id' });
 
-      if (!error) return;
-      console.warn('[Supabase] Failed to upsert profile, falling back locally:', error.message || error);
+      if (error) {
+        console.warn('[Supabase] Failed to upsert profile, falling back locally:', error.message || error);
+      }
     } catch (err) {
       console.warn('[Supabase] Network error during createUserDoc:', err.message || err);
     }
   }
 
+  // 3. Local Companion
   try {
     const dbUser = {
       id: uid,
       uid: uid,
       ...mapProfileToDB(userData),
-      created_at: userData.joined || new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      created_at: userData.joined || now,
+      updated_at: now,
     };
     await localDb.post('/users', dbUser);
   } catch (err) {
-    console.warn('[LocalDB] Failed to create user profile locally:', err.message || err);
+    // companion offline fallback
   }
 };
 
@@ -121,10 +167,22 @@ export const getUserDoc = async (uid, options = {}) => {
     try {
       const list = await localDb.get('/users');
       const found = list.find(u => u.id === uid || u.uid === uid);
-      return found ? mapDBToProfile(found) : null;
-    } catch (err) {
-      return null;
+      if (found) return mapDBToProfile(found);
+    } catch (err) {}
+
+    const localList = getLocalStorageUsers();
+    if (localList) {
+      const found = localList.find(u => u.id === uid || u.uid === uid);
+      if (found) return found;
     }
+
+    // Seed fallback
+    if (Array.isArray(initialUsersData)) {
+      const seedFound = initialUsersData.find(u => u.id === uid || u.uid === uid);
+      if (seedFound) return mapDBToProfile(seedFound);
+    }
+
+    return null;
   }, {
     forceRefresh,
     staleTime: 1000 * 60 * 2,
@@ -132,14 +190,28 @@ export const getUserDoc = async (uid, options = {}) => {
   });
 };
 
-/**
- * Update specific fields in a user profile.
- */
 export const updateUserDoc = async (uid, updates) => {
   queryCache.invalidate(`user_doc_${uid}`);
   queryCache.invalidate('users_all');
   queryCache.invalidate('leaderboard_all');
 
+  const now = new Date().toISOString();
+  const classId = updates.classId !== undefined ? updates.classId : updates.class_id;
+
+  // 1. LocalStorage (immediate fail-safe)
+  const currentUsers = getLocalStorageUsers() || (Array.isArray(initialUsersData) ? initialUsersData.map(mapDBToProfile) : []);
+  const idx = currentUsers.findIndex(u => u.id === uid || u.uid === uid);
+  if (idx !== -1) {
+    currentUsers[idx] = {
+      ...currentUsers[idx],
+      ...updates,
+      ...(classId !== undefined ? { classId, class_id: classId } : {}),
+      updatedAt: now
+    };
+    saveLocalStorageUsers(currentUsers);
+  }
+
+  // 2. Supabase
   if (supabase) {
     try {
       const dbUpdates = {};
@@ -157,8 +229,8 @@ export const updateUserDoc = async (uid, updates) => {
       if (updates.school !== undefined) dbUpdates.school = updates.school;
       if (updates.downloads !== undefined) dbUpdates.downloads = updates.downloads;
       if (updates.crm !== undefined) dbUpdates.crm = updates.crm;
-      if (updates.classId !== undefined) dbUpdates.class_id = updates.classId;
-      dbUpdates.updated_at = new Date().toISOString();
+      if (classId !== undefined) dbUpdates.class_id = classId;
+      dbUpdates.updated_at = now;
 
       const { error } = await supabase
         .from('profiles')
@@ -172,37 +244,22 @@ export const updateUserDoc = async (uid, updates) => {
     }
   }
 
+  // 3. Companion
   try {
     const list = await localDb.get('/users');
-    const idx = list.findIndex(u => u.id === uid || u.uid === uid);
-    if (idx > -1) {
-      const current = list[idx];
-      const dbUpdates = {};
-      if (updates.name !== undefined) dbUpdates.name = updates.name;
-      if (updates.email !== undefined) dbUpdates.email = updates.email;
-      if (updates.role !== undefined) dbUpdates.role = updates.role;
-      if (updates.tier !== undefined) dbUpdates.tier = updates.tier;
-      if (updates.xp !== undefined) dbUpdates.xp = updates.xp;
-      if (updates.streak !== undefined) dbUpdates.streak = updates.streak;
-      if (updates.rank !== undefined) dbUpdates.rank = updates.rank;
-      if (updates.totalStudents !== undefined) dbUpdates.total_students = updates.totalStudents;
-      if (updates.subscription !== undefined) dbUpdates.subscription = updates.subscription;
-      if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
-      if (updates.city !== undefined) dbUpdates.city = updates.city;
-      if (updates.school !== undefined) dbUpdates.school = updates.school;
-      if (updates.downloads !== undefined) dbUpdates.downloads = updates.downloads;
-      if (updates.crm !== undefined) dbUpdates.crm = updates.crm;
-      if (updates.classId !== undefined) dbUpdates.class_id = updates.classId;
-
+    const cIdx = list.findIndex(u => u.id === uid || u.uid === uid);
+    if (cIdx > -1) {
+      const current = list[cIdx];
+      const dbUpdates = mapProfileToDB(updates);
       const updated = {
         ...current,
         ...dbUpdates,
-        updated_at: new Date().toISOString()
+        updated_at: now
       };
       await localDb.post('/users', updated);
     }
   } catch (err) {
-    console.warn('[LocalDB] Failed to update user profile locally:', err.message || err);
+    // companion offline fallback
   }
 };
 
@@ -445,6 +502,16 @@ export const getRecentActivity = async (uid, days = 90) => {
  * Delete a user by UID (Admin only).
  */
 export const deleteUser = async (uid) => {
+  queryCache.invalidate(`user_doc_${uid}`);
+  queryCache.invalidate('users_all');
+  queryCache.invalidate('leaderboard_all');
+
+  // 1. LocalStorage
+  const currentUsers = getLocalStorageUsers() || (Array.isArray(initialUsersData) ? initialUsersData.map(mapDBToProfile) : []);
+  const filtered = currentUsers.filter(u => u.id !== uid && u.uid !== uid);
+  saveLocalStorageUsers(filtered);
+
+  // 2. Supabase
   if (supabase) {
     try {
       const { error } = await supabase.rpc('delete_user', { uid });
@@ -455,12 +522,12 @@ export const deleteUser = async (uid) => {
     }
   }
 
+  // 3. Local Companion
   try {
     await localDb.delete('/users', uid);
     return true;
   } catch (err) {
-    console.warn('[LocalDB] Failed to delete user locally:', err.message || err);
-    return false;
+    return true; // still deleted locally
   }
 };
 
@@ -474,8 +541,10 @@ export const getAllUsers = async (options = {}) => {
     if (supabase) {
       try {
         const { data: rpcData, error: rpcError } = await supabase.rpc('get_all_profiles');
-        if (!rpcError && rpcData) {
-          return rpcData.map(mapDBToProfile);
+        if (!rpcError && Array.isArray(rpcData) && rpcData.length > 0) {
+          const mapped = rpcData.map(mapDBToProfile);
+          saveLocalStorageUsers(mapped);
+          return mapped;
         }
       } catch (rpcErr) {
         console.warn('[Supabase] RPC get_all_profiles failed, trying direct select:', rpcErr.message || rpcErr);
@@ -487,8 +556,10 @@ export const getAllUsers = async (options = {}) => {
           .select('*')
           .order('joined', { ascending: false });
 
-        if (!error && data) {
-          return data.map(mapDBToProfile);
+        if (!error && Array.isArray(data) && data.length > 0) {
+          const mapped = data.map(mapDBToProfile);
+          saveLocalStorageUsers(mapped);
+          return mapped;
         }
       } catch (err) {
         console.warn('[Supabase] Network error during getAllUsers (fallback to local):', err.message || err);
@@ -497,10 +568,26 @@ export const getAllUsers = async (options = {}) => {
 
     try {
       const list = await localDb.get('/users');
-      return list.map(mapDBToProfile);
-    } catch (err) {
-      return [];
+      if (Array.isArray(list) && list.length > 0) {
+        const mapped = list.map(mapDBToProfile);
+        saveLocalStorageUsers(mapped);
+        return mapped;
+      }
+    } catch (err) {}
+
+    const cache = getLocalStorageUsers();
+    if (Array.isArray(cache) && cache.length > 0) {
+      return cache;
     }
+
+    // Ultimate seed fallback from bundled Moroccan students
+    if (Array.isArray(initialUsersData) && initialUsersData.length > 0) {
+      const mapped = initialUsersData.map(mapDBToProfile);
+      saveLocalStorageUsers(mapped);
+      return mapped;
+    }
+
+    return [];
   }, {
     forceRefresh,
     staleTime: 1000 * 60 * 3,

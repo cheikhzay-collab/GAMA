@@ -119,20 +119,21 @@ class QueryCacheManager {
     const normKey = this._normalizeKey(key);
     const cached = this.get(normKey);
     const now = Date.now();
+    const isEmptyArray = cached && Array.isArray(cached.data) && cached.data.length === 0;
 
-    // 1. If we have fresh cached data and not forcing refresh, return immediately (0ms)
-    if (!forceRefresh && cached && (now - cached.timestamp) < staleTime) {
+    // 1. If we have fresh cached data and not forcing refresh (and not an empty array), return immediately (0ms)
+    if (!forceRefresh && cached && !isEmptyArray && (now - cached.timestamp) < staleTime) {
       return cached.data;
     }
 
-    // 2. If data exists but is stale, return stale data immediately and revalidate in background (SWR)
-    if (!forceRefresh && cached && (now - cached.timestamp) < cacheTime) {
+    // 2. If data exists but is stale (and not empty), return stale data immediately and revalidate in background (SWR)
+    if (!forceRefresh && cached && !isEmptyArray && (now - cached.timestamp) < cacheTime) {
       // Trigger background revalidation if not already in-flight
       this._revalidateInBackground(normKey, fetcher, persist, onBackgroundUpdate);
       return cached.data;
     }
 
-    // 3. Otherwise (no cache or expired or forced refresh), deduplicate and await fetcher
+    // 3. Otherwise (no cache, expired, forced refresh, or empty array), deduplicate and await fetcher
     return this._deduplicatedFetch(normKey, fetcher, persist);
   }
 

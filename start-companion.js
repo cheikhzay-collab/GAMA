@@ -367,13 +367,40 @@ const server = http.createServer(async (req, res) => {
         }
         const index = classes.findIndex(c => c.id === cls.id);
         if (index > -1) {
-          classes[index] = { ...classes[index], ...cls, updatedAt: new Date().toISOString() };
+          const existing = classes[index];
+          // Defensive merge: preserve critical array/object fields if not provided in the update.
+          // This prevents partial updates (e.g. only grades) from wiping students or competitionGrades.
+          const merged = {
+            ...existing,
+            ...cls,
+            // Preserve existing value if incoming is undefined/null/empty
+            students: (cls.students !== undefined && cls.students !== null) ? cls.students : existing.students,
+            studentCount: (cls.studentCount !== undefined && cls.studentCount !== null) ? cls.studentCount : existing.studentCount,
+            competitions: (cls.competitions !== undefined && cls.competitions !== null) ? cls.competitions : existing.competitions,
+            competitionGrades: (cls.competitionGrades !== undefined && cls.competitionGrades !== null) ? cls.competitionGrades : existing.competitionGrades,
+            controls: (cls.controls !== undefined && cls.controls !== null) ? cls.controls : existing.controls,
+            grades: (cls.grades !== undefined && cls.grades !== null) ? cls.grades : existing.grades,
+            homework: (cls.homework !== undefined && cls.homework !== null) ? cls.homework : existing.homework,
+            program: (cls.program !== undefined && cls.program !== null) ? cls.program : existing.program,
+            updatedAt: new Date().toISOString()
+          };
+          classes[index] = merged;
         } else {
           cls.createdAt = new Date().toISOString();
+          cls.updatedAt = cls.createdAt;
+          // Ensure default values for a new class
+          cls.students = cls.students || [];
+          cls.studentCount = cls.studentCount !== undefined ? cls.studentCount : (cls.students || []).length;
+          cls.competitions = cls.competitions || [];
+          cls.competitionGrades = cls.competitionGrades || {};
+          cls.controls = cls.controls || [];
+          cls.grades = cls.grades || {};
+          cls.homework = cls.homework || {};
+          cls.program = cls.program || [];
           classes.push(cls);
         }
         writeDataFile('classes.json', classes);
-        sendJSON(res, 200, { success: true, class: cls });
+        sendJSON(res, 200, { success: true, class: classes[index > -1 ? index : classes.length - 1] });
       } catch (err) {
         sendJSON(res, 500, { error: err.message });
       }

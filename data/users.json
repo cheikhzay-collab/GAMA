@@ -587,7 +587,7 @@
   {
     "id": "N152008459",
     "uid": "N152008459",
-    "name": "EL BALGHI OUMAYMA",
+    "name": "البالغي أميمة",
     "email": "n152008459@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -601,16 +601,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.183Z",
-    "updated_at": "2026-08-16T09:00:50.183Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:49.370Z",
+    "updated_at": "2026-09-06T12:05:49.370Z",
     "joined": "2026-07-16T09:51:06.036Z",
-    "updatedAt": "2026-08-16T09:00:50.195Z"
+    "updatedAt": "2026-09-06T12:05:49.397Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "H156028102",
     "uid": "H156028102",
-    "name": "Drajou Ayoub",
+    "name": "دراجو أيوب",
     "email": "h156028102@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -624,16 +626,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.019Z",
-    "updated_at": "2026-08-16T09:00:50.019Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:49.637Z",
+    "updated_at": "2026-09-06T12:05:49.637Z",
     "joined": "2026-07-16T09:51:06.065Z",
-    "updatedAt": "2026-08-16T09:00:50.025Z"
+    "updatedAt": "2026-09-06T12:05:49.652Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "M157009199",
     "uid": "M157009199",
-    "name": "ELALAMI HAFSA",
+    "name": "العلمي  حفصة",
     "email": "m157009199@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -647,16 +651,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.034Z",
-    "updated_at": "2026-08-16T09:00:50.034Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:49.880Z",
+    "updated_at": "2026-09-06T12:05:49.880Z",
     "joined": "2026-07-16T09:51:06.093Z",
-    "updatedAt": "2026-08-16T09:00:50.037Z"
+    "updatedAt": "2026-09-06T12:05:49.892Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N150003772",
     "uid": "N150003772",
-    "name": "ESSADEQ FATIMA-ZOHRA",
+    "name": "الصادق فاطمة الزهراء",
     "email": "n150003772@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -670,16 +676,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.057Z",
-    "updated_at": "2026-08-16T09:00:50.057Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:50.127Z",
+    "updated_at": "2026-09-06T12:05:50.127Z",
     "joined": "2026-07-16T09:51:06.109Z",
-    "updatedAt": "2026-08-16T09:00:50.060Z"
+    "updatedAt": "2026-09-06T12:05:50.143Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N150008405",
     "uid": "N150008405",
-    "name": "EL HADDADI YASMINE",
+    "name": "الحدادي ياسمين",
     "email": "n150008405@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -693,16 +701,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.066Z",
-    "updated_at": "2026-08-16T09:00:50.066Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:50.428Z",
+    "updated_at": "2026-09-06T12:05:50.428Z",
     "joined": "2026-07-16T09:51:06.127Z",
-    "updatedAt": "2026-08-16T09:00:50.073Z"
+    "updatedAt": "2026-09-06T12:05:50.443Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N150008414",
     "uid": "N150008414",
-    "name": "CHAHBOUN KAOUTAR",
+    "name": "شهبون كوثر",
     "email": "n150008414@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -716,16 +726,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.082Z",
-    "updated_at": "2026-08-16T09:00:50.082Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:50.728Z",
+    "updated_at": "2026-09-06T12:05:50.728Z",
     "joined": "2026-07-16T09:51:06.144Z",
-    "updatedAt": "2026-08-16T09:00:50.095Z"
+    "updatedAt": "2026-09-06T12:05:50.743Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N151028626",
     "uid": "N151028626",
-    "name": "BOUSSAIF SARA",
+    "name": "بوسيف سارة",
     "email": "n151028626@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -739,16 +751,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.112Z",
-    "updated_at": "2026-08-16T09:00:50.112Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:51.056Z",
+    "updated_at": "2026-09-06T12:05:51.056Z",
     "joined": "2026-07-16T09:51:06.157Z",
-    "updatedAt": "2026-08-16T09:00:50.124Z"
+    "updatedAt": "2026-09-06T12:05:51.068Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N152008436",
     "uid": "N152008436",
-    "name": "LABIOUI MALAK",
+    "name": "البعيوي ملاك",
     "email": "n152008436@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -762,16 +776,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.133Z",
-    "updated_at": "2026-08-16T09:00:50.133Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:51.275Z",
+    "updated_at": "2026-09-06T12:05:51.275Z",
     "joined": "2026-07-16T09:51:06.169Z",
-    "updatedAt": "2026-08-16T09:00:50.145Z"
+    "updatedAt": "2026-09-06T12:05:51.294Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N152008452",
     "uid": "N152008452",
-    "name": "CHAHBOUNE FATIMA ZAHRAE",
+    "name": "شهبون فاطمة الزهراء",
     "email": "n152008452@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -785,16 +801,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.160Z",
-    "updated_at": "2026-08-16T09:00:50.160Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:51.477Z",
+    "updated_at": "2026-09-06T12:05:51.477Z",
     "joined": "2026-07-16T09:51:06.185Z",
-    "updatedAt": "2026-08-16T09:00:50.174Z"
+    "updatedAt": "2026-09-06T12:05:51.493Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N153008498",
     "uid": "N153008498",
-    "name": "ZIHI OMAIMA",
+    "name": "زهي أميمة",
     "email": "n153008498@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -808,16 +826,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.203Z",
-    "updated_at": "2026-08-16T09:00:50.203Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:51.793Z",
+    "updated_at": "2026-09-06T12:05:51.793Z",
     "joined": "2026-07-16T09:51:06.196Z",
-    "updatedAt": "2026-08-16T09:00:50.215Z"
+    "updatedAt": "2026-09-06T12:05:51.816Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N153008499",
     "uid": "N153008499",
-    "name": "EL OUARDANI IKHLAS",
+    "name": "الورداني إخلاص",
     "email": "n153008499@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -831,16 +851,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.228Z",
-    "updated_at": "2026-08-16T09:00:50.229Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:52.015Z",
+    "updated_at": "2026-09-06T12:05:52.015Z",
     "joined": "2026-07-16T09:51:06.208Z",
-    "updatedAt": "2026-08-16T09:00:50.236Z"
+    "updatedAt": "2026-09-06T12:05:52.031Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N153008501",
     "uid": "N153008501",
-    "name": "CHAKOUH KHADIJA",
+    "name": "شكوح خديجة",
     "email": "n153008501@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -854,16 +876,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.246Z",
-    "updated_at": "2026-08-16T09:00:50.246Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:52.215Z",
+    "updated_at": "2026-09-06T12:05:52.215Z",
     "joined": "2026-07-16T09:51:06.218Z",
-    "updatedAt": "2026-08-16T09:00:50.255Z"
+    "updatedAt": "2026-09-06T12:05:52.234Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N153008503",
     "uid": "N153008503",
-    "name": "BOUBKIRI AOUATIF",
+    "name": "بوبكيري عواطف",
     "email": "n153008503@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -877,16 +901,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.264Z",
-    "updated_at": "2026-08-16T09:00:50.265Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:52.424Z",
+    "updated_at": "2026-09-06T12:05:52.424Z",
     "joined": "2026-07-16T09:51:06.248Z",
-    "updatedAt": "2026-08-16T09:00:50.274Z"
+    "updatedAt": "2026-09-06T12:05:52.437Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N153015802",
     "uid": "N153015802",
-    "name": "arrache nada",
+    "name": "عراش ندى",
     "email": "n153015802@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -900,16 +926,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.282Z",
-    "updated_at": "2026-08-16T09:00:50.282Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:52.592Z",
+    "updated_at": "2026-09-06T12:05:52.592Z",
     "joined": "2026-07-16T09:51:06.263Z",
-    "updatedAt": "2026-08-16T09:00:50.293Z"
+    "updatedAt": "2026-09-06T12:05:52.612Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N154008477",
     "uid": "N154008477",
-    "name": "BAKKALI CHEMS EDDINE",
+    "name": "بقالي شمس الدين",
     "email": "n154008477@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -923,16 +951,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.306Z",
-    "updated_at": "2026-08-16T09:00:50.306Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:52.762Z",
+    "updated_at": "2026-09-06T12:05:52.762Z",
     "joined": "2026-07-16T09:51:06.281Z",
-    "updatedAt": "2026-08-16T09:00:50.315Z"
+    "updatedAt": "2026-09-06T12:05:52.779Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N154008488",
     "uid": "N154008488",
-    "name": "CHKILIBA OTHMANE",
+    "name": "اشقيليبة عثمان",
     "email": "n154008488@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -946,16 +976,17 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": null,
-    "created_at": "2026-07-16T09:51:06.291Z",
-    "updated_at": "2026-08-16T08:33:45.809Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:52.909Z",
+    "updated_at": "2026-09-06T12:05:52.909Z",
     "joined": "2026-07-16T09:51:06.298Z",
-    "updatedAt": "2026-08-16T08:33:45.815Z"
+    "updatedAt": "2026-09-06T12:05:52.921Z",
+    "classId": "1BACSEF-1"
   },
   {
     "id": "N155008518",
     "uid": "N155008518",
-    "name": "ESSEDDYQ TARIK",
+    "name": "الصديق طارق",
     "email": "n155008518@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -969,16 +1000,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.326Z",
-    "updated_at": "2026-08-16T09:00:50.326Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:53.093Z",
+    "updated_at": "2026-09-06T12:05:53.093Z",
     "joined": "2026-07-16T09:51:06.309Z",
-    "updatedAt": "2026-08-16T09:00:50.334Z"
+    "updatedAt": "2026-09-06T12:05:53.108Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N155008541",
     "uid": "N155008541",
-    "name": "IRACHE MERYEM",
+    "name": "إيراش مريم",
     "email": "n155008541@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -992,16 +1025,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.344Z",
-    "updated_at": "2026-08-16T09:00:50.344Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:53.272Z",
+    "updated_at": "2026-09-06T12:05:53.272Z",
     "joined": "2026-07-16T09:51:06.314Z",
-    "updatedAt": "2026-08-16T09:00:50.351Z"
+    "updatedAt": "2026-09-06T12:05:53.287Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N156014463",
     "uid": "N156014463",
-    "name": "HABIB OUISSAL",
+    "name": "حبيب وصال",
     "email": "n156014463@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -1015,16 +1050,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.361Z",
-    "updated_at": "2026-08-16T09:00:50.361Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:53.423Z",
+    "updated_at": "2026-09-06T12:05:53.423Z",
     "joined": "2026-07-16T09:51:06.319Z",
-    "updatedAt": "2026-08-16T09:00:50.367Z"
+    "updatedAt": "2026-09-06T12:05:53.438Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N156028636",
     "uid": "N156028636",
-    "name": "BENSAID MALAK",
+    "name": "بنسعيد ملاك",
     "email": "n156028636@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -1038,16 +1075,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.378Z",
-    "updated_at": "2026-08-16T09:00:50.378Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:53.560Z",
+    "updated_at": "2026-09-06T12:05:53.560Z",
     "joined": "2026-07-16T09:51:06.440Z",
-    "updatedAt": "2026-08-16T09:00:50.386Z"
+    "updatedAt": "2026-09-06T12:05:53.582Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N156029457",
     "uid": "N156029457",
-    "name": "hannouch el mehdi",
+    "name": "هنوش المهدي",
     "email": "n156029457@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -1061,16 +1100,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.396Z",
-    "updated_at": "2026-08-16T09:00:50.396Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:53.711Z",
+    "updated_at": "2026-09-06T12:05:53.711Z",
     "joined": "2026-07-16T09:51:06.476Z",
-    "updatedAt": "2026-08-16T09:00:50.405Z"
+    "updatedAt": "2026-09-06T12:05:53.724Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N157008389",
     "uid": "N157008389",
-    "name": "YAKHLEF CHAYMAE",
+    "name": "يخلف شيماء",
     "email": "n157008389@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -1084,16 +1125,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.413Z",
-    "updated_at": "2026-08-16T09:00:50.413Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:53.852Z",
+    "updated_at": "2026-09-06T12:05:53.852Z",
     "joined": "2026-07-16T09:51:06.515Z",
-    "updatedAt": "2026-08-16T09:00:50.422Z"
+    "updatedAt": "2026-09-06T12:05:53.865Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N157008399",
     "uid": "N157008399",
-    "name": "TOUATI ACHRAF",
+    "name": "تواتي أشرف",
     "email": "n157008399@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -1107,16 +1150,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.429Z",
-    "updated_at": "2026-08-16T09:00:50.429Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:54.021Z",
+    "updated_at": "2026-09-06T12:05:54.021Z",
     "joined": "2026-07-16T09:51:06.535Z",
-    "updatedAt": "2026-08-16T09:00:50.438Z"
+    "updatedAt": "2026-09-06T12:05:54.038Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N157027058",
     "uid": "N157027058",
-    "name": "HSSAYANE YOUSSEF",
+    "name": "احساين يوسف",
     "email": "n157027058@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -1130,16 +1175,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.446Z",
-    "updated_at": "2026-08-16T09:00:50.446Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:54.204Z",
+    "updated_at": "2026-09-06T12:05:54.204Z",
     "joined": "2026-07-16T09:51:06.585Z",
-    "updatedAt": "2026-08-16T09:00:50.456Z"
+    "updatedAt": "2026-09-06T12:05:54.218Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N157036623",
     "uid": "N157036623",
-    "name": "ES-SAQY ILYASS",
+    "name": "الساقي الياس",
     "email": "n157036623@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -1153,16 +1200,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.464Z",
-    "updated_at": "2026-08-16T09:00:50.464Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:54.360Z",
+    "updated_at": "2026-09-06T12:05:54.360Z",
     "joined": "2026-07-16T09:51:06.611Z",
-    "updatedAt": "2026-08-16T09:00:50.472Z"
+    "updatedAt": "2026-09-06T12:05:54.375Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "S149082902",
     "uid": "S149082902",
-    "name": "irach ghizlan",
+    "name": "إيراش غزلان",
     "email": "s149082902@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -1176,16 +1225,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.497Z",
-    "updated_at": "2026-08-16T09:00:50.497Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:54.571Z",
+    "updated_at": "2026-09-06T12:05:54.571Z",
     "joined": "2026-07-16T09:51:06.625Z",
-    "updatedAt": "2026-08-16T09:00:50.503Z"
+    "updatedAt": "2026-09-06T12:05:54.595Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "S150037886",
     "uid": "S150037886",
-    "name": "LAGHLIMI Ayoub",
+    "name": "لغليمي أيوب",
     "email": "s150037886@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -1199,16 +1250,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.513Z",
-    "updated_at": "2026-08-16T09:00:50.513Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:54.741Z",
+    "updated_at": "2026-09-06T12:05:54.741Z",
     "joined": "2026-07-16T09:51:06.695Z",
-    "updatedAt": "2026-08-16T09:00:50.519Z"
+    "updatedAt": "2026-09-06T12:05:54.761Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "S151002573",
     "uid": "S151002573",
-    "name": "ELFAHSI FARAH",
+    "name": "الفحصي فرح",
     "email": "s151002573@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -1222,16 +1275,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.532Z",
-    "updated_at": "2026-08-16T09:00:50.532Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:54.917Z",
+    "updated_at": "2026-09-06T12:05:54.917Z",
     "joined": "2026-07-16T09:51:06.729Z",
-    "updatedAt": "2026-08-16T09:00:50.539Z"
+    "updatedAt": "2026-09-06T12:05:54.931Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "S153013782",
     "uid": "S153013782",
-    "name": "EL BOUKHARY MIRIAM",
+    "name": "البخاري مريم",
     "email": "s153013782@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -1245,16 +1300,17 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": null,
-    "created_at": "2026-07-16T09:51:06.731Z",
-    "updated_at": "2026-08-16T08:33:46.170Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:55.106Z",
+    "updated_at": "2026-09-06T12:05:55.106Z",
     "joined": "2026-07-16T09:51:06.732Z",
-    "updatedAt": "2026-08-16T08:33:46.177Z"
+    "updatedAt": "2026-09-06T12:05:55.120Z",
+    "classId": "1BACSEF-1"
   },
   {
     "id": "S154034486",
     "uid": "S154034486",
-    "name": "EL-HARAJ yassmine",
+    "name": "الهرج ياسمين",
     "email": "s154034486@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -1268,16 +1324,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.549Z",
-    "updated_at": "2026-08-16T09:00:50.549Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:55.295Z",
+    "updated_at": "2026-09-06T12:05:55.295Z",
     "joined": "2026-07-16T09:51:06.737Z",
-    "updatedAt": "2026-08-16T09:00:50.557Z"
+    "updatedAt": "2026-09-06T12:05:55.306Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "S155034487",
     "uid": "S155034487",
-    "name": "EL-HARAJ oumayma",
+    "name": "الهرج اميمة",
     "email": "s155034487@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -1291,16 +1349,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.566Z",
-    "updated_at": "2026-08-16T09:00:50.566Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:55.478Z",
+    "updated_at": "2026-09-06T12:05:55.478Z",
     "joined": "2026-07-16T09:51:06.766Z",
-    "updatedAt": "2026-08-16T09:00:50.576Z"
+    "updatedAt": "2026-09-06T12:05:55.492Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "M159045820",
     "uid": "M159045820",
-    "name": "Kahlaoui Fatima Ezzahrae",
+    "name": "الكحلاوي فاطمة الزهراء",
     "email": "m159045820@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -1314,16 +1374,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.045Z",
-    "updated_at": "2026-08-16T09:00:50.045Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:55.682Z",
+    "updated_at": "2026-09-06T12:05:55.683Z",
     "joined": "2026-07-16T09:51:06.812Z",
-    "updatedAt": "2026-08-16T09:00:50.048Z"
+    "updatedAt": "2026-09-06T12:05:55.701Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "N159024066",
     "uid": "N159024066",
-    "name": "ES-SALMI DOUAA",
+    "name": "السالمي دعاء",
     "email": "n159024066@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -1337,16 +1399,18 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": "2BACSPF-1",
-    "created_at": "2026-08-16T09:00:50.481Z",
-    "updated_at": "2026-08-16T09:00:50.481Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:55.838Z",
+    "updated_at": "2026-09-06T12:05:55.838Z",
     "joined": "2026-07-16T09:51:06.828Z",
-    "updatedAt": "2026-08-16T09:00:50.490Z"
+    "updatedAt": "2026-09-06T12:05:55.855Z",
+    "classId": "2BACSPF-1",
+    "className": "2BACSPF-1"
   },
   {
     "id": "S146093269",
     "uid": "S146093269",
-    "name": "ET- TOUATY KHADIJA",
+    "name": "التواتي خديجة",
     "email": "s146093269@lconq.ma",
     "role": "student",
     "tier": "premium",
@@ -1360,11 +1424,12 @@
       "reminders": [],
       "interactions": []
     },
-    "class_id": null,
-    "created_at": "2026-07-16T09:51:06.833Z",
-    "updated_at": "2026-08-16T08:33:46.385Z",
+    "class_id": "1BACSEF-1",
+    "created_at": "2026-09-06T12:05:56.009Z",
+    "updated_at": "2026-09-06T12:05:56.009Z",
     "joined": "2026-07-16T09:51:06.834Z",
-    "updatedAt": "2026-08-16T08:33:46.392Z"
+    "updatedAt": "2026-09-06T12:05:56.025Z",
+    "classId": "1BACSEF-1"
   },
   {
     "id": "C161046214",
@@ -1386,7 +1451,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.111Z",
     "updated_at": "2026-08-16T08:34:12.111Z",
-    "joined": "2026-08-16T08:34:12.127Z"
+    "joined": "2026-08-16T08:34:12.127Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C165068238",
@@ -1408,7 +1475,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.142Z",
     "updated_at": "2026-08-16T08:34:12.142Z",
-    "joined": "2026-08-16T08:34:12.154Z"
+    "joined": "2026-08-16T08:34:12.154Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C170055135",
@@ -1430,7 +1499,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.169Z",
     "updated_at": "2026-08-16T08:34:12.169Z",
-    "joined": "2026-08-16T08:34:12.179Z"
+    "joined": "2026-08-16T08:34:12.179Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C170055157",
@@ -1452,7 +1523,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.207Z",
     "updated_at": "2026-08-16T08:34:12.207Z",
-    "joined": "2026-08-16T08:34:12.218Z"
+    "joined": "2026-08-16T08:34:12.218Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C171025079",
@@ -1474,7 +1547,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.226Z",
     "updated_at": "2026-08-16T08:34:12.226Z",
-    "joined": "2026-08-16T08:34:12.237Z"
+    "joined": "2026-08-16T08:34:12.237Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C171055189",
@@ -1496,7 +1571,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.254Z",
     "updated_at": "2026-08-16T08:34:12.254Z",
-    "joined": "2026-08-16T08:34:12.267Z"
+    "joined": "2026-08-16T08:34:12.267Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C171055406",
@@ -1518,7 +1595,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.274Z",
     "updated_at": "2026-08-16T08:34:12.274Z",
-    "joined": "2026-08-16T08:34:12.288Z"
+    "joined": "2026-08-16T08:34:12.288Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C171055409",
@@ -1540,7 +1619,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.299Z",
     "updated_at": "2026-08-16T08:34:12.299Z",
-    "joined": "2026-08-16T08:34:12.309Z"
+    "joined": "2026-08-16T08:34:12.309Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C171055416",
@@ -1562,7 +1643,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.321Z",
     "updated_at": "2026-08-16T08:34:12.321Z",
-    "joined": "2026-08-16T08:34:12.350Z"
+    "joined": "2026-08-16T08:34:12.350Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C171055521",
@@ -1584,7 +1667,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.369Z",
     "updated_at": "2026-08-16T08:34:12.369Z",
-    "joined": "2026-08-16T08:34:12.386Z"
+    "joined": "2026-08-16T08:34:12.386Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C171057484",
@@ -1606,7 +1691,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.399Z",
     "updated_at": "2026-08-16T08:34:12.399Z",
-    "joined": "2026-08-16T08:34:12.407Z"
+    "joined": "2026-08-16T08:34:12.407Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C172020199",
@@ -1628,7 +1715,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.426Z",
     "updated_at": "2026-08-16T08:34:12.426Z",
-    "joined": "2026-08-16T08:34:12.449Z"
+    "joined": "2026-08-16T08:34:12.449Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C172055270",
@@ -1650,7 +1739,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.457Z",
     "updated_at": "2026-08-16T08:34:12.457Z",
-    "joined": "2026-08-16T08:34:12.467Z"
+    "joined": "2026-08-16T08:34:12.467Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C172055420",
@@ -1672,7 +1763,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.477Z",
     "updated_at": "2026-08-16T08:34:12.477Z",
-    "joined": "2026-08-16T08:34:12.493Z"
+    "joined": "2026-08-16T08:34:12.493Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C172055435",
@@ -1694,7 +1787,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.507Z",
     "updated_at": "2026-08-16T08:34:12.507Z",
-    "joined": "2026-08-16T08:34:12.521Z"
+    "joined": "2026-08-16T08:34:12.521Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C173055415",
@@ -1716,7 +1811,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.527Z",
     "updated_at": "2026-08-16T08:34:12.527Z",
-    "joined": "2026-08-16T08:34:12.542Z"
+    "joined": "2026-08-16T08:34:12.542Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C173055519",
@@ -1738,7 +1835,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.551Z",
     "updated_at": "2026-08-16T08:34:12.551Z",
-    "joined": "2026-08-16T08:34:12.566Z"
+    "joined": "2026-08-16T08:34:12.566Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C173081603",
@@ -1760,7 +1859,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.581Z",
     "updated_at": "2026-08-16T08:34:12.581Z",
-    "joined": "2026-08-16T08:34:12.588Z"
+    "joined": "2026-08-16T08:34:12.588Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C175055398",
@@ -1782,7 +1883,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.601Z",
     "updated_at": "2026-08-16T08:34:12.601Z",
-    "joined": "2026-08-16T08:34:12.607Z"
+    "joined": "2026-08-16T08:34:12.607Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C175072095",
@@ -1804,7 +1907,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.619Z",
     "updated_at": "2026-08-16T08:34:12.619Z",
-    "joined": "2026-08-16T08:34:12.626Z"
+    "joined": "2026-08-16T08:34:12.626Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C176055427",
@@ -1826,7 +1931,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.640Z",
     "updated_at": "2026-08-16T08:34:12.640Z",
-    "joined": "2026-08-16T08:34:12.649Z"
+    "joined": "2026-08-16T08:34:12.649Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C176084931",
@@ -1848,7 +1955,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.658Z",
     "updated_at": "2026-08-16T08:34:12.658Z",
-    "joined": "2026-08-16T08:34:12.666Z"
+    "joined": "2026-08-16T08:34:12.666Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C177055106",
@@ -1870,7 +1979,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.675Z",
     "updated_at": "2026-08-16T08:34:12.675Z",
-    "joined": "2026-08-16T08:34:12.684Z"
+    "joined": "2026-08-16T08:34:12.684Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C177055114",
@@ -1892,7 +2003,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.694Z",
     "updated_at": "2026-08-16T08:34:12.694Z",
-    "joined": "2026-08-16T08:34:12.703Z"
+    "joined": "2026-08-16T08:34:12.703Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C178055387",
@@ -1914,7 +2027,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.714Z",
     "updated_at": "2026-08-16T08:34:12.714Z",
-    "joined": "2026-08-16T08:34:12.725Z"
+    "joined": "2026-08-16T08:34:12.725Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C179043849",
@@ -1936,7 +2051,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.737Z",
     "updated_at": "2026-08-16T08:34:12.737Z",
-    "joined": "2026-08-16T08:34:12.746Z"
+    "joined": "2026-08-16T08:34:12.746Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C179055380",
@@ -1958,7 +2075,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.760Z",
     "updated_at": "2026-08-16T08:34:12.761Z",
-    "joined": "2026-08-16T08:34:12.769Z"
+    "joined": "2026-08-16T08:34:12.769Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "C179055499",
@@ -1980,7 +2099,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.781Z",
     "updated_at": "2026-08-16T08:34:12.781Z",
-    "joined": "2026-08-16T08:34:12.788Z"
+    "joined": "2026-08-16T08:34:12.788Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "E174048655",
@@ -2002,7 +2123,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.800Z",
     "updated_at": "2026-08-16T08:34:12.800Z",
-    "joined": "2026-08-16T08:34:12.821Z"
+    "joined": "2026-08-16T08:34:12.821Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "J172004954",
@@ -2024,7 +2147,9 @@
     "class_id": "TCSF-2",
     "created_at": "2026-08-16T08:34:12.832Z",
     "updated_at": "2026-08-16T08:34:12.832Z",
-    "joined": "2026-08-16T08:34:12.840Z"
+    "joined": "2026-08-16T08:34:12.840Z",
+    "classId": "TCSF-2",
+    "className": "TCSF-2"
   },
   {
     "id": "B172009185",
@@ -2046,7 +2171,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:21.578Z",
     "updated_at": "2026-08-16T08:34:21.579Z",
-    "joined": "2026-08-16T08:34:21.596Z"
+    "joined": "2026-08-16T08:34:21.596Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C170053737",
@@ -2068,7 +2195,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:21.611Z",
     "updated_at": "2026-08-16T08:34:21.612Z",
-    "joined": "2026-08-16T08:34:21.625Z"
+    "joined": "2026-08-16T08:34:21.625Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C170055133",
@@ -2090,7 +2219,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:21.642Z",
     "updated_at": "2026-08-16T08:34:21.642Z",
-    "joined": "2026-08-16T08:34:21.654Z"
+    "joined": "2026-08-16T08:34:21.654Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C170055438",
@@ -2112,7 +2243,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:21.670Z",
     "updated_at": "2026-08-16T08:34:21.670Z",
-    "joined": "2026-08-16T08:34:21.682Z"
+    "joined": "2026-08-16T08:34:21.682Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C171051491",
@@ -2134,7 +2267,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:21.692Z",
     "updated_at": "2026-08-16T08:34:21.692Z",
-    "joined": "2026-08-16T08:34:21.704Z"
+    "joined": "2026-08-16T08:34:21.704Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C171055167",
@@ -2156,7 +2291,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:21.713Z",
     "updated_at": "2026-08-16T08:34:21.713Z",
-    "joined": "2026-08-16T08:34:21.722Z"
+    "joined": "2026-08-16T08:34:21.722Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C171055408",
@@ -2178,7 +2315,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:21.734Z",
     "updated_at": "2026-08-16T08:34:21.734Z",
-    "joined": "2026-08-16T08:34:21.743Z"
+    "joined": "2026-08-16T08:34:21.743Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C171057483",
@@ -2200,7 +2339,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:21.757Z",
     "updated_at": "2026-08-16T08:34:21.757Z",
-    "joined": "2026-08-16T08:34:21.771Z"
+    "joined": "2026-08-16T08:34:21.771Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C171064413",
@@ -2222,7 +2363,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:21.780Z",
     "updated_at": "2026-08-16T08:34:21.780Z",
-    "joined": "2026-08-16T08:34:21.833Z"
+    "joined": "2026-08-16T08:34:21.833Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C172055422",
@@ -2244,7 +2387,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:21.846Z",
     "updated_at": "2026-08-16T08:34:21.846Z",
-    "joined": "2026-08-16T08:34:21.856Z"
+    "joined": "2026-08-16T08:34:21.856Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C172055433",
@@ -2266,7 +2411,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:21.870Z",
     "updated_at": "2026-08-16T08:34:21.870Z",
-    "joined": "2026-08-16T08:34:21.881Z"
+    "joined": "2026-08-16T08:34:21.881Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C173024780",
@@ -2288,7 +2435,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:21.890Z",
     "updated_at": "2026-08-16T08:34:21.890Z",
-    "joined": "2026-08-16T08:34:21.899Z"
+    "joined": "2026-08-16T08:34:21.899Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C173042283",
@@ -2310,7 +2459,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:21.906Z",
     "updated_at": "2026-08-16T08:34:21.906Z",
-    "joined": "2026-08-16T08:34:21.915Z"
+    "joined": "2026-08-16T08:34:21.915Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C173055108",
@@ -2332,7 +2483,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:21.929Z",
     "updated_at": "2026-08-16T08:34:21.929Z",
-    "joined": "2026-08-16T08:34:21.936Z"
+    "joined": "2026-08-16T08:34:21.936Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C174055267",
@@ -2354,7 +2507,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:21.948Z",
     "updated_at": "2026-08-16T08:34:21.948Z",
-    "joined": "2026-08-16T08:34:21.958Z"
+    "joined": "2026-08-16T08:34:21.958Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C174102925",
@@ -2376,7 +2531,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:21.970Z",
     "updated_at": "2026-08-16T08:34:21.970Z",
-    "joined": "2026-08-16T08:34:21.976Z"
+    "joined": "2026-08-16T08:34:21.976Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C175051101",
@@ -2398,7 +2555,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:21.988Z",
     "updated_at": "2026-08-16T08:34:21.988Z",
-    "joined": "2026-08-16T08:34:22.006Z"
+    "joined": "2026-08-16T08:34:22.006Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C175055158",
@@ -2420,7 +2579,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:22.014Z",
     "updated_at": "2026-08-16T08:34:22.014Z",
-    "joined": "2026-08-16T08:34:22.050Z"
+    "joined": "2026-08-16T08:34:22.050Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C175104752",
@@ -2442,7 +2603,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:22.063Z",
     "updated_at": "2026-08-16T08:34:22.063Z",
-    "joined": "2026-08-16T08:34:22.071Z"
+    "joined": "2026-08-16T08:34:22.071Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C176028135",
@@ -2464,7 +2627,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:22.082Z",
     "updated_at": "2026-08-16T08:34:22.082Z",
-    "joined": "2026-08-16T08:34:22.090Z"
+    "joined": "2026-08-16T08:34:22.090Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C177020389",
@@ -2486,7 +2651,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:22.101Z",
     "updated_at": "2026-08-16T08:34:22.101Z",
-    "joined": "2026-08-16T08:34:22.108Z"
+    "joined": "2026-08-16T08:34:22.108Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C177055221",
@@ -2508,7 +2675,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:22.119Z",
     "updated_at": "2026-08-16T08:34:22.119Z",
-    "joined": "2026-08-16T08:34:22.137Z"
+    "joined": "2026-08-16T08:34:22.137Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C178055194",
@@ -2530,7 +2699,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:22.146Z",
     "updated_at": "2026-08-16T08:34:22.146Z",
-    "joined": "2026-08-16T08:34:22.154Z"
+    "joined": "2026-08-16T08:34:22.154Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C178055392",
@@ -2552,7 +2723,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:22.165Z",
     "updated_at": "2026-08-16T08:34:22.165Z",
-    "joined": "2026-08-16T08:34:22.171Z"
+    "joined": "2026-08-16T08:34:22.171Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C178055477",
@@ -2574,7 +2747,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:22.182Z",
     "updated_at": "2026-08-16T08:34:22.183Z",
-    "joined": "2026-08-16T08:34:22.198Z"
+    "joined": "2026-08-16T08:34:22.198Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C178092815",
@@ -2596,7 +2771,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:22.206Z",
     "updated_at": "2026-08-16T08:34:22.206Z",
-    "joined": "2026-08-16T08:34:22.226Z"
+    "joined": "2026-08-16T08:34:22.226Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C179010401",
@@ -2618,7 +2795,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:22.236Z",
     "updated_at": "2026-08-16T08:34:22.236Z",
-    "joined": "2026-08-16T08:34:22.247Z"
+    "joined": "2026-08-16T08:34:22.247Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C179055379",
@@ -2640,7 +2819,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:22.263Z",
     "updated_at": "2026-08-16T08:34:22.263Z",
-    "joined": "2026-08-16T08:34:22.269Z"
+    "joined": "2026-08-16T08:34:22.269Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C179055381",
@@ -2662,7 +2843,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:22.282Z",
     "updated_at": "2026-08-16T08:34:22.282Z",
-    "joined": "2026-08-16T08:34:22.289Z"
+    "joined": "2026-08-16T08:34:22.289Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "M146108495",
@@ -2684,7 +2867,9 @@
     "class_id": "TCSF-1",
     "created_at": "2026-08-16T08:34:22.302Z",
     "updated_at": "2026-08-16T08:34:22.302Z",
-    "joined": "2026-08-16T08:34:22.315Z"
+    "joined": "2026-08-16T08:34:22.315Z",
+    "classId": "TCSF-1",
+    "className": "TCSF-1"
   },
   {
     "id": "C161067818",
@@ -2706,7 +2891,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.453Z",
     "updated_at": "2026-08-16T08:34:33.453Z",
-    "joined": "2026-08-16T08:34:33.465Z"
+    "joined": "2026-08-16T08:34:33.465Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C161080056",
@@ -2728,7 +2915,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.474Z",
     "updated_at": "2026-08-16T08:34:33.474Z",
-    "joined": "2026-08-16T08:34:33.484Z"
+    "joined": "2026-08-16T08:34:33.484Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C163051195",
@@ -2750,7 +2939,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.505Z",
     "updated_at": "2026-08-16T08:34:33.505Z",
-    "joined": "2026-08-16T08:34:33.518Z"
+    "joined": "2026-08-16T08:34:33.518Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C164055828",
@@ -2772,7 +2963,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.526Z",
     "updated_at": "2026-08-16T08:34:33.526Z",
-    "joined": "2026-08-16T08:34:33.540Z"
+    "joined": "2026-08-16T08:34:33.540Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C164073672",
@@ -2794,7 +2987,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.552Z",
     "updated_at": "2026-08-16T08:34:33.552Z",
-    "joined": "2026-08-16T08:34:33.565Z"
+    "joined": "2026-08-16T08:34:33.565Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C165011619",
@@ -2816,7 +3011,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.574Z",
     "updated_at": "2026-08-16T08:34:33.574Z",
-    "joined": "2026-08-16T08:34:33.585Z"
+    "joined": "2026-08-16T08:34:33.585Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C165011887",
@@ -2838,7 +3035,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.600Z",
     "updated_at": "2026-08-16T08:34:33.600Z",
-    "joined": "2026-08-16T08:34:33.651Z"
+    "joined": "2026-08-16T08:34:33.651Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C165090781",
@@ -2860,7 +3059,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.669Z",
     "updated_at": "2026-08-16T08:34:33.669Z",
-    "joined": "2026-08-16T08:34:33.680Z"
+    "joined": "2026-08-16T08:34:33.680Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C166059721",
@@ -2882,7 +3083,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.688Z",
     "updated_at": "2026-08-16T08:34:33.688Z",
-    "joined": "2026-08-16T08:34:33.699Z"
+    "joined": "2026-08-16T08:34:33.699Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C166068234",
@@ -2904,7 +3107,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.707Z",
     "updated_at": "2026-08-16T08:34:33.707Z",
-    "joined": "2026-08-16T08:34:33.718Z"
+    "joined": "2026-08-16T08:34:33.718Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C167011897",
@@ -2926,7 +3131,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.726Z",
     "updated_at": "2026-08-16T08:34:33.726Z",
-    "joined": "2026-08-16T08:34:33.769Z"
+    "joined": "2026-08-16T08:34:33.769Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C169018317",
@@ -2948,7 +3155,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.820Z",
     "updated_at": "2026-08-16T08:34:33.820Z",
-    "joined": "2026-08-16T08:34:33.830Z"
+    "joined": "2026-08-16T08:34:33.830Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C169037008",
@@ -2970,7 +3179,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.838Z",
     "updated_at": "2026-08-16T08:34:33.838Z",
-    "joined": "2026-08-16T08:34:33.847Z"
+    "joined": "2026-08-16T08:34:33.847Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C169068209",
@@ -2992,7 +3203,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.885Z",
     "updated_at": "2026-08-16T08:34:33.885Z",
-    "joined": "2026-08-16T08:34:33.901Z"
+    "joined": "2026-08-16T08:34:33.901Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C170010506",
@@ -3014,7 +3227,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.913Z",
     "updated_at": "2026-08-16T08:34:33.913Z",
-    "joined": "2026-08-16T08:34:33.921Z"
+    "joined": "2026-08-16T08:34:33.921Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C170038014",
@@ -3036,7 +3251,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.934Z",
     "updated_at": "2026-08-16T08:34:33.934Z",
-    "joined": "2026-08-16T08:34:33.944Z"
+    "joined": "2026-08-16T08:34:33.944Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C171055404",
@@ -3058,7 +3275,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.955Z",
     "updated_at": "2026-08-16T08:34:33.955Z",
-    "joined": "2026-08-16T08:34:33.964Z"
+    "joined": "2026-08-16T08:34:33.964Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C172024076",
@@ -3080,7 +3299,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.974Z",
     "updated_at": "2026-08-16T08:34:33.975Z",
-    "joined": "2026-08-16T08:34:33.982Z"
+    "joined": "2026-08-16T08:34:33.982Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C172043577",
@@ -3102,7 +3323,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:33.994Z",
     "updated_at": "2026-08-16T08:34:33.994Z",
-    "joined": "2026-08-16T08:34:34.004Z"
+    "joined": "2026-08-16T08:34:34.004Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C172055423",
@@ -3124,7 +3347,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:34.016Z",
     "updated_at": "2026-08-16T08:34:34.016Z",
-    "joined": "2026-08-16T08:34:34.023Z"
+    "joined": "2026-08-16T08:34:34.023Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C173055520",
@@ -3146,7 +3371,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:34.035Z",
     "updated_at": "2026-08-16T08:34:34.035Z",
-    "joined": "2026-08-16T08:34:34.046Z"
+    "joined": "2026-08-16T08:34:34.046Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C176064304",
@@ -3168,7 +3395,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:34.055Z",
     "updated_at": "2026-08-16T08:34:34.055Z",
-    "joined": "2026-08-16T08:34:34.066Z"
+    "joined": "2026-08-16T08:34:34.066Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "C178055126",
@@ -3190,7 +3419,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:34.074Z",
     "updated_at": "2026-08-16T08:34:34.074Z",
-    "joined": "2026-08-16T08:34:34.084Z"
+    "joined": "2026-08-16T08:34:34.084Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "N140077065",
@@ -3212,7 +3443,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:34.095Z",
     "updated_at": "2026-08-16T08:34:34.095Z",
-    "joined": "2026-08-16T08:34:34.103Z"
+    "joined": "2026-08-16T08:34:34.103Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "N141084912",
@@ -3234,7 +3467,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:34.115Z",
     "updated_at": "2026-08-16T08:34:34.115Z",
-    "joined": "2026-08-16T08:34:34.124Z"
+    "joined": "2026-08-16T08:34:34.124Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "N147077187",
@@ -3256,7 +3491,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:34.135Z",
     "updated_at": "2026-08-16T08:34:34.135Z",
-    "joined": "2026-08-16T08:34:34.146Z"
+    "joined": "2026-08-16T08:34:34.146Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "N150001819",
@@ -3278,7 +3515,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:34.155Z",
     "updated_at": "2026-08-16T08:34:34.155Z",
-    "joined": "2026-08-16T08:34:34.195Z"
+    "joined": "2026-08-16T08:34:34.195Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "N150023602",
@@ -3300,7 +3539,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:34.206Z",
     "updated_at": "2026-08-16T08:34:34.206Z",
-    "joined": "2026-08-16T08:34:34.216Z"
+    "joined": "2026-08-16T08:34:34.216Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "N158008140",
@@ -3322,7 +3563,9 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:34.230Z",
     "updated_at": "2026-08-16T08:34:34.230Z",
-    "joined": "2026-08-16T08:34:34.238Z"
+    "joined": "2026-08-16T08:34:34.238Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   },
   {
     "id": "N159025333",
@@ -3344,6 +3587,8 @@
     "class_id": "TCLSH-1",
     "created_at": "2026-08-16T08:34:34.251Z",
     "updated_at": "2026-08-16T08:34:34.251Z",
-    "joined": "2026-08-16T08:34:34.272Z"
+    "joined": "2026-08-16T08:34:34.272Z",
+    "classId": "TCLSH-1",
+    "className": "TCLSH-1"
   }
 ]

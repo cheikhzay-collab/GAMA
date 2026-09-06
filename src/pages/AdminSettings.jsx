@@ -114,6 +114,21 @@ export default function AdminSettings() {
   const [showOpenaiKey, setShowOpenaiKey] = useState(false);
   const [openaiKeySaved, setOpenaiKeySaved] = useState(false);
 
+  const handleToggleClaudeSolve = (val) => {
+    setClaudeSolveSolutions(val);
+    localStorage.setItem('claude_solve_solutions', String(val));
+  };
+
+  const handleToggleGeminiSolve = (val) => {
+    setGeminiSolveSolutions(val);
+    localStorage.setItem('gemini_solve_solutions', String(val));
+  };
+
+  const handleToggleDeepseekSolve = (val) => {
+    setDeepseekSolveSolutions(val);
+    localStorage.setItem('deepseek_solve_solutions', String(val));
+  };
+
   const saveApiKey = () => {
     localStorage.setItem('claudeApiKey', apiKey.trim());
     localStorage.setItem('claudeProxyUrl', proxyUrl.trim());
@@ -2053,7 +2068,13 @@ export default function AdminSettings() {
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.65rem 0.75rem', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
+                    <label style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '0.65rem 0.75rem', borderRadius: '10px',
+                      background: geminiSolveSolutions ? 'rgba(66, 133, 244, 0.08)' : 'rgba(255,255,255,0.02)',
+                      border: geminiSolveSolutions ? '1px solid rgba(66, 133, 244, 0.4)' : '1px solid var(--border)',
+                      cursor: 'pointer', transition: 'all 0.2s ease'
+                    }}>
                       <div>
                         <span style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-main)', display: 'block' }}>Résoudre les exercices</span>
                         <span style={{ fontSize: '0.66rem', color: 'var(--text-subtle)' }}>Calcul automatique des solutions</span>
@@ -2061,10 +2082,10 @@ export default function AdminSettings() {
                       <input
                         type="checkbox"
                         checked={geminiSolveSolutions}
-                        onChange={e => setGeminiSolveSolutions(e.target.checked)}
+                        onChange={e => handleToggleGeminiSolve(e.target.checked)}
                         style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#4285F4' }}
                       />
-                    </div>
+                    </label>
                   </div>
 
                   <button
@@ -2182,7 +2203,13 @@ export default function AdminSettings() {
                       />
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.65rem 0.75rem', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
+                    <label style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '0.65rem 0.75rem', borderRadius: '10px',
+                      background: deepseekSolveSolutions ? 'rgba(0, 186, 124, 0.08)' : 'rgba(255,255,255,0.02)',
+                      border: deepseekSolveSolutions ? '1px solid rgba(0, 186, 124, 0.4)' : '1px solid var(--border)',
+                      cursor: 'pointer', transition: 'all 0.2s ease'
+                    }}>
                       <div>
                         <span style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-main)', display: 'block' }}>Résoudre les exercices</span>
                         <span style={{ fontSize: '0.66rem', color: 'var(--text-subtle)' }}>Activer le raisonnement automatique</span>
@@ -2190,10 +2217,10 @@ export default function AdminSettings() {
                       <input
                         type="checkbox"
                         checked={deepseekSolveSolutions}
-                        onChange={e => setDeepseekSolveSolutions(e.target.checked)}
+                        onChange={e => handleToggleDeepseekSolve(e.target.checked)}
                         style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#00BA7C' }}
                       />
-                    </div>
+                    </label>
                   </div>
 
                   <button
@@ -2311,18 +2338,24 @@ export default function AdminSettings() {
                       />
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.65rem 0.75rem', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
+                    <label style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '0.65rem 0.75rem', borderRadius: '10px',
+                      background: claudeSolveSolutions ? 'rgba(217, 119, 6, 0.08)' : 'rgba(255,255,255,0.02)',
+                      border: claudeSolveSolutions ? '1px solid rgba(217, 119, 6, 0.4)' : '1px solid var(--border)',
+                      cursor: 'pointer', transition: 'all 0.2s ease'
+                    }}>
                       <div>
                         <span style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-main)', display: 'block' }}>Résoudre les exercices</span>
-                        <span style={{ fontSize: '0.66rem', color: 'var(--text-subtle)' }}>Génération automatique de corriger</span>
+                        <span style={{ fontSize: '0.66rem', color: 'var(--text-subtle)' }}>Génération automatique du corrigé</span>
                       </div>
                       <input
                         type="checkbox"
                         checked={claudeSolveSolutions}
-                        onChange={e => setClaudeSolveSolutions(e.target.checked)}
+                        onChange={e => handleToggleClaudeSolve(e.target.checked)}
                         style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#D97706' }}
                       />
-                    </div>
+                    </label>
                   </div>
 
                   <button

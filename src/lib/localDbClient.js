@@ -1,8 +1,9 @@
 // src/lib/localDbClient.js
 // Client API wrapper for communicating with the local Companion server database on port 5002.
 
-const BASE_URL = 'http://127.0.0.1:5002/api';
-const PING_URL = 'http://127.0.0.1:5002/ping';
+const getHost = () => (typeof window !== 'undefined' && window.location && window.location.hostname) ? window.location.hostname : '127.0.0.1';
+const BASE_URL = `http://${getHost()}:5002/api`;
+const PING_URL = `http://${getHost()}:5002/ping`;
 const PROBE_TIMEOUT_MS = 750;
 const REQUEST_TIMEOUT_MS = 3000;
 const OFFLINE_COOLDOWN_MS = 30000;

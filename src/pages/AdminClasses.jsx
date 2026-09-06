@@ -37,11 +37,6 @@ export default function AdminClasses() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Guard role
-  if (user?.role !== 'admin') {
-    return <Navigate to="/dashboard" replace />;
-  }
-
   // Component States
   const [classes, setClasses] = useState([]);
   const [students, setStudents] = useState([]);
@@ -434,12 +429,13 @@ export default function AdminClasses() {
     if (!parsedClassInfo) return;
     setLoading(true);
     try {
-      // 1. Create Class with controls and grades metadata
+      // 1. Create Class with students, controls, and grades metadata
       await addClass({
         id: parsedClassInfo.name,
         name: parsedClassInfo.name,
         level: parsedClassInfo.level,
         language: parsedClassInfo.language || 'fr',
+        students: parsedClassInfo.students,
         studentCount: parsedClassInfo.students.length,
         controls: parsedClassInfo.controls.map(c => c.name),
         grades: parsedClassInfo.grades,
@@ -449,7 +445,7 @@ export default function AdminClasses() {
       // 2. Create/update Student Profiles
       for (const std of parsedClassInfo.students) {
         // Password format: date of birth without slashes, ex: '31052009'
-        const cleanPassword = std.dob.replace(/\//g, '');
+        const cleanPassword = std.dob ? std.dob.replace(/\//g, '') : '01012009';
         const studentEmail = `${std.massarCode.toLowerCase()}@lconq.ma`;
 
         await createUserDoc(std.massarCode, {
@@ -460,6 +456,9 @@ export default function AdminClasses() {
           xp: 0,
           school: 'Lycée Qualifiant 18 Novembre',
           classId: parsedClassInfo.name,
+          className: parsedClassInfo.name,
+          massarCode: std.massarCode,
+          dob: std.dob,
           crm: { stage: 'Lead', notes: [`Importé via fichier Excel. Date de Naissance : ${std.dob}`], reminders: [], interactions: [] }
         });
       }
@@ -513,6 +512,11 @@ export default function AdminClasses() {
       return matchesSearch;
     });
   }, [classes, searchTerm]);
+
+  // Guard role (Must run after all hooks)
+  if (user?.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', paddingBottom: '3rem' }}>

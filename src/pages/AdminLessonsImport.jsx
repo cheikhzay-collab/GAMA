@@ -6,7 +6,7 @@ import {
   Trash2, Plus, ArrowLeft, AlertCircle, Save,
   Crop, Eye, Columns, Maximize2, ZoomIn, ZoomOut,
   ChevronLeft, ChevronRight, Image as ImageIcon,
-  CheckCircle, AlertTriangle
+  CheckCircle, AlertTriangle, FileText, BookOpen, Layers, Award, Target
 } from 'lucide-react';
 import { addLesson } from '../services/lessonService';
 import { SafeInlineMath } from '../utils/mathRenderer';
@@ -768,10 +768,6 @@ export default function AdminLessonsImport({ onBack }) {
   const isMobile = useIsMobile();
   const { schools, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-
-  if (!authLoading && user?.role !== 'admin') {
-    return <Navigate to="/dashboard" replace />;
-  }
 
   const fileInputRef = useRef();
 
@@ -1946,6 +1942,11 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
 
   const isArMode = /[\u0600-\u06FF]/.test(ficheTitle + ' ' + subject + ' ' + (sections || []).map(s => s.title + ' ' + (s.content || '')).join(' '));
 
+  // Role Guard (Must run after all hooks)
+  if (!authLoading && user?.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <div className="animate-fade-in" style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '3rem' }}>
       {isArMode && (
@@ -2575,99 +2576,132 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
               {/* Right Pane: Lesson & Exercises Structure Editor */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                 {/* Section 1: Header metadata */}
-                <div className="glass-panel" style={{ padding: '2rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)' }}>
-                  <h2 style={{ 
-                    fontSize: '1.2rem', 
-                    fontWeight: 800, 
-                    marginBottom: '1.5rem', 
-                    borderBottom: '1px solid var(--border)', 
-                    paddingBottom: '0.6rem',
+                <div className="glass-panel" style={{ padding: isMobile ? '1.25rem' : '1.75rem', border: '1px solid var(--border)', borderRadius: '16px' }}>
+                  
+                  {/* Header */}
+                  <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.6rem',
-                    color: 'var(--text-main)'
+                    justifyContent: 'space-between',
+                    marginBottom: '1.25rem',
+                    paddingBottom: '0.85rem',
+                    borderBottom: '1px solid var(--border)'
                   }}>
-                    <span>📁</span>
-                    <span>Informations Générales du Document</span>
-                  </h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                      <div style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '10px',
+                        background: 'rgba(99, 102, 241, 0.1)',
+                        color: 'var(--violet)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <FileText size={18} />
+                      </div>
+                      <div>
+                        <h2 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
+                          Informations Générales du Document
+                        </h2>
+                        <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                          Structure, niveau académique et métadonnées d'affichage
+                        </span>
+                      </div>
+                    </div>
+                  </div>
 
-                  <div className="dashboard-grid">
-                    <div className="col-span-5 input-group">
-                      <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Titre de la Fiche</label>
+                  {/* 1. Type de Document - Segmented Pill Selector */}
+                  <div style={{ marginBottom: '1.25rem' }}>
+                    <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.45rem', display: 'block' }}>
+                      Type de document
+                    </label>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(150px, 1fr))',
+                      gap: '0.5rem'
+                    }}>
+                      {[
+                        { id: 'exercises', label: "Série d'exercices", icon: Layers },
+                        { id: 'course', label: 'Cours théorique', icon: BookOpen },
+                        { id: 'homework', label: 'Devoir surveillé', icon: FileText },
+                        { id: 'national', label: 'Examen National', icon: Award },
+                        { id: 'concours', label: "Concours d'accès", icon: Target },
+                      ].map(t => {
+                        const isSelected = isNationalExam ? t.id === 'national' : docType === t.id;
+                        const IconComp = t.icon;
+                        return (
+                          <button
+                            key={t.id}
+                            type="button"
+                            onClick={() => {
+                              if (t.id === 'national') {
+                                setIsNationalExam(true);
+                                setDocType('national');
+                                setViewNationalTemplate(true);
+                              } else {
+                                setIsNationalExam(false);
+                                setDocType(t.id);
+                                setViewNationalTemplate(false);
+                              }
+                            }}
+                            style={{
+                              padding: '0.55rem 0.75rem',
+                              borderRadius: '10px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              border: isSelected ? '1.5px solid var(--violet)' : '1px solid var(--border)',
+                              background: isSelected ? 'rgba(99, 102, 241, 0.12)' : 'rgba(255,255,255,0.02)',
+                              color: isSelected ? 'var(--violet)' : 'var(--text-muted)',
+                              fontWeight: isSelected ? 800 : 600,
+                              fontSize: '0.8rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '0.45rem',
+                              boxShadow: isSelected ? '0 2px 10px rgba(99, 102, 241, 0.15)' : 'none'
+                            }}
+                          >
+                            <IconComp size={15} />
+                            <span>{t.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 2. Responsive Form Grid */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '0.85rem'
+                  }}>
+                    {/* Titre */}
+                    <div style={{ gridColumn: isMobile ? 'span 1' : 'span 2' }}>
+                      <label style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'block' }}>
+                        Titre de la fiche
+                      </label>
                       <input 
                         type="text" 
                         className="input-control" 
                         value={ficheTitle}
                         onChange={e => setFicheTitle(e.target.value)}
-                        placeholder="Fiche 01 : Arithmétique"
-                        style={{ width: '100%' }}
+                        placeholder="Ex : Notions sur l'arithmétique"
+                        style={{ width: '100%', fontSize: '0.85rem', fontWeight: 700, padding: '0.5rem 0.75rem', borderRadius: '10px' }}
                       />
                     </div>
 
-                    <div className="col-span-3 input-group">
-                      <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Type de Document</label>
-                      <select className="input-control" value={docType} onChange={e => {
-                        const val = e.target.value;
-                        setDocType(val);
-                        if (val === 'national') {
-                          setIsNationalExam(true);
-                          setViewNationalTemplate(true);
-                        }
-                      }} style={{ width: '100%' }}>
-                        <option value="course">Cours</option>
-                        <option value="homework">Devoir Surveillé</option>
-                        <option value="national">Examen National</option>
-                        <option value="exercises">Série d'exercices</option>
-                        <option value="concours">Concours</option>
-                      </select>
-                    </div>
-
-                    <div className="col-span-2 input-group">
-                      <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Matière</label>
-                      <select className="input-control" value={subject} onChange={e => setSubject(e.target.value)} style={{ width: '100%' }}>
-                        <option value="Algèbre">Algèbre</option>
-                        <option value="Analyse">Analyse</option>
-                        <option value="Géométrie">Géométrie</option>
-                        <option value="Probabilités">Probabilités</option>
-                        <option value="Physique">Physique</option>
-                        <option value="Chimie">Chimie</option>
-                        <option value="SVT">SVT</option>
-                      </select>
-                    </div>
-
-                    <div className="col-span-2 input-group">
-                      <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Numéro</label>
-                      <input 
-                        type="text" 
-                        className="input-control" 
-                        value={chapterNumber}
-                        onChange={e => setChapterNumber(e.target.value)}
-                        placeholder="01"
-                        style={{ width: '100%' }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="dashboard-grid" style={{ marginTop: '1.25rem' }}>
-                    <div className="col-span-3 input-group">
-                      <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>En-tête de préparation</label>
-                      <input 
-                        type="text" 
-                        className="input-control" 
-                        value={prepTitle}
-                        onChange={e => setPrepTitle(e.target.value)}
-                        placeholder="Préparation aux concours"
-                        style={{ width: '100%' }}
-                      />
-                    </div>
-
-                    <div className="col-span-3 input-group">
-                      <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Niveau Scolaire</label>
+                    {/* Niveau */}
+                    <div>
+                      <label style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'block' }}>
+                        Niveau scolaire
+                      </label>
                       <select 
                         className="input-control" 
                         value={selectedLevel} 
                         onChange={e => setSelectedLevel(e.target.value)}
-                        style={{ width: '100%' }}
+                        style={{ width: '100%', fontSize: '0.82rem', padding: '0.5rem 0.65rem', borderRadius: '10px' }}
                       >
                         <option value="common_core_sci">Tronc Commun Scientifique</option>
                         <option value="common_core_arts">Tronc Commun Littéraire</option>
@@ -2679,95 +2713,83 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                       </select>
                     </div>
 
-                    <div className="col-span-2 input-group">
-                      <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Enseignant</label>
+                    {/* En-tête de préparation */}
+                    <div>
+                      <label style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'block' }}>
+                        En-tête de préparation
+                      </label>
+                      <input 
+                        type="text" 
+                        className="input-control" 
+                        value={prepTitle}
+                        onChange={e => setPrepTitle(e.target.value)}
+                        placeholder="Ex : A.S : 2025/2026"
+                        style={{ width: '100%', fontSize: '0.82rem', padding: '0.5rem 0.75rem', borderRadius: '10px' }}
+                      />
+                    </div>
+
+                    {/* Enseignant */}
+                    <div>
+                      <label style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'block' }}>
+                        Enseignant
+                      </label>
                       <input 
                         type="text" 
                         className="input-control" 
                         value={teacher}
                         onChange={e => setTeacher(e.target.value)}
-                        placeholder="Prof : FAYSSAL"
-                        style={{ width: '100%' }}
+                        placeholder="Ex : Pr. Zayani"
+                        style={{ width: '100%', fontSize: '0.82rem', padding: '0.5rem 0.75rem', borderRadius: '10px' }}
                       />
                     </div>
 
-                    <div className="col-span-2 input-group">
-                      <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Téléphone</label>
+                    {/* Téléphone */}
+                    <div>
+                      <label style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'block' }}>
+                        Téléphone
+                      </label>
                       <input 
                         type="text" 
                         className="input-control" 
                         value={phone}
                         onChange={e => setPhone(e.target.value)}
-                        placeholder="0681399067"
-                        style={{ width: '100%' }}
+                        placeholder="06XXXXXXXX"
+                        style={{ width: '100%', fontSize: '0.82rem', padding: '0.5rem 0.75rem', borderRadius: '10px' }}
                       />
                     </div>
 
-                    <div className="col-span-2 input-group">
-                      <label style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Langue du document</label>
+                    {/* Numéro / Chapitre */}
+                    <div>
+                      <label style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'block' }}>
+                        Chapitre / Numéro
+                      </label>
+                      <input 
+                        type="text" 
+                        className="input-control" 
+                        value={chapterNumber}
+                        onChange={e => setChapterNumber(e.target.value)}
+                        placeholder="Ex : 01"
+                        style={{ width: '100%', fontSize: '0.82rem', padding: '0.5rem 0.75rem', borderRadius: '10px' }}
+                      />
+                    </div>
+
+                    {/* Langue du document */}
+                    <div>
+                      <label style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'block' }}>
+                        Langue du document
+                      </label>
                       <select 
                         className="input-control" 
                         value={docLanguage} 
                         onChange={e => setDocLanguage(e.target.value)}
-                        style={{ width: '100%' }}
+                        style={{ width: '100%', fontSize: '0.82rem', padding: '0.5rem 0.65rem', borderRadius: '10px' }}
                       >
                         <option value="fr">Français</option>
                         <option value="ar">Arabe</option>
-                        <option value="en">Anglais</option>
                       </select>
                     </div>
-
-                    {/* Document Architecture Selector */}
-                    <div className="col-span-6 input-group" style={{ background: 'rgba(255,255,255,0.02)', padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid var(--border)' }}>
-                      <label style={{ color: 'var(--violet)', fontWeight: 800, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
-                        <span>🏛️ المعمارية ونوع الوثيقة (Architecture & Type de Document) :</span>
-                      </label>
-                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.6rem' }}>
-                        {[
-                          { id: 'exercises', label: "📝 سلسلة تمارين (Série d'exercices)", desc: 'تمارين وأسئلة فرعية متسلسلة' },
-                          { id: 'national', label: '🏆 امتحان وطني رسمي (Examen National)', desc: 'الورقة الرسمية للامتحان الوطني' },
-                          { id: 'homework', label: '📋 فرض محروس / منزلي (Devoir)', desc: 'سلم التنقيط على 20' },
-                          { id: 'course', label: '📖 درس / ملخص (Fiche de Cours)', desc: 'فقرات نظرية وتعاريف' },
-                          { id: 'concours', label: '🎯 مباراة ولوج (Concours)', desc: 'مباريات الطب والهندسة' },
-                        ].map(t => {
-                          const isSelected = isNationalExam ? t.id === 'national' : docType === t.id;
-                          return (
-                            <button
-                              key={t.id}
-                              type="button"
-                              onClick={() => {
-                                if (t.id === 'national') {
-                                  setIsNationalExam(true);
-                                  setDocType('national');
-                                  setViewNationalTemplate(true);
-                                } else {
-                                  setIsNationalExam(false);
-                                  setDocType(t.id);
-                                  setViewNationalTemplate(false);
-                                }
-                              }}
-                              style={{
-                                padding: '0.6rem 0.8rem',
-                                borderRadius: '8px',
-                                textAlign: 'left',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                border: isSelected ? '2px solid var(--violet)' : '1px solid var(--border)',
-                                background: isSelected ? 'rgba(99, 102, 241, 0.15)' : 'rgba(255,255,255,0.03)',
-                                color: isSelected ? 'var(--text-main)' : 'var(--text-muted)',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '0.2rem'
-                              }}
-                            >
-                              <span style={{ fontWeight: 800, fontSize: '0.85rem' }}>{t.label}</span>
-                              <span style={{ fontSize: '0.7rem', opacity: 0.75 }}>{t.desc}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
                   </div>
+
                 </div>
 
                 {/* Section 2: Course Contents */}

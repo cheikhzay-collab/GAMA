@@ -330,10 +330,56 @@ export default function AdminClassDetail() {
         setError("Cette classe n'existe pas.");
         return;
       }
-      setClassObj(cls);
       const allUsers = await getAllUsers();
-      const clsStudents = allUsers.filter(u => u.role === 'student' && u.classId === id);
-      setStudents(clsStudents);
+      const userStudents = allUsers.filter(u => u.role === 'student' && (u.classId === id || u.class_id === id));
+      const studentMap = new Map();
+
+      // 1. Add students from class object
+      (cls.students || []).forEach(st => {
+        const key = (st.massarCode || st.id || '').toUpperCase();
+        if (key) {
+          studentMap.set(key, {
+            id: st.id || st.massarCode,
+            massarCode: st.massarCode || st.id,
+            name: st.name || 'Élève',
+            dob: st.dob || '01/01/2009',
+            email: st.email || `${key.toLowerCase()}@lconq.ma`,
+            classId: id,
+            ...st
+          });
+        }
+      });
+
+      // 2. Merge with registered user profiles
+      userStudents.forEach(u => {
+        const key = (u.massarCode || u.id || '').toUpperCase();
+        if (key) {
+          const existing = studentMap.get(key) || {};
+          studentMap.set(key, {
+            ...existing,
+            ...u,
+            id: u.id || existing.id,
+            massarCode: u.massarCode || existing.massarCode || u.id,
+            name: u.name || existing.name,
+            classId: id,
+            dob: u.dob || existing.dob || '01/01/2009'
+          });
+        }
+      });
+
+      const mergedStudents = Array.from(studentMap.values());
+      const updatedCls = {
+        ...cls,
+        students: mergedStudents,
+        studentCount: mergedStudents.length
+      };
+
+      setClassObj(updatedCls);
+      setStudents(mergedStudents);
+
+      if ((cls.students?.length || 0) !== mergedStudents.length) {
+        updateClass(id, { students: mergedStudents, studentCount: mergedStudents.length }).catch(() => {});
+      }
 
       // Fetch all active lessons & exams
       const activeLessons = await getActiveLessons();
@@ -688,7 +734,7 @@ export default function AdminClassDetail() {
       const cleanPassword = dobStr.replace(/\//g, '');
       const studentEmail = `${newStudent.massarCode.toLowerCase()}@lconq.ma`;
 
-      await createUserDoc(newStudent.massarCode, {
+      const studentData = {
         name: newStudent.name,
         email: studentEmail,
         role: 'student',
@@ -696,24 +742,50 @@ export default function AdminClassDetail() {
         xp: 0,
         school: 'Lycée Qualifiant 18 Novembre',
         classId: id,
+        className: classObj?.name || id,
+        massarCode: newStudent.massarCode,
+        dob: dobStr,
         crm: { 
           stage: 'Lead', 
           notes: [`Ajouté manuellement à la classe ${id}. Date de Naissance : ${dobStr}`], 
           reminders: [], 
           interactions: [] 
         }
+      };
+
+      await createUserDoc(newStudent.massarCode, studentData);
+
+      const studentObj = {
+        id: newStudent.massarCode,
+        massarCode: newStudent.massarCode,
+        name: newStudent.name,
+        dob: dobStr,
+        email: studentEmail,
+        classId: id
+      };
+
+      const currentStudents = Array.isArray(classObj?.students) ? [...classObj.students] : [];
+      const updatedStudents = currentStudents.filter(s => 
+        s.id !== newStudent.massarCode && s.massarCode !== newStudent.massarCode
+      );
+      updatedStudents.push(studentObj);
+
+      await updateClass(id, {
+        students: updatedStudents,
+        studentCount: updatedStudents.length
       });
 
-      // Update studentCount
-      await updateClass(id, {
-        studentCount: (classObj.studentCount || 0) + 1
-      });
+      setClassObj(prev => ({
+        ...prev,
+        students: updatedStudents,
+        studentCount: updatedStudents.length
+      }));
+      setStudents(updatedStudents);
 
       setSuccess(`L'élève ${newStudent.name} a été ajouté.`);
       setNewStudent({ massarCode: '', name: '', dob: '' });
       setShowAddStudent(false);
       await refreshAdminData();
-      await fetchData();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       console.error(err);
@@ -728,13 +800,26 @@ export default function AdminClassDetail() {
     if (!window.confirm("Êtes-vous sûr de vouloir retirer cet élève de la classe ?")) return;
     setLoading(true);
     try {
-      await updateUserDoc(studentId, { classId: null });
+      const currentStudents = Array.isArray(classObj?.students) ? [...classObj.students] : [];
+      const updatedStudents = currentStudents.filter(s => 
+        s.id !== studentId && s.massarCode !== studentId
+      );
+
+      await updateUserDoc(studentId, { classId: null, class_id: null });
       await updateClass(id, {
-        studentCount: Math.max(0, (classObj.studentCount || 0) - 1)
+        students: updatedStudents,
+        studentCount: updatedStudents.length
       });
+
+      setClassObj(prev => ({
+        ...prev,
+        students: updatedStudents,
+        studentCount: updatedStudents.length
+      }));
+      setStudents(updatedStudents);
+
       setSuccess("L'élève a été retiré de la classe.");
       await refreshAdminData();
-      await fetchData();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       console.error(err);

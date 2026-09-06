@@ -591,11 +591,51 @@ export default function LessonViewerPage() {
   const [visibleSolutions, setVisibleSolutions] = useState({}); // sectionId -> boolean
   const [answers, setAnswers] = useState({}); // key -> student input
   const [checkResults, setCheckResults] = useState({}); // key -> 'success' | 'error'
-  const [includeSolutionsInPdf, setIncludeSolutionsInPdf] = useState(true);
+  const [includeSolutionsInPdf, setIncludeSolutionsInPdf] = useState(() => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const saved = localStorage.getItem('pdf_series_solutions');
+        if (saved !== null) return saved === 'true';
+      }
+    } catch {}
+    return true;
+  });
+
+  const handleToggleSolutions = () => {
+    setIncludeSolutionsInPdf(prev => {
+      const next = !prev;
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          localStorage.setItem('pdf_series_solutions', String(next));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+      return next;
+    });
+  };
+
   const [isDirectEdit, setIsDirectEdit] = useState(false);
   const [originalLessonBackup, setOriginalLessonBackup] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [viewSummaryMode, setViewSummaryMode] = useState(false);
+
+  // Dynamic columns count for exercises series: 1 or 2 columns
+  const [seriesColumns, setSeriesColumns] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lesson_viewer_columns');
+      if (saved) return parseInt(saved, 10);
+    } catch {}
+    return 2;
+  });
+
+  const handleSetSeriesColumns = (cols) => {
+    setSeriesColumns(cols);
+    try {
+      localStorage.setItem('lesson_viewer_columns', cols);
+      localStorage.setItem('pdf_series_columns', cols);
+    } catch {}
+  };
 
   const [isGeneratingAiFiche, setIsGeneratingAiFiche] = useState(false);
 
@@ -607,10 +647,6 @@ export default function LessonViewerPage() {
       setIsGeneratingAiFiche(false);
     }
   };
-
-  if (!authLoading && !user) {
-    return <Navigate to="/login" replace />;
-  }
 
   useEffect(() => {
     const fetchLesson = async () => {
@@ -1023,8 +1059,8 @@ export default function LessonViewerPage() {
         // Mode 3 Colonnes actif -> Impression au format Résumé (3 Colonnes)
         openCourseSummaryPrintWindow(lesson.content || lesson);
       } else {
-        // Mode Standard actif -> Impression au format Standard
-        openLessonPrintWindow(lesson, { showSolutions: includeSolutionsInPdf, layoutMode: 'standard', forceStandard: true });
+        // Mode Standard actif -> Impression au format Standard avec le nombre de colonnes choisi
+        openLessonPrintWindow(lesson, { showSolutions: includeSolutionsInPdf, layoutMode: 'standard', forceStandard: true, columnsCount: seriesColumns });
       }
     } catch (err) {
       console.error('[PDF Export] Error:', err);
@@ -1033,6 +1069,10 @@ export default function LessonViewerPage() {
       setIsExporting(false);
     }
   };
+
+  if (!authLoading && !user) {
+    return <Navigate to="/login" replace />;
+  }
 
   if (loading) {
     return (
@@ -1367,15 +1407,37 @@ export default function LessonViewerPage() {
             column-count: 2 !important;
             column-gap: 1.5rem !important;
             column-rule: 1px solid var(--border) !important;
+            column-fill: balance !important;
             width: 100% !important;
           }
           .classic-view-active .exercises-two-columns-layout {
             column-rule: 1px solid rgba(0, 80, 134, 0.2) !important;
           }
-          .exercises-two-columns-layout > * {
-            break-inside: avoid-column !important;
-            page-break-inside: avoid !important;
+          .exercises-two-columns-layout > *,
+          .exercises-two-columns-layout .exercise-wrapper,
+          .exercises-two-columns-layout .exercise-body,
+          .exercises-two-columns-layout .exercise-body-box {
             margin-bottom: 1rem !important;
+            break-inside: auto !important;
+            page-break-inside: auto !important;
+            -webkit-column-break-inside: auto !important;
+          }
+          .exercises-two-columns-layout .section-header-row,
+          .exercises-two-columns-layout .exercise-banner,
+          .exercises-two-columns-layout .modern-exercise-banner {
+            break-inside: avoid !important;
+            break-after: avoid !important;
+            page-break-after: avoid !important;
+            -webkit-column-break-after: avoid !important;
+            margin-bottom: 0.65rem !important;
+          }
+          .exercises-two-columns-layout .list-item-row,
+          .exercises-two-columns-layout .exercise-item-row,
+          .exercises-two-columns-layout div[style*="display: flex"],
+          .exercises-two-columns-layout div[style*="display:flex"] {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            -webkit-column-break-inside: avoid !important;
           }
           
           /* Prevent math formulas from overflowing two-column layouts */
@@ -1395,6 +1457,100 @@ export default function LessonViewerPage() {
             display: inline-block !important;
             margin-top: 2px;
             margin-bottom: 2px;
+          }
+
+          /* Table containment in two-column screen view */
+          .exercises-two-columns-layout .markdown-table-wrapper {
+            max-width: 100% !important;
+            overflow: hidden !important;
+          }
+          .exercises-two-columns-layout table,
+          .exercises-two-columns-layout .markdown-table {
+            width: 100% !important;
+            max-width: 100% !important;
+            table-layout: fixed !important;
+            font-size: 0.78rem !important;
+            break-inside: avoid !important;
+          }
+          .exercises-two-columns-layout th,
+          .exercises-two-columns-layout td {
+            padding: 4px 6px !important;
+            font-size: 0.78rem !important;
+            word-break: break-word !important;
+          }
+
+          /* 3-columns screen layout */
+          .exercises-three-columns-layout {
+            display: block !important;
+            column-count: 3 !important;
+            column-gap: 1.2rem !important;
+            column-rule: 1px solid var(--border) !important;
+            column-fill: balance !important;
+            width: 100% !important;
+          }
+          .classic-view-active .exercises-three-columns-layout {
+            column-rule: 1px solid rgba(0, 80, 134, 0.2) !important;
+          }
+          .exercises-three-columns-layout > *,
+          .exercises-three-columns-layout .exercise-wrapper,
+          .exercises-three-columns-layout .exercise-body,
+          .exercises-three-columns-layout .exercise-body-box {
+            margin-bottom: 0.75rem !important;
+            break-inside: auto !important;
+            page-break-inside: auto !important;
+            -webkit-column-break-inside: auto !important;
+          }
+          .exercises-three-columns-layout .section-header-row,
+          .exercises-three-columns-layout .exercise-banner,
+          .exercises-three-columns-layout .modern-exercise-banner {
+            break-inside: avoid !important;
+            break-after: avoid !important;
+            page-break-after: avoid !important;
+            -webkit-column-break-after: avoid !important;
+            margin-bottom: 0.5rem !important;
+          }
+          .exercises-three-columns-layout .list-item-row,
+          .exercises-three-columns-layout .exercise-item-row,
+          .exercises-three-columns-layout div[style*="display: flex"],
+          .exercises-three-columns-layout div[style*="display:flex"] {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            -webkit-column-break-inside: avoid !important;
+          }
+          .exercises-three-columns-layout .katex-display {
+            max-width: 100% !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            font-size: 0.75em !important;
+          }
+          .exercises-three-columns-layout .katex,
+          .exercises-three-columns-layout .katex-html {
+            white-space: normal !important;
+            display: inline !important;
+          }
+          .exercises-three-columns-layout .katex .base {
+            white-space: nowrap !important;
+            display: inline-block !important;
+            margin-top: 1px;
+            margin-bottom: 1px;
+          }
+          .exercises-three-columns-layout .markdown-table-wrapper {
+            max-width: 100% !important;
+            overflow: hidden !important;
+          }
+          .exercises-three-columns-layout table,
+          .exercises-three-columns-layout .markdown-table {
+            width: 100% !important;
+            max-width: 100% !important;
+            table-layout: fixed !important;
+            font-size: 0.7rem !important;
+            break-inside: avoid !important;
+          }
+          .exercises-three-columns-layout th,
+          .exercises-three-columns-layout td {
+            padding: 2px 4px !important;
+            font-size: 0.7rem !important;
+            word-break: break-word !important;
           }
         }
         
@@ -1802,12 +1958,32 @@ export default function LessonViewerPage() {
             column-count: 2 !important;
             column-gap: 1.5rem !important;
             column-rule: 1px solid rgba(0, 80, 134, 0.2) !important;
+            column-fill: auto !important;
             width: 100% !important;
           }
-          .exercises-two-columns-layout > * {
-            break-inside: avoid-column !important;
-            page-break-inside: avoid !important;
+          .exercises-two-columns-layout > *,
+          .exercises-two-columns-layout .exercise-wrapper,
+          .exercises-two-columns-layout .exercise-body,
+          .exercises-two-columns-layout .exercise-body-box {
             margin-bottom: 1rem !important;
+            break-inside: auto !important;
+            page-break-inside: auto !important;
+            -webkit-column-break-inside: auto !important;
+          }
+          .exercises-two-columns-layout .exercise-banner,
+          .exercises-two-columns-layout .modern-exercise-banner {
+            break-inside: avoid !important;
+            break-after: avoid !important;
+            page-break-after: avoid !important;
+            -webkit-column-break-after: avoid !important;
+          }
+          .exercises-two-columns-layout .list-item-row,
+          .exercises-two-columns-layout .exercise-item-row,
+          .exercises-two-columns-layout div[style*="display: flex"],
+          .exercises-two-columns-layout div[style*="display:flex"] {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            -webkit-column-break-inside: avoid !important;
           }
           
           /* Prevent math formulas from overflowing two-column layouts in print */
@@ -1827,6 +2003,99 @@ export default function LessonViewerPage() {
             display: inline-block !important;
             margin-top: 2px;
             margin-bottom: 2px;
+          }
+
+          /* Table containment in two-column print view */
+          .exercises-two-columns-layout .markdown-table-wrapper {
+            max-width: 100% !important;
+            overflow: hidden !important;
+            break-inside: avoid !important;
+          }
+          .exercises-two-columns-layout table,
+          .exercises-two-columns-layout .markdown-table {
+            width: 100% !important;
+            max-width: 100% !important;
+            table-layout: fixed !important;
+            font-size: 0.74rem !important;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+          }
+          .exercises-two-columns-layout th,
+          .exercises-two-columns-layout td {
+            padding: 3px 5px !important;
+            font-size: 0.74rem !important;
+            word-break: break-word !important;
+          }
+
+          /* 3-columns print layout */
+          .exercises-three-columns-layout {
+            display: block !important;
+            column-count: 3 !important;
+            column-gap: 1.2rem !important;
+            column-rule: 1px solid rgba(0, 80, 134, 0.2) !important;
+            column-fill: auto !important;
+            width: 100% !important;
+          }
+          .exercises-three-columns-layout > *,
+          .exercises-three-columns-layout .exercise-wrapper,
+          .exercises-three-columns-layout .exercise-body,
+          .exercises-three-columns-layout .exercise-body-box {
+            margin-bottom: 0.75rem !important;
+            break-inside: auto !important;
+            page-break-inside: auto !important;
+            -webkit-column-break-inside: auto !important;
+          }
+          .exercises-three-columns-layout .exercise-banner,
+          .exercises-three-columns-layout .modern-exercise-banner {
+            break-inside: avoid !important;
+            break-after: avoid !important;
+            page-break-after: avoid !important;
+            -webkit-column-break-after: avoid !important;
+          }
+          .exercises-three-columns-layout .list-item-row,
+          .exercises-three-columns-layout .exercise-item-row,
+          .exercises-three-columns-layout div[style*="display: flex"],
+          .exercises-three-columns-layout div[style*="display:flex"] {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            -webkit-column-break-inside: auto !important;
+          }
+          .exercises-three-columns-layout .katex-display {
+            max-width: 100% !important;
+            overflow-x: visible !important;
+            overflow-y: visible !important;
+            font-size: 0.76em !important;
+          }
+          .exercises-three-columns-layout .katex,
+          .exercises-three-columns-layout .katex-html {
+            white-space: normal !important;
+            display: inline !important;
+          }
+          .exercises-three-columns-layout .katex .base {
+            white-space: nowrap !important;
+            display: inline-block !important;
+            margin-top: 1px;
+            margin-bottom: 1px;
+          }
+          .exercises-three-columns-layout .markdown-table-wrapper {
+            max-width: 100% !important;
+            overflow: hidden !important;
+            break-inside: avoid !important;
+          }
+          .exercises-three-columns-layout table,
+          .exercises-three-columns-layout .markdown-table {
+            width: 100% !important;
+            max-width: 100% !important;
+            table-layout: fixed !important;
+            font-size: 0.68rem !important;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+          }
+          .exercises-three-columns-layout th,
+          .exercises-three-columns-layout td {
+            padding: 2px 3px !important;
+            font-size: 0.68rem !important;
+            word-break: break-word !important;
           }
 
           /* Force ALL text elements inside sheet-body to dark color */
@@ -1994,61 +2263,106 @@ export default function LessonViewerPage() {
           onClick={() => navigate(user?.role === 'admin' ? '/admin/lessons' : '/levels')}
           className="btn-outline"
           style={{ 
-            padding: '0.5rem 1rem', fontSize: '0.85rem', fontWeight: 800, 
-            display: 'inline-flex', alignItems: 'center', gap: '0.4rem' 
+            padding: '0.45rem 0.9rem', fontSize: '0.8rem', fontWeight: 700, borderRadius: '99px',
+            display: 'inline-flex', alignItems: 'center', gap: '0.4rem', border: '1px solid var(--border)'
           }}
         >
-          <ArrowLeft size={16} /> Retour aux fiches
+          <ArrowLeft size={15} /> Retour
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {/* View Mode Switcher */}
-          <div className="glass-panel" style={{
-            padding: '0.25rem',
-            borderRadius: '99px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.1rem',
-            margin: 0,
-            border: '1px solid var(--border)'
-          }}>
-            <button 
-              onClick={() => setUiStyle('interactive')}
-              style={{
-                background: uiStyle === 'interactive' ? 'var(--violet)' : 'transparent',
-                color: uiStyle === 'interactive' ? '#ffffff' : 'var(--text-muted)',
-                border: 'none',
-                padding: '0.4rem 0.85rem',
-                borderRadius: '99px',
-                fontSize: '0.75rem',
-                fontWeight: 800,
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-            >
-              🚀 Mode Interactif
-            </button>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
 
-          {/* Course Summary Template Mode Toggle */}
+          {/* Column Count Selector for Exercise Series */}
+          {Boolean(lesson?.docType === 'exercises' || lesson?.content?.doc_type === 'exercises' || /s[ée]rie|exercice/i.test(lesson?.title || '')) && (
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              background: 'var(--bg-card, rgba(255, 255, 255, 0.08))',
+              border: '1px solid var(--border)',
+              borderRadius: '99px',
+              padding: '2px',
+              gap: '2px'
+            }}>
+              {[
+                { val: 1, label: '1 Col' },
+                { val: 2, label: '2 Cols' },
+                { val: 3, label: '3 Cols' }
+              ].map(opt => (
+                <button
+                  key={opt.val}
+                  type="button"
+                  onClick={() => handleSetSeriesColumns(opt.val)}
+                  style={{
+                    background: seriesColumns === opt.val ? 'linear-gradient(135deg, #005086, #007cc6)' : 'transparent',
+                    color: seriesColumns === opt.val ? '#ffffff' : 'var(--text-main)',
+                    border: 'none',
+                    borderRadius: '99px',
+                    padding: '0.35rem 0.65rem',
+                    fontSize: '0.74rem',
+                    fontWeight: seriesColumns === opt.val ? 800 : 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Modèle Résumé (3 Colonnes) - Toujours visible */}
           <button 
             onClick={() => setViewSummaryMode(!viewSummaryMode)}
+            className="btn-outline"
             style={{
-              background: viewSummaryMode ? 'linear-gradient(135deg, #0284c7, #0070ba)' : 'rgba(255, 255, 255, 0.05)',
-              color: viewSummaryMode ? '#ffffff' : 'var(--text-main)',
-              border: '1px solid #0284c7',
               padding: '0.45rem 0.9rem',
               borderRadius: '99px',
               fontSize: '0.78rem',
-              fontWeight: 800,
-              cursor: 'pointer',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              background: viewSummaryMode ? 'linear-gradient(135deg, #0284c7, #0070ba)' : 'transparent',
+              color: viewSummaryMode ? '#ffffff' : 'var(--text-main)',
+              borderColor: viewSummaryMode ? '#0284c7' : 'var(--border)',
+              transition: 'all 0.2s ease',
+              cursor: 'pointer'
+            }}
+            title={viewSummaryMode ? 'Revenir à la vue standard' : 'Afficher en Modèle Résumé (3 Colonnes)'}
+          >
+            {viewSummaryMode ? (
+              <><FileText size={14} /> Vue Standard</>
+            ) : (
+              <><Eye size={14} /> Modèle Résumé</>
+            )}
+          </button>
+
+          {/* Option d'impression des solutions (Avec / Sans Solutions) */}
+          <button 
+            type="button"
+            onClick={handleToggleSolutions}
+            className="btn-outline"
+            style={{
+              padding: '0.45rem 0.85rem',
+              borderRadius: '99px',
+              fontSize: '0.78rem',
+              fontWeight: 700,
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.35rem',
-              transition: 'all 0.2s'
+              background: includeSolutionsInPdf ? 'rgba(16, 185, 129, 0.08)' : 'transparent',
+              color: includeSolutionsInPdf ? '#059669' : 'var(--text-muted)',
+              borderColor: includeSolutionsInPdf ? 'rgba(16, 185, 129, 0.4)' : 'var(--border)',
+              transition: 'all 0.15s ease',
+              cursor: 'pointer'
             }}
+            title={includeSolutionsInPdf ? 'Solutions incluses dans le PDF et l\'impression' : 'Solutions exclues (sans solutions)'}
           >
-            {viewSummaryMode ? '📄 Vue Fiche Standard' : '👁️ Modèle Résumé (3 Colonnes)'}
+            {includeSolutionsInPdf ? (
+              <><Check size={14} strokeWidth={2.5} /> Avec Solutions</>
+            ) : (
+              <><X size={14} strokeWidth={2.5} /> Sans Solutions</>
+            )}
           </button>
 
           {/* PDF Download button */}
@@ -2057,47 +2371,41 @@ export default function LessonViewerPage() {
             disabled={isExporting}
             className="btn"
             style={{
-              padding: '0.5rem 1.1rem',
-              fontSize: '0.85rem',
+              padding: '0.45rem 1rem',
+              fontSize: '0.8rem',
               fontWeight: 800,
-              background: isExporting
-                ? 'linear-gradient(135deg, #4a6a85, #5a8aab)'
-                : viewSummaryMode
-                  ? 'linear-gradient(135deg, #0284c7, #0070ba)'
-                  : 'linear-gradient(135deg, #005086, #007cc6)',
-              opacity: isExporting ? 0.8 : 1,
-              cursor: isExporting ? 'not-allowed' : 'pointer',
+              borderRadius: '99px',
+              background: 'linear-gradient(135deg, #005086, #007cc6)',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.4rem'
+              gap: '0.4rem',
+              cursor: isExporting ? 'not-allowed' : 'pointer'
             }}
-            title={viewSummaryMode ? 'Télécharger / Imprimer au format Résumé (3 Colonnes)' : 'Télécharger / Imprimer au format Standard'}
+            title={viewSummaryMode ? 'Télécharger PDF (3 Colonnes)' : 'Télécharger PDF'}
           >
             {isExporting
-              ? <><Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> Génération...</>
-              : <><Download size={16} /> {viewSummaryMode ? 'Télécharger PDF (3 Colonnes)' : 'Télécharger PDF (Standard)'}</>}
+              ? <><Loader size={15} style={{ animation: 'spin 1s linear infinite' }} /> Export...</>
+              : <><Download size={15} /> Télécharger PDF</>}
           </button>
 
-          {/* Edit button options */}
+          {/* Edit button */}
           {user?.role === 'admin' && (
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <button 
-                onClick={() => navigate(`/admin/lessons/${id}/edit`)}
-                className="btn-outline"
-                style={{
-                  padding: '0.5rem 1.1rem',
-                  fontSize: '0.85rem',
-                  fontWeight: 800,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  border: '1px solid var(--border)'
-                }}
-              >
-                <Edit size={16} />
-                Éditeur Complet
-              </button>
-            </div>
+            <button 
+              onClick={() => navigate(`/admin/lessons/${id}/edit`)}
+              className="btn-outline"
+              style={{
+                padding: '0.45rem 0.9rem',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                borderRadius: '99px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                border: '1px solid var(--border)'
+              }}
+            >
+              <Edit size={15} /> Éditer
+            </button>
           )}
         </div>
       </div>
@@ -2398,7 +2706,11 @@ export default function LessonViewerPage() {
             </div>
           )}
 
-          <div className={`sections-list-container ${lesson?.docType === 'exercises' ? 'exercises-two-columns-layout' : ''}`}>
+          <div className={`sections-list-container ${
+            (lesson?.docType === 'exercises' || lesson?.content?.doc_type === 'exercises')
+              ? (seriesColumns === 3 ? 'exercises-three-columns-layout' : (seriesColumns === 2 ? 'exercises-two-columns-layout' : ''))
+              : ''
+          }`}>
             {sections?.map((sec, idx) => {
               const isTheory = sec.type !== 'exercise';
               const { number: exeNumber, label: exeLabel, prefix: exePrefix } = !isTheory 
@@ -2410,12 +2722,13 @@ export default function LessonViewerPage() {
               const showSectionHeader = sec.section_header && (!prevSec || prevSec.section_header !== sec.section_header);
               
               return (
-                <div key={sec.id || idx} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
+                <div key={sec.id || idx} className="exercise-section-wrapper" style={{ display: 'block', width: '100%', marginBottom: '1.25rem' }}>
                   {(showSectionHeader || (isDirectEdit && sec.section_header !== undefined)) && sec.section_header !== undefined && (
                     <div
                       className="section-header-row"
                       style={{
                         marginTop: idx > 0 ? '1.5rem' : '0',
+                        marginBottom: '0.75rem',
                         flexDirection: isArabic ? 'row-reverse' : 'row',
                       }}
                     >

@@ -59,14 +59,43 @@ const esc = (s) => {
     .replace(/"/g, '&quot;');
 };
 
-const LATEX_COMMAND_RE = /\\(?:lim|frac|dfrac|left|right|cdot|sqrt|sum|int|prod|infty|to|ln|log|exp|sin|cos|tan|arcsin|arccos|arctan|alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|lambda|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|chi|psi|omega|Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Upsilon|Phi|Psi|Omega|mathbb|mathcal|mathbf|mathrm|text|vec|hat|bar|tilde|overline|underline|widehat|widetilde|dot|ddot|pm|mp|times|div|cap|cup|in|notin|subset|supset|leq|geq|le|ge|neq|approx|equiv|sim|forall|exists|partial|nabla|rightarrow|leftarrow|Rightarrow|Leftarrow|Leftrightarrow|iff|implies|quad|qquad|ell|Re|Im|max|min|sup|inf|det|dim|ker|rank|mod|circ|bullet|star|oplus|otimes|begin|end)\b/;
+const LATEX_COMMAND_RE = /\\(?:boxed|lim|frac|dfrac|left|right|cdot|sqrt|sum|int|prod|infty|to|ln|log|exp|sin|cos|tan|arcsin|arccos|arctan|alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|lambda|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|chi|psi|omega|Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Upsilon|Phi|Psi|Omega|mathbb|mathcal|mathbf|mathrm|text|vec|hat|bar|tilde|overline|underline|widehat|widetilde|dot|ddot|pm|mp|times|div|cap|cup|in|notin|subset|supset|leq|geq|le|ge|neq|approx|equiv|sim|forall|exists|partial|nabla|rightarrow|leftarrow|Rightarrow|Leftarrow|Leftrightarrow|iff|implies|quad|qquad|ell|Re|Im|max|min|sup|inf|det|dim|ker|rank|mod|circ|bullet|star|oplus|otimes|begin|end)\b/;
+
+const wrapStandaloneLatexCommands = (text) => {
+  if (!text || typeof text !== 'string') return '';
+  const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[^\$\n]+?\$)/g);
+  return parts.map((part, idx) => {
+    if (idx % 2 === 1) return part; // inside existing math block, leave as-is
+    return part
+      .replace(/[\u2115]/g, '$\\mathbb{N}$')
+      .replace(/[\u211D]/g, '$\\mathbb{R}$')
+      .replace(/[\u2124]/g, '$\\mathbb{Z}$')
+      .replace(/[\u211A]/g, '$\\mathbb{Q}$')
+      .replace(/[\u2102]/g, '$\\mathbb{C}$')
+      .replace(/(?<![$\w\\])(\\boxed\{[^{}]+\})(?![$\w\\])/g, (_, m) => {
+        const inner = m.slice(7, -1).trim();
+        const formattedInner = (/[a-zA-Z]{2,}\s+[a-zA-Z]/.test(inner) && !inner.includes('\\text{'))
+          ? `\\text{${inner}}`
+          : inner;
+        return `$\\boxed{${formattedInner}}$`;
+      })
+      .replace(/(?<![$\w\\])(\\(?:mathbb|mathbf|mathcal|mathrm)\{[a-zA-Z0-9]+\})(?![$\w\\])/g, (_, m) => `$${m}$`)
+      .replace(/(?<![$\w\\])(\\mathbb[a-zA-Z0-9])(?![$\w\\])/g, (_, m) => `$${m}$`)
+      .replace(/(?<![$\w\\])(\\(?:sqrt|vec|overrightarrow)\{[^{}]+\})(?![$\w\\])/g, (_, m) => `$${m}$`)
+      .replace(/(?<![$\w\\])(\\(?:notin|in|subset|subseteq|cap|cup|emptyset|implies|iff|to|rightarrow|leftarrow|leq|geq|neq|approx|pm|mp|times|cdot))\b(?![$\w\\])/g, (_, m) => `$${m}$`);
+  }).join('');
+};
 
 function autoWrapLatex(text) {
-  if (text.includes('$')) return text;
+  if (!text) return '';
+  const withMathCommands = wrapStandaloneLatexCommands(text);
+  if (withMathCommands !== text || withMathCommands.includes('$')) {
+    return withMathCommands;
+  }
   
   // Don't auto-wrap if it's a markdown bullet point or contains markdown bold/italic
-  if (/^\s*[\*\-+]\s+/.test(text) || text.includes('**') || /(?<!\*)\*[^*]+\*/.test(text)) {
-    return text;
+  if (/^\s*[\*\-+]\s+/.test(withMathCommands) || withMathCommands.includes('**') || /(?<!\*)\*[^*]+\*/.test(withMathCommands)) {
+    return withMathCommands;
   }
   
   // Check if it looks like a sentence (contains spaces and regular alphabetic words)
@@ -180,6 +209,14 @@ const repairMathExpression = (latex) => {
     .replace(/\\vec\{([a-zA-Z0-9]{2,})\}/g, '\\overrightarrow{$1}')
     .replace(/(?<![a-zA-Z\\])vec\{([a-zA-Z0-9]{2,})\}/g, '\\overrightarrow{$1}');
 
+  // 6. Ensure words with spaces inside \boxed{} are wrapped in \text{} for crisp KaTeX rendering
+  repaired = repaired.replace(/\\boxed\{([^{}]+)\}/g, (match, inner) => {
+    if (/[a-zA-Z]{2,}\s+[a-zA-Z]/.test(inner) && !inner.includes('\\text{')) {
+      return `\\boxed{\\text{${inner}}}`;
+    }
+    return match;
+  });
+
   return repaired;
 };
 
@@ -207,7 +244,8 @@ const renderTextWithBold = (text) => {
 };
 
 const renderLineContent = (text) => {
-  const toParse = autoWrapLatex(text);
+  const prepared = wrapStandaloneLatexCommands(text);
+  const toParse = autoWrapLatex(prepared);
   const tokens = tokenizeMath(toParse);
   const html = tokens.map((tok) => {
     if (tok.type === 'block') return renderBlockKatex(tok.content);
@@ -293,12 +331,12 @@ const renderLine = (line) => {
   if (/^[-•]\s+/.test(cleaned) || (/^\*\s+/.test(cleaned) && !cleaned.startsWith('**'))) {
     const text = cleaned.replace(/^[-•*]\s+/, '');
     if (_rtlMode) {
-      return `<div style="display:flex;align-items:flex-start;flex-direction:row;gap:0.4rem;margin:0.2rem 0;line-height:1.7;text-align:right">
+      return `<div class="exercise-item-row" style="display:flex;align-items:flex-start;flex-direction:row;gap:0.4rem;margin:0.2rem 0;line-height:1.7;text-align:right">
         <span style="color:#005086;font-weight:800;flex-shrink:0;margin-top:0.05em">•</span>
         <span style="flex:1;direction:rtl;text-align:right">${renderLineContent(text)}</span>
       </div>`;
     }
-    return `<div style="display:flex;align-items:flex-start;gap:0.5rem;margin:0.2rem 0;line-height:1.7">
+    return `<div class="exercise-item-row" style="display:flex;align-items:flex-start;gap:0.5rem;margin:0.2rem 0;line-height:1.7">
       <span style="color:#005086;font-weight:800;flex-shrink:0;margin-top:0.05em">•</span>
       <span style="flex:1">${renderLineContent(text)}</span>
     </div>`;
@@ -310,21 +348,21 @@ const renderLine = (line) => {
     const num = numberedMatch[1];
     const text = cleaned.replace(/^\d+[.)\s]+/, '');
     if (_rtlMode) {
-      return `<div style="display:flex;align-items:flex-start;flex-direction:row;gap:0.4rem;margin:0.2rem 0;line-height:1.7;text-align:right">
+      return `<div class="exercise-item-row" style="display:flex;align-items:flex-start;flex-direction:row;gap:0.4rem;margin:0.2rem 0;line-height:1.7;text-align:right">
         <span style="color:#005086;font-weight:800;flex-shrink:0;min-width:1.4em;text-align:center">${num}.</span>
         <span style="flex:1;direction:rtl;text-align:right">${renderLineContent(text)}</span>
       </div>`;
     }
-    return `<div style="display:flex;align-items:flex-start;gap:0.5rem;margin:0.2rem 0;line-height:1.7">
+    return `<div class="exercise-item-row" style="display:flex;align-items:flex-start;gap:0.5rem;margin:0.2rem 0;line-height:1.7">
       <span style="color:#005086;font-weight:800;flex-shrink:0;min-width:1.4em">${num}.</span>
       <span style="flex:1">${renderLineContent(text)}</span>
     </div>`;
   }
 
   if (_rtlMode) {
-    return `<span style="display:block;line-height:1.75;direction:rtl;text-align:right">${renderLineContent(cleaned)}</span>`;
+    return `<span class="exercise-text-line" style="display:block;line-height:1.75;direction:rtl;text-align:right">${renderLineContent(cleaned)}</span>`;
   }
-  return `<span style="display:block;line-height:1.75">${renderLineContent(cleaned)}</span>`;
+  return `<span class="exercise-text-line" style="display:block;line-height:1.75">${renderLineContent(cleaned)}</span>`;
 };
 
 const extractTablesAndText = (text) => {
@@ -398,9 +436,9 @@ const renderTableSegmentHTML = (segment) => {
   });
   
   const headerHtml = `
-    <tr style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
+    <tr style="background: #f1f5f9; border-bottom: 1.5px solid #cbd5e1;">
       ${headerCells.map((cell, idx) => `
-        <th style="padding: 14px 22px; border: 1px solid #cbd5e1; font-weight: 800; color: #005086; text-align: ${alignments[idx] || 'center'};">
+        <th style="padding: 5px 8px; border: 1px solid #cbd5e1; font-weight: 800; color: #005086; text-align: ${alignments[idx] || 'center'}; font-size: 0.8rem; line-height: 1.3;">
           ${renderLineContent(cell)}
         </th>
       `).join('')}
@@ -412,7 +450,7 @@ const renderTableSegmentHTML = (segment) => {
     return `
       <tr style="${isAlt}">
         ${cells.map((cell, idx) => `
-          <td style="padding: 14px 22px; border: 1px solid #cbd5e1; text-align: ${alignments[idx] || 'center'}; color: #334155;">
+          <td style="padding: 4px 8px; border: 1px solid #cbd5e1; text-align: ${alignments[idx] || 'center'}; color: #334155; font-size: 0.8rem; line-height: 1.3;">
             ${renderLineContent(cell)}
           </td>
         `).join('')}
@@ -420,8 +458,8 @@ const renderTableSegmentHTML = (segment) => {
   }).join('');
   
   return `
-    <div style="display: flex; justify-content: center; margin: 2rem 0; width: 100%;">
-      <table style="border-collapse: collapse; min-width: 70%; max-width: 100%; border: 1px solid #cbd5e1; font-size: 1.15rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04); border-radius: 12px; overflow: hidden; background: #ffffff;">
+    <div class="markdown-table-wrapper" style="display: flex; justify-content: center; margin: 0.6rem 0; width: 100%; max-width: 100%; overflow: hidden; break-inside: avoid; page-break-inside: avoid;">
+      <table class="markdown-table" style="border-collapse: collapse; width: 100%; max-width: 100%; border: 1px solid #cbd5e1; font-size: 0.8rem; background: #ffffff; border-radius: 6px; overflow: hidden; table-layout: auto;">
         <thead>
           ${headerHtml}
         </thead>
@@ -938,9 +976,16 @@ const calculateTotalPoints = (text, isArabicMode) => {
    GENERATE LESSON / FICHE PDF HTML
    ═══════════════════════════════════════════════════════════ */
 export const generateLessonHTML = (lesson, settings = {}) => {
-  const showSolutions = settings.showSolutions !== undefined ? settings.showSolutions : true;
+  const savedPdfSolutions = typeof window !== 'undefined' && window.localStorage ? localStorage.getItem('pdf_series_solutions') : null;
+  const showSolutions = settings.showSolutions !== undefined 
+    ? Boolean(settings.showSolutions) 
+    : (savedPdfSolutions !== null ? savedPdfSolutions === 'true' : true);
   const seriesStyle = settings.seriesStyle || (typeof window !== 'undefined' && window.localStorage ? localStorage.getItem('pdf_series_style') : null) || 'modern_pro_2026';
   const isModernPro = seriesStyle === 'modern_pro_2026';
+  const savedPdfCols = typeof window !== 'undefined' && window.localStorage ? localStorage.getItem('pdf_series_columns') : null;
+  const columnsCount = settings.columnsCount !== undefined 
+    ? Number(settings.columnsCount) 
+    : (savedPdfCols ? Number(savedPdfCols) : (Number(lesson?.content?.columns_count || lesson?.columns_count || 2)));
   const content = lesson?.content || lesson || {};
   const header = content?.header || {};
   const sections = Array.isArray(content?.sections) ? content.sections : (Array.isArray(lesson?.sections) ? lesson.sections : (Array.isArray(content) ? content : []));
@@ -955,6 +1000,11 @@ export const generateLessonHTML = (lesson, settings = {}) => {
   const prepTitle = header?.prep_title || '';
   const schools = header?.schools || [];
   const isExercises = lesson.docType === 'exercises' || content?.doc_type === 'exercises';
+  const columnsClass = isExercises
+    ? (columnsCount === 3 ? 'exercises-three-columns' : (columnsCount === 1 ? 'exercises-one-column' : 'exercises-two-columns'))
+    : '';
+  const isTwoColumns = isExercises && columnsCount === 2;
+  const isThreeColumns = isExercises && columnsCount === 3;
   const isConcours = lesson.docType === 'concours' || content?.doc_type === 'concours';
   const checkArabicText = () => {
     if (content?.metadata?.language === 'ar') return true;
@@ -1329,8 +1379,8 @@ export const generateLessonHTML = (lesson, settings = {}) => {
             ${exerciseBeforeHtml ? `<div class="homework-row" style="padding: 0.5rem 1rem;">${exerciseBeforeHtml}</div>` : ''}
             ${renderHomeworkBody(sec.content, isArabic)}
             ${exerciseAfterHtml ? `<div class="homework-row" style="padding: 0.5rem 1rem;">${exerciseAfterHtml}</div>` : ''}
-            ${(sec.solution && showSolutions) ? `
-            <div class="homework-row" style="background: rgba(16,185,129,0.01);">
+            ${sec.solution ? `
+            <div class="homework-row homework-solution-row" style="background: rgba(16,185,129,0.01);">
               <div class="homework-bareme-cell" style="background: rgba(16,185,129,0.03); color: #059669; border-top: 1px solid rgba(16,185,129,0.15)">📖</div>
               <div class="homework-content-cell" style="border-top: 1px solid rgba(16,185,129,0.15)">
                 <div class="solution-block" style="margin-top: 0; padding: 0.5rem 0;">
@@ -1355,9 +1405,10 @@ export const generateLessonHTML = (lesson, settings = {}) => {
           customBodyStyle += `line-height:${customLineHeight} !important;`;
         }
 
+        const hasSolution = Boolean(sec.solution);
         if (isModernPro) {
           sectionsHtml += `
-          <div class="exercise-wrapper modern-exercise-wrapper" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>
+          <div class="exercise-wrapper modern-exercise-wrapper ${hasSolution ? 'exercise-has-solution' : 'exercise-no-solution'}" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>
             <div class="exercise-banner modern-exercise-banner" ${isArabic ? 'style="flex-direction:row"' : ''}>
               <div class="exercise-pill modern-exercise-pill" ${isArabic ? 'style="flex-direction:row"' : ''}>
                 <span class="modern-pill-text">${isArabic ? 'تمرين' : 'Exercice'}</span>
@@ -1371,7 +1422,7 @@ export const generateLessonHTML = (lesson, settings = {}) => {
               ${renderMath(sec.content)}
               ${exerciseAfterHtml}
             </div>
-            ${(sec.solution && showSolutions) ? `
+            ${sec.solution ? `
             <div class="solution-block modern-solution-block">
               <h4 class="solution-title" ${isArabic ? `style="flex-direction:row;font-family:${arabicFontFamily}"` : ''}><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-${isArabic ? 'left' : 'right'}:5px"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>${isArabic ? 'الحل المفصل' : 'Démonstration rédigée'}</h4>
               <div class="solution-content" ${isArabic ? `style="text-align:right;direction:rtl;font-family:${arabicFontFamily}"` : ''}>${renderMath(sec.solution)}</div>
@@ -1379,7 +1430,7 @@ export const generateLessonHTML = (lesson, settings = {}) => {
           </div>`;
         } else {
           sectionsHtml += `
-          <div class="exercise-wrapper" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>
+          <div class="exercise-wrapper ${hasSolution ? 'exercise-has-solution' : 'exercise-no-solution'}" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>
             <div class="exercise-banner" ${isArabic ? 'style="flex-direction:row"' : ''}>
               <div class="exercise-pill" ${isArabic ? 'style="flex-direction:row"' : ''}>
                 <span>${isArabic ? 'تمرين' : 'Exercice N°'}</span>
@@ -1392,7 +1443,7 @@ export const generateLessonHTML = (lesson, settings = {}) => {
               ${renderMath(sec.content)}
               ${exerciseAfterHtml}
             </div>
-            ${(sec.solution && showSolutions) ? `
+            ${sec.solution ? `
             <div class="solution-block">
               <h4 class="solution-title" ${isArabic ? `style="flex-direction:row;font-family:${arabicFontFamily}"` : ''}>📖 ${isArabic ? 'الحل المفصل' : 'Démonstration rédigée'}</h4>
               <div class="solution-content" ${isArabic ? `style="text-align:right;direction:rtl;font-family:${arabicFontFamily}"` : ''}>${renderMath(sec.solution)}</div>
@@ -2051,6 +2102,11 @@ html[dir="rtl"] .header-info-row {
   font-size: 0.9rem;
   line-height: 1.6;
 }
+body.hide-solutions .solution-block,
+body.hide-solutions .homework-solution-row,
+body.hide-solutions .modern-solution-block {
+  display: none !important;
+}
 
 /* ═══════════════════════════════════════
    CALLOUTS (response / attention)
@@ -2164,24 +2220,102 @@ b .katex * {
   column-count: 2 !important;
   column-gap: 1.5rem !important;
   column-rule: 1px solid rgba(0, 80, 134, 0.2) !important;
+  column-fill: balance !important;
 }
 
-.exercises-two-columns > * {
-  break-inside: auto;
-  page-break-inside: auto;
-  margin-bottom: 0.6rem !important;
+.exercises-two-columns > *,
+.exercise-wrapper,
+.modern-exercise-wrapper {
+  margin-bottom: 0.75rem !important;
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+  -webkit-column-break-inside: auto !important;
 }
 
-/* Keep exercise header attached to its body — never break between banner and body */
-.exercises-two-columns .exercise-banner {
-  break-after: avoid;
-  page-break-after: avoid;
+/* Exercises wrapper and body can break naturally across columns and pages to fill columns continuously */
+.exercise-no-solution,
+.exercise-has-solution,
+.exercise-wrapper,
+.modern-exercise-wrapper,
+.exercise-body,
+.modern-exercise-body {
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+  -webkit-column-break-inside: auto !important;
 }
 
-/* Solution block can break freely too */
-.exercises-two-columns .solution-block {
-  break-inside: auto;
-  page-break-inside: auto;
+/* Atomic question rows and display equations: NEVER break in the middle of an individual question */
+.exercise-item-row,
+.exercise-bullet-item,
+.exercise-question-item,
+.exercise-text-line,
+.list-item-row,
+.exercises-two-columns .exercise-body > div,
+.exercises-two-columns .exercise-body > span,
+.exercises-two-columns .katex-display {
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+  -webkit-column-break-inside: avoid !important;
+}
+
+/* Keep exercise header attached to its body — never break between banner and first question */
+.exercise-banner,
+.modern-exercise-banner {
+  break-inside: avoid !important;
+  break-after: avoid !important;
+  page-break-after: avoid !important;
+  -webkit-column-break-after: avoid !important;
+}
+
+/* Solution title attached to solution content */
+.solution-title {
+  break-inside: avoid !important;
+  break-after: avoid !important;
+  page-break-after: avoid !important;
+  -webkit-column-break-after: avoid !important;
+}
+
+/* Solution block: flows smoothly across columns/pages without locking the whole exercise */
+.exercises-two-columns .solution-block,
+.modern-solution-block {
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+  margin-top: 0.5rem !important;
+}
+
+/* Table containment in 2-column mode: strictly keep within column width, never collide with next column */
+.exercises-two-columns .markdown-table-wrapper {
+  margin: 0.45rem 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+.exercises-two-columns table,
+.exercises-two-columns .markdown-table {
+  width: 100% !important;
+  max-width: 100% !important;
+  table-layout: fixed !important;
+  font-size: 0.74rem !important;
+  border-collapse: collapse !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+.exercises-two-columns table th,
+.exercises-two-columns table td,
+.exercises-two-columns .markdown-table th,
+.exercises-two-columns .markdown-table td {
+  padding: 3px 4px !important;
+  font-size: 0.74rem !important;
+  line-height: 1.25 !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  box-sizing: border-box !important;
 }
 
 /* Prevent math formulas from overflowing two-column layouts in compiled PDF */
@@ -2198,6 +2332,101 @@ b .katex * {
   font-size: 0.93em !important;
 }
 .exercises-two-columns .katex .base {
+  white-space: nowrap !important;
+  display: inline-block !important;
+  margin-top: 1px;
+  margin-bottom: 1px;
+}
+
+/* ═══════════════════════════════════════
+   3-COLUMNS EXERCISES LAYOUT (COMPACT)
+   ═══════════════════════════════════════ */
+.exercises-three-columns {
+  display: block !important;
+  column-count: 3 !important;
+  column-gap: 1.2rem !important;
+  column-rule: 1px solid rgba(0, 80, 134, 0.2) !important;
+  column-fill: balance !important;
+}
+
+.exercises-three-columns > * {
+  margin-bottom: 0.65rem !important;
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+  -webkit-column-break-inside: auto !important;
+}
+
+.exercises-three-columns .exercise-no-solution,
+.exercises-three-columns .exercise-has-solution,
+.exercises-three-columns .exercise-wrapper {
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+  -webkit-column-break-inside: auto !important;
+}
+
+.exercises-three-columns .exercise-body > div,
+.exercises-three-columns .exercise-body > span,
+.exercises-three-columns .katex-display {
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+  -webkit-column-break-inside: avoid !important;
+}
+
+.exercises-three-columns .solution-block {
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+  margin-top: 0.4rem !important;
+}
+
+.exercises-three-columns .markdown-table-wrapper {
+  margin: 0.35rem 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+.exercises-three-columns table,
+.exercises-three-columns .markdown-table {
+  width: 100% !important;
+  max-width: 100% !important;
+  table-layout: fixed !important;
+  font-size: 0.68rem !important;
+  border-collapse: collapse !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+.exercises-three-columns table th,
+.exercises-three-columns table td,
+.exercises-three-columns .markdown-table th,
+.exercises-three-columns .markdown-table td {
+  padding: 2px 3px !important;
+  font-size: 0.68rem !important;
+  line-height: 1.2 !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  box-sizing: border-box !important;
+}
+
+.exercises-three-columns .katex-display {
+  max-width: 100% !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  font-size: 0.82em !important;
+}
+
+.exercises-three-columns .katex,
+.exercises-three-columns .katex-html {
+  white-space: normal !important;
+  display: inline !important;
+  font-size: 0.84em !important;
+}
+
+.exercises-three-columns .katex .base {
   white-space: nowrap !important;
   display: inline-block !important;
   margin-top: 1px;
@@ -2463,8 +2692,17 @@ b .katex * {
   column-fill: balance !important;
 }
 
+.modern-pro-layout .exercises-three-columns {
+  column-gap: 1.2rem !important;
+  column-rule: 1.2px solid rgba(0, 80, 134, 0.18) !important;
+  column-fill: balance !important;
+}
+
 .modern-pro-layout .exercise-wrapper {
   margin-bottom: 0.85rem !important;
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+  -webkit-column-break-inside: auto !important;
 }
 
 .fiche-footer-modern-pro {
@@ -2750,6 +2988,56 @@ html[dir="rtl"] .section-header-row {
     flex: none !important;
     height: auto !important;
   }
+  .exercises-two-columns {
+    display: block !important;
+    column-count: 2 !important;
+    column-gap: 1.5rem !important;
+    column-rule: 1px solid rgba(0, 80, 134, 0.2) !important;
+    column-fill: auto !important;
+    width: 100% !important;
+  }
+  .exercises-three-columns {
+    display: block !important;
+    column-count: 3 !important;
+    column-gap: 1.2rem !important;
+    column-rule: 1px solid rgba(0, 80, 134, 0.2) !important;
+    column-fill: auto !important;
+    width: 100% !important;
+  }
+  .exercises-two-columns > *,
+  .exercises-three-columns > *,
+  .exercise-wrapper,
+  .exercise-no-solution,
+  .exercise-has-solution,
+  .modern-exercise-wrapper,
+  .exercise-body,
+  .modern-exercise-body {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+    -webkit-column-break-inside: auto !important;
+  }
+  .exercise-item-row,
+  .exercise-bullet-item,
+  .exercise-question-item,
+  .exercise-text-line,
+  .list-item-row,
+  .exercises-two-columns .exercise-body > div,
+  .exercises-two-columns .exercise-body > span,
+  .exercises-three-columns .exercise-body > div,
+  .exercises-three-columns .exercise-body > span,
+  .exercises-two-columns .katex-display,
+  .exercises-three-columns .katex-display {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    -webkit-column-break-inside: auto !important;
+  }
+  .exercise-banner,
+  .modern-exercise-banner {
+    break-inside: avoid !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+    -webkit-column-break-after: avoid !important;
+  }
   .fiche-footer-modern-pro {
     display: flex !important;
     justify-content: space-between !important;
@@ -2762,6 +3050,11 @@ html[dir="rtl"] .section-header-row {
     border-top: 1.2px solid rgba(0, 80, 134, 0.3) !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+  }
+  body.hide-solutions .solution-block,
+  body.hide-solutions .homework-solution-row,
+  body.hide-solutions .modern-solution-block {
+    display: none !important;
   }
 }
 .homework-content-header {
@@ -2787,7 +3080,7 @@ html[dir="rtl"] .homework-bareme-header {
 
 </style>
 </head>
-<body style="font-family:${bodyFont}">
+<body class="${showSolutions ? '' : 'hide-solutions'}" style="font-family:${bodyFont}">
 
 <!-- Print Hint Bar (visible on screen only) -->
 <div class="print-hint" id="printHint">
@@ -2801,6 +3094,18 @@ html[dir="rtl"] .homework-bareme-header {
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+    ${isExercises ? `
+    <div class="style-toggle-container">
+      <span style="font-size:0.75rem;color:rgba(255,255,255,0.8);font-weight:700;">${isArabic ? 'الأعمدة:' : 'Colonnes:'}</span>
+      <button class="hint-style-btn ${columnsCount === 1 ? 'active' : ''}" onclick="setSeriesColumns(1)">1 ${isArabic ? 'عمود' : 'Col'}</button>
+      <button class="hint-style-btn ${columnsCount === 2 ? 'active' : ''}" onclick="setSeriesColumns(2)">2 ${isArabic ? 'عمودين' : 'Cols'}</button>
+      <button class="hint-style-btn ${columnsCount === 3 ? 'active' : ''}" onclick="setSeriesColumns(3)">3 ${isArabic ? 'أعمدة' : 'Cols'}</button>
+    </div>` : ''}
+    <div class="style-toggle-container">
+      <span style="font-size:0.75rem;color:rgba(255,255,255,0.8);font-weight:700;">${isArabic ? 'الحلول:' : 'Solutions:'}</span>
+      <button id="btnSolAvec" class="hint-style-btn ${showSolutions ? 'active' : ''}" onclick="setSeriesSolutions(true)">${isArabic ? 'مع الحلول' : 'Avec'}</button>
+      <button id="btnSolSans" class="hint-style-btn ${!showSolutions ? 'active' : ''}" onclick="setSeriesSolutions(false)">${isArabic ? 'بدون' : 'Sans'}</button>
+    </div>
     <div class="style-toggle-container">
       <span style="font-size:0.75rem;color:rgba(255,255,255,0.8);font-weight:700;">${isArabic ? 'النموذج:' : 'Style:'}</span>
       <button class="hint-style-btn ${isModernPro ? 'active' : ''}" onclick="setSeriesStyle('modern_pro_2026')">✨ ${isArabic ? 'عصري برو' : 'Moderne Pro'}</button>
@@ -2933,7 +3238,7 @@ html[dir="rtl"] .homework-bareme-header {
   ${/* No duplicate banner — title is already in the header table */''}
 
   <!-- SECTIONS -->
-  <div class="sections-container ${(lesson.docType === 'exercises' || lesson.content?.doc_type === 'exercises') ? 'exercises-two-columns' : ''}">
+  <div class="sections-container ${columnsClass}">
     ${sectionsHtml}
   </div>
 
@@ -2954,6 +3259,42 @@ html[dir="rtl"] .homework-bareme-header {
 </div>
 
 <script>
+function setSeriesColumns(cols) {
+  try {
+    localStorage.setItem('pdf_series_columns', cols);
+    var container = document.querySelector('.sections-container');
+    if (container) {
+      container.classList.remove('exercises-one-column', 'exercises-two-columns', 'exercises-three-columns');
+      if (cols === 1) container.classList.add('exercises-one-column');
+      else if (cols === 3) container.classList.add('exercises-three-columns');
+      else container.classList.add('exercises-two-columns');
+    }
+    // Update button active states in hint bar
+    var buttons = document.querySelectorAll('.style-toggle-container button');
+    // If reload is supported, also reload
+    if (window.location && window.location.href && !window.location.href.startsWith('about:')) {
+      window.location.reload();
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+function setSeriesSolutions(val) {
+  try {
+    localStorage.setItem('pdf_series_solutions', val);
+    if (val) {
+      document.body.classList.remove('hide-solutions');
+    } else {
+      document.body.classList.add('hide-solutions');
+    }
+    var bAvec = document.getElementById('btnSolAvec');
+    var bSans = document.getElementById('btnSolSans');
+    if (bAvec) bAvec.className = 'hint-style-btn ' + (val ? 'active' : '');
+    if (bSans) bSans.className = 'hint-style-btn ' + (!val ? 'active' : '');
+  } catch (err) {
+    console.error(err);
+  }
+}
 function setSeriesStyle(style) {
   try {
     localStorage.setItem('pdf_series_style', style);
