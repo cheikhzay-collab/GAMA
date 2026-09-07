@@ -886,7 +886,7 @@ Tu dois analyser la question et :
               )}
             </div>
             <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
-              {exam.school} · {exam.year} · {localQuestions.length} questions
+              {exam.school}{exam.year ? ` · ${exam.year}` : ''} · {localQuestions.length} questions
             </p>
           </div>
         </div>
@@ -1049,15 +1049,14 @@ Tu dois analyser la question et :
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1.25rem' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.45rem', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  Année
+                  Année (optionnelle)
                 </label>
                 <input
                   value={editYear}
                   onChange={e => { setEditYear(e.target.value); markDirty(); }}
-                  required
                   className="input-control"
                   style={{ fontSize: '0.9rem' }}
-                  placeholder="2025"
+                  placeholder="Ex: 2025, ou laisser vide"
                 />
               </div>
               <div>

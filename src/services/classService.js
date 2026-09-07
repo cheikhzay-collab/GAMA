@@ -454,3 +454,87 @@ export const recordStudentExamGrade = async (classId, studentMassar, examName, s
   await updateClass(classId, { competitions, competitionGrades, controls, grades });
   return { examName, score: numericScore, totalQuestions: total, score20, displayScore };
 };
+
+/**
+ * Remove a competition from a class.
+ */
+export const removeCompetitionFromClass = async (classId, competitionName) => {
+  if (!classId || !competitionName) return false;
+
+  const rawCurrent = getLocalStorageClasses() || [];
+  const cls = rawCurrent.find(c => c.id === classId);
+  if (!cls) return false;
+
+  const updatedComps = (cls.competitions || []).filter(c => c !== competitionName);
+  const updatedControls = (cls.controls || []).filter(c => c !== competitionName);
+  
+  const competitionGrades = { ...(cls.competitionGrades || {}) };
+  Object.keys(competitionGrades).forEach(studentKey => {
+    if (competitionGrades[studentKey] && competitionGrades[studentKey][competitionName] !== undefined) {
+      delete competitionGrades[studentKey][competitionName];
+    }
+  });
+
+  const grades = { ...(cls.grades || {}) };
+  Object.keys(grades).forEach(studentKey => {
+    if (grades[studentKey] && grades[studentKey][competitionName] !== undefined) {
+      delete grades[studentKey][competitionName];
+    }
+  });
+
+  await updateClass(classId, {
+    competitions: updatedComps,
+    controls: updatedControls,
+    competitionGrades,
+    grades
+  });
+
+  return true;
+};
+
+/**
+ * Update/set a manual competition grade for a student in a class.
+ */
+export const updateCompetitionGrade = async (classId, studentMassar, competitionName, gradeValue) => {
+  if (!classId || !studentMassar || !competitionName) return false;
+
+  const rawCurrent = getLocalStorageClasses() || [];
+  const cls = rawCurrent.find(c => c.id === classId);
+  if (!cls) return false;
+
+  const competitions = Array.isArray(cls.competitions) ? [...cls.competitions] : [];
+  if (!competitions.includes(competitionName)) {
+    competitions.push(competitionName);
+  }
+
+  const competitionGrades = { ...(cls.competitionGrades || {}) };
+  const grades = { ...(cls.grades || {}) };
+
+  const studentKeys = new Set([
+    studentMassar,
+    studentMassar.toUpperCase(),
+    studentMassar.toLowerCase()
+  ]);
+
+  if (cls.students && Array.isArray(cls.students)) {
+    const st = cls.students.find(s =>
+      (s.massarCode && s.massarCode.toUpperCase() === studentMassar.toUpperCase()) ||
+      (s.id && s.id.toUpperCase() === studentMassar.toUpperCase())
+    );
+    if (st) {
+      if (st.id) studentKeys.add(st.id);
+      if (st.massarCode) studentKeys.add(st.massarCode);
+    }
+  }
+
+  studentKeys.forEach(key => {
+    if (!competitionGrades[key]) competitionGrades[key] = {};
+    competitionGrades[key][competitionName] = gradeValue;
+
+    if (!grades[key]) grades[key] = {};
+    grades[key][competitionName] = gradeValue;
+  });
+
+  await updateClass(classId, { competitions, competitionGrades, grades });
+  return true;
+};

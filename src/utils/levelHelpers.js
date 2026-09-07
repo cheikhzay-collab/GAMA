@@ -89,6 +89,33 @@ export const normalizeLevel = (rawLevel) => {
     return '2bac_pc_svt';
   }
 
+  // 6. Concours & School names detection
+  if (
+    normalized.includes('médecine') ||
+    normalized.includes('medecine') ||
+    normalized.includes('pharmacie') ||
+    normalized.includes('fmp') ||
+    normalized.includes('fmd') ||
+    normalized.includes('dentaire') ||
+    normalized.includes('encg')
+  ) {
+    return '2bac_pc_svt';
+  }
+
+  if (
+    normalized.includes('ensa') ||
+    normalized.includes('ensam') ||
+    normalized.includes('inpt') ||
+    normalized.includes('insea') ||
+    normalized.includes('prépa') ||
+    normalized.includes('prepa') ||
+    normalized.includes('cpge') ||
+    normalized.includes('cnc') ||
+    normalized.includes('apesa')
+  ) {
+    return '2bac_sm';
+  }
+
   const validKeys = ['common_core_sci', 'common_core_arts', '1bac_sci', '1bac_arts', '2bac_sm', '2bac_pc_svt', '2bac_arts'];
   if (validKeys.includes(rawLevel)) {
     return rawLevel;
@@ -123,8 +150,31 @@ export const getLevelDisplayName = (id, isArabic = false) => {
  * @returns {string} The matched level ID
  */
 export const mapLegacySchoolToLevel = (sch) => {
-  if (!sch) return sch;
-  if (sch === 'Médecine / Pharmacie' || sch === 'ENCG') return '2bac_pc_svt';
-  if (['ENSA', 'ENSAM', 'INPT', 'INSEA', 'Général (Prépa)'].includes(sch)) return '2bac_sm';
-  return sch;
+  if (!sch) return 'common_core_sci';
+  const s = String(sch).toLowerCase().trim();
+  if (
+    s.includes('médecine') ||
+    s.includes('medecine') ||
+    s.includes('pharmacie') ||
+    s.includes('fmp') ||
+    s.includes('fmd') ||
+    s.includes('dentaire') ||
+    s.includes('encg')
+  ) {
+    return '2bac_pc_svt';
+  }
+  if (
+    s.includes('ensa') ||
+    s.includes('ensam') ||
+    s.includes('inpt') ||
+    s.includes('insea') ||
+    s.includes('prépa') ||
+    s.includes('prepa') ||
+    s.includes('cpge') ||
+    s.includes('cnc') ||
+    s.includes('apesa')
+  ) {
+    return '2bac_sm';
+  }
+  return normalizeLevel(sch);
 };

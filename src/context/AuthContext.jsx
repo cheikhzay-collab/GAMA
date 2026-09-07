@@ -5,6 +5,7 @@ import { getAllExams, addExam as dbAddExam, updateExam as dbUpdateExam, deleteEx
 import { getSchoolsConfig, saveSchoolsConfig, getBrandingConfig, saveBrandingConfig, getFlashcardSettingsConfig, saveFlashcardSettingsConfig, getPdfSettingsConfig, savePdfSettingsConfig, getOmrScannerSettingsConfig, saveOmrScannerSettingsConfig, getWhatsAppSettingsConfig, saveWhatsAppSettingsConfig, getPlansConfig, savePlansConfig } from '../services/schoolService';
 
 import { sanitizeInputString, validatePhoneNumber } from '../utils/security';
+import { mapLegacySchoolToLevel } from '../utils/levelHelpers';
 import { supabase } from '../lib/supabase';
 
 
@@ -909,6 +910,7 @@ export function AuthProvider({ children }) {
       id: e.id,
       name: e.name,
       school: e.school,
+      level: e.level || mapLegacySchoolToLevel(e.school) || null,
       year: e.year,
       tier: e.tier,
       isActive: e.isActive,
@@ -1318,10 +1320,11 @@ export function AuthProvider({ children }) {
 
   const addExam = async (name, school, year, tier, questions, pdfUrl = null, level = null) => {
     const cleanQuestions = sanitizeExams([{ questions }])[0].questions;
+    const determinedLevel = level || mapLegacySchoolToLevel(school) || school;
     const newExam = {
       name,
       school,
-      level,
+      level: determinedLevel,
       year,
       tier,
       questions: cleanQuestions,
@@ -1354,8 +1357,13 @@ export function AuthProvider({ children }) {
 
   const updateExamDetails = async (examId, updates) => {
     try {
-      await dbUpdateExam(examId, updates);
-      setExams(prev => prev.map(e => e.id === examId ? { ...e, ...updates } : e));
+      const determinedLevel = updates.level !== undefined 
+        ? updates.level 
+        : (updates.school ? mapLegacySchoolToLevel(updates.school) : undefined);
+      const fullUpdates = determinedLevel !== undefined ? { ...updates, level: determinedLevel } : updates;
+
+      await dbUpdateExam(examId, fullUpdates);
+      setExams(prev => prev.map(e => e.id === examId ? { ...e, ...fullUpdates } : e));
     } catch (e) {
       console.error('Failed to update exam details:', e);
     }

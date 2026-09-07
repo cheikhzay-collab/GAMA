@@ -456,7 +456,7 @@ export default function AdminEbooks() {
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {schoolOrder.map((school, idx) => {
-                const schoolExams = exams.filter(e => e.school === school && e.isArchived !== true).sort((a, b) => b.year - a.year);
+                const schoolExams = exams.filter(e => e.school === school && e.isArchived !== true).sort((a, b) => (b.year || '').toString().localeCompare((a.year || '').toString()) || (a.name || '').localeCompare(b.name || ''));
                 const isSchoolActive = !!selectedExams[school];
                 const activeCount = selectedExams[school]?.length || 0;
                 
@@ -508,7 +508,7 @@ export default function AdminEbooks() {
                                 onChange={() => toggleExamSelected(school, exam.id)}
                                 style={{ accentColor: 'var(--violet)' }}
                               />
-                              <span>{exam.year}</span>
+                              <span>{exam.year || exam.name}</span>
                             </label>
                           );
                         })}

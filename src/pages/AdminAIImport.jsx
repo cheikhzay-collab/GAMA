@@ -711,7 +711,7 @@ export default function AdminAIImport({ onBack }) {
   const [correctionPageTo, setCorrectionPageTo] = useState(draft?.correctionPageTo || 1);
   const [totalPages, setTotalPages] = useState(null);
   const [school, setSchool] = useState(draft?.school || schools[0] || 'Médecine / Pharmacie');
-  const [year, setYear] = useState(draft?.year || '2024');
+  const [year, setYear] = useState(draft?.year || '');
   const [tier, setTier] = useState(draft?.tier || 'freemium');
   const [examName, setExamName] = useState(draft?.examName || '');
   const [isNationalExam, setIsNationalExam] = useState(draft?.isNationalExam || false);
@@ -1672,10 +1672,14 @@ ${pdfText}
               </select>
             </div>
             <div className="input-group">
-              <label>Année</label>
-              <select className="input-control" value={year} onChange={e => setYear(e.target.value)}>
-                {['2025','2024','2023','2022','2021','2020','Anciennes'].map(y => <option key={y}>{y}</option>)}
-              </select>
+              <label>Année <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>(optionnelle)</span></label>
+              <input
+                type="text"
+                className="input-control"
+                placeholder="Ex: 2025, ou laisser vide"
+                value={year}
+                onChange={e => setYear(e.target.value)}
+              />
             </div>
             <div className="input-group">
               <label>Accès</label>

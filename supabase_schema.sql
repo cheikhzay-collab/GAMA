@@ -140,6 +140,7 @@ CREATE TABLE IF NOT EXISTS public.exams (
   id text PRIMARY KEY,
   name text NOT NULL,
   school text,
+  level text,
   year text,
   tier text,
   questions jsonb,
@@ -149,6 +150,8 @@ CREATE TABLE IF NOT EXISTS public.exams (
   date_added timestamp with time zone DEFAULT timezone('utc'::text, now()),
   updated_at timestamp with time zone DEFAULT timezone('utc'::text, now())
 );
+
+ALTER TABLE public.exams ADD COLUMN IF NOT EXISTS level text;
 
 ALTER TABLE public.exams ENABLE ROW LEVEL SECURITY;
 
@@ -412,6 +415,7 @@ SELECT
   id,
   name,
   school,
+  level,
   year,
   tier,
   pdf_url,

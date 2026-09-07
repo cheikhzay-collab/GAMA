@@ -137,7 +137,7 @@ export default function LevelsPage() {
           title: e.name,
           subject: 'Mathématiques', // default subject for filters compatibility
           docType: 'concours',
-          teacher: `Annales ${e.year || ''}`,
+          teacher: e.year ? `Annales ${e.year}` : 'Concours Officiel',
           isExam: true,
           examId: e.id,
           tier: e.tier,
@@ -166,7 +166,16 @@ export default function LevelsPage() {
     const counts = {};
     MAIN_LEVELS.forEach(parent => {
       parent.branches.forEach(branch => {
-        counts[branch.id] = allResources.filter(l => normalizeLevel(l.level) === branch.id).length;
+        counts[branch.id] = allResources.filter(l => {
+          const normLvl = normalizeLevel(l.level);
+          if (normLvl === branch.id) return true;
+          if (l.docType === 'concours' || l.isExam) {
+            if ((normLvl === '2bac_pc_svt' || normLvl === '2bac_sm') && (branch.id === '2bac_pc_svt' || branch.id === '2bac_sm')) {
+              return true;
+            }
+          }
+          return false;
+        }).length;
       });
     });
     return counts;
@@ -185,7 +194,16 @@ export default function LevelsPage() {
   // Lessons list filtered by the selected branch
   const branchLessons = useMemo(() => {
     if (!selectedBranchId) return [];
-    return allResources.filter(l => normalizeLevel(l.level) === selectedBranchId);
+    return allResources.filter(l => {
+      const normLvl = normalizeLevel(l.level);
+      if (normLvl === selectedBranchId) return true;
+      if (l.docType === 'concours' || l.isExam) {
+        if ((normLvl === '2bac_pc_svt' || normLvl === '2bac_sm') && (selectedBranchId === '2bac_pc_svt' || selectedBranchId === '2bac_sm')) {
+          return true;
+        }
+      }
+      return false;
+    });
   }, [allResources, selectedBranchId]);
 
   // Subjects filter list
@@ -651,9 +669,11 @@ export default function LevelsPage() {
 
                         </div>
                         <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.76rem', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                            <Clock size={11} /> {exam.year}
-                          </span>
+                          {exam.year ? (
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                              <Clock size={11} /> {exam.year}
+                            </span>
+                          ) : null}
                           <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
                             <BookOpen size={11} /> {qCount} QCM
                           </span>

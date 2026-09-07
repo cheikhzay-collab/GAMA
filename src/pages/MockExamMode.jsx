@@ -11,6 +11,7 @@ import MockExamResults from '../components/MockExamResults';
 
 import { getExamById } from '../services/examService';
 import { mapLegacySchoolToLevel } from '../utils/levelHelpers';
+import { getAllClasses, recordStudentExamGrade } from '../services/classService';
 
 function renderOptionText(text) {
   return renderWithMath(text);
@@ -179,6 +180,28 @@ export default function MockExamMode() {
           pct,
           mode: 'online'
         });
+
+        // Auto-sync grade with the student's assigned class
+        const studentCode = user?.massarCode || user?.massar_code || user?.cne || user?.id || user?.uid;
+        if (studentCode) {
+          getAllClasses().then(allClasses => {
+            if (!Array.isArray(allClasses) || allClasses.length === 0) return;
+            const targetClass = allClasses.find(cls => 
+              (user.class_id && cls.id === user.class_id) ||
+              (user.classId && cls.id === user.classId) ||
+              (cls.students || []).some(s => 
+                (s.massarCode && s.massarCode.toUpperCase() === String(studentCode).toUpperCase()) ||
+                (s.id && s.id.toUpperCase() === String(studentCode).toUpperCase()) ||
+                (s.email && user.email && s.email.toLowerCase() === user.email.toLowerCase())
+              )
+            );
+            if (targetClass) {
+              recordStudentExamGrade(targetClass.id, studentCode, currentExam.name, pts, questions.length);
+            }
+          }).catch(err => {
+            console.warn('[MockExamMode] Could not auto-record grade to class:', err);
+          });
+        }
       }
     }
   }, [isFinished, answers, currentExam, questions, saveMockExamResult, schoolBranding, updateCardProgress, isGuest, user]);
@@ -287,7 +310,7 @@ export default function MockExamMode() {
 
         <div style={{ textAlign: 'center' }}>
           <p style={{ fontWeight: 700, fontSize: '0.9rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'clamp(120px, 30vw, 300px)' }}>{currentExam.name}</p>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.72rem', margin: 0 }} className="hide-xs">{currentExam.year} · Concours Blanc</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.72rem', margin: 0 }} className="hide-xs">{currentExam.year ? `${currentExam.year} · ` : ''}Concours Blanc</p>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

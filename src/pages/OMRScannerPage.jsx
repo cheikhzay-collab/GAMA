@@ -1238,7 +1238,7 @@ export default function OMRScannerPage() {
                 <div className="exam-banner-left">
                   <span style={{ fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--violet)', letterSpacing: '0.12em' }}>Examen Identifié</span>
                   <h3 style={{ fontWeight: 900, fontSize: '1.25rem', margin: '4px 0 0 0', letterSpacing: '-0.02em', color: 'var(--text-main)' }}>{activeExam.name}</h3>
-                  <p style={{ color:'var(--text-muted)', fontSize: '0.82rem', margin: '4px 0 0 0', fontWeight: 500 }}>{activeExam.school} · {activeExam.year}</p>
+                  <p style={{ color:'var(--text-muted)', fontSize: '0.82rem', margin: '4px 0 0 0', fontWeight: 500 }}>{activeExam.school}{activeExam.year ? ` · ${activeExam.year}` : ''}</p>
                 </div>
                 <div className="exam-banner-right">
                   <span style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-main)' }}>{Q}</span>

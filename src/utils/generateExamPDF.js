@@ -1187,7 +1187,7 @@ export const generateSubjectHTML = async (examTitle, school, year, questions, se
     <div class="cover-header-group">
       <div class="cover-tag">${docInfo.coverTag}</div>
       <div class="cover-topic">${cleanTitle}</div>
-      <div class="cover-desc">${formattedSchool} &nbsp;·&nbsp; ${docInfo.typeLabel} &nbsp;·&nbsp; ${year || new Date().getFullYear()}</div>
+      <div class="cover-desc">${formattedSchool} &nbsp;·&nbsp; ${docInfo.typeLabel}${year ? ` &nbsp;·&nbsp; ${year}` : ''}</div>
     </div>
     
     <div class="cover-stats">
@@ -2285,7 +2285,7 @@ ${settings.premiumOmr === true ? `
   <div class="ws-doc-header">
     <div class="ws-doc-header-left">
       <h1 class="ws-doc-title">${cleanTitle}</h1>
-      <div class="ws-doc-meta">${formattedSchool} &nbsp;·&nbsp; ${teacherDisplay} &nbsp;·&nbsp; ${year || new Date().getFullYear()}</div>
+      <div class="ws-doc-meta">${formattedSchool} &nbsp;·&nbsp; ${teacherDisplay}${year ? ` &nbsp;·&nbsp; ${year}` : ''}</div>
     </div>
     <div class="ws-doc-header-right">
       <span class="ws-doc-type-badge">${schoolDisplay.toUpperCase()}</span>
@@ -2376,7 +2376,7 @@ printWhenReady();
     <div class="cover-header-group">
       <div class="cover-tag">CORRIGÉ DÉTAILLÉ</div>
       <div class="cover-topic">${cleanTitle}</div>
-      <div class="cover-desc">${formattedSchool} &nbsp;·&nbsp; ${docInfo.typeLabel} (Corrigé) &nbsp;·&nbsp; ${year || new Date().getFullYear()}</div>
+      <div class="cover-desc">${formattedSchool} &nbsp;·&nbsp; ${docInfo.typeLabel} (Corrigé)${year ? ` &nbsp;·&nbsp; ${year}` : ''}</div>
     </div>
     
     <div class="cover-stats">
@@ -3165,7 +3165,7 @@ ${coverHtml}
   <div class="ws-doc-header" style="border-bottom-color: #7c3aed;">
     <div class="ws-doc-header-left">
       <h1 class="ws-doc-title">${cleanTitle}</h1>
-      <div class="ws-doc-meta">${formattedSchool} &nbsp;·&nbsp; ${teacherDisplay} &nbsp;·&nbsp; Corrigé &nbsp;·&nbsp; ${year || new Date().getFullYear()}</div>
+      <div class="ws-doc-meta">${formattedSchool} &nbsp;·&nbsp; ${teacherDisplay} &nbsp;·&nbsp; Corrigé${year ? ` &nbsp;·&nbsp; ${year}` : ''}</div>
     </div>
     <div class="ws-doc-header-right">
       <span class="ws-doc-type-badge" style="background: #7c3aed;">${schoolDisplay.toUpperCase()}</span>
@@ -4128,7 +4128,7 @@ body {
       <div style="display: grid; grid-template-columns: 1fr auto; gap: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 12px;">
         <div>
           <p style="margin: 0 0 4px 0; font-size: 9.5pt;"><strong>Examen :</strong> ${exam.name}</p>
-          <p style="margin: 0 0 4px 0; font-size: 9.5pt;"><strong>Établissement / Concours :</strong> ${exam.school} (${exam.year})</p>
+          <p style="margin: 0 0 4px 0; font-size: 9.5pt;"><strong>Établissement / Concours :</strong> ${exam.school}${exam.year ? ` (${exam.year})` : ''}</p>
           <p style="margin: 0; font-size: 9.5pt;"><strong>Date de l'analyse :</strong> ${dateStr}</p>
         </div>
         <div class="score-box" style="margin: 0;">
@@ -4519,7 +4519,7 @@ export const generateCompilationEbookHTML = (config, examsData, settings = {}) =
               
               return `
                 <div class="toc-exam-item">
-                  <div class="toc-exam-header">${exam.name} — ${exam.year}</div>
+                  <div class="toc-exam-header">${exam.name}${exam.year ? ` — ${exam.year}` : ''}</div>
                   ${parts.join('')}
                 </div>
               `;
@@ -4556,13 +4556,13 @@ export const generateCompilationEbookHTML = (config, examsData, settings = {}) =
         <div class="exam-cover-border" style="border: 2px solid #0f172a; outline: 1px solid #b89047; outline-offset: -5px; padding: 15mm 10mm; height: 100%; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
           <div class="exam-cover-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">
             <span style="font-family:'Inter', sans-serif; font-size:1.2rem; font-weight:900; letter-spacing:2px; color:#0f172a;">L'CONQ</span>
-            <span style="font-family:'Inter', sans-serif; font-size:0.75rem; font-weight:800; color:#b89047; letter-spacing:1px;">SESSION ${exam.year}</span>
+            ${exam.year ? `<span style="font-family:'Inter', sans-serif; font-size:0.75rem; font-weight:800; color:#b89047; letter-spacing:1px;">SESSION ${exam.year}</span>` : ''}
           </div>
           
           <div class="exam-cover-body" style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; margin:10mm 0;">
             <span style="font-family:'Inter', sans-serif; font-size:0.95rem; font-weight:800; color:#b89047; letter-spacing:3px; text-transform:uppercase; margin-bottom:4px;">ANNALE OFFICIELLE</span>
             <div style="font-family:'Plus Jakarta Sans', sans-serif; font-size:1.8rem; font-weight:800; color:#0f172a; line-height:1.3; margin-bottom:4px;">${exam.name.toUpperCase()}</div>
-            <div style="font-family:'Inter', sans-serif; font-size:0.9rem; color:#64748b;">${exam.school} — ${exam.year}</div>
+            <div style="font-family:'Inter', sans-serif; font-size:0.9rem; color:#64748b;">${exam.school}${exam.year ? ` — ${exam.year}` : ''}</div>
             
             <div style="width: 40px; height: 2px; background: #b89047; margin: 8mm auto;"></div>
             

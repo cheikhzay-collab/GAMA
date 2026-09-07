@@ -21,7 +21,7 @@ export default function AdminUpload() {
   const { addExam, schools } = useAuth();
   const [examName, setExamName] = useState('');
   const [school, setSchool] = useState(schools[0] || 'Médecine');
-  const [year, setYear] = useState('2024');
+  const [year, setYear] = useState('');
   const [tier, setTier] = useState('freemium');
   const [fileData, setFileData] = useState(null);
   const [pdfBase64, setPdfBase64] = useState(null);
@@ -149,7 +149,7 @@ Langue : Français (termes mathématiques en LaTeX)`;
     e.preventDefault();
     if (!fileData || !examName) return;
 
-    addExam(examName, school, year, tier, fileData, pdfBase64, school);
+    addExam(examName, getLevelDisplayName(school), year, tier, fileData, pdfBase64, school);
     navigate('/admin/exams'); // redirect to library
   };
 
@@ -368,14 +368,14 @@ Langue : Français (termes mathématiques en LaTeX)`;
             </div>
 
             <div className="col-span-4 input-group">
-              <label>Année</label>
-              <select className="input-control" value={year} onChange={(e) => setYear(e.target.value)}>
-                <option value="2025">2025 (Simulateur)</option>
-                <option value="2024">2024</option>
-                <option value="2023">2023</option>
-                <option value="2022">2022</option>
-                <option value="Anciennes">Anciennes</option>
-              </select>
+              <label>Année (optionnelle)</label>
+              <input
+                type="text"
+                className="input-control"
+                placeholder="Ex: 2025, ou laisser vide"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+              />
             </div>
 
             <div className="col-span-4 input-group">

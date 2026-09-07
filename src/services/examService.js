@@ -5,6 +5,7 @@
 import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
+import { mapLegacySchoolToLevel } from '../utils/levelHelpers';
 
 const STORAGE_KEY = 'lconq_exams_db';
 
@@ -60,7 +61,7 @@ const saveLocalStorageExams = (exams) => {
 const mapExamToDB = (e) => ({
   name: e.name,
   school: e.school,
-  level: e.level || null,
+  level: e.level || mapLegacySchoolToLevel(e.school) || null,
   year: e.year,
   tier: e.tier,
   questions: e.questions,
@@ -78,7 +79,7 @@ const mapDBToExam = (row) => {
     id: row.id,
     name: row.name,
     school: row.school,
-    level: row.level || null,
+    level: row.level || mapLegacySchoolToLevel(row.school) || null,
     year: row.year,
     tier: row.tier,
     questions: row.questions || [],
@@ -114,7 +115,7 @@ export const getAllExams = async (options = {}) => {
           // Fallback to exams table with lightweight columns (skips questions JSON)
           const fallback = await supabase
             .from('exams')
-            .select('id, name, school, year, tier, pdf_url, is_active, is_archived, date_added, updated_at')
+            .select('id, name, school, level, year, tier, pdf_url, is_active, is_archived, date_added, updated_at')
             .order('date_added', { ascending: false });
           data = fallback.data;
           error = fallback.error;
@@ -129,6 +130,7 @@ export const getAllExams = async (options = {}) => {
         console.warn('[Supabase] Failed to fetch exams:', err);
       }
     }
+
 
     // 2. Local Companion DB API fallback
     try {
@@ -230,12 +232,13 @@ export const getExamQuestionsOnly = async (examId) => {
 export const addExam = async (examData) => {
   const id = examData.id || Math.random().toString(36).substring(2, 11).toUpperCase();
   const now = new Date().toISOString();
+  const determinedLevel = examData.level || mapLegacySchoolToLevel(examData.school) || null;
 
   const newExam = {
     id,
     name: examData.name,
     school: examData.school,
-    level: examData.level || null,
+    level: determinedLevel,
     year: examData.year,
     tier: examData.tier,
     questions: examData.questions || [],
@@ -265,7 +268,7 @@ export const addExam = async (examData) => {
   // 4. Sync to Supabase
   if (supabase) {
     try {
-      await supabase.from('exams').insert({ id, ...mapExamToDB(examData) });
+      await supabase.from('exams').insert({ id, ...mapExamToDB({ ...examData, level: determinedLevel }) });
     } catch (err) {
       console.warn('[Supabase] Could not sync addExam to Supabase:', err.message);
     }
@@ -288,9 +291,14 @@ export const updateExam = async (examId, updates) => {
   const currentExams = await getAllExams();
   const idx = currentExams.findIndex(e => e.id === examId);
   if (idx !== -1) {
+    const determinedLevel = updates.level !== undefined 
+      ? updates.level 
+      : (updates.school ? mapLegacySchoolToLevel(updates.school) : currentExams[idx].level);
+
     currentExams[idx] = {
       ...currentExams[idx],
       ...updates,
+      level: determinedLevel,
       updatedAt: now
     };
     saveLocalStorageExams(currentExams);
@@ -301,7 +309,11 @@ export const updateExam = async (examId, updates) => {
     const localExams = await localDb.get('/exams');
     const eIdx = localExams.findIndex(e => e.id === examId);
     if (eIdx !== -1) {
-      const merged = { ...localExams[eIdx], ...updates, updatedAt: now };
+      const determinedLevel = updates.level !== undefined 
+        ? updates.level 
+        : (updates.school ? mapLegacySchoolToLevel(updates.school) : localExams[eIdx].level);
+
+      const merged = { ...localExams[eIdx], ...updates, level: determinedLevel, updatedAt: now };
       await localDb.post('/exams', merged);
     }
   } catch (err) {
@@ -314,7 +326,11 @@ export const updateExam = async (examId, updates) => {
       const dbUpdates = {};
       if (updates.name !== undefined) dbUpdates.name = updates.name;
       if (updates.school !== undefined) dbUpdates.school = updates.school;
-      if (updates.level !== undefined) dbUpdates.level = updates.level;
+      if (updates.level !== undefined) {
+        dbUpdates.level = updates.level;
+      } else if (updates.school !== undefined) {
+        dbUpdates.level = mapLegacySchoolToLevel(updates.school);
+      }
       if (updates.year !== undefined) dbUpdates.year = updates.year;
       if (updates.tier !== undefined) dbUpdates.tier = updates.tier;
       if (updates.questions !== undefined) dbUpdates.questions = updates.questions;

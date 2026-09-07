@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getClassById, updateClass } from '../services/classService';
+import { getClassById, updateClass, removeCompetitionFromClass, updateCompetitionGrade } from '../services/classService';
 import { getAllUsers, createUserDoc, updateUserDoc } from '../services/userService';
 import { getActiveLessons } from '../services/lessonService';
 import { getLogbookEntries } from '../services/logbookService';
@@ -14,7 +14,7 @@ import {
   ArrowLeft, Users, FileSpreadsheet, CheckSquare, Plus, Trash2, 
   Sparkles, CheckCircle2, AlertTriangle, Search, ChevronRight, 
   TrendingUp, Activity, Award, UserPlus, Save, Check, X, Printer,
-  BookOpenCheck
+  BookOpenCheck, Edit3
 } from 'lucide-react';
 
 const SYSTEM_LEVELS = [
@@ -49,6 +49,37 @@ export default function AdminClassDetail() {
   const [quickGraderStudentIdx, setQuickGraderStudentIdx] = useState(0);
   const [quickGraderValue, setQuickGraderValue] = useState('');
   const [quickGraderAutoAdvance, setQuickGraderAutoAdvance] = useState(true);
+  const [editingCompGrade, setEditingCompGrade] = useState(null); // { studentId, massar, comp, val }
+
+  const handleSaveCompGrade = async (massar, comp, val) => {
+    try {
+      await updateCompetitionGrade(id, massar, comp, val);
+      setClassObj(prev => {
+        const compGrades = { ...(prev.competitionGrades || {}) };
+        if (!compGrades[massar]) compGrades[massar] = {};
+        compGrades[massar][comp] = val;
+        return { ...prev, competitionGrades: compGrades };
+      });
+      setEditingCompGrade(null);
+    } catch (err) {
+      console.error('Error saving competition grade:', err);
+    }
+  };
+
+  const handleRemoveCompetition = async (compName) => {
+    if (window.confirm(`Voulez-vous vraiment retirer le concours "${compName}" de la classe ${classObj?.name} ?`)) {
+      try {
+        await removeCompetitionFromClass(id, compName);
+        setClassObj(prev => ({
+          ...prev,
+          competitions: (prev.competitions || []).filter(c => c !== compName),
+          controls: (prev.controls || []).filter(c => c !== compName)
+        }));
+      } catch (err) {
+        console.error('Error removing competition:', err);
+      }
+    }
+  };
 
   const sortedStudents = useMemo(() => {
     return [...students].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'fr'));
@@ -2402,8 +2433,27 @@ export default function AdminClassDetail() {
                     }
 
                     return compList.map((comp, idx) => (
-                      <th key={idx} style={{ padding: '1rem 1.25rem', fontWeight: 800, fontSize: '0.85rem', color: 'var(--violet)', textTransform: 'uppercase', textAlign: 'center', minWidth: '170px' }}>
-                        🏆 {comp}
+                      <th key={idx} style={{ padding: '0.85rem 1rem', fontWeight: 800, fontSize: '0.85rem', color: 'var(--violet)', textTransform: 'uppercase', textAlign: 'center', minWidth: '180px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+                          <span>🏆 {comp}</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveCompetition(comp);
+                            }}
+                            title="Retirer ce concours de la classe"
+                            style={{
+                              background: 'rgba(239, 68, 68, 0.1)', border: 'none', borderRadius: '6px',
+                              color: 'var(--danger)', cursor: 'pointer', padding: '3px 6px', display: 'flex',
+                              alignItems: 'center', transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.25)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
                       </th>
                     ));
                   })()}
@@ -2446,20 +2496,64 @@ export default function AdminClassDetail() {
                         ) : compList.map((comp, idx) => {
                           const val = compGradesObj[comp];
                           const cleanedVal = typeof val === 'string' ? val.replace(/^([\d.]+)\/20\s*\(\s*[\d.]+\/20\s*\)$/i, '$1/20') : val;
+                          const isEditing = editingCompGrade?.studentId === s.id && editingCompGrade?.comp === comp;
+
                           return (
-                            <td key={idx} style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>
-                              <div style={{
-                                display: 'inline-block',
-                                padding: '0.4rem 0.9rem',
-                                borderRadius: '10px',
-                                background: cleanedVal ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255,255,255,0.03)',
-                                color: cleanedVal ? 'var(--emerald)' : 'var(--text-subtle)',
-                                fontWeight: 800,
-                                fontSize: '0.88rem',
-                                border: cleanedVal ? '1px solid rgba(16, 185, 129, 0.3)' : '1px dashed var(--border)'
-                              }}>
-                                {cleanedVal ? cleanedVal : 'Non composé'}
-                              </div>
+                            <td key={idx} style={{ padding: '0.65rem 0.75rem', textAlign: 'center' }}>
+                              {isEditing ? (
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                  <input
+                                    type="text"
+                                    autoFocus
+                                    className="input-control"
+                                    style={{ width: '85px', padding: '0.25rem 0.4rem', fontSize: '0.82rem', textAlign: 'center' }}
+                                    value={editingCompGrade.val}
+                                    onChange={e => setEditingCompGrade({ ...editingCompGrade, val: e.target.value })}
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter') handleSaveCompGrade(massar, comp, editingCompGrade.val);
+                                      if (e.key === 'Escape') setEditingCompGrade(null);
+                                    }}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaveCompGrade(massar, comp, editingCompGrade.val)}
+                                    style={{ background: 'var(--emerald)', border: 'none', color: '#fff', borderRadius: '4px', padding: '3px 6px', cursor: 'pointer' }}
+                                  >
+                                    <Check size={12} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingCompGrade(null)}
+                                    style={{ background: 'var(--bg-hover)', border: 'none', color: 'var(--text-muted)', borderRadius: '4px', padding: '3px 6px', cursor: 'pointer' }}
+                                  >
+                                    <X size={12} />
+                                  </button>
+                                </div>
+                              ) : (
+                                <div
+                                  onClick={() => setEditingCompGrade({ studentId: s.id, massar, comp, val: cleanedVal ? String(cleanedVal) : '' })}
+                                  title="Cliquer pour modifier la note"
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.35rem',
+                                    padding: '0.35rem 0.75rem',
+                                    borderRadius: '8px',
+                                    background: cleanedVal ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255,255,255,0.03)',
+                                    color: cleanedVal ? 'var(--emerald)' : 'var(--text-subtle)',
+                                    fontWeight: 800,
+                                    fontSize: '0.86rem',
+                                    cursor: 'pointer',
+                                    border: cleanedVal ? '1px solid rgba(16, 185, 129, 0.3)' : '1px dashed var(--border)',
+                                    transition: 'all 0.15s'
+                                  }}
+                                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
+                                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                                >
+                                  <span>{cleanedVal ? cleanedVal : 'Non composé'}</span>
+                                  <Edit3 size={11} style={{ opacity: 0.6 }} />
+                                </div>
+                              )}
                             </td>
                           );
                         })}
@@ -2622,11 +2716,38 @@ export default function AdminClassDetail() {
                 }}
               >
                 <option value="" style={{ background: 'var(--bg-card)', color: 'var(--text-main)' }}>-- Choisir un concours dans la liste --</option>
-                {allExamsList.map(ex => (
-                  <option key={ex.id} value={ex.id} style={{ background: 'var(--bg-card)', color: 'var(--text-main)' }}>
-                    {ex.school ? `[${ex.school}] ` : ''}{ex.name} ({ex.questionsCount || ex.questions?.length || 0} questions QCM)
-                  </option>
-                ))}
+                {(() => {
+                  const classNorm = normalizeLevel(classObj?.level);
+                  const matching = allExamsList.filter(ex => {
+                    const exNorm = normalizeLevel(ex.level || ex.school);
+                    return exNorm === classNorm || 
+                      ((classNorm === '2bac_pc_svt' || classNorm === '2bac_sm') && (exNorm === '2bac_pc_svt' || exNorm === '2bac_sm'));
+                  });
+                  const others = allExamsList.filter(ex => !matching.includes(ex));
+
+                  return (
+                    <>
+                      {matching.length > 0 && (
+                        <optgroup label="⭐ Concours recommandés pour cette classe">
+                          {matching.map(ex => (
+                            <option key={ex.id} value={ex.id} style={{ background: 'var(--bg-card)', color: 'var(--text-main)' }}>
+                              {ex.school ? `[${ex.school}] ` : ''}{ex.name} ({ex.questionsCount || ex.questions?.length || 0} questions QCM)
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
+                      {others.length > 0 && (
+                        <optgroup label="Autres concours & examens">
+                          {others.map(ex => (
+                            <option key={ex.id} value={ex.id} style={{ background: 'var(--bg-card)', color: 'var(--text-main)' }}>
+                              {ex.school ? `[${ex.school}] ` : ''}{ex.name} ({ex.questionsCount || ex.questions?.length || 0} questions QCM)
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
+                    </>
+                  );
+                })()}
               </select>
             </div>
 

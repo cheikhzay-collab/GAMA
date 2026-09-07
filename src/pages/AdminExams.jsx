@@ -277,9 +277,11 @@ export default function AdminExams() {
                   <span style={{ background: 'var(--bg-glass)', border: '1px solid var(--border)', borderRadius: 6, padding: '0.2rem 0.5rem' }}>
                     🎓 {getLevelDisplayName(exam.level || mapLegacySchoolToLevel(exam.school)) || '—'}
                   </span>
-                  <span style={{ background: 'var(--bg-glass)', border: '1px solid var(--border)', borderRadius: 6, padding: '0.2rem 0.5rem' }}>
-                    📅 {exam.year || '—'}
-                  </span>
+                  {exam.year ? (
+                    <span style={{ background: 'var(--bg-glass)', border: '1px solid var(--border)', borderRadius: 6, padding: '0.2rem 0.5rem' }}>
+                      📅 {exam.year}
+                    </span>
+                  ) : null}
                   <span style={{ background: 'var(--bg-glass)', border: '1px solid var(--border)', borderRadius: 6, padding: '0.2rem 0.5rem', fontWeight: 700 }}>
                     ❓ {exam.questionsCount || exam.questions?.length || 0} Q
                   </span>
