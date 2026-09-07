@@ -589,7 +589,7 @@ export default function LessonViewerPage() {
   
   // Solutions visibility states (section ID -> boolean)
   const [visibleSolutions, setVisibleSolutions] = useState({}); // sectionId -> boolean
-  const [answers, setAnswers] = useState({}); // key -> student input
+  const [studentAnswers, setStudentAnswers] = useState({}); // key -> student input
   const [checkResults, setCheckResults] = useState({}); // key -> 'success' | 'error'
   const [includeSolutionsInPdf, setIncludeSolutionsInPdf] = useState(() => {
     try {

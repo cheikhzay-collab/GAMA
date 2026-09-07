@@ -421,8 +421,34 @@ export default function CourseSummaryTemplate({ data, printable = false }) {
   const [qrUrl, setQrUrl] = useState('');
 
   useEffect(() => {
-    let isMounted = true;
-    const payload = meta.solution_url || header.solution_url || (website?.startsWith('http') ? website : `https://${website || 'elboutkhili.jimdofree.com'}`);
+    let payload = meta.solution_url || header.solution_url;
+    if (!payload) {
+      let settingsPhone = '';
+      let customWaMessage = '';
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          const waRaw = localStorage.getItem('whatsappSettings');
+          if (waRaw) {
+            const waParsed = JSON.parse(waRaw);
+            settingsPhone = waParsed.phoneNumber || '';
+            customWaMessage = waParsed.message || '';
+          }
+        } catch (_) {}
+        if (!settingsPhone) settingsPhone = localStorage.getItem('profPhone') || '';
+      }
+      const rawTargetPhone = settingsPhone || header.phone || '';
+      let cleanWaPhone = (rawTargetPhone || '').replace(/[^\d+]/g, '');
+      if (cleanWaPhone.startsWith('0') && cleanWaPhone.length === 10) cleanWaPhone = '212' + cleanWaPhone.slice(1);
+      else if (!cleanWaPhone.startsWith('+') && !cleanWaPhone.startsWith('212') && cleanWaPhone.length === 9) cleanWaPhone = '212' + cleanWaPhone;
+      cleanWaPhone = cleanWaPhone.replace(/^\+/, '');
+
+      if (cleanWaPhone) {
+        const msg = customWaMessage || `Bonjour Professeur, je souhaite avoir les résumés et solutions.`;
+        payload = `https://wa.me/${cleanWaPhone}?text=${encodeURIComponent(msg)}`;
+      } else {
+        payload = website?.startsWith('http') ? website : `https://${website || 'elboutkhili.jimdofree.com'}`;
+      }
+    }
     QRCode.toDataURL(payload, {
       width: 150,
       margin: 1,

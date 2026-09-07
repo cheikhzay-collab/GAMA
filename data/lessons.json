@@ -17687,7 +17687,8 @@
           "accent_text": "",
           "section_header": "Exercice 1 : Parité des nombres",
           "section_number": "1",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-2",
@@ -17706,7 +17707,8 @@
           "accent_text": "",
           "section_header": "Exercice 2 : Étude de parité",
           "section_number": "2",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-3",
@@ -17729,7 +17731,8 @@
           "accent_text": "",
           "section_header": "Exercice 3 : Parité d'expressions avec n",
           "section_number": "3",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-4",
@@ -17752,7 +17755,8 @@
           "accent_text": "",
           "section_header": "Exercice 4 : Diviseurs et multiples",
           "section_number": "4",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-5",
@@ -17894,7 +17898,8 @@
           "accent_text": "",
           "section_header": "Exercice 5 : Critères de divisibilité",
           "section_number": "5",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-6",
@@ -17929,7 +17934,8 @@
           "accent_text": "",
           "section_header": "Exercice 6 : Somme et divisibilité",
           "section_number": "6",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-7",
@@ -17948,7 +17954,8 @@
           "accent_text": "",
           "section_header": "Exercice 7 : Nombres divisibles par 3 et 5",
           "section_number": "7",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-8",
@@ -17979,7 +17986,8 @@
           "accent_text": "",
           "section_header": "Exercice 8 : Diviseurs d'un nombre",
           "section_number": "8",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-9",
@@ -18014,7 +18022,8 @@
           "accent_text": "",
           "section_header": "Exercice 9 : Parité et divisibilité par 4",
           "section_number": "9",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-10",
@@ -18037,7 +18046,8 @@
           "accent_text": "",
           "section_header": "Exercice 10 : Multiples de nombres",
           "section_number": "10",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-11",
@@ -18060,7 +18070,8 @@
           "accent_text": "",
           "section_header": "Exercice 11 : Division euclidienne et puissances",
           "section_number": "11",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-12",
@@ -18091,7 +18102,8 @@
           "accent_text": "",
           "section_header": "Exercice 12 : Divisibilité de nombres à chiffres inconnus",
           "section_number": "12",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-13",
@@ -18114,7 +18126,8 @@
           "accent_text": "",
           "section_header": "Exercice 13 : Multiple de 16",
           "section_number": "13",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-14",
@@ -18141,7 +18154,8 @@
           "accent_text": "",
           "section_header": "Exercice 14 : Propriétés des nombres premiers",
           "section_number": "14",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-15",
@@ -18172,7 +18186,8 @@
           "accent_text": "",
           "section_header": "Exercice 15 : Décomposition, PGCD, PPCM et simplification",
           "section_number": "15",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-16",
@@ -18191,7 +18206,8 @@
           "accent_text": "",
           "section_header": "Exercice 16 : Fraction entière",
           "section_number": "16",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-17",
@@ -18222,7 +18238,8 @@
           "accent_text": "",
           "section_header": "Exercice 17 : Différence de carrés",
           "section_number": "17",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-18",
@@ -18241,7 +18258,8 @@
           "accent_text": "",
           "section_header": "Exercice 18 : Égalité exponentielle",
           "section_number": "18",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-19",
@@ -18264,7 +18282,8 @@
           "accent_text": "",
           "section_header": "Exercice 19 : Équations diophantiennes et systèmes",
           "section_number": "19",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-20",
@@ -18291,7 +18310,8 @@
           "accent_text": "",
           "section_header": "Exercice 20 : PGCD et PPCM d'expressions exponentielles",
           "section_number": "20",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         },
         {
           "id": "ex-21",
@@ -18314,17 +18334,18 @@
           "accent_text": "",
           "section_header": "Exercice 21 : Nombres premiers",
           "section_number": "21",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "fontSize": "11pt"
         }
       ],
       "columns_count": 2
     },
     "is_active": true,
-    "updated_at": "2026-09-06T12:05:05.552Z",
+    "updated_at": "2026-09-07T16:33:24.099Z",
     "created_at": "2026-09-06T10:45:21.415Z",
     "createdAt": "2026-09-06T10:45:29.548Z",
     "level": "common_core_sci",
     "doc_type": "exercises",
-    "updatedAt": "2026-09-06T12:05:09.347Z"
+    "updatedAt": "2026-09-07T16:33:25.246Z"
   }
 ]

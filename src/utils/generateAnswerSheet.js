@@ -57,7 +57,7 @@ const toLatinOnly = (str, fallback = '') => {
  * @param {Object} student  - { name, massarCode, id }
  * @param {Object} classObj - { id, name }
  */
-export async function renderAnswerSheetPage(doc, exam, student = null, classObj = null) {
+export async function renderAnswerSheetPage(doc, exam, student = null, classObj = null, options = {}) {
   const W = 210, H = 297;
   const margin = 14;
 
@@ -118,7 +118,13 @@ export async function renderAnswerSheetPage(doc, exam, student = null, classObj 
   doc.setFontSize(8.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(191, 196, 210);
-  doc.text('Feuille de réponses officielle · Correction par Intelligence Artificielle', headerMargin + 6, 32);
+  doc.text(
+    options?.withAnswers
+      ? 'Grille de correction officielle · Clé des bonnes réponses'
+      : 'Feuille de réponses officielle · Correction par Intelligence Artificielle',
+    headerMargin + 6,
+    32
+  );
 
   // Exam name sanitized for jsPDF Latin-1 helvetica font
   doc.setFontSize(10);
@@ -135,7 +141,7 @@ export async function renderAnswerSheetPage(doc, exam, student = null, classObj 
   cleanName = cleanName.replace(/[\s—–\-_:]+$/g, '').trim();
   const cleanYear = toLatinOnly(rawYear) || '';
 
-  const examLabel = `${cleanLevel} — ${cleanName} ${cleanYear}`.replace(/\s+—\s+$/, '').trim();
+  const examLabel = `${cleanLevel} — ${cleanName}${cleanYear ? ` ${cleanYear}` : ''}${options?.withAnswers ? ' [CLÉ CORRIGÉE]' : ''}`.replace(/\s+—\s+$/, '').trim();
   doc.text(examLabel, headerMargin + 6, 41, { maxWidth: 130 });
 
   // QR Code Image in Header
@@ -165,8 +171,13 @@ export async function renderAnswerSheetPage(doc, exam, student = null, classObj 
   const className = classObj?.name || student?.className || 'N/A';
   const studentName = student?.name || '';
 
-  drawCard(margin, cardY, 58, cardH, 'NOM & PRÉNOM DU CANDIDAT', studentName || '___________________________');
-  drawCard(margin + 60, cardY, 32, cardH, 'CODE MASSAR', massar || '__________');
+  if (options?.withAnswers && !student) {
+    drawCard(margin, cardY, 58, cardH, 'MODÈLE DE FEUILLE', 'CORRIGÉ OFFICIEL / ENSEIGNANT');
+    drawCard(margin + 60, cardY, 32, cardH, 'STATUT', 'CLÉ OFFICIELLE');
+  } else {
+    drawCard(margin, cardY, 58, cardH, 'NOM & PRÉNOM DU CANDIDAT', studentName || '___________________________');
+    drawCard(margin + 60, cardY, 32, cardH, 'CODE MASSAR', massar || '__________');
+  }
   drawCard(margin + 94, cardY, 30, cardH, 'CLASSE', className);
   drawCard(margin + 126, cardY, 26, cardH, 'DATE', new Date().toLocaleDateString('fr-MA'));
 
@@ -189,12 +200,12 @@ export async function renderAnswerSheetPage(doc, exam, student = null, classObj 
   doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...emerald);
-  doc.text('SCORE FINAL', scoreCardX + 2.5, cardY + 5);
+  doc.text(options?.withAnswers ? 'CLÉ VALIDÉE' : 'SCORE FINAL', scoreCardX + 2.5, cardY + 5);
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...emerald);
-  doc.text(`__ / ${questions.length}`, scoreCardX + 2.5, cardY + 10.5);
+  doc.text(options?.withAnswers ? `${questions.length} / ${questions.length}` : `__ / ${questions.length}`, scoreCardX + 2.5, cardY + 10.5);
 
   // ── Instructions Panel ───────────────────────────────────────────
   const instY = 69;
@@ -208,12 +219,24 @@ export async function renderAnswerSheetPage(doc, exam, student = null, classObj 
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...violet);
-  doc.text('INFORMATIONS & CONSIGNES IMPORTANTES :', margin + 5, instY + 4);
+  doc.text(
+    options?.withAnswers
+      ? 'CLÉ DE RÉPONSE OFFICIELLE (CORRIGÉ ENSEIGNANT) :'
+      : 'INFORMATIONS & CONSIGNES IMPORTANTES :',
+    margin + 5,
+    instY + 4
+  );
 
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...charcoal);
-  doc.text('· Noircissez complètement le cercle avec un stylo bleu ou noir.  · En cas d\'erreur, blanchissez proprement le cercle.', margin + 5, instY + 7.5);
+  doc.text(
+    options?.withAnswers
+      ? '· Les cercles noircis correspondent aux réponses officielles validées de chaque question du QCM.'
+      : '· Noircissez complètement le cercle avec un stylo bleu ou noir.  · En cas d\'erreur, blanchissez proprement le cercle.',
+    margin + 5,
+    instY + 7.5
+  );
 
   // ── Legend Section ───────────────────────────────────────────────
   const opts = ['A', 'B', 'C', 'D', 'E'];
@@ -307,14 +330,30 @@ export async function renderAnswerSheetPage(doc, exam, student = null, classObj 
       const cx = xBase + 20 + i * 9;
       const cy = y + rowH / 2;
       
-      doc.setDrawColor(...mid);
-      doc.setLineWidth(0.35);
-      doc.circle(cx, cy, 2.9, 'S');
+      const qObj = questions[q];
+      const rawAns = String(qObj?.correct_answer || qObj?.answer || qObj?.correct || '').toUpperCase().trim();
+      const isCorrect = Boolean(options?.withAnswers && (
+        rawAns === o ||
+        rawAns.split(/[\s,+/]+/).includes(o) ||
+        (typeof qObj?.correct_answer === 'number' && opts[qObj.correct_answer] === o)
+      ));
 
-      doc.setFontSize(6.2);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...mid);
-      doc.text(o, cx - 1.3, cy + 1.1);
+      if (isCorrect) {
+        doc.setFillColor(...navy);
+        doc.circle(cx, cy, 2.9, 'F');
+        doc.setFontSize(6.2);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 255, 255);
+        doc.text(o, cx - 1.3, cy + 1.1);
+      } else {
+        doc.setDrawColor(...mid);
+        doc.setLineWidth(0.35);
+        doc.circle(cx, cy, 2.9, 'S');
+        doc.setFontSize(6.2);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...mid);
+        doc.text(o, cx - 1.3, cy + 1.1);
+      }
     });
   }
 
@@ -329,7 +368,14 @@ export async function renderAnswerSheetPage(doc, exam, student = null, classObj 
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...mid);
-  doc.text("Après avoir terminé, scannez cette feuille via l'application L'CONQ pour obtenir une correction instantanée.", margin, footerY + 5.5, { maxWidth: W - margin * 2 - 25 });
+  doc.text(
+    options?.withAnswers
+      ? "Cette grille constitue le corrigé officiel de référence. Elle est compatible avec l'IA OMR Engine."
+      : "Après avoir terminé, scannez cette feuille via l'application L'CONQ pour obtenir une correction instantanée.",
+    margin,
+    footerY + 5.5,
+    { maxWidth: W - margin * 2 - 25 }
+  );
 
   doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
@@ -344,15 +390,18 @@ export async function renderAnswerSheetPage(doc, exam, student = null, classObj 
 
 /**
  * Generates a printable answer sheet PDF for an individual exam/user.
- * @param {Object} exam   - { id, name, school, year, questions }
- * @param {Object} user   - { name, email, massarCode, id }
+ * @param {Object} exam    - { id, name, school, year, questions }
+ * @param {Object} user    - { name, email, massarCode, id }
+ * @param {Object} options - { withAnswers?: boolean }
  */
-export async function generateAnswerSheet(exam, user) {
+export async function generateAnswerSheet(exam, user = null, options = {}) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-  await renderAnswerSheetPage(doc, exam, user);
+  await renderAnswerSheetPage(doc, exam, user, null, options);
   const schoolName = sanitizeFilename(exam?.school || 'LCONQ');
   const examIdPart = sanitizeFilename(String(exam?.id || 'EXAM').slice(0, 6));
-  const filename = `feuille-reponses-${schoolName}-${exam?.year || ''}-${examIdPart}.pdf`;
+  const typeTag = options?.withAnswers ? 'corrige-cle' : 'vierge';
+  const yearPart = exam?.year ? `-${exam.year}` : '';
+  const filename = `feuille-reponses-${typeTag}-${schoolName}${yearPart}-${examIdPart}.pdf`;
   doc.save(filename);
 }
 
@@ -361,18 +410,20 @@ export async function generateAnswerSheet(exam, user) {
  * @param {Object} exam         - Exam object
  * @param {Object} classObj     - Class object
  * @param {Array}  studentsList - List of student objects { name, massarCode, id }
+ * @param {Object} options      - { withAnswers?: boolean }
  */
-export async function generateBatchAnswerSheets(exam, classObj, studentsList = []) {
+export async function generateBatchAnswerSheets(exam, classObj, studentsList = [], options = {}) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
   const list = studentsList.length > 0 ? studentsList : [{ name: '', massarCode: '' }];
 
   for (let i = 0; i < list.length; i++) {
     if (i > 0) doc.addPage();
-    await renderAnswerSheetPage(doc, exam, list[i], classObj);
+    await renderAnswerSheetPage(doc, exam, list[i], classObj, options);
   }
 
   const className = sanitizeFilename(classObj?.name || 'Classe');
   const examName = sanitizeFilename(exam?.name || 'Examen');
-  const filename = `Grilles-OMR-${className}-${examName}.pdf`;
+  const typeTag = options?.withAnswers ? 'Corriges-Cles' : 'Grilles';
+  const filename = `${typeTag}-OMR-${className}-${examName}.pdf`;
   doc.save(filename);
 }

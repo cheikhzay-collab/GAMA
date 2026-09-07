@@ -7139,5 +7139,561 @@
     "dateAdded": "2026-09-07T05:42:43.730Z",
     "updatedAt": "2026-09-07T05:48:17.972Z",
     "createdAt": "2026-09-07T05:42:44.630Z"
+  },
+  {
+    "id": "I9SFXXZ44",
+    "name": "QCM : Arithmétique dans N (20 Questions)",
+    "school": "TCSF-1",
+    "level": "common_core_sci",
+    "year": "2026",
+    "tier": "Moyen",
+    "questions": [
+      {
+        "question_number": 1,
+        "context": "I. Nombres pairs - Nombres impairs, 1. Ensemble des nombres entiers naturels",
+        "subject": "Mathématiques",
+        "question": "Quel est l'ensemble des nombres entiers naturels ?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\mathbb{N} = \\{1,2,3,...\\}$"
+          },
+          {
+            "id": "B",
+            "text": "$\\mathbb{N} = \\{0,1,2,3,...\\}$"
+          },
+          {
+            "id": "C",
+            "text": "$\\mathbb{N} = \\{...,-2,-1,0,1,2,...\\}$"
+          },
+          {
+            "id": "D",
+            "text": "$\\mathbb{N} = \\{0, \\frac{1}{2}, 1, \\frac{3}{2}, ...\\}$"
+          }
+        ],
+        "correct_answer": "B",
+        "astuce": "La définition de l'ensemble des nombres entiers naturels $\\mathbb{N}$ est $\\mathbb{N} = \\{0,1,2,3,...\\}$. Il inclut le zéro et tous les entiers positifs.",
+        "trick": "La confusion peut venir de l'oubli du zéro ou de l'inclusion des nombres négatifs ou décimaux."
+      },
+      {
+        "question_number": 2,
+        "context": "I. Nombres pairs - Nombres impairs, 1. Ensemble des nombres entiers naturels",
+        "subject": "Mathématiques",
+        "question": "Comment est noté et défini l'ensemble des nombres entiers naturels non nuls ?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\mathbb{N}^* = \\{0,1,2,3,...\\}$"
+          },
+          {
+            "id": "B",
+            "text": "$\\mathbb{Z}^* = \\{1,2,3,...\\}$"
+          },
+          {
+            "id": "C",
+            "text": "$\\mathbb{N}^* = \\{1,2,3,...\\}$"
+          },
+          {
+            "id": "D",
+            "text": "$\\mathbb{N} = \\{1,2,3,...\\}$"
+          }
+        ],
+        "correct_answer": "C",
+        "astuce": "L'ensemble des nombres entiers naturels non nuls est noté $\\mathbb{N}^*$ et est défini comme $\\mathbb{N}^* = \\{1,2,3,...\\}$. Il exclut le zéro.",
+        "trick": "Attention à la notation $\\mathbb{N}^*$ qui signifie 'non nuls', et à ne pas confondre avec d'autres ensembles comme $\\mathbb{Z}^*$."
+      },
+      {
+        "question_number": 3,
+        "context": "I. Nombres pairs - Nombres impairs, 1. Ensemble des nombres entiers naturels",
+        "subject": "Mathématiques",
+        "question": "Quelle est la relation correcte entre les ensembles $\\mathbb{N}$ et $\\mathbb{N}^*$ ?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\mathbb{N} \\subset \\mathbb{N}^*$"
+          },
+          {
+            "id": "B",
+            "text": "$\\mathbb{N}^* \\not\\subset \\mathbb{N}$"
+          },
+          {
+            "id": "C",
+            "text": "$\\mathbb{N}^* \\subset \\mathbb{N}$"
+          },
+          {
+            "id": "D",
+            "text": "$\\mathbb{N} = \\mathbb{N}^*$"
+          }
+        ],
+        "correct_answer": "C",
+        "astuce": "L'ensemble $\\mathbb{N}^*$ est l'ensemble des entiers naturels non nuls, tandis que $\\mathbb{N}$ inclut le zéro. Par conséquent, tous les éléments de $\\mathbb{N}^*$ sont aussi des éléments de $\\mathbb{N}$, ce qui signifie que $\\mathbb{N}^*$ est inclus dans $\\mathbb{N}$, noté $\\mathbb{N}^* \\subset \\mathbb{N}$.",
+        "trick": "Se souvenir que $\\mathbb{N}^*$ est un sous-ensemble de $\\mathbb{N}$ car il contient moins d'éléments (il manque le 0)."
+      },
+      {
+        "question_number": 4,
+        "context": "I. Nombres pairs - Nombres impairs, 1. Ensemble des nombres entiers naturels",
+        "subject": "Mathématiques",
+        "question": "Parmi les propositions suivantes, laquelle est correcte ?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$-5 \\in \\mathbb{N}$"
+          },
+          {
+            "id": "B",
+            "text": "$\\frac{2}{3} \\in \\mathbb{N}$"
+          },
+          {
+            "id": "C",
+            "text": "$\\sqrt{25} \\notin \\mathbb{N}$"
+          },
+          {
+            "id": "D",
+            "text": "$0 \\in \\mathbb{N}$"
+          }
+        ],
+        "correct_answer": "D",
+        "astuce": "L'ensemble $\\mathbb{N}$ contient tous les entiers positifs et le zéro. A) $-5$ n'est pas un entier naturel. B) $\\frac{2}{3}$ n'est pas un entier naturel. C) $\\sqrt{25} = 5$, qui est un entier naturel, donc $\\sqrt{25} \\in \\mathbb{N}$. D) $0$ est un entier naturel, donc $0 \\in \\mathbb{N}$.",
+        "trick": "Vérifier la définition de $\\mathbb{N}$ : nombres entiers positifs ou nuls. Les nombres négatifs, fractionnaires ou irrationnels n'en font pas partie."
+      },
+      {
+        "question_number": 5,
+        "context": "I. Nombres pairs - Nombres impairs, 2. Nombres pairs - Nombres impairs",
+        "subject": "Mathématiques",
+        "question": "Quelle est la définition correcte d'un nombre pair $a$ ?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$a$ est un nombre pair s'il existe un nombre entier relatif $k$ tel que $a = 2k$."
+          },
+          {
+            "id": "B",
+            "text": "$a$ est un nombre pair s'il existe un nombre entier naturel $k$ tel que $a = 2k$."
+          },
+          {
+            "id": "C",
+            "text": "$a$ est un nombre pair s'il existe un nombre entier naturel $k$ tel que $a = 2k+1$."
+          },
+          {
+            "id": "D",
+            "text": "$a$ est un nombre pair s'il est divisible par $4$."
+          }
+        ],
+        "correct_answer": "B",
+        "astuce": "Selon la définition du cours, un nombre $a$ est dit pair s'il existe un nombre entier naturel $k$ tel que $a = 2k$. L'option A utilise 'entier relatif', ce qui est plus général mais le cours spécifie 'entier naturel'.",
+        "trick": "La définition formelle utilise un entier naturel $k$. Ne pas confondre avec la définition d'un nombre impair ou un critère de divisibilité spécifique."
+      },
+      {
+        "question_number": 6,
+        "context": "I. Nombres pairs - Nombres impairs, 2. Nombres pairs - Nombres impairs",
+        "subject": "Mathématiques",
+        "question": "Quelle est la définition correcte d'un nombre impair $a$ ?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$a$ est un nombre impair s'il existe un nombre entier naturel $k$ tel que $a = 2k$."
+          },
+          {
+            "id": "B",
+            "text": "$a$ est un nombre impair s'il existe un nombre entier relatif $k$ tel que $a = 2k+1$."
+          },
+          {
+            "id": "C",
+            "text": "$a$ est un nombre impair s'il existe un nombre entier naturel $k$ tel que $a = 2k+1$."
+          },
+          {
+            "id": "D",
+            "text": "$a$ est un nombre impair s'il n'est pas divisible par $2$."
+          }
+        ],
+        "correct_answer": "C",
+        "astuce": "Selon la définition du cours, un nombre $a$ est dit impair s'il existe un nombre entier naturel $k$ tel que $a = 2k+1$. L'option B utilise 'entier relatif', ce qui est plus général mais le cours spécifie 'entier naturel'.",
+        "trick": "La définition formelle utilise un entier naturel $k$. Ne pas confondre avec la définition d'un nombre pair ou une description informelle."
+      },
+      {
+        "question_number": 7,
+        "context": "I. Nombres pairs - Nombres impairs, 2. Nombres pairs - Nombres impairs",
+        "subject": "Mathématiques",
+        "question": "Le nombre $0$ est-il un nombre pair ou impair ?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Impair, car il ne peut pas s'écrire sous la forme $2k+1$."
+          },
+          {
+            "id": "B",
+            "text": "Pair, car il peut s'écrire sous la forme $2k$ avec $k=0 \\in \\mathbb{N}$."
+          },
+          {
+            "id": "C",
+            "text": "Ni pair, ni impair."
+          },
+          {
+            "id": "D",
+            "text": "Impair, car il n'est pas un multiple de $2$ non nul."
+          }
+        ],
+        "correct_answer": "B",
+        "astuce": "Un nombre $a$ est pair s'il existe un entier naturel $k$ tel que $a = 2k$. Pour $a=0$, on peut choisir $k=0$. Puisque $0 \\in \\mathbb{N}$, $0 = 2 \\times 0$ satisfait la définition d'un nombre pair.",
+        "trick": "Le zéro est souvent une source de confusion. Il est pair car il est un multiple de 2 (0 = 2 * 0)."
+      },
+      {
+        "question_number": 8,
+        "context": "II. Multiples d'un entier naturel - ppcm de deux entiers naturels",
+        "subject": "Mathématiques",
+        "question": "Quand dit-on que $b$ est un multiple de $a$ ?",
+        "options": [
+          {
+            "id": "A",
+            "text": "On dit que $b$ est multiple de $a$ s'il existe un entier relatif $k$ tel que $b=k \\times a$."
+          },
+          {
+            "id": "B",
+            "text": "On dit que $b$ est multiple de $a$ s'il existe un entier naturel $k$ tel que $a=k \\times b$."
+          },
+          {
+            "id": "C",
+            "text": "On dit que $b$ est multiple de $a$ s'il existe un entier naturel $k$ tel que $b=k \\times a$."
+          },
+          {
+            "id": "D",
+            "text": "On dit que $b$ est multiple de $a$ si $a$ est un diviseur de $b$."
+          }
+        ],
+        "correct_answer": "C",
+        "astuce": "Selon la définition du cours, on dit que $b$ est multiple de $a$ s'il existe un entier naturel $k$ tel que $b=k \\times a$. L'option D est une conséquence mais pas la définition formelle donnée.",
+        "trick": "La définition formelle implique l'existence d'un entier naturel $k$ et la relation $b=k \\times a$. Attention à l'ordre des variables et au type d'entier."
+      },
+      {
+        "question_number": 9,
+        "context": "II. Multiples d'un entier naturel - ppcm de deux entiers naturels",
+        "subject": "Mathématiques",
+        "question": "Comment est noté le plus petit commun multiple non nul de deux entiers naturels $a$ et $b$ ?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\text{pgcd}(a,b)$"
+          },
+          {
+            "id": "B",
+            "text": "$a \\wedge b$"
+          },
+          {
+            "id": "C",
+            "text": "$\\text{ppcm}(a,b)$ ou $a \\lor b$"
+          },
+          {
+            "id": "D",
+            "text": "$\\text{ppcm}(a,b)$ et $a \\wedge b$"
+          }
+        ],
+        "correct_answer": "C",
+        "astuce": "Le cours stipule que le plus petit commun multiple non nul de $a$ et $b$ est noté $\\text{ppcm}(a,b)$ ou $a \\lor b$.",
+        "trick": "Ne pas confondre les notations du ppcm ($\\lor$) et du pgcd ($\\wedge$). Le 'p' de ppcm peut aider à se souvenir de 'plus petit'."
+      },
+      {
+        "question_number": 10,
+        "context": "II. Multiples d'un entier naturel - ppcm de deux entiers naturels",
+        "subject": "Mathématiques",
+        "question": "Quelle affirmation est vraie concernant les multiples de $1$ ?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Seul $1$ est un multiple de $1$."
+          },
+          {
+            "id": "B",
+            "text": "Tout nombre entier naturel $a$ est un multiple de $1$."
+          },
+          {
+            "id": "C",
+            "text": "Aucun nombre n'est un multiple de $1$."
+          },
+          {
+            "id": "D",
+            "text": "Seuls les nombres pairs sont des multiples de $1$."
+          }
+        ],
+        "correct_answer": "B",
+        "astuce": "Le cours donne l'exemple : 'Tout nombre entier naturel $a$ est un multiple de $1$ et de lui-même car $a=1 \\times a$'.",
+        "trick": "Tout nombre $a$ peut s'écrire $a \\times 1$, donc tout nombre est un multiple de 1."
+      },
+      {
+        "question_number": 11,
+        "context": "III. Diviseur d'un entier naturel - pgcd de deux entiers naturels",
+        "subject": "Mathématiques",
+        "question": "Quand dit-on que $b$ est un diviseur de $a$ ?",
+        "options": [
+          {
+            "id": "A",
+            "text": "On dit que $b$ est diviseur de $a$ s'il existe un entier relatif $k$ tel que $a=k \\times b$."
+          },
+          {
+            "id": "B",
+            "text": "On dit que $b$ est diviseur de $a$ s'il existe un entier naturel $k$ tel que $b=k \\times a$."
+          },
+          {
+            "id": "C",
+            "text": "On dit que $b$ est diviseur de $a$ s'il existe un entier naturel $k$ tel que $a=k \\times b$."
+          },
+          {
+            "id": "D",
+            "text": "On dit que $b$ est diviseur de $a$ si $a$ est un multiple de $b$."
+          }
+        ],
+        "correct_answer": "C",
+        "astuce": "Selon la définition du cours, on dit que $b$ est diviseur de $a$ s'il existe un entier naturel $k$ tel que $a=k \\times b$. L'option D est une conséquence mais pas la définition formelle donnée.",
+        "trick": "La définition formelle implique l'existence d'un entier naturel $k$ et la relation $a=k \\times b$. Attention à l'ordre des variables et au type d'entier."
+      },
+      {
+        "question_number": 12,
+        "context": "III. Diviseur d'un entier naturel - pgcd de deux entiers naturels",
+        "subject": "Mathématiques",
+        "question": "Comment est noté le plus grand diviseur commun de deux entiers naturels $a$ et $b$ ?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\text{ppcm}(a,b)$"
+          },
+          {
+            "id": "B",
+            "text": "$a \\lor b$"
+          },
+          {
+            "id": "C",
+            "text": "$\\text{pgcd}(a,b)$ ou $a \\wedge b$"
+          },
+          {
+            "id": "D",
+            "text": "$\\text{pgcd}(a,b)$ et $a \\lor b$"
+          }
+        ],
+        "correct_answer": "C",
+        "astuce": "Le cours stipule que le plus grand diviseur commun de $a$ et $b$ est noté $\\text{pgcd}(a,b)$ ou $a \\wedge b$.",
+        "trick": "Ne pas confondre les notations du pgcd ($\\wedge$) et du ppcm ($\\lor$). Le 'g' de pgcd peut aider à se souvenir de 'plus grand'."
+      },
+      {
+        "question_number": 13,
+        "context": "III. Diviseur d'un entier naturel - pgcd de deux entiers naturels",
+        "subject": "Mathématiques",
+        "question": "Quelle affirmation est vraie concernant le nombre $1$ et les diviseurs ?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$1$ n'est diviseur d'aucun nombre."
+          },
+          {
+            "id": "B",
+            "text": "$1$ est un diviseur de tous les nombres entiers naturels."
+          },
+          {
+            "id": "C",
+            "text": "$1$ est un diviseur seulement des nombres impairs."
+          },
+          {
+            "id": "D",
+            "text": "$1$ est le seul diviseur de lui-même."
+          }
+        ],
+        "correct_answer": "B",
+        "astuce": "Le cours donne l'exemple : '$1$ est un diviseur de tous les nombres entiers naturels'.",
+        "trick": "Tout nombre $a$ peut s'écrire $a = a \\times 1$, donc 1 est toujours un diviseur."
+      },
+      {
+        "question_number": 14,
+        "context": "III. Diviseur d'un entier naturel - pgcd de deux entiers naturels, Propriété",
+        "subject": "Mathématiques",
+        "question": "Un nombre entier naturel est divisible par $2$ si et seulement si :",
+        "options": [
+          {
+            "id": "A",
+            "text": "La somme de ses chiffres est un multiple de $2$."
+          },
+          {
+            "id": "B",
+            "text": "Son chiffre des unités est $0$, $2$, $4$, $6$ ou $8$."
+          },
+          {
+            "id": "C",
+            "text": "Son chiffre des unités est $0$ ou $5$."
+          },
+          {
+            "id": "D",
+            "text": "Il est un nombre pair."
+          }
+        ],
+        "correct_answer": "B",
+        "astuce": "Selon la propriété du cours, un nombre est divisible par $2$ si son chiffre des unités est : $0$ ou $2$ ou $4$ ou $6$ ou $8$. L'option D est une définition équivalente mais le critère de divisibilité donné est basé sur le chiffre des unités.",
+        "trick": "Le critère de divisibilité par 2 est lié au dernier chiffre du nombre."
+      },
+      {
+        "question_number": 15,
+        "context": "III. Diviseur d'un entier naturel - pgcd de deux entiers naturels, Propriété",
+        "subject": "Mathématiques",
+        "question": "Un nombre entier naturel est divisible par $5$ si et seulement si :",
+        "options": [
+          {
+            "id": "A",
+            "text": "Son chiffre des unités est $0$ ou $5$."
+          },
+          {
+            "id": "B",
+            "text": "La somme de ses chiffres est un multiple de $5$."
+          },
+          {
+            "id": "C",
+            "text": "Son chiffre des unités est $5$."
+          },
+          {
+            "id": "D",
+            "text": "Il se termine par $0$."
+          }
+        ],
+        "correct_answer": "A",
+        "astuce": "Selon la propriété du cours, un nombre est divisible par $5$ si son chiffre des unités est : $0$ ou $5$.",
+        "trick": "Le critère de divisibilité par 5 est lié au dernier chiffre du nombre."
+      },
+      {
+        "question_number": 16,
+        "context": "III. Diviseur d'un entier naturel - pgcd de deux entiers naturels, Propriété",
+        "subject": "Mathématiques",
+        "question": "Un nombre entier naturel est divisible par $3$ si et seulement si :",
+        "options": [
+          {
+            "id": "A",
+            "text": "Son chiffre des unités est $3$, $6$ ou $9$."
+          },
+          {
+            "id": "B",
+            "text": "La somme de ses chiffres est un multiple de $3$."
+          },
+          {
+            "id": "C",
+            "text": "Il est un nombre impair."
+          },
+          {
+            "id": "D",
+            "text": "Il est divisible par $9$."
+          }
+        ],
+        "correct_answer": "B",
+        "astuce": "Selon la propriété du cours, un nombre est divisible par $3$ si la somme de ses chiffres forme un multiple de $3$.",
+        "trick": "Le critère de divisibilité par 3 est basé sur la somme des chiffres, pas seulement le dernier chiffre."
+      },
+      {
+        "question_number": 17,
+        "context": "III. Diviseur d'un entier naturel - pgcd de deux entiers naturels, Propriété",
+        "subject": "Mathématiques",
+        "question": "Un nombre entier naturel est divisible par $9$ si et seulement si :",
+        "options": [
+          {
+            "id": "A",
+            "text": "Son chiffre des unités est $9$."
+          },
+          {
+            "id": "B",
+            "text": "La somme de ses chiffres est un multiple de $9$."
+          },
+          {
+            "id": "C",
+            "text": "Il est divisible par $3$."
+          },
+          {
+            "id": "D",
+            "text": "Il est un multiple de $3$ et de $6$."
+          }
+        ],
+        "correct_answer": "B",
+        "astuce": "Selon la propriété du cours, un nombre est divisible par $9$ si la somme de ses chiffres forme un multiple de $9$.",
+        "trick": "Le critère de divisibilité par 9 est basé sur la somme des chiffres. Un nombre divisible par 9 est aussi divisible par 3, mais l'inverse n'est pas toujours vrai."
+      },
+      {
+        "question_number": 18,
+        "context": "IV. Les nombres premiers, Définition",
+        "subject": "Mathématiques",
+        "question": "Quelle est la définition correcte d'un nombre premier ?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Un entier naturel est dit premier s'il est impair."
+          },
+          {
+            "id": "B",
+            "text": "Un entier naturel supérieur ou égal à $2$ est dit premier s'il possède exactement deux diviseurs : $1$ et lui-même."
+          },
+          {
+            "id": "C",
+            "text": "Un entier naturel est dit premier s'il n'est divisible que par $1$."
+          },
+          {
+            "id": "D",
+            "text": "Un entier naturel est dit premier s'il n'est divisible par aucun autre nombre que lui-même."
+          }
+        ],
+        "correct_answer": "B",
+        "astuce": "Selon la définition du cours, un entier naturel supérieur ou égal à $2$ est dit premier s'il possède deux diviseurs : $1$ et lui-même.",
+        "trick": "La définition inclut la condition 'supérieur ou égal à 2' et 'exactement deux diviseurs'. Le nombre 1 n'est pas premier."
+      },
+      {
+        "question_number": 19,
+        "context": "IV. Les nombres premiers, Remarque",
+        "subject": "Mathématiques",
+        "question": "Quelle est la propriété du nombre $1$ concernant sa primalité ?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$1$ est le plus petit nombre premier."
+          },
+          {
+            "id": "B",
+            "text": "$1$ est un nombre premier car il n'est divisible que par lui-même."
+          },
+          {
+            "id": "C",
+            "text": "$1$ n'est pas un nombre premier car il ne possède qu'un seul diviseur."
+          },
+          {
+            "id": "D",
+            "text": "$1$ est un nombre premier car il est impair."
+          }
+        ],
+        "correct_answer": "C",
+        "astuce": "La remarque du cours indique clairement : '$1$ n'est pas un nombre premier car il ne possède qu'un seul diviseur'.",
+        "trick": "Un nombre premier doit avoir exactement deux diviseurs distincts. Le nombre 1 n'en a qu'un (lui-même)."
+      },
+      {
+        "question_number": 20,
+        "context": "V. Décomposition d'un entier naturel en produit de facteurs premiers, Théorème 3",
+        "subject": "Mathématiques",
+        "question": "Quand dit-on que deux entiers naturels $a$ et $b$ sont premiers entre eux ?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$a$ et $b$ sont premiers entre eux si et seulement si $a$ et $b$ sont tous les deux des nombres premiers."
+          },
+          {
+            "id": "B",
+            "text": "$a$ et $b$ sont premiers entre eux si et seulement si $\\text{PGCD}(a,b)=1$."
+          },
+          {
+            "id": "C",
+            "text": "$a$ et $b$ sont premiers entre eux si et seulement si $\\text{PGCD}(a,b)$ est un nombre premier."
+          },
+          {
+            "id": "D",
+            "text": "$a$ et $b$ sont premiers entre eux si et seulement si $\\text{PPCM}(a,b)=1$."
+          }
+        ],
+        "correct_answer": "B",
+        "astuce": "Le Théorème 3 du cours énonce : 'On dit que $a$ et $b$ sont premiers entre eux si et seulement si $\\text{PGCD}(a,b)=1$'.",
+        "trick": "Des nombres premiers entre eux ne sont pas nécessairement des nombres premiers eux-mêmes (ex: 4 et 9). La condition est que leur plus grand diviseur commun soit 1."
+      }
+    ],
+    "pdfUrl": null,
+    "isActive": true,
+    "isArchived": false,
+    "dateAdded": "2026-09-07T16:50:46.907Z",
+    "updatedAt": "2026-09-07T16:50:46.907Z",
+    "createdAt": "2026-09-07T16:50:48.728Z"
   }
 ]

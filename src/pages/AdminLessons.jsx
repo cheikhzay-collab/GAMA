@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   getAllLessons, toggleLessonStatus, deleteLesson, updateLesson
@@ -45,10 +45,37 @@ export default function AdminLessons() {
   const { user, loading, profName, profPhone, addExam } = useAuth();
   const navigate = useNavigate();
 
-  // Component States
-  const [lessons, setLessons] = useState([]);
-  const [classes, setClasses] = useState([]);
-  const [loadingLessons, setLoadingLessons] = useState(true);
+  // Component States — Warmed up instantly from local cache to eliminate reload lag
+  const [lessons, setLessons] = useState(() => {
+    try {
+      const raw = localStorage.getItem('lconq_lessons_db');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (_) {}
+    return [];
+  });
+  const [classes, setClasses] = useState(() => {
+    try {
+      const raw = localStorage.getItem('lconq_classes_db') || localStorage.getItem('lconq_classes_cache');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (_) {}
+    return [];
+  });
+  const [loadingLessons, setLoadingLessons] = useState(() => {
+    try {
+      const raw = localStorage.getItem('lconq_lessons_db');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return false;
+      }
+    } catch (_) {}
+    return true;
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -253,11 +280,19 @@ ${sectionsContentText}
   };
 
   // Fetch Lessons
-  const fetchLessonsList = async (force = true) => {
-    setLoadingLessons(true);
+  const fetchLessonsList = async (force = false) => {
+    // Only show full loading spinner if we don't have any cached lessons yet
+    setLessons(prev => {
+      if (!prev || prev.length === 0) {
+        setLoadingLessons(true);
+      }
+      return prev;
+    });
     try {
       const data = await getAllLessons({ forceRefresh: force });
-      setLessons(Array.isArray(data) ? data : []);
+      if (Array.isArray(data) && data.length > 0) {
+        setLessons(data);
+      }
     } catch (err) {
       console.error(err);
       setError('Erreur lors du chargement des fiches de cours.');
@@ -269,14 +304,16 @@ ${sectionsContentText}
   const fetchClassesList = async () => {
     try {
       const data = await getAllClasses();
-      setClasses(data);
+      if (Array.isArray(data) && data.length > 0) {
+        setClasses(data);
+      }
     } catch (err) {
       console.error('Erreur lors du chargement des classes:', err);
     }
   };
 
   useEffect(() => {
-    fetchLessonsList(true);
+    fetchLessonsList(false);
     fetchClassesList();
 
     const unsubscribe = queryCache.subscribe('lessons_all', (updated) => {
@@ -734,8 +771,18 @@ ${sectionsContentText}
                               <BookOpen size={16} />
                             </div>
                             <div>
-                              <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.92rem' }}>
-                                {renderWithMath(l.title)}
+                              <div style={{ fontWeight: 700, fontSize: '0.92rem' }}>
+                                <Link
+                                  to={`/admin/lessons/${l.id}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{ color: 'var(--text-main)', textDecoration: 'none', transition: 'color 0.15s ease' }}
+                                  onMouseEnter={(e) => e.currentTarget.style.color = 'var(--violet)'}
+                                  onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-main)'}
+                                  title="Consulter la fiche (Ouvrir dans une nouvelle page)"
+                                >
+                                  {renderWithMath(l.title)}
+                                </Link>
                               </div>
                               {(l.teacher || l.chapterNumber) && (
                                 <div style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', marginTop: '0.2rem', display: 'flex', gap: '0.45rem', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -807,23 +854,27 @@ ${sectionsContentText}
                         {/* Actions */}
                         <td style={{ padding: '1.15rem 1.25rem', textAlign: 'right' }}>
                           <div style={{ display: 'inline-flex', gap: '0.35rem', alignItems: 'center', justifyContent: 'flex-end' }}>
-                            <button
-                              onClick={() => navigate(`/admin/lessons/${l.id}`)}
+                            <Link
+                              to={`/admin/lessons/${l.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
                               className="btn-outline"
-                              title="Consulter la fiche"
-                              style={{ padding: '0.42rem', borderRadius: '7px', border: '1px solid var(--border)' }}
+                              title="Consulter la fiche (Ouvrir dans une nouvelle page)"
+                              style={{ padding: '0.42rem', borderRadius: '7px', border: '1px solid var(--border)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'inherit', textDecoration: 'none' }}
                             >
                               <Eye size={15} />
-                            </button>
+                            </Link>
 
-                            <button
-                              onClick={() => navigate(`/admin/lessons/${l.id}/edit`)}
+                            <Link
+                              to={`/admin/lessons/${l.id}/edit`}
+                              target="_blank"
+                              rel="noopener noreferrer"
                               className="btn-outline"
-                              title="Modifier dans l'éditeur complet"
-                              style={{ padding: '0.42rem', borderRadius: '7px', border: '1px solid rgba(99, 102, 241, 0.3)', color: 'var(--violet)' }}
+                              title="Modifier dans l'éditeur complet (Ouvrir dans une nouvelle page)"
+                              style={{ padding: '0.42rem', borderRadius: '7px', border: '1px solid rgba(99, 102, 241, 0.3)', color: 'var(--violet)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}
                             >
                               <Edit size={15} />
-                            </button>
+                            </Link>
 
                             <button
                               onClick={() => setShowTranslateModal(l)}

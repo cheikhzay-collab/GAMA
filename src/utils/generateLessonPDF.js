@@ -1021,9 +1021,47 @@ export const generateLessonHTML = (lesson, settings = {}) => {
   const levelKey = lesson.level || content?.level || '';
   const levelDisplayName = getLevelDisplayName(levelKey, isArabic);
   const levelText = levelDisplayName || prepTitle || '';
-  const qrData = (typeof window !== 'undefined' && window.location)
-    ? `${window.location.origin}/admin/lessons/${lesson.id}`
-    : `https://lconq.vercel.app/admin/lessons/${lesson.id}`;
+
+  // ── Retrieve WhatsApp phone number from Platform Settings ─────────────────
+  let settingsPhone = '';
+  let customWaMessage = '';
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      const waRaw = localStorage.getItem('whatsappSettings');
+      if (waRaw) {
+        const waParsed = JSON.parse(waRaw);
+        settingsPhone = waParsed.phoneNumber || '';
+        customWaMessage = waParsed.message || '';
+      }
+    } catch (_) {}
+
+    if (!settingsPhone) {
+      settingsPhone = localStorage.getItem('profPhone') || '';
+    }
+  }
+
+  // Fallback to lesson header or teacher phone
+  const rawTargetPhone = settingsPhone || header?.phone || lesson?.phone || globalProfPhone || '';
+
+  // Format phone number to international format for wa.me API
+  let cleanWaPhone = (rawTargetPhone || '').replace(/[^\d+]/g, '');
+  if (cleanWaPhone.startsWith('0') && cleanWaPhone.length === 10) {
+    cleanWaPhone = '212' + cleanWaPhone.slice(1);
+  } else if (!cleanWaPhone.startsWith('+') && !cleanWaPhone.startsWith('212') && cleanWaPhone.length === 9) {
+    cleanWaPhone = '212' + cleanWaPhone;
+  }
+  cleanWaPhone = cleanWaPhone.replace(/^\+/, '');
+
+  if (!cleanWaPhone) {
+    cleanWaPhone = '212681399067'; // Default fallback
+  }
+
+  const defaultWaMessage = isArabic
+    ? `السلام عليكم أستاذ، أود الحصول على حلول وتصحيح: ${title}`
+    : `Bonjour Professeur, je souhaite avoir les solutions de : ${title}`;
+
+  const finalWaMessage = customWaMessage || defaultWaMessage;
+  const qrData = `https://wa.me/${cleanWaPhone}?text=${encodeURIComponent(finalWaMessage)}`;
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}&color=005086&bgcolor=ffffff`;
   const docTypeFilename = isHomework
     ? (isArabic ? 'فرض محروس' : 'Devoir Surveille')
@@ -3138,10 +3176,12 @@ html[dir="rtl"] .homework-bareme-header {
       ${schools.length > 1 ? `<div class="modern-subschool">${esc(schools[1])}</div>` : ''}
     </div>
     <div class="modern-header-col modern-header-qr">
-      <div class="modern-qr-box">
-        <img src="${qrImageUrl}" class="modern-qr-img" alt="QR Solution" />
-      </div>
-      <span class="modern-qr-text">${isArabic ? 'امسح للحل' : 'SOLUTION'}</span>
+      <a href="${qrData}" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:inherit; display:flex; flex-direction:column; align-items:center; cursor:pointer;" title="Ouvrir WhatsApp">
+        <div class="modern-qr-box">
+          <img src="${qrImageUrl}" class="modern-qr-img" alt="QR Solution WhatsApp" />
+        </div>
+        <span class="modern-qr-text">${isArabic ? 'امسح للحل' : 'SOLUTION'}</span>
+      </a>
     </div>
   </div>
   ` : `
@@ -3161,10 +3201,12 @@ html[dir="rtl"] .homework-bareme-header {
       ${schools.length > 1 ? `<div class="header-info-row"><span class="info-label">${isArabic ? 'المؤسسة' : 'Lycée'} :</span><span class="info-val">${esc(schools[1])}</span></div>` : ''}
     </div>
     <div class="hcell h-page">
-      <div class="qr-wrapper">
-        <img src="${qrImageUrl}" class="qr-img" alt="QR" />
-      </div>
-      <span class="qr-label">${isArabic ? 'التصحيح' : 'Solution'}</span>
+      <a href="${qrData}" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:inherit; display:flex; flex-direction:column; align-items:center; cursor:pointer;" title="Ouvrir WhatsApp">
+        <div class="qr-wrapper">
+          <img src="${qrImageUrl}" class="qr-img" alt="QR WhatsApp" />
+        </div>
+        <span class="qr-label">${isArabic ? 'التصحيح' : 'Solution'}</span>
+      </a>
     </div>
   </div>
   `) : `
