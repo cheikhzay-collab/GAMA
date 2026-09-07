@@ -198,6 +198,43 @@ export default function SuitesNumeriquesPage() {
           font-family: 'Times New Roman', Times, serif !important;
         }
 
+        @media (max-width: 768px) {
+          .sheet-container {
+            flex-direction: column !important;
+          }
+          .sheet-sidebar {
+            width: 100% !important;
+            height: auto !important;
+            flex-direction: row !important;
+            border-right: none !important;
+            border-bottom: 1.5px solid rgba(0, 80, 134, 0.15) !important;
+            padding: 0.5rem 0.75rem !important;
+            gap: 0.5rem !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            scrollbar-width: none !important;
+          }
+          .sheet-sidebar::-webkit-scrollbar {
+            display: none !important;
+          }
+          .vertical-tab {
+            writing-mode: horizontal-tb !important;
+            width: auto !important;
+            white-space: nowrap !important;
+            padding: 0.45rem 0.85rem !important;
+            font-size: 0.78rem !important;
+            border-radius: 99px !important;
+          }
+          .sheet-body {
+            padding: 1.25rem 0.85rem !important;
+            gap: 1.25rem !important;
+          }
+          .sheet-header-banner {
+            font-size: 1.25rem !important;
+            padding: 0.5rem 1.25rem !important;
+          }
+        }
+
         /* Sheet top header */
         .sheet-header-banner {
           background: linear-gradient(135deg, #005086, #007cc6);

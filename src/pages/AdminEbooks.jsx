@@ -319,7 +319,7 @@ export default function AdminEbooks() {
             <p style={{ fontSize: '0.82rem', marginTop: 6 }}>Importez des examens via <strong>Import IA</strong> ou <strong>Upload CSV</strong> pour générer des e-books.</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 290px), 1fr))', gap: '1rem' }}>
             {topics.map(([topic, questions]) => {
               const s = getSettings(topic);
               const sources = [...new Set(questions.map(q => q._source))];

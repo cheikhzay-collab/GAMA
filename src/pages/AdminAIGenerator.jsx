@@ -81,8 +81,8 @@ export default function AdminAIGenerator() {
       {/* ── Choice Cards Grid ── */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', 
-        gap: '2.5rem', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', 
+        gap: 'clamp(1.25rem, 4vw, 2.5rem)', 
         marginTop: '1rem',
         perspective: '1000px'
       }}>
@@ -92,7 +92,7 @@ export default function AdminAIGenerator() {
           onClick={() => handleSelect('lesson')}
           className="glass-panel"
           style={{ 
-            padding: '3rem 2.5rem', 
+            padding: 'clamp(1.5rem, 5vw, 3rem) clamp(1.25rem, 4vw, 2.5rem)', 
             borderRadius: '24px', 
             cursor: 'pointer', 
             transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
@@ -172,7 +172,7 @@ export default function AdminAIGenerator() {
           onClick={() => handleSelect('exam')}
           className="glass-panel"
           style={{ 
-            padding: '3rem 2.5rem', 
+            padding: 'clamp(1.5rem, 5vw, 3rem) clamp(1.25rem, 4vw, 2.5rem)', 
             borderRadius: '24px', 
             cursor: 'pointer', 
             transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',

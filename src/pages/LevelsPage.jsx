@@ -375,7 +375,7 @@ export default function LevelsPage() {
       {!selectedParentId && (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 290px), 1fr))',
           gap: '1.5rem',
           marginTop: '1rem'
         }}>
@@ -449,7 +449,7 @@ export default function LevelsPage() {
       {selectedParentId && !selectedBranchId && (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
           gap: '1.5rem',
           marginTop: '1rem'
         }}>
@@ -558,9 +558,9 @@ export default function LevelsPage() {
           </div>
 
           {/* Document Type Tabs */}
-          <div style={{ 
+          <div className="mobile-tabs-scroll" style={{ 
             display: 'flex', gap: '0.5rem', borderBottom: '1px solid var(--border)', 
-            paddingBottom: '0.25rem', margin: '0.5rem 0 1rem 0', flexWrap: 'wrap'
+            paddingBottom: '0.25rem', margin: '0.5rem 0 1rem 0'
           }}>
             {[
               { id: 'all', label: 'Tous' },
@@ -622,7 +622,6 @@ export default function LevelsPage() {
                       borderRadius: '12px',
                       padding: '1.25rem 1.5rem',
                       display: 'flex',
-                      flexDirection: 'row',
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       gap: '1.25rem',
@@ -834,7 +833,7 @@ export default function LevelsPage() {
           ) : (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
               gap: '1.5rem'
             }}>
               {filteredLessons.map((l) => {

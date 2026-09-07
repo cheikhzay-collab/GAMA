@@ -1553,6 +1553,30 @@ export default function LessonViewerPage() {
             word-break: break-word !important;
           }
         }
+
+        @media (max-width: 768px) {
+          .sheet-body {
+            padding: 1.25rem 0.75rem !important;
+            gap: 1.25rem !important;
+          }
+          .sheet-header-banner {
+            font-size: 1.25rem !important;
+            padding: 0.5rem 1.25rem !important;
+            margin-bottom: 1rem !important;
+          }
+          .subsection-card {
+            padding: 1rem !important;
+          }
+          .exercises-two-columns-layout,
+          .exercises-three-columns-layout {
+            display: block !important;
+            column-count: 1 !important;
+            width: 100% !important;
+          }
+          .lesson-viewer-container {
+            padding: 0.75rem 0 !important;
+          }
+        }
         
         .classic-view-active .sheet-body {
           background: #ffffff !important;

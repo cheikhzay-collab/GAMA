@@ -7129,5 +7129,589 @@
     "isArchived": false,
     "dateAdded": "2026-07-23T08:51:45.017Z",
     "createdAt": "2026-07-23T08:51:45.047Z"
+  },
+  {
+    "id": "52L5430LX",
+    "name": "Test diagnostique  2bac PC",
+    "school": "2ème Bac Sciences Expérimentales (PC/SVT)",
+    "level": "2bac_pc_svt",
+    "year": "2024",
+    "tier": "freemium",
+    "questions": [
+      {
+        "id": "d64ea750-e9b9-4086-a404-c09588f0c8e7",
+        "question_number": 1,
+        "topic": "Algèbre",
+        "context": null,
+        "question": "L'ensemble des solutions de l'équation $x^2 + 3x - 4 = 0$ est:",
+        "options": [
+          {
+            "id": "A",
+            "text": "${4; 1}$"
+          },
+          {
+            "id": "B",
+            "text": "$\\emptyset$"
+          },
+          {
+            "id": "C",
+            "text": "${1}$"
+          },
+          {
+            "id": "D",
+            "text": "${-4; 1}$"
+          }
+        ],
+        "correct_answer": "D",
+        "astuce": "**Équations du second degré — Programme Bac BIOF** Étape 1 — Identifier l'équation et ses coefficients.\\nOn a l'équation quadratique: $ax^2 + bx + c = 0$, avec $a=1$, $b=3$, $c=-4$. Étape 2 — Calculer le discriminant $\\Delta$.\\nLe discriminant est donné par la formule $\\Delta = b^2 - 4ac$. \\Delta = (3)^2 - 4(1)(-4) = 9 + 16 = 25 Étape 3 — Calculer les solutions de l'équation.\\nPuisque $\\Delta > 0$, il y a deux solutions réelles distinctes, $x_1$ et $x_2$, données par la formule $x = \\frac{-b \\pm \\sqrt{\\Delta}}{2a}$. x_1 = \\frac{-3 - \\sqrt{25}}{2(1)} = \\frac{-3 - 5}{2} = \\frac{-8}{2} = -4 x_2 = \\frac{-3 + \\sqrt{25}}{2(1)} = \\frac{-3 + 5}{2} = \\frac{2}{2} = 1 \\nOn conclut que l'ensemble des solutions est $\\mathcal{S} = \\{-4; 1\\}$. **Réponse: D) $\\{-4; 1\\}$**",
+        "trick": "⚡ **Méthode rapide par la somme des coefficients (astuce)** \\nOn observe que la somme des coefficients $a+b+c = 1+3-4 = 0$.\\nLorsque $a+b+c = 0$, l'une des racines est toujours $x_1=1$.\\nL'autre racine $x_2$ peut être trouvée via la relation $x_1 x_2 = \\frac{c}{a}$.\\nDonc $1 \\cdot x_2 = \\frac{-4}{1} = -4$, d'où $x_2 = -4$.\\nL'ensemble des solutions est $\\{-4; 1\\}$. \\nCette astuce élimine les options A, B et C en quelques secondes."
+      },
+      {
+        "id": "76f9759a-fc02-4a05-9b7f-bfd0833cac75",
+        "question_number": 2,
+        "topic": "Analyse",
+        "context": null,
+        "question": "$\\displaystyle\\lim_{x \\to +\\infty} \\frac{x+2}{x^2+1} = $",
+        "options": [
+          {
+            "id": "A",
+            "text": "$0$"
+          },
+          {
+            "id": "B",
+            "text": "$2$"
+          },
+          {
+            "id": "C",
+            "text": "$1$"
+          },
+          {
+            "id": "D",
+            "text": "$+ \\infty$"
+          }
+        ],
+        "correct_answer": "A",
+        "astuce": "**Limites des fonctions rationnelles — Programme Bac BIOF** Étape 1 — Identifier le type de limite.\\nIl s'agit de la limite d'une fonction rationnelle (quotient de deux polynômes) lorsque $x$ tend vers $+ \\infty$. Étape 2 — Appliquer la règle des plus hauts degrés.\\nD'après le programme Bac, la limite d'une fonction rationnelle en l'infini est égale à la limite du rapport de ses termes de plus haut degré. \\lim_{x \\to +\\infty} \\frac{x+2}{x^2+1} = \\lim_{x \\to +\\infty} \\frac{x}{x^2} Étape 3 — Simplifier et calculer la limite. \\lim_{x \\to +\\infty} \\frac{x}{x^2} = \\lim_{x \\to +\\infty} \\frac{1}{x} \\nOr, $\\lim_{x \\to +\\infty} \\frac{1}{x} = 0$. \\nOn conclut que la limite est $0$. **Réponse: A) $0$**",
+        "trick": "⚡ **Analyse des degrés (astuce)** \\nLe degré du numérateur ($1$) est strictement inférieur au degré du dénominateur ($2$).\\nPour les limites à l'infini d'une fonction rationnelle, si le degré du numérateur est inférieur au degré du dénominateur, la limite est toujours $0$. \\nCeci élimine immédiatement les options B, C et D."
+      },
+      {
+        "id": "698c1663-6be1-45d6-bacb-8b144b600ab2",
+        "question_number": 3,
+        "topic": "Analyse",
+        "context": null,
+        "question": "Soit $f$ une fonction définie sur $]0; +\\infty[$ par $f(x) = x - 2\\sqrt{x}$. Alors $f'(x)$ est égale à:",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\frac{\\sqrt{x} - 1}{2\\sqrt{x}}$"
+          },
+          {
+            "id": "B",
+            "text": "$\\frac{x-1}{\\sqrt{x}(\\sqrt{x}+1)}$"
+          },
+          {
+            "id": "C",
+            "text": "$\\frac{1+x+2\\sqrt{x}}{(x+1)^2}$"
+          },
+          {
+            "id": "D",
+            "text": "$\\frac{\\sqrt{x}-2}{\\sqrt{x}}$"
+          }
+        ],
+        "correct_answer": "B",
+        "astuce": "**Dérivées de fonctions — Programme Bac BIOF** Étape 1 — Rappeler les formules de dérivation.\\nOn a $f(x) = x - 2\\sqrt{x}$.\\nRappel: La dérivée de $x$ est $1$. La dérivée de $\\sqrt{x}$ est $\\frac{1}{2\\sqrt{x}}$. Étape 2 — Calculer la dérivée $f'(x)$. f'(x) = \\frac{d}{dx}(x) - \\frac{d}{dx}(2\\sqrt{x}) f'(x) = 1 - 2 \\cdot \\frac{1}{2\\sqrt{x}} f'(x) = 1 - \\frac{1}{\\sqrt{x}} Étape 3 — Mettre sur un dénominateur commun. f'(x) = \\frac{\\sqrt{x}}{\\sqrt{x}} - \\frac{1}{\\sqrt{x}} = \\frac{\\sqrt{x}-1}{\\sqrt{x}} Étape 4 — Comparer avec les options.\\nParmi les options, l'option B est $\\frac{x-1}{\\sqrt{x}(\\sqrt{x}+1)}$.\\nOn peut factoriser le numérateur de l'option B en utilisant $a^2-b^2 = (a-b)(a+b)$ avec $a=\\sqrt{x}$ et $b=1$: $x-1 = (\\sqrt{x}-1)(\\sqrt{x}+1)$.\\nDonc l'option B s'écrit: \\frac{(\\sqrt{x}-1)(\\sqrt{x}+1)}{\\sqrt{x}(\\sqrt{x}+1)} = \\frac{\\sqrt{x}-1}{\\sqrt{x}}\\nCeci correspond à notre dérivée calculée. **Réponse: B) $\\frac{x-1}{\\sqrt{x}(\\sqrt{x}+1)}$**",
+        "trick": "⚡ **Test avec une valeur simple (astuce)** \\nChoisissons $x=4$ (une valeur pour laquelle $\\sqrt{x}$ est un entier). $f(x) = x - 2\\sqrt{x}$. Donc $f'(x) = 1 - \\frac{1}{\\sqrt{x}}$. $f'(4) = 1 - \\frac{1}{\\sqrt{4}} = 1 - \\frac{1}{2} = \\frac{1}{2}$. \\nVérifions les options: - A) $\\frac{\\sqrt{4}-1}{2\\sqrt{4}} = \\frac{2-1}{4} = \\frac{1}{4}$. (Faux) - B) $\\frac{4-1}{\\sqrt{4}(\\sqrt{4}+1)} = \\frac{3}{2(2+1)} = \\frac{3}{2 \\cdot 3} = \\frac{1}{2}$. (Correct) - C) $\\frac{1+4+2\\sqrt{4}}{(4+1)^2} = \\frac{1+4+4}{25} = \\frac{9}{25}$. (Faux) - D) $\\frac{\\sqrt{4}-2}{\\sqrt{4}} = \\frac{2-2}{2} = 0$. (Faux) \\nL'option B est la seule qui correspond. Cette astuce élimine rapidement les options incorrectes."
+      },
+      {
+        "id": "f1824860-7050-42e0-b604-1dc37ad0bc3c",
+        "question_number": 4,
+        "topic": "Analyse",
+        "context": null,
+        "question": "$\\displaystyle\\lim_{x \\to 0} \\frac{x}{\\sqrt{1+x}-1}$",
+        "options": [
+          {
+            "id": "A",
+            "text": "$0$"
+          },
+          {
+            "id": "B",
+            "text": "$1$"
+          },
+          {
+            "id": "C",
+            "text": "$2$"
+          },
+          {
+            "id": "D",
+            "text": "AUTRE"
+          }
+        ],
+        "correct_answer": "C",
+        "astuce": "**Limites et formes indéterminées — Programme Bac BIOF** Étape 1 — Identifier la forme indéterminée.\\nLorsque $x \\to 0$, le numérateur $x$ tend vers $0$. Le dénominateur $\\sqrt{1+x}-1$ tend vers $\\sqrt{1+0}-1 = 1-1=0$. On a donc une forme indéterminée de type $\\frac{0}{0}$. Étape 2 — Utiliser la méthode de la quantité conjuguée.\\nPour lever l'indétermination, on multiplie le numérateur et le dénominateur par la quantité conjuguée du dénominateur, qui est $\\sqrt{1+x}+1$. \\lim_{x \\to 0} \\frac{x}{\\sqrt{1+x}-1} = \\lim_{x \\to 0} \\frac{x(\\sqrt{1+x}+1)}{(\\sqrt{1+x}-1)(\\sqrt{1+x}+1)} Étape 3 — Simplifier l'expression.\\nEn utilisant la formule $(a-b)(a+b) = a^2-b^2$, le dénominateur devient $(\\sqrt{1+x})^2 - 1^2 = (1+x) - 1 = x$. \\lim_{x \\to 0} \\frac{x(\\sqrt{1+x}+1)}{x} \\nPuisque $x \\to 0$ mais $x \\neq 0$, nous pouvons simplifier par $x$. \\lim_{x \\to 0} (\\sqrt{1+x}+1) Étape 4 — Calculer la limite finale.\\nOn substitue $x=0$ dans l'expression simplifiée: \\sqrt{1+0}+1 = \\sqrt{1}+1 = 1+1 = 2 \\nOn conclut que la limite est $2$. **Réponse: C) $2$**",
+        "trick": "⚡ **Approximation de Taylor d'ordre 1 (astuce pour $x \\to 0$)** \\nPour de petits $x$, on sait que $\\sqrt{1+x} \\approx 1 + \\frac{1}{2}x$.\\nDonc, le dénominateur $\\sqrt{1+x}-1 \\approx (1 + \\frac{1}{2}x) - 1 = \\frac{1}{2}x$.\\nL'expression devient alors $\\frac{x}{\\frac{1}{2}x}$.\\nEn simplifiant par $x$, on obtient $2$. \\nCette approximation rapide permet d'éliminer les options A, B et D."
+      },
+      {
+        "id": "f399b22f-6c07-4c0a-8ff4-0561c4a9e44e",
+        "question_number": 5,
+        "topic": "Analyse",
+        "context": "Soit $f$ la fonction définie par son graphe ci-contre: La droite (AB) est la tangente à $(C_f)$ au point A(1; 0).",
+        "question": "Parmi les affirmations suivantes, laquelle est correcte?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$f(0) = 1$"
+          },
+          {
+            "id": "B",
+            "text": "$f'(1) = 3$"
+          },
+          {
+            "id": "C",
+            "text": "$f'(1) = 2$"
+          },
+          {
+            "id": "D",
+            "text": "$f'(1) = 0$"
+          }
+        ],
+        "correct_answer": "C",
+        "astuce": "**Interprétation graphique de la dérivée — Programme Bac BIOF** Étape 1 — Rappeler la signification géométrique de la dérivée.\\nD'après le programme Bac, la valeur de la dérivée $f'(x_0)$ en un point $x_0$ est égale au coefficient directeur (pente) de la tangente à la courbe $(C_f)$ au point d'abscisse $x_0$. Étape 2 — Identifier le point de tangence et la tangente.\\nLe point de tangence est A(1; 0), donc $x_0=1$. La tangente est la droite (AB). Étape 3 — Calculer le coefficient directeur de la droite (AB).\\nLa droite (AB) passe par les points A(1; 0) et B(2; 2) (lecture graphique précise).\\nLe coefficient directeur $m$ de la droite (AB) est donné par la formule $m = \\frac{y_B - y_A}{x_B - x_A}$. m = \\frac{2 - 0}{2 - 1} = \\frac{2}{1} = 2 Étape 4 — En déduire la valeur de $f'(1)$.\\nPuisque la droite (AB) est la tangente à $(C_f)$ en A(1; 0), son coefficient directeur est $f'(1)$.\\nDonc $f'(1) = 2$. Étape 5 — Vérifier les autres options (non demandées mais pour clarification). - A) $f(0)=1$: D'après le graphe, $f(0)$ est négatif (environ $-0.5$). C'est faux. - B) $f'(1)=3$: Faux, car $f'(1)=2$. - D) $f'(1)=0$: Faux, car $f'(1)=2$. Une dérivée nulle signifierait une tangente horizontale, ce qui n'est pas le cas ici. \\nOn conclut que l'affirmation correcte est $f'(1)=2$. **Réponse: C) $f'(1)=2$**",
+        "trick": "⚡ **Lecture visuelle de la pente (astuce)** \\nLa tangente (AB) monte de $2$ unités verticalement pour $1$ unité horizontalement (de A(1,0) à B(2,2)). La pente (coefficient directeur) est donc $\\frac{\\text{variation verticale}}{\\text{variation horizontale}} = \\frac{2}{1} = 2$. \\nCeci élimine rapidement les options A, B et D, car A concerne $f(0)$ qui est clairement faux sur le graphique, et les pentes $3$ ou $0$ ne correspondent pas à la droite dessinée.",
+        "image": "https://gnokmutjfanekaxjswew.supabase.co/storage/v1/object/public/gima-assets/questions/52L5430LX/1788759851242_Screenshot_31.png",
+        "imagePosition": "above_statement",
+        "imageSize": "large",
+        "imageBg": "transparent"
+      },
+      {
+        "id": "be588efc-95df-421e-a2c2-2aeab52b9243",
+        "question_number": 6,
+        "topic": "Analyse",
+        "context": "On garde les mêmes données de la question QCM 05.",
+        "question": "Parmi les affirmations suivantes, laquelle est correcte concernant la limite de $f(x)$ quand $x$ tend vers $0^+$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\displaystyle\\lim_{x \\to 0^+} f(x) = +\\infty$"
+          },
+          {
+            "id": "B",
+            "text": "$\\displaystyle\\lim_{x \\to 0^+} f(x) = 0$"
+          },
+          {
+            "id": "C",
+            "text": "$\\displaystyle\\lim_{x \\to 0^+} f(x) = -\\infty$"
+          },
+          {
+            "id": "D",
+            "text": "$\\displaystyle\\lim_{x \\to 0^+} f(x) = 1$"
+          }
+        ],
+        "correct_answer": "C",
+        "astuce": "**Lecture graphique des limites — Programme Bac BIOF** Étape 1 — Analyser le comportement de la courbe $(C_f)$ près de $x=0$.\\nNous devons déterminer la limite de $f(x)$ lorsque $x$ approche $0$ par des valeurs positives ($x \\to 0^+$). Étape 2 — Observer le tracé graphique.\\nSur le graphique, en suivant la courbe $(C_f)$ à mesure que $x$ s'approche de $0$ depuis la droite (valeurs positives), on constate que la courbe descend indéfiniment le long de l'axe des ordonnées ($x=0$). Ceci indique une asymptote verticale d'équation $x=0$. Étape 3 — En déduire la limite.\\nPuisque la courbe plonge vers le bas, la fonction $f(x)$ tend vers $-\\infty$ lorsque $x \\to 0^+$. \\nOn conclut que $\\displaystyle\\lim_{x \\to 0^+} f(x) = -\\infty$. **Réponse: C) $\\displaystyle\\lim_{x \\to 0^+} f(x) = -\\infty$**",
+        "trick": "⚡ **Inspection visuelle (astuce)** \\nRegardez le comportement de la fonction près de l'axe des ordonnées ($x=0$) pour des $x$ positifs. La courbe s'enfonce très bas sans croiser l'axe, ce qui est l'image typique d'une limite à $-\\infty$ pour une asymptote verticale. Les autres options (0, $1$, $+\\infty$) sont clairement contredites par le graphique. \\nCeci élimine A, B et D en moins de 5 secondes."
+      },
+      {
+        "id": "775b4e7d-5c8b-4774-837e-7deb9b63dbe2",
+        "question_number": 7,
+        "topic": "Analyse",
+        "context": "On garde les mêmes données de la question QCM 05.",
+        "question": "Parmi les affirmations suivantes, laquelle est correcte?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$f'($"
+          },
+          {
+            "id": "B",
+            "text": "= d"
+          },
+          {
+            "id": "C",
+            "text": "$f'(1) = 2$"
+          },
+          {
+            "id": "D",
+            "text": "$f'($"
+          },
+          {
+            "id": "E",
+            "text": "= 3"
+          }
+        ],
+        "correct_answer": "B",
+        "astuce": "**Interprétation graphique de la dérivée — Programme Bac BIOF** Étape 1 — Rappeler le résultat de la question QCM 05.\\nDans la question QCM 05, il a été établi que la droite (AB) est la tangente à $(C_f)$ au point A(1; 0). Étape 2 — Calculer le coefficient directeur de la tangente.\\nLes points A(1; 0) et B(2; 2) sont sur la tangente (AB). Le coefficient directeur $f'(1)$ est la pente de cette droite. f'(1) = \\frac{y_B - y_A}{x_B - x_A} = \\frac{2 - 0}{2 - 1} = \\frac{2}{1} = 2 Étape 3 — Comparer avec les options.\\nL'option B indique $f'(1) = 2$, ce qui correspond à notre calcul.\\nLes autres options A, C et D contiennent une variable $c$ non définie ou des valeurs incorrectes. \\nOn conclut que l'affirmation correcte est $f'(1)=2$. **Réponse: B) $f'(1)=2$**",
+        "trick": "⚡ **Duplication et cohérence (astuce)** \\nCette question est une reformulation ou une duplication de QCM 05. Ayant déjà déterminé que $f'(1)=2$ à partir de l'analyse de la tangente (AB), on reconnaît immédiatement l'option B comme correcte. Les autres options ne correspondent pas à la pente de la tangente en A(1,0) ou utilisent un paramètre $c$ non spécifié, les rendant incertaines ou incorrectes. \\nCeci permet d'éliminer A, C et D en se référant au QCM précédent."
+      },
+      {
+        "id": "b3a8117d-c413-48a0-9e80-d99aa76ab576",
+        "question_number": 8,
+        "topic": "Analyse",
+        "context": "On garde les mêmes données de la question QCM 05.",
+        "question": "Parmi les affirmations suivantes, laquelle est correcte pour l'intervalle $[1; 4]$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\forall x \\in [1; 4]: f''(x) > 0$"
+          },
+          {
+            "id": "B",
+            "text": "$\\forall x \\in [1; 4]: f(x) > 0$"
+          },
+          {
+            "id": "C",
+            "text": "$\\forall x \\in [1; 4]: f'(x) > 0$"
+          },
+          {
+            "id": "D",
+            "text": "$\\forall x \\in [1; 4]: f''(x) < 0$"
+          }
+        ],
+        "correct_answer": "D",
+        "astuce": "**Concavité et dérivée seconde — Programme Bac BIOF** Étape 1 — Rappeler le lien entre la dérivée seconde et la concavité.\\nD'après le programme Bac, une fonction $f$ est concave sur un intervalle si et seulement si sa dérivée seconde $f''(x)$ est négative ou nulle sur cet intervalle. Graphiquement, une courbe concave est une courbe qui est",
+        "trick": "⚡ **Test visuel de concavité (astuce)** \\nObservez la courbe $(C_f)$ sur l'intervalle $[1; 4]$. La courbe est constamment \"courbée vers le bas\". Par exemple, au point A(1,0), la courbe est en dessous de sa tangente (AB) pour $x > 1$. Ce comportement caractérise une fonction concave. \\nUne fonction concave signifie que sa dérivée seconde est négative, soit $f''(x) < 0$. Cela élimine immédiatement les options A (convexe), B ($f(1)=0$, donc pas strictement $>0$) et C (la fonction n'est pas strictement croissante sur tout l'intervalle $[1,4]$ car elle atteint un maximum et commence à décroître). \\nCeci permet d'éliminer A, B et C en moins de 10 secondes."
+      },
+      {
+        "id": "f38257ba-1f24-4416-9fda-a4ab6f319492",
+        "question_number": 9,
+        "topic": "Algèbre",
+        "context": null,
+        "question": "On considère le polynôme: $P(x) = x^3 + 2x^2 - 13x + 10$. Parmi les affirmations suivantes, laquelle est correcte?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$P(0) = 4$"
+          },
+          {
+            "id": "B",
+            "text": "$P(1) = 0$"
+          },
+          {
+            "id": "C",
+            "text": "$P(1) = 9$"
+          },
+          {
+            "id": "D",
+            "text": "$P(1) = 2$"
+          }
+        ],
+        "correct_answer": "B",
+        "astuce": "**Polynômes — Programme Bac BIOF** Étape 1 — Évaluer le polynôme aux valeurs données dans les options.\\nIl s'agit de tester la véracité de chaque affirmation en calculant la valeur du polynôme $P(x)$ pour les $x$ spécifiés. Étape 2 — Calculer $P(0)$.\\nPour l'option A, nous calculons $P(0)$: P(0) = (0)^3 + 2(0)^2 - 13(0) + 10 = 10\\nL'option A affirme $P(0)=4$, ce qui est faux. Étape 3 — Calculer $P(1)$.\\nPour les options B, C et D, nous calculons $P(1)$: P(1) = (1)^3 + 2(1)^2 - 13(1) + 10 P(1) = 1 + 2 - 13 + 10 P(1) = 3 - 13 + 10 = -10 + 10 = 0 Étape 4 — Comparer avec les options. - L'option B affirme $P(1)=0$, ce qui est vrai. - L'option C affirme $P(1)=9$, ce qui est faux. - L'option D affirme $P(1)=2$, ce qui est faux. \\nOn conclut que l'affirmation correcte est $P(1)=0$. **Réponse: B) $P(1)=0$**",
+        "trick": "⚡ **Somme des coefficients (astuce)** \\nL'affirmation la plus simple à vérifier est $P(1)$.\\nSi la somme des coefficients d'un polynôme est nulle, alors $1$ est une racine du polynôme, ce qui signifie $P(1)=0$.\\nPour $P(x) = x^3 + 2x^2 - 13x + 10$, la somme des coefficients est $1 + 2 - 13 + 10 = 3 - 13 + 10 = -10 + 10 = 0$. \\nPuisque la somme est $0$, on a $P(1)=0$. Ceci élimine immédiatement les options A, C et D."
+      },
+      {
+        "id": "1bcdd6ab-5fe3-456f-aac9-65cba3e93184",
+        "question_number": 10,
+        "topic": "Algèbre",
+        "context": "On garde les mêmes données de la question QCM 09.",
+        "question": "Le quotient de la division euclidienne de $P(x)$ sur $x-1$ est:",
+        "options": [
+          {
+            "id": "A",
+            "text": "$x^2 + 3x - 10$"
+          },
+          {
+            "id": "B",
+            "text": "$x^2 + 10$"
+          },
+          {
+            "id": "C",
+            "text": "$x^2 + 2x - 10$"
+          },
+          {
+            "id": "D",
+            "text": "$x^2 + x - 10$"
+          }
+        ],
+        "correct_answer": "A",
+        "astuce": "**Division euclidienne des polynômes — Programme Bac BIOF** Étape 1 — Utiliser le résultat de QCM 09.\\nOn sait que $P(1)=0$ (d'après QCM 09). Ceci implique que $(x-1)$ est un facteur du polynôme $P(x)$. Nous cherchons le polynôme quotient $Q(x)$ tel que $P(x) = (x-1)Q(x)$. Étape 2 — Effectuer la division polynomiale (méthode de Horner ou division longue).\\nPour $P(x) = x^3 + 2x^2 - 13x + 10$ divisé par $(x-1)$: ``` x^2 + 3x - 10 (Quotient) ________________\\nx-1 | x^3 + 2x^2 - 13x + 10 - (x^3 - x^2) ____________ 3x^2 - 13x - (3x^2 - 3x) ____________ -10x + 10 - (-10x + 10) _____________ 0 (Reste) ``` Étape 3 — Identifier le quotient.\\nLe quotient de la division euclidienne est $x^2 + 3x - 10$. \\nOn conclut que le quotient est $x^2 + 3x - 10$. **Réponse: A) $x^2 + 3x - 10$**",
+        "trick": "⚡ **Vérification rapide par les coefficients (astuce)** \\nOn sait que $P(x) = (x-1)(ax^2+bx+c)$. Par inspection: 1. Le coefficient de $x^3$ dans $P(x)$ est $1$. Donc $a=1$. Toutes les options commencent par $x^2$. 2. Le terme constant dans $P(x)$ est $10$. Pour que $(x-1)(x^2+bx+c)$ ait $10$ comme terme constant, on doit avoir $(-1) \\times c = 10$, donc $c = -10$.\\nCela élimine l'option B ($x^2+10$) et confime que les options A, C, D sont possibles. 3. Comparons maintenant les coefficients de $x^2$: $P(x) = x^3 + 2x^2 + \\dots$. Le terme en $x^2$ dans $(x-1)(x^2+bx-10)$ est $bx^2 - x^2 = (b-1)x^2$.\\nDonc $b-1 = 2$, ce qui implique $b=3$.\\nSeule l'option A a $b=3$ ($x^2+3x-10$). L'option C a $2x$ et l'option D a $x$. \\nCeci permet d'éliminer les options B, C et D rapidement."
+      },
+      {
+        "id": "cc83f268-ba4b-4ecb-9a60-31b49629a8b4",
+        "question_number": 11,
+        "topic": "Analyse",
+        "context": null,
+        "question": "$\\displaystyle\\lim_{x \\to 0} \\frac{1 - \\cos^2(x)}{x^2} = $",
+        "options": [
+          {
+            "id": "A",
+            "text": "$1$"
+          },
+          {
+            "id": "B",
+            "text": "$\\frac{1}{2}$"
+          },
+          {
+            "id": "C",
+            "text": "$0$"
+          },
+          {
+            "id": "D",
+            "text": "$\\frac{3}{2}$"
+          }
+        ],
+        "correct_answer": "A",
+        "astuce": "**Limites trigonométriques — Programme Bac BIOF** Étape 1 — Identifier la forme indéterminée.\\nLorsque $x \\to 0$, le numérateur $1 - \\cos^2(x)$ tend vers $1 - \\cos^2(0) = 1 - 1^2 = 0$. Le dénominateur $x^2$ tend vers $0$. C'est une forme indéterminée de type $\\frac{0}{0}$. Étape 2 — Utiliser l'identité trigonométrique fondamentale.\\nRappel: D'après les identités trigonométriques, $\\sin^2(x) + \\cos^2(x) = 1$. Par conséquent, $1 - \\cos^2(x) = \\sin^2(x)$.\\nLa limite devient alors: \\lim_{x \\to 0} \\frac{\\sin^2(x)}{x^2} Étape 3 — Réécrire l'expression et appliquer une limite usuelle.\\nOn peut réécrire l'expression sous la forme: \\lim_{x \\to 0} \\left(\\frac{\\sin(x)}{x}\\right)^2\\nRappel: D'après le programme Bac, une limite trigonométrique fondamentale est $\\displaystyle\\lim_{x \\to 0} \\frac{\\sin(x)}{x} = 1$. Étape 4 — Calculer la limite finale. \\left(\\lim_{x \\to 0} \\frac{\\sin(x)}{x}\\right)^2 = (1)^2 = 1 \\nOn conclut que la limite est $1$. **Réponse: A) $1$**",
+        "trick": "⚡ **Limite usuelle (astuce)** \\nUtilisez directement l'identité $1 - \\cos^2(x) = \\sin^2(x)$. La limite devient $\\lim_{x \\to 0} \\frac{\\sin^2(x)}{x^2}$.\\nCette limite est reconnaissable comme $(\\lim_{x \\to 0} \\frac{\\sin(x)}{x})^2$.\\nSachant que $\\lim_{x \\to 0} \\frac{\\sin(x)}{x} = 1$, la limite est $1^2 = 1$. \\nCette connaissance directe élimine les options B, C et D en un instant."
+      },
+      {
+        "id": "de06c729-f16e-4754-8783-935a2b74abef",
+        "question_number": 12,
+        "topic": "Analyse / Géométrie",
+        "context": "ABC un triangle rectangle en A tel que BC = 8cm. Posons AC = x, et notons P(x) le périmètre du triangle ABC.",
+        "question": "Le périmètre maximal du triangle ABC est:",
+        "options": [
+          {
+            "id": "A",
+            "text": "$8 + \\sqrt{2}$"
+          },
+          {
+            "id": "B",
+            "text": "$8 - 4\\sqrt{2}$"
+          },
+          {
+            "id": "C",
+            "text": "$8 + 8\\sqrt{2}$"
+          },
+          {
+            "id": "D",
+            "text": "$8 + 2\\sqrt{2}$"
+          }
+        ],
+        "correct_answer": "C",
+        "astuce": "**Optimisation et Théorème de Pythagore — Programme Bac BIOF** Étape 1 — Établir l'expression du périmètre $P(x)$.\\nSoit un triangle ABC rectangle en A avec hypoténuse $BC=8$ et $AC=x$.\\nD'après le théorème de Pythagore, $AB^2 + AC^2 = BC^2$.\\nDonc $AB^2 + x^2 = 8^2 = 64$. D'où $AB = \\sqrt{64 - x^2}$.\\nPour que $AB$ soit réel, il faut $64 - x^2 \\geq 0$, soit $x^2 \\leq 64$, ce qui implique $0 < x \\leq 8$.\\nLe périmètre $P(x)$ est la somme des longueurs des côtés: P(x) = AB + AC + BC = \\sqrt{64 - x^2} + x + 8 Étape 2 — Calculer la dérivée de $P(x)$. P'(x) = \\frac{d}{dx}(\\sqrt{64 - x^2}) + \\frac{d}{dx}(x) + \\frac{d}{dx}(8) P'(x) = \\frac{-2x}{2\\sqrt{64 - x^2}} + 1 = 1 - \\frac{x}{\\sqrt{64 - x^2}} Étape 3 — Rechercher les points critiques en résolvant $P'(x) = 0$. 1 - \\frac{x}{\\sqrt{64 - x^2}} = 0 \\Leftrightarrow 1 = \\frac{x}{\\sqrt{64 - x^2}} \\Leftrightarrow \\sqrt{64 - x^2} = x\\nPour élever au carré, il faut que $x \\geq 0$, ce qui est déjà le cas pour une longueur. De plus $\\sqrt{64-x^2}$ est positif. 64 - x^2 = x^2 \\Leftrightarrow 64 = 2x^2 \\Leftrightarrow x^2 = 32 x = \\sqrt{32} = 4\\sqrt{2} Étape 4 — Vérifier que cette valeur correspond à un maximum.\\nLa valeur $x = 4\\sqrt{2} \\approx 5.66$ est dans l'intervalle $]0, 8]$. L'étude du signe de $P'(x)$ montre qu'elle passe de positive à négative en $x=4\\sqrt{2}$, ce qui confirme un maximum. Étape 5 — Calculer le périmètre maximal.\\nSubstituons $x = 4\\sqrt{2}$ dans l'expression de $P(x)$: $AC = 4\\sqrt{2}$. $AB = \\sqrt{64 - (4\\sqrt{2})^2} = \\sqrt{64 - 32} = \\sqrt{32} = 4\\sqrt{2}$. P(4\\sqrt{2}) = 4\\sqrt{2} + 4\\sqrt{2} + 8 = 8\\sqrt{2} + 8 \\nOn conclut que le périmètre maximal est $8 + 8\\sqrt{2}$. **Réponse: C) $8 + 8\\sqrt{2}$**",
+        "trick": "⚡ **Intuition géométrique (astuce)** \\nPour un triangle rectangle dont l'hypoténuse est fixée, le périmètre est maximal lorsque le triangle est isocèle, c'est-à-dire quand les deux côtés de l'angle droit sont égaux ($AB=AC$).\\nSi $AB=AC=x$, alors par Pythagore: $x^2 + x^2 = BC^2 \\Rightarrow 2x^2 = 8^2 = 64$. $x^2 = 32 \\Rightarrow x = \\sqrt{32} = 4\\sqrt{2}$.\\nDonc $AB = 4\\sqrt{2}$ et $AC = 4\\sqrt{2}$.\\nLe périmètre est alors $AB + AC + BC = 4\\sqrt{2} + 4\\sqrt{2} + 8 = 8 + 8\\sqrt{2}$. \\nCette astuce basée sur l'intuition géométrique (cas d'égalité) permet de trouver la réponse C très rapidement et d'éliminer A, B et D."
+      },
+      {
+        "id": "db38c256-52f3-4025-9c8e-ed505ab97ebb",
+        "question_number": 13,
+        "topic": "Analyse",
+        "context": null,
+        "question": "$\\displaystyle\\lim_{x \\to 1} \\frac{x-1}{x^3-1} = $",
+        "options": [
+          {
+            "id": "A",
+            "text": "$7$"
+          },
+          {
+            "id": "B",
+            "text": "$\\frac{1}{3}$"
+          },
+          {
+            "id": "C",
+            "text": "$3$"
+          },
+          {
+            "id": "D",
+            "text": "Autre"
+          }
+        ],
+        "correct_answer": "B",
+        "astuce": "**Limites et formes indéterminées — Programme Bac BIOF** Étape 1 — Identifier la forme indéterminée.\\nLorsque $x \\to 1$, le numérateur $x-1$ tend vers $0$. Le dénominateur $x^3-1$ tend vers $1^3-1=0$. On a donc une forme indéterminée de type $\\frac{0}{0}$. Étape 2 — Utiliser la factorisation pour lever l'indétermination.\\nRappel: La formule de factorisation pour une différence de cubes est $a^3 - b^3 = (a-b)(a^2+ab+b^2)$.\\nEn appliquant cette formule pour $x^3-1^3$: x^3-1 = (x-1)(x^2+x+1) Étape 3 — Substituer et simplifier l'expression de la limite. \\lim_{x \\to 1} \\frac{x-1}{(x-1)(x^2+x+1)}\\nPuisque $x \\to 1$ mais $x \\neq 1$, nous pouvons simplifier par $(x-1)$. \\lim_{x \\to 1} \\frac{1}{x^2+x+1} Étape 4 — Calculer la limite finale.\\nOn substitue $x=1$ dans l'expression simplifiée: \\frac{1}{1^2+1+1} = \\frac{1}{1+1+1} = \\frac{1}{3} \\nOn conclut que la limite est $\\frac{1}{3}$. **Réponse: B) $\\frac{1}{3}$**",
+        "trick": "⚡ **Règle de L'Hôpital (astuce, si autorisée)** \\nLorsque la limite est de la forme $\\frac{0}{0}$, on peut appliquer la règle de L'Hôpital en dérivant le numérateur et le dénominateur séparément: \\lim_{x \\to 1} \\frac{\\frac{d}{dx}(x-1)}{\\frac{d}{dx}(x^3-1)} = \\lim_{x \\to 1} \\frac{1}{3x^2}\\nEn substituant $x=1$: $\\frac{1}{3(1)^2} = \\frac{1}{3}$. \\nCeci élimine A, C et D rapidement."
+      },
+      {
+        "id": "699b383c-bcc1-4e6d-bbb0-1d453129c36a",
+        "question_number": 14,
+        "topic": "Analyse",
+        "context": "Soit $(U_n)_{n \\in \\mathbb{N}}$ une suite telle que: $\\forall n \\in \\mathbb{N}: U_{n+2} = \\frac{5}{3}U_{n+1} - \\frac{2}{3}U_n$ et $U_0 = 1$; $U_1 = 2$. Pour tout $n \\in \\mathbb{N}$ on pose: $V_n = U_{n+1} - U_n$. Parmi les affirmations suivantes, laquelle est correcte?",
+        "question": "Parmi les affirmations suivantes, laquelle est correcte?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$V_0 = 3$"
+          },
+          {
+            "id": "B",
+            "text": "$U_2 = \\frac{1}{2}$"
+          },
+          {
+            "id": "C",
+            "text": "$V_0 = 1$"
+          },
+          {
+            "id": "D",
+            "text": "$U_2 = \\frac{3}{2}$"
+          }
+        ],
+        "correct_answer": "C",
+        "astuce": "**Suites récurrentes — Programme Bac BIOF** Étape 1 — Calculer les premiers termes de la suite $(U_n)$ et $(V_n)$ selon les définitions données.\\nOn nous donne: $U_0 = 1$ et $U_1 = 2$.\\nLa suite $(V_n)$ est définie par $V_n = U_{n+1} - U_n$. Étape 2 — Vérifier les options concernant $V_0$.\\nL'option A et C concernent $V_0$.\\nPour $n=0$, $V_0 = U_{0+1} - U_0 = U_1 - U_0$. V_0 = 2 - 1 = 1\\nDonc, l'affirmation $V_0=3$ (Option A) est fausse, et l'affirmation $V_0=1$ (Option C) est vraie. Étape 3 — Vérifier les options concernant $U_2$ (si nécessaire).\\nL'option B et D concernent $U_2$. On utilise la relation de récurrence $U_{n+2} = \\frac{5}{3}U_{n+1} - \\frac{2}{3}U_n$.\\nPour $n=0$: $U_2 = \\frac{5}{3}U_1 - \\frac{2}{3}U_0$. U_2 = \\frac{5}{3}(2) - \\frac{2}{3}(1) = \\frac{10}{3} - \\frac{2}{3} = \\frac{8}{3}\\nDonc, les affirmations $U_2 = \\frac{1}{2}$ (Option B) et $U_2 = \\frac{3}{2}$ (Option D) sont fausses. \\nOn conclut que la seule affirmation correcte est $V_0=1$. **Réponse: C) $V_0 = 1$**",
+        "trick": "⚡ **Calcul direct du premier terme (astuce)** \\nLa question demande de trouver une affirmation correcte. Il est souvent plus simple de calculer les termes de rang bas.\\nOn a $V_n = U_{n+1} - U_n$. Donc $V_0 = U_1 - U_0$.\\nAvec $U_0 = 1$ et $U_1 = 2$, on a $V_0 = 2 - 1 = 1$.\\nL'option C est $V_0=1$, qui est directement vérifiée. L'option A ($V_0=3$) est fausse.\\nIl n'est même pas nécessaire de calculer $U_2$ pour répondre à la question. \\nCeci élimine A, B et D en quelques secondes."
+      },
+      {
+        "id": "da930a71-97e9-44c6-a796-e0457b61633c",
+        "question_number": 15,
+        "topic": "Analyse",
+        "context": "On garde les mêmes données de la question QCM 14.",
+        "question": "Parmi les affirmations suivantes, laquelle est correcte?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Pour tout $n \\in \\mathbb{N}: V_n = (\\frac{2}{3})^n$"
+          },
+          {
+            "id": "B",
+            "text": "Pour tout $n \\in \\mathbb{N}: U_n = (\\frac{2}{3})^n$"
+          },
+          {
+            "id": "C",
+            "text": "Pour tout $n \\in \\mathbb{N}: U_n = (\\frac{1}{3})^n$"
+          },
+          {
+            "id": "D",
+            "text": "Pour tout $n \\in \\mathbb{N}: V_n = (\\frac{1}{3})^n$"
+          }
+        ],
+        "correct_answer": "A",
+        "astuce": "**Suites géométriques — Programme Bac BIOF** Étape 1 — Déterminer la nature de la suite $(V_n)$.\\nOn a la relation de récurrence de $(U_n)$: $U_{n+2} = \\frac{5}{3}U_{n+1} - \\frac{2}{3}U_n$.\\nEt la définition de $(V_n)$: $V_n = U_{n+1} - U_n$. Par conséquent, $U_{n+1} = V_n + U_n$.\\nDe plus, $V_{n+1} = U_{n+2} - U_{n+1}$.\\nSubstituons l'expression de $U_{n+2}$ dans celle de $V_{n+1}$: V_{n+1} = \\left(\\frac{5}{3}U_{n+1} - \\frac{2}{3}U_n\\right) - U_{n+1} V_{n+1} = \\left(\\frac{5}{3} - 1\\right)U_{n+1} - \\frac{2}{3}U_n V_{n+1} = \\frac{2}{3}U_{n+1} - \\frac{2}{3}U_n\\nFactorisons le membre de droite: V_{n+1} = \\frac{2}{3}(U_{n+1} - U_n)\\nOr, $U_{n+1} - U_n$ est la définition de $V_n$.\\nDonc, nous avons $V_{n+1} = \\frac{2}{3}V_n$.\\nCeci montre que $(V_n)$ est une suite géométrique de raison $q = \\frac{2}{3}$. Étape 2 — Déterminer le premier terme de $(V_n)$ et son terme général.\\nD'après QCM 14, nous avons calculé $V_0 = U_1 - U_0 = 2 - 1 = 1$.\\nD'après le programme Bac, le terme général d'une suite géométrique est $V_n = V_0 \\cdot q^n$. V_n = 1 \\cdot \\left(\\frac{2}{3}\\right)^n = \\left(\\frac{2}{3}\\right)^n Étape 3 — Comparer avec les options.\\nL'option A affirme $V_n = (\\frac{2}{3})^n$, ce qui correspond à notre résultat.\\nLes options B et C sont des expressions pour $U_n$ et l'option D donne une raison incorrecte pour $V_n$. \\nOn conclut que l'affirmation correcte est $V_n = (\\frac{2}{3})^n$. **Réponse: A) Pour tout $n \\in \\mathbb{N}: V_n = (\\frac{2}{3})^n$**",
+        "trick": "⚡ **Vérification de termes initiaux (astuce)** \\nNous avons calculé $V_0 = 1$ dans QCM 14. Vérifions cette valeur avec les options A et D: - A) $V_0 = (\\frac{2}{3})^0 = 1$. (Correspond) - D) $V_0 = (\\frac{1}{3})^0 = 1$. (Correspond) \\nPour distinguer entre A et D, calculons $V_1$. Nous avons $U_0 = 1$, $U_1 = 2$. Dans QCM 14, nous avons trouvé $U_2 = \\frac{8}{3}$. $V_1 = U_2 - U_1 = \\frac{8}{3} - 2 = \\frac{8-6}{3} = \\frac{2}{3}$. \\nVérifions $V_1$ avec les options A et D: - A) $V_1 = (\\frac{2}{3})^1 = \\frac{2}{3}$. (Correspond) - D) $V_1 = (\\frac{1}{3})^1 = \\frac{1}{3}$. (Ne correspond pas) \\nL'option A est la seule qui est cohérente avec les premiers termes de la suite $(V_n)$. Ceci élimine B, C et D."
+      },
+      {
+        "id": "f48afdfa-4223-411b-9824-e297c0a5d4fd",
+        "question_number": 16,
+        "topic": "Analyse",
+        "context": "Soit $f$ une fonction définie par: $f(x) = \\frac{3x^2 - 4x - 4}{x^2 - x - 2}$ si $x > 2f(x) = \\frac{\\sqrt{x^2+5} - 3}{\\sqrt{x+2} - 2}$ si $x < 2f(2) = 1$",
+        "question": "L'ensemble de définition de la fonction $f$ est:",
+        "options": [
+          {
+            "id": "A",
+            "text": "$]2; +\\infty[$"
+          },
+          {
+            "id": "B",
+            "text": "$\\mathbb{R}$"
+          },
+          {
+            "id": "C",
+            "text": "$[-2; +\\infty[$"
+          },
+          {
+            "id": "D",
+            "text": "$]-1; 2[\\cup]2; +\\infty[$"
+          }
+        ],
+        "correct_answer": "C",
+        "astuce": "**Domaine de définition — Programme Bac BIOF** Étape 1 — Déterminer le domaine de définition pour la première expression ($x > 2$).\\nPour $x > 2$, $f(x) = \\frac{3x^2 - 4x - 4}{x^2 - x - 2}$.\\nLe dénominateur ne doit pas être nul: $x^2 - x - 2 \\neq 0$.\\nLes racines de $x^2 - x - 2 = 0$ sont $x = \\frac{1 \\pm \\sqrt{(-1)^2 - 4(1)(-2)}}{2} = \\frac{1 \\pm \\sqrt{9}}{2} = \\frac{1 \\pm 3}{2}$.\\nDonc les racines sont $x_1 = -1$ et $x_2 = 2$.\\nPuisque nous sommes dans l'intervalle $x > 2$, le dénominateur n'est jamais nul. Ainsi, cette partie est définie sur $]2; +\\infty[$. Étape 2 — Déterminer le domaine de définition pour la deuxième expression ($x < 2$).\\nPour $x < 2$, $f(x) = \\frac{\\sqrt{x^2+5} - 3}{\\sqrt{x+2} - 2}$.\\nDeux conditions doivent être satisfaites: 1. Le terme sous la racine carrée du dénominateur doit être positif ou nul: $x+2 \\geq 0 \\Leftrightarrow x \\geq -2$. 2. Le dénominateur ne doit pas être nul: $\\sqrt{x+2} - 2 \\neq 0 \\Leftrightarrow \\sqrt{x+2} \\neq 2 \\Leftrightarrow x+2 \\neq 4 \\Leftrightarrow x \\neq 2$.\\nPuisque nous considérons seulement $x < 2$, la condition $x \\neq 2$ est automatiquement satisfaite.\\nEn combinant avec $x < 2$, le domaine pour cette partie est $[-2; 2[$. Étape 3 — Vérifier la définition au point $x=2$.\\nOn a $f(2) = 1$. Le point $x=2$ est donc défini. Étape 4 — Combiner tous les domaines partiels.\\nLe domaine global de $f$ est l'union des domaines trouvés pour chaque partie et le point $x=2$. $D_f = (]-\\infty; 2[\\cap [-2; 2[) \\cup (]2; +\\infty[) \\cup \\{2\\}D_f = [-2; 2[\\cup]2; +\\infty[\\cup \\{2\\}D_f = [-2; +\\infty[$. \\nOn conclut que l'ensemble de définition de la fonction $f$ est $[-2; +\\infty[$. **Réponse: C) $[-2; +\\infty[$**",
+        "trick": "⚡ **Examen des restrictions (astuce)** - Pour la partie $x < 2$: La présence de $\\sqrt{x+2}$ implique $x+2 \\geq 0$, donc $x \\geq -2$. Cela élimine toutes les options qui contiennent des valeurs inférieures à $-2$. De plus, le dénominateur $\\sqrt{x+2}-2$ n'est pas nul pour $x < 2$ (il est nul seulement pour $x=2$). - La partie $x > 2$: Le dénominateur $x^2-x-2 = (x-2)(x+1)$ n'est pas nul pour $x > 2$. - Le point $x=2$ est explicitement défini comme $f(2)=1$. \\nPar conséquent, l'unique restriction sur $x$ est $x \\geq -2$. Le domaine est donc $[-2; +\\infty[$. - L'option A ($]2; +\\infty[$) est trop restreinte, elle exclut $[-2; 2]$. - L'option B ($\\mathbb{R}$) est trop large, elle inclut $x < -2$. - L'option D ($]-1; 2[\\cup]2; +\\infty[$) exclut $[-2; -1]$. \\nL'option C est la seule compatible avec $x \\geq -2$.\\nCette analyse rapide permet d'éliminer les options A, B et D."
+      },
+      {
+        "id": "80c86d21-8339-4f8a-88d7-5e5a08b32c60",
+        "question_number": 17,
+        "topic": "Analyse",
+        "context": "Soit $f$ la fonction définie sur $\\mathbb{R}$ par: $f(x) = 1 + x + x^2 + \\dots + x^n$. Et $(C)$ sa courbe dans un repère orthonormé.",
+        "question": "L'équation réduite de la tangente à $(C)$ au point d'abscisse $1$ est:",
+        "options": [
+          {
+            "id": "A",
+            "text": "$y = \\frac{n(n+1)}{2}x - \\frac{(n-2)(n+1)}{2}$"
+          },
+          {
+            "id": "B",
+            "text": "$y = \\frac{n(n-1)}{2}x - \\frac{n^2-1}{2}$"
+          },
+          {
+            "id": "C",
+            "text": "$y = \\frac{n(n+1)}{2}x + \\frac{(n-2)(n+1)}{2}$"
+          },
+          {
+            "id": "D",
+            "text": "$y = \\frac{n(n-1)}{2}x + \\frac{n^2-1}{2}$"
+          }
+        ],
+        "correct_answer": "A",
+        "astuce": "**Tangente à une courbe et sommes — Programme Bac BIOF** Étape 1 — Rappeler l'équation de la tangente.\\nL'équation de la tangente à la courbe $(C_f)$ au point d'abscisse $x_0$ est donnée par $y = f'(x_0)(x-x_0) + f(x_0)$. Ici, $x_0=1$.\\nDonc $y = f'(1)(x-1) + f(1)$. Étape 2 — Calculer $f(1)$. $f(x) = 1 + x + x^2 + \\dots + x^n$.\\nPour $x=1$, chaque terme est $1$. Il y a $n+1$ termes (de $x^0$ à $x^n$). f(1) = 1 + 1 + 1^2 + \\dots + 1^n = n+1 Étape 3 — Calculer la dérivée $f'(x)$. $f'(x) = \\frac{d}{dx}(1) + \\frac{d}{dx}(x) + \\frac{d}{dx}(x^2) + \\dots + \\frac{d}{dx}(x^n)$. f'(x) = 0 + 1 + 2x + 3x^2 + \\dots + nx^{n-1} Étape 4 — Calculer $f'(1)$.\\nPour $x=1$, $f'(1) = 1 + 2(1) + 3(1)^2 + \\dots + n(1)^{n-1}$. f'(1) = 1 + 2 + 3 + \\dots + n\\nRappel: La somme des $n$ premiers entiers est $\\sum_{k=1}^n k = \\frac{n(n+1)}{2}$.\\nDonc, $f'(1) = \\frac{n(n+1)}{2}$. Étape 5 — Substituer dans l'équation de la tangente. y = \\left(\\frac{n(n+1)}{2}\\right)(x-1) + (n+1) y = \\frac{n(n+1)}{2}x - \\frac{n(n+1)}{2} + (n+1)\\nPour simplifier le terme constant, factorisons par $(n+1)$: y = \\frac{n(n+1)}{2}x + (n+1)\\left(1 - \\frac{n}{2}\\right) y = \\frac{n(n+1)}{2}x + (n+1)\\left(\\frac{2-n}{2}\\right) y = \\frac{n(n+1)}{2}x - \\frac{(n+1)(n-2)}{2} \\nOn conclut que l'équation réduite de la tangente est $y = \\frac{n(n+1)}{2}x - \\frac{(n-2)(n+1)}{2}$. **Réponse: A) $y = \\frac{n(n+1)}{2}x - \\frac{(n-2)(n+1)}{2}$**",
+        "trick": "⚡ **Test avec une petite valeur de $n$ (astuce)** \\nChoisissons $n=1$.\\nLa fonction est $f(x) = 1+x$.\\nAlors $f(1) = 1+1 = 2$.\\nLa dérivée est $f'(x) = 1$, donc $f'(1) = 1$.\\nL'équation de la tangente est $y = f'(1)(x-1) + f(1) = 1(x-1) + 2 = x-1+2 = x+1$. \\nVérifions quelle option donne $y=x+1$ pour $n=1$: - A) $y = \\frac{1(1+1)}{2}x - \\frac{(1-2)(1+1)}{2} = \\frac{2}{2}x - \\frac{(-1)(2)}{2} = x - (-1) = x+1$. (Correct) - B) $y = \\frac{1(1-1)}{2}x - \\frac{1^2-1}{2} = 0x - 0 = 0$. (Faux) - C) $y = \\frac{1(1+1)}{2}x + \\frac{(1-2)(1+1)}{2} = x + (-1) = x-1$. (Faux) - D) $y = \\frac{1(1-1)}{2}x + \\frac{1^2-1}{2} = 0x + 0 = 0$. (Faux) \\nL'option A est la seule qui est correcte. Cette astuce permet de trouver la réponse rapidement et de manière fiable."
+      },
+      {
+        "id": "3ba492c5-2f88-49f2-8bf4-c5525cbbc6d3",
+        "question_number": 18,
+        "topic": "Analyse",
+        "context": "Soit la suite $(u_n)$ suite géométrique de premier terme $u_0$ et de raison $(q > 0)$ que $u_1 = 2$ et $u_2 = 4$.",
+        "question": "On pose $(\\forall n \\in \\mathbb{N}): S_n = u_0 + u_1 + \\dots + u_n$. Donc $S_n$ égale:",
+        "options": [
+          {
+            "id": "A",
+            "text": "$2^n - 1$"
+          },
+          {
+            "id": "B",
+            "text": "$2^{n+1} - 1$"
+          },
+          {
+            "id": "C",
+            "text": "$\\frac{1}{2}(2^n - 1)$"
+          },
+          {
+            "id": "D",
+            "text": "$2^n + 1$"
+          }
+        ],
+        "correct_answer": "B",
+        "astuce": "**Somme des termes d'une suite géométrique — Programme Bac BIOF** Étape 1 — Déterminer la raison $q$ de la suite géométrique.\\nOn a $u_1 = 2$ et $u_2 = 4$. Pour une suite géométrique, $u_2 = u_1 \\cdot q$.\\nDonc $4 = 2 \\cdot q \\Rightarrow q = \\frac{4}{2} = 2$. Étape 2 — Déterminer le premier terme $u_0$.\\nOn a $u_1 = u_0 \\cdot q$. Donc $2 = u_0 \\cdot 2 \\Rightarrow u_0 = 1$.\\nLe terme général de la suite est $u_n = u_0 \\cdot q^n = 1 \\cdot 2^n = 2^n$. Étape 3 — Calculer la somme $S_n$.\\nLa somme $S_n = u_0 + u_1 + \\dots + u_n$ est la somme des $n+1$ premiers termes d'une suite géométrique.\\nRappel: D'après le programme Bac, la formule de la somme est $S_n = u_0 \\frac{1 - q^{n+1}}{1 - q}$.\\nEn substituant $u_0=1$ et $q=2$: S_n = 1 \\cdot \\frac{1 - 2^{n+1}}{1 - 2} = \\frac{1 - 2^{n+1}}{-1} S_n = -(1 - 2^{n+1}) = 2^{n+1} - 1 \\nOn conclut que $S_n = 2^{n+1} - 1$. **Réponse: B) $2^{n+1} - 1$**",
+        "trick": "⚡ **Test avec $n=0$ (astuce)** \\nPour $n=0$, la somme $S_0$ représente uniquement le premier terme $u_0$. Nous avons trouvé $u_0=1$. \\nVérifions quelle option donne $S_0=1$ pour $n=0$: - A) $2^0 - 1 = 1 - 1 = 0$. (Faux) - B) $2^{0+1} - 1 = 2^1 - 1 = 2 - 1 = 1$. (Correct) - C) $\\frac{1}{2}(2^0 - 1) = \\frac{1}{2}(1 - 1) = 0$. (Faux) - D) $2^0 + 1 = 1 + 1 = 2$. (Faux) \\nL'option B est la seule qui correspond. Cette astuce permet de trouver la réponse très rapidement."
+      },
+      {
+        "id": "cb46b9b3-79de-49bc-b1a8-9973de5c187f",
+        "question_number": 19,
+        "topic": "Analyse",
+        "context": "Si $(V_n)_{n \\in \\mathbb{N}^*}$ est une suite telle que: $(\\forall n \\in \\mathbb{N}^*): V_1 + V_2 + \\dots + V_{n-1} + V_n = 2n^2 + n$.",
+        "question": "Alors $V_8$ est égale à:",
+        "options": [
+          {
+            "id": "A",
+            "text": "$V_8 = 31$"
+          },
+          {
+            "id": "B",
+            "text": "$V_8 = 53$"
+          },
+          {
+            "id": "C",
+            "text": "$V_8 = 54$"
+          },
+          {
+            "id": "D",
+            "text": "$V_8 = 62$"
+          }
+        ],
+        "correct_answer": "A",
+        "astuce": "**Somme des termes d'une suite — Programme Bac BIOF** Étape 1 — Définir la somme des $n$ premiers termes.\\nSoit $S_n = V_1 + V_2 + \\dots + V_n$. On nous donne $S_n = 2n^2 + n$ pour tout $n \\in \\mathbb{N}^*$. Étape 2 — Exprimer $V_n$ en fonction de $S_n$ et $S_{n-1}$.\\nPour $n \\geq 2$, le terme $V_n$ peut être obtenu en soustrayant la somme des $n-1$ premiers termes de la somme des $n$ premiers termes: V_n = S_n - S_{n-1} Étape 3 — Calculer $V_n$ en substituant l'expression de $S_n$. V_n = (2n^2 + n) - (2(n-1)^2 + (n-1))\\nDéveloppons l'expression de $S_{n-1}$: 2(n-1)^2 + (n-1) = 2(n^2 - 2n + 1) + n - 1 = 2n^2 - 4n + 2 + n - 1 = 2n^2 - 3n + 1\\nMaintenant, calculons $V_n$: V_n = (2n^2 + n) - (2n^2 - 3n + 1) V_n = 2n^2 + n - 2n^2 + 3n - 1 V_n = 4n - 1 Étape 4 — Calculer $V_8$ en utilisant l'expression trouvée.\\nOn substitue $n=8$ dans l'expression de $V_n$: V_8 = 4(8) - 1 V_8 = 32 - 1 V_8 = 31 \\nOn conclut que $V_8 = 31$. **Réponse: A) $V_8 = 31$**",
+        "trick": "⚡ **Calcul direct par les sommes (astuce)** \\nOn a $S_n = V_1 + \\dots + V_n$. Pour trouver $V_8$, on peut simplement calculer $S_8$ et $S_7$: $V_8 = S_8 - S_7$. $S_8 = 2(8)^2 + 8 = 2(64) + 8 = 128 + 8 = 136$. $S_7 = 2(7)^2 + 7 = 2(49) + 7 = 98 + 7 = 105$. $V_8 = 136 - 105 = 31$. \\nCe calcul direct élimine rapidement les options B, C et D."
+      },
+      {
+        "id": "e217d2ad-362c-45d5-b2e6-49fecccc52ec",
+        "question_number": 20,
+        "topic": "Analyse",
+        "context": null,
+        "question": "$\\displaystyle\\lim_{x \\to 0} \\frac{\\sqrt{1+x} + \\sqrt{1-x} - 2}{x^2}$",
+        "options": [
+          {
+            "id": "A",
+            "text": "$2$"
+          },
+          {
+            "id": "B",
+            "text": "$1$"
+          },
+          {
+            "id": "C",
+            "text": "$0$"
+          },
+          {
+            "id": "D",
+            "text": "AUTRE"
+          }
+        ],
+        "correct_answer": "D",
+        "astuce": "**Limites et formes indéterminées — Programme Bac SM** Étape 1 — Identifier la forme indéterminée.\\nLorsque $x \\to 0$, le numérateur tend vers $\\sqrt{1+0} + \\sqrt{1-0} - 2 = 1 + 1 - 2 = 0$. Le dénominateur $x^2$ tend vers $0$. C'est une forme indéterminée de type $\\frac{0}{0}$. Étape 2 — Utiliser la règle de L'Hôpital (deux fois).\\nSoit $f(x) = \\sqrt{1+x} + \\sqrt{1-x} - 2$ et $g(x) = x^2$.\\nCalculons les dérivées successives: f'(x) = \\frac{1}{2\\sqrt{1+x}} + \\frac{-1}{2\\sqrt{1-x}} = \\frac{1}{2}(1+x)^{-1/2} - \\frac{1}{2}(1-x)^{-1/2}\\nAu point $x=0$, $f'(0) = \\frac{1}{2} - \\frac{1}{2} = 0$. On a toujours une forme indéterminée $\\frac{0}{0}$ si on évalue $\\frac{f'(x)}{g'(x)}$.\\nCalculons la deuxième dérivée $f''(x)$: f''(x) = \\frac{1}{2}\\left(-\\frac{1}{2}\\right)(1+x)^{-3/2} - \\frac{1}{2}\\left(-\\frac{1}{2}\\right)(1-x)^{-3/2}(-1) f''(x) = -\\frac{1}{4}(1+x)^{-3/2} - \\frac{1}{4}(1-x)^{-3/2}\\nAu point $x=0$, $f''(0) = -\\frac{1}{4}(1)^{-3/2} - \\frac{1}{4}(1)^{-3/2} = -\\frac{1}{4} - \\frac{1}{4} = -\\frac{1}{2}$.\\nCalculons la première et deuxième dérivée de $g(x) = x^2$: $g'(x) = 2x$, donc $g'(0) = 0$. $g''(x) = 2$, donc $g''(0) = 2$. Étape 3 — Appliquer la règle de L'Hôpital une seconde fois.\\nPuisque $\\lim_{x \\to 0} \\frac{f(x)}{g(x)}$ est de la forme $\\frac{0}{0}$ et $\\lim_{x \\to 0} \\frac{f'(x)}{g'(x)}$ est aussi de la forme $\\frac{0}{0}$, on peut appliquer la règle de L'Hôpital une seconde fois: \\lim_{x \\to 0} \\frac{f(x)}{g(x)} = \\lim_{x \\to 0} \\frac{f''(x)}{g''(x)} \\lim_{x \\to 0} \\frac{f''(x)}{g''(x)} = \\frac{-1/2}{2} = -\\frac{1}{4} \\nLa limite est $-1/4$, qui ne correspond à aucune des options A, B ou C. **Réponse: D) AUTRE**",
+        "trick": "⚡ **Approximation par développement limité (astuce, pour confirmation rapide)** \\nOn utilise le développement limité de $(1+u)^\\alpha$ à l'ordre 2 autour de $u=0$: $(1+u)^\\alpha = 1 + \\alpha u + \\frac{\\alpha(\\alpha-1)}{2}u^2 + O(u^3)$.\\nPour $\\sqrt{1+x}$, on a $\\alpha = 1/2$ et $u=x$: $\\sqrt{1+x} = 1 + \\frac{1}{2}x + \\frac{\\frac{1}{2}(\\frac{1}{2}-1)}{2}x^2 + O(x^3) = 1 + \\frac{1}{2}x - \\frac{1}{8}x^2 + O(x^3)$.\\nPour $\\sqrt{1-x}$, on a $\\alpha = 1/2$ et $u=-x$: $\\sqrt{1-x} = 1 + \\frac{1}{2}(-x) + \\frac{\\frac{1}{2}(\\frac{1}{2}-1)}{2}(-x)^2 + O(x^3) = 1 - \\frac{1}{2}x - \\frac{1}{8}x^2 + O(x^3)$. \\nMaintenant, substituons dans l'expression de la limite: $\\frac{(1 + \\frac{1}{2}x - \\frac{1}{8}x^2) + (1 - \\frac{1}{2}x - \\frac{1}{8}x^2) - 2}{x^2}= \\frac{2 - \\frac{2}{8}x^2 + O(x^3) - 2}{x^2} = \\frac{-\\frac{1}{4}x^2 + O(x^3)}{x^2} = -\\frac{1}{4} + O(x)$. \\nEn faisant tendre $x \\to 0$, la limite est $-1/4$.\\nComme $-1/4$ n'est pas $2$, $1$ ou $0$, la réponse est 'AUTRE'. Cette méthode confirme le résultat de L'Hôpital et élimine les options A, B et C."
+      }
+    ],
+    "pdfUrl": null,
+    "isActive": true,
+    "isArchived": false,
+    "dateAdded": "2026-09-07T05:42:43.730Z",
+    "updatedAt": "2026-09-07T05:48:17.972Z",
+    "createdAt": "2026-09-07T05:42:44.630Z"
   }
 ]

@@ -506,7 +506,7 @@ export default function MockExamMode() {
 
                 if (pos === 'side_by_side' && currentQuestion.image) {
                   return (
-                    <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', marginBottom: '1.5rem', flexShrink: 0 }}>
+                    <div className="exam-side-by-side-statement" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', marginBottom: '1.5rem', flexShrink: 0 }}>
                       {statementEl}
                       {imageEl}
                     </div>

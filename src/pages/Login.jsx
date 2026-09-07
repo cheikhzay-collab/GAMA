@@ -124,8 +124,13 @@ export default function Login() {
       </div>
 
       {/* Right — auth form */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem 2rem' }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(1.5rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem)' }}>
         <div style={{ width: '100%', maxWidth: 420 }}>
+          {/* Mobile-only Logo */}
+          <div className="login-mobile-logo" style={{ display: 'none', marginBottom: '1.75rem', justifyContent: 'center' }}>
+            <LconqLogo size={42} textSize="1.5rem" />
+          </div>
+
           {/* Back link */}
           <Link to="/" style={{ color: 'var(--text-muted)', fontSize: '0.875rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', marginBottom: '2rem', transition: 'color 0.2s' }}
             onMouseEnter={e => e.currentTarget.style.color = 'var(--text-main)'}
@@ -134,7 +139,7 @@ export default function Login() {
             ← Retour à l'accueil
           </Link>
 
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.4rem', letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 1.75rem)', fontWeight: 800, marginBottom: '0.4rem', letterSpacing: '-0.02em' }}>
             {isRegistering ? 'Créer un compte' : 'Connexion'}
           </h1>
           <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>

@@ -1673,7 +1673,7 @@ export default function AdminClassDetail() {
       )}
 
       {/* Tabs list */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '2rem', gap: '1.5rem' }}>
+      <div className="mobile-tabs-scroll" style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '2rem', gap: '1.5rem', overflowX: 'auto', whiteSpace: 'nowrap', WebkitOverflowScrolling: 'touch' }}>
         <button
           onClick={() => setActiveTab('students')}
           style={{
@@ -1681,7 +1681,8 @@ export default function AdminClassDetail() {
             color: activeTab === 'students' ? 'var(--violet)' : 'var(--text-muted)',
             fontWeight: 700, fontSize: '0.92rem', cursor: 'pointer',
             borderBottom: activeTab === 'students' ? '2.5px solid var(--violet)' : 'none',
-            display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s'
+            display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s',
+            flexShrink: 0
           }}
         >
           <Users size={16} /> Liste des Élèves
@@ -1694,7 +1695,8 @@ export default function AdminClassDetail() {
             color: activeTab === 'homework' ? 'var(--violet)' : 'var(--text-muted)',
             fontWeight: 700, fontSize: '0.92rem', cursor: 'pointer',
             borderBottom: activeTab === 'homework' ? '2.5px solid var(--violet)' : 'none',
-            display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s'
+            display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s',
+            flexShrink: 0
           }}
         >
           <CheckSquare size={16} /> Suivi des Devoirs
@@ -1707,7 +1709,8 @@ export default function AdminClassDetail() {
             color: activeTab === 'grades' ? 'var(--violet)' : 'var(--text-muted)',
             fontWeight: 700, fontSize: '0.92rem', cursor: 'pointer',
             borderBottom: activeTab === 'grades' ? '2.5px solid var(--violet)' : 'none',
-            display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s'
+            display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s',
+            flexShrink: 0
           }}
         >
           <FileSpreadsheet size={16} /> Notes des Contrôles
@@ -1720,7 +1723,8 @@ export default function AdminClassDetail() {
             color: activeTab === 'program' ? 'var(--violet)' : 'var(--text-muted)',
             fontWeight: 700, fontSize: '0.92rem', cursor: 'pointer',
             borderBottom: activeTab === 'program' ? '2.5px solid var(--violet)' : 'none',
-            display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s'
+            display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s',
+            flexShrink: 0
           }}
         >
           <Activity size={16} /> Programme
@@ -1733,7 +1737,8 @@ export default function AdminClassDetail() {
             color: activeTab === 'competitions' ? 'var(--violet)' : 'var(--text-muted)',
             fontWeight: 700, fontSize: '0.92rem', cursor: 'pointer',
             borderBottom: activeTab === 'competitions' ? '2.5px solid var(--violet)' : 'none',
-            display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s'
+            display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s',
+            flexShrink: 0
           }}
         >
           <Award size={16} /> Carnet des Concours (OMR)

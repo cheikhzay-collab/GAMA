@@ -159,10 +159,10 @@ export default function WhatsAppButton() {
         /* Adjust bottom position on mobile screens with navigation bar */
         @media (max-width: 768px) {
           .whatsapp-floating-btn.has-mobile-nav {
-            bottom: 80px;
+            bottom: calc(76px + env(safe-area-inset-bottom));
           }
           .whatsapp-tooltip-bubble.has-mobile-nav {
-            bottom: 88px;
+            bottom: calc(84px + env(safe-area-inset-bottom));
           }
         }
       `}} />
