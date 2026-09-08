@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { SafeInlineMath, SafeBlockMath } from '../utils/mathRenderer';
 import { useAuth } from '../context/AuthContext';
 import { 
@@ -9,7 +9,20 @@ import {
 
 export default function SuitesNumeriquesPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+
+  const goBack = () => {
+    if (location.state?.from) {
+      navigate(location.state.from);
+      return;
+    }
+    if (window.history.length > 2) {
+      navigate(-1);
+      return;
+    }
+    navigate('/study');
+  };
 
   // Navigation Tabs
   const [activeTab, setActiveTab] = useState('suites'); // 'suites', 'denombrement', 'arithmetique', 'probabilites'
@@ -595,7 +608,7 @@ export default function SuitesNumeriquesPage() {
         gap: '1rem'
       }}>
         <button 
-          onClick={() => navigate('/study')}
+          onClick={goBack}
           className="btn-outline"
           style={{ 
             padding: '0.5rem 1rem', fontSize: '0.85rem', fontWeight: 800, 

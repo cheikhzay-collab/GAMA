@@ -109,8 +109,9 @@ Règles impératives de rédaction :
 
   // ── Engine 2: Google Gemini ──
   if (availableEngines.includes('gemini')) {
-    const preferredModel = localStorage.getItem('geminiModel') || 'gemini-2.5-flash';
-    const modelsToTry = [preferredModel, 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    const storedModel = localStorage.getItem('geminiModel');
+    const preferredModel = (!storedModel || storedModel === 'gemini-2.5-flash') ? 'gemini-3.6-flash' : storedModel;
+    const modelsToTry = [preferredModel, 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
     const uniqueModels = Array.from(new Set(modelsToTry));
 
     for (const model of uniqueModels) {
@@ -137,7 +138,11 @@ Règles impératives de rédaction :
         }
 
         const data = await response.json();
-        const generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        const candidate = data?.candidates?.[0];
+        const nonThoughtParts = candidate?.content?.parts?.filter(p => !p.thought) || [];
+        const generatedText = (nonThoughtParts.length > 0 ? nonThoughtParts : (candidate?.content?.parts || []))
+          .map(p => p.text || '')
+          .join('');
 
         if (generatedText && generatedText.trim()) {
           return generatedText.trim();

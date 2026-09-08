@@ -112,7 +112,11 @@ Le JSON doit respecter scrupuleusement la structure suivante :
     }
 
     const data = await response.json();
-    const rawJsonText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const candidate = data.candidates?.[0];
+    const nonThoughtParts = candidate?.content?.parts?.filter(p => !p.thought) || [];
+    const rawJsonText = (nonThoughtParts.length > 0 ? nonThoughtParts : (candidate?.content?.parts || []))
+      .map(p => p.text || '')
+      .join('');
     
     if (!rawJsonText) {
       throw new Error("Réponse vide de l'IA.");

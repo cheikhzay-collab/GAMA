@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const hasArabic = (str) => /[\u0600-\u06FF]/.test(str || '');
@@ -395,8 +395,21 @@ function useIsMobile() {
 export default function AdminExamEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { exams, updateExamDetails, schools } = useAuth();
   const isMobile = useIsMobile();
+
+  const goBack = () => {
+    if (location.state?.from) {
+      navigate(location.state.from);
+      return;
+    }
+    if (window.history.length > 2) {
+      navigate(-1);
+      return;
+    }
+    navigate('/admin/exams');
+  };
 
   const exam = useMemo(() => exams.find(e => e.id === id), [exams, id]);
 
@@ -470,7 +483,7 @@ export default function AdminExamEdit() {
         <AlertCircle size={48} style={{ color: 'var(--danger)', marginBottom: '1rem' }} />
         <h2 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>Concours introuvable</h2>
         <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>L'identifiant fourni ne correspond à aucun concours.</p>
-        <button onClick={() => navigate('/admin/exams')} className="btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <button onClick={goBack} className="btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           <ArrowLeft size={14} /> Retour à la bibliothèque
         </button>
       </div>
@@ -592,7 +605,8 @@ export default function AdminExamEdit() {
     setIsGeneratingAiFigure(true);
 
     try {
-      const model = localStorage.getItem('geminiModel') || 'gemini-2.5-flash';
+      const rawModel = localStorage.getItem('geminiModel') || 'gemini-3.6-flash';
+      const model = rawModel === 'gemini-2.5-flash' ? 'gemini-3.6-flash' : rawModel;
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
       const prompt = `Tu es un expert en conception de figures scientifiques vectorielles en SVG pour des QCM de mathématiques, physique et chimie.
@@ -637,7 +651,11 @@ Tu dois analyser la question et :
       }
 
       const data = await res.json();
-      let rawSvg = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      const candidate = data?.candidates?.[0];
+      const nonThoughtParts = candidate?.content?.parts?.filter(p => !p.thought) || [];
+      let rawSvg = (nonThoughtParts.length > 0 ? nonThoughtParts : (candidate?.content?.parts || []))
+        .map(p => p.text || '')
+        .join('');
       if (!rawSvg) {
         throw new Error("Aucun contenu généré.");
       }
@@ -861,7 +879,7 @@ Tu dois analyser la question et :
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <button
             type="button"
-            onClick={() => navigate('/admin/exams')}
+            onClick={goBack}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '0.45rem 0.85rem', borderRadius: 10,

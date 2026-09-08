@@ -151,8 +151,9 @@ ${JSON.stringify(lesson.content, null, 2)}
 /**
  * استدعاء Gemini API
  */
-async function callGemini(prompt, geminiKey, model = 'gemini-2.5-flash') {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+async function callGemini(prompt, geminiKey, model = 'gemini-3.6-flash') {
+  const modelToUse = (!model || model === 'gemini-2.5-flash') ? 'gemini-3.6-flash' : model;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${geminiKey}`;
 
   const response = await fetch(endpoint, {
     method: 'POST',
@@ -181,7 +182,14 @@ async function callGemini(prompt, geminiKey, model = 'gemini-2.5-flash') {
   }
 
   const data = await response.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  const candidate = data?.candidates?.[0];
+  if (!candidate || !candidate.content?.parts) {
+    throw new Error('لم يُرجع Gemini أي محتوى');
+  }
+  const nonThoughtParts = candidate.content.parts.filter(p => !p.thought);
+  const text = (nonThoughtParts.length > 0 ? nonThoughtParts : candidate.content.parts)
+    .map(p => p.text || '')
+    .join('');
   if (!text) throw new Error('لم يُرجع Gemini أي نص');
   return text;
 }
@@ -189,15 +197,15 @@ async function callGemini(prompt, geminiKey, model = 'gemini-2.5-flash') {
 /**
  * استدعاء DeepSeek API (متوافق مع OpenAI)
  */
-async function callDeepSeek(prompt, deepseekKey, deepseekUrl, model = 'deepseek-v4-pro') {
+async function callDeepSeek(prompt, deepseekKey, deepseekUrl, model = 'deepseek-chat') {
   const baseUrl = (deepseekUrl || 'https://api.deepseek.com').replace(/\/$/, '');
   const endpoint = `${baseUrl}/v1/chat/completions`;
 
-  const rawModel = model || 'deepseek-v4-pro';
-  const normalizedModel = (rawModel === 'deepseek-reasoner' || rawModel === 'deepseek-r1')
-    ? 'deepseek-v4-pro'
-    : (rawModel === 'deepseek-chat' || rawModel === 'deepseek-v3')
-      ? 'deepseek-v4-flash'
+  const rawModel = model || 'deepseek-chat';
+  const normalizedModel = (rawModel === 'deepseek-v4-pro' || rawModel === 'deepseek-r1')
+    ? 'deepseek-reasoner'
+    : (rawModel === 'deepseek-v4-flash' || rawModel === 'deepseek-v3')
+      ? 'deepseek-chat'
       : rawModel;
 
   const payload = {
@@ -374,7 +382,8 @@ export async function callAIWithFailover(prompt, options = {}) {
       if (prov === 'gemini') {
         const key = options.geminiKey || localStorage.getItem('geminiApiKey') || '';
         if (!key) continue;
-        const model = options.geminiModel || localStorage.getItem('geminiModel') || 'gemini-2.5-flash';
+        const rawModel = options.geminiModel || localStorage.getItem('geminiModel') || 'gemini-3.6-flash';
+        const model = rawModel === 'gemini-2.5-flash' ? 'gemini-3.6-flash' : rawModel;
         console.log(`[AI Failover] Attemping generation with Gemini (${model})...`);
         const text = await callGemini(prompt, key, model);
         return { text, provider: 'gemini' };
@@ -384,7 +393,7 @@ export async function callAIWithFailover(prompt, options = {}) {
         const key = options.deepseekKey || localStorage.getItem('deepseekApiKey') || 'sk-12a7032f07d740348c607ef947a0a9f7';
         if (!key) continue;
         const url = options.deepseekUrl || localStorage.getItem('deepseekApiUrl') || 'https://api.deepseek.com';
-        const model = options.deepseekModel || localStorage.getItem('deepseekModel') || 'deepseek-v4-pro';
+        const model = options.deepseekModel || localStorage.getItem('deepseekModel') || 'deepseek-chat';
         console.log(`[AI Failover] Attemping generation with DeepSeek (${model})...`);
         const text = await callDeepSeek(prompt, key, url, model);
         return { text, provider: 'deepseek' };

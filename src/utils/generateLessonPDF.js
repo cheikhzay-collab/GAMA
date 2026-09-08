@@ -1842,18 +1842,20 @@ body {
 }
 
 .fiche-header .h-page .qr-img {
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   display: block;
 }
 
 .fiche-header .h-page .qr-label {
-  font-size: 6pt;
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 7pt;
   font-weight: 900;
   color: #ffffff;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  line-height: 1;
+  letter-spacing: 0.1em;
+  line-height: 1.1;
+  margin-top: 3px;
 }
 
 /* RTL Layout support for Header */
@@ -2631,18 +2633,20 @@ b .katex * {
 }
 
 .fiche-header-modern-pro .modern-qr-img {
-  width: 44px;
-  height: 44px;
+  width: 50px;
+  height: 50px;
   display: block;
 }
 
 .fiche-header-modern-pro .modern-qr-text {
-  font-size: 6pt;
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 7.5pt;
   font-weight: 900;
   color: #ffffff;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  line-height: 1;
+  letter-spacing: 0.1em;
+  line-height: 1.1;
+  margin-top: 4px;
 }
 
 /* Modern Exercise Badges & Cards */

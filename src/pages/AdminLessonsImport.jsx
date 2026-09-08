@@ -28,8 +28,21 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mj
 const repairTruncatedJson = (str) => {
   if (!str) return str;
   let s = str.trim();
-  // Remove trailing comma before closing
-  s = s.replace(/,\s*$/, '');
+  s = s.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+
+  // Find first opening { or [
+  const firstBrace = s.indexOf('{');
+  const firstBracket = s.indexOf('[');
+  let start = -1;
+  if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+    start = firstBrace;
+  } else if (firstBracket !== -1) {
+    start = firstBracket;
+  }
+  if (start > 0) {
+    s = s.slice(start);
+  }
+
   // Count open braces and brackets
   const stack = [];
   let inString = false;
@@ -37,18 +50,32 @@ const repairTruncatedJson = (str) => {
   for (let i = 0; i < s.length; i++) {
     const c = s[i];
     if (escaped) { escaped = false; continue; }
-    if (c === '\\' && inString) { escaped = true; continue; }
+    if (c === '\\') { escaped = true; continue; }
     if (c === '"') { inString = !inString; continue; }
     if (!inString) {
       if (c === '{') stack.push('}');
       else if (c === '[') stack.push(']');
-      else if (c === '}' || c === ']') stack.pop();
+      else if (c === '}' || c === ']') {
+        if (stack.length > 0 && stack[stack.length - 1] === c) {
+          stack.pop();
+        }
+      }
     }
   }
-  // If we're inside an unclosed string, close it first
-  if (inString) s += '"';
+
+  // If inside an open string, close it
+  if (inString) {
+    s += '"';
+  }
+
+  // Clean trailing comma, colon, or dangling property
+  s = s.replace(/,\s*$/, '');
+  s = s.replace(/:\s*$/, ': ""');
+
   // Close all open structures in reverse order
-  while (stack.length > 0) s += stack.pop();
+  while (stack.length > 0) {
+    s += stack.pop();
+  }
   return s;
 };
 
@@ -195,29 +222,16 @@ const extractJsonFromText = (str) => {
   if (firstBrace === -1) start = firstBracket;
   else if (firstBracket === -1) start = firstBrace;
   else start = Math.min(firstBrace, firstBracket);
-  // Find the matching closing character
-  const openChar = s[start];
-  const closeChar = openChar === '{' ? '}' : ']';
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-  let end = -1;
-  for (let i = start; i < s.length; i++) {
-    const c = s[i];
-    if (escaped) { escaped = false; continue; }
-    if (c === '\\' && inString) { escaped = true; continue; }
-    if (c === '"') { inString = !inString; continue; }
-    if (!inString) {
-      if (c === openChar) depth++;
-      else if (c === closeChar) {
-        depth--;
-        if (depth === 0) { end = i; break; }
-      }
-    }
+
+  // Find the last matching closing character across the whole response to avoid premature truncation
+  const lastBrace = s.lastIndexOf('}');
+  const lastBracket = s.lastIndexOf(']');
+  const end = Math.max(lastBrace, lastBracket);
+
+  if (start !== -1 && end !== -1 && end > start) {
+    return s.slice(start, end + 1);
   }
-  if (end !== -1) return s.slice(start, end + 1);
-  // No complete JSON found — return from start to end (will need repair)
-  return s.slice(start);
+  return start !== -1 ? s.slice(start) : s;
 };
 
 // Convert file to base64 string
@@ -657,11 +671,14 @@ Exemples: "Le point G est appelé **le barycentre** des points pondérés $(A;a)
 Si aucun texte en évidence, laisse accent_text à "".
 
 ════════════════════════════════════════════════════════════
-RÈGLE CRITIQUE — NE RIEN OMETTRE
+RÈGLE CRITIQUE — EXTRACTION INTÉGRALE DE TOUTES LES PAGES SANS OMISSION
 ════════════════════════════════════════════════════════════
 
-✅ Extrais CHAQUE bloc pédagogique comme une section distincte.
-✅ Ne regroupe pas une Propriété et une Application dans la même section.
+⚠️ OBLIGATION D'EXHAUSTIVITÉ ABSOLUE :
+✅ Tu DOIS extraire L'INTÉGRALITÉ ABSOLUE du document du premier mot de la page 1 jusqu'au dernier mot de la toute dernière page.
+✅ Il est STRICTEMENT INTERDIT de t'arrêter au milieu du document, après la première page, ou d'omettre des chapitres ou exercices !
+✅ COURS THÉORIQUES (الدروس) : Extrais CHAQUE définition, théorème, corollaire, propriété, remarque, exemple, démonstration, activité et application sans en omettre aucun.
+✅ SÉRIES D'EXERCICES ET DEVOIRS (سلاسل التمارين والفروض) : Extrais TOUS les exercices sans exception (Exercice 1, Exercice 2, Exercice 3...). Pour chaque exercice, extrais TOUTES les questions et sous-questions (1., 2.a., 2.b., 3., etc.) dans "content" et dans "items".
 ✅ Ne résume PAS : copie FIDÈLEMENT tout le texte, formule par formule, ligne par ligne.
 ✅ Les numéros d'Activité et d'Application (①②③ ou 1,2,3) DOIVENT apparaître dans le titre.
 ✅ Retourne UNIQUEMENT le JSON brut. Zéro texte avant ou après. Pas de bloc \`\`\`json.
@@ -774,18 +791,29 @@ export default function AdminLessonsImport({ onBack }) {
   // Setup state
   const [provider, setProvider] = useState(() => localStorage.getItem('aiImportProvider') || 'gemini');
   const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('geminiApiKey') || '');
-  const [geminiModel, setGeminiModel] = useState(() => localStorage.getItem('geminiModel') || 'gemini-3.5-flash');
+  const [geminiModel, setGeminiModel] = useState(() => {
+    const m = localStorage.getItem('geminiModel');
+    if (!m || m === 'gemini-2.5-flash') {
+      localStorage.setItem('geminiModel', 'gemini-3.6-flash');
+      return 'gemini-3.6-flash';
+    }
+    return m;
+  });
 
   const [claudeKey, setClaudeKey] = useState(() => localStorage.getItem('claudeApiKey') || '');
-  const [claudeModel, setClaudeModel] = useState(() => localStorage.getItem('claudeModel') || 'claude-3-5-sonnet-20241022');
+  const [claudeModel, setClaudeModel] = useState(() => {
+    const m = localStorage.getItem('claudeModel');
+    if (!m || m.includes('4-5') || m === 'claude-3-haiku-20240307') return 'claude-3-5-sonnet-20241022';
+    return m;
+  });
   const [proxyUrl, setProxyUrl] = useState(() => localStorage.getItem('claudeProxyUrl') || '');
 
   const [deepseekKey, setDeepseekKey] = useState(() => localStorage.getItem('deepseekApiKey') || 'sk-12a7032f07d740348c607ef947a0a9f7');
   const [deepseekUrl, setDeepseekUrl] = useState(() => localStorage.getItem('deepseekApiUrl') || 'https://api.deepseek.com');
   const [deepseekModel, setDeepseekModel] = useState(() => {
-    const m = localStorage.getItem('deepseekModel') || 'deepseek-v4-pro';
-    if (m === 'deepseek-reasoner' || m === 'deepseek-r1') return 'deepseek-v4-pro';
-    if (m === 'deepseek-chat' || m === 'deepseek-v3') return 'deepseek-v4-flash';
+    const m = localStorage.getItem('deepseekModel') || 'deepseek-reasoner';
+    if (m === 'deepseek-v4-pro' || m === 'deepseek-r1') return 'deepseek-reasoner';
+    if (m === 'deepseek-v4-flash' || m === 'deepseek-v3') return 'deepseek-chat';
     return m;
   });
   
@@ -975,17 +1003,20 @@ export default function AdminLessonsImport({ onBack }) {
     const sync = () => {
       setProvider(localStorage.getItem('aiImportProvider') || 'gemini');
       setGeminiKey(localStorage.getItem('geminiApiKey') || '');
-      setGeminiModel(localStorage.getItem('geminiModel') || 'gemini-3.5-flash');
+      const rawGemini = localStorage.getItem('geminiModel');
+      const geminiModelToSet = (!rawGemini || rawGemini === 'gemini-2.5-flash') ? 'gemini-3.6-flash' : rawGemini;
+      setGeminiModel(geminiModelToSet);
       setClaudeKey(localStorage.getItem('claudeApiKey') || '');
-      setClaudeModel(localStorage.getItem('claudeModel') || 'claude-3-5-sonnet-20241022');
+      const rawClaude = localStorage.getItem('claudeModel');
+      setClaudeModel((!rawClaude || rawClaude.includes('4-5') || rawClaude === 'claude-3-haiku-20240307') ? 'claude-3-5-sonnet-20241022' : rawClaude);
       setProxyUrl(localStorage.getItem('claudeProxyUrl') || '');
       setDeepseekKey(localStorage.getItem('deepseekApiKey') || '');
       setDeepseekUrl(localStorage.getItem('deepseekApiUrl') || 'https://api.deepseek.com');
-      const rawDs = localStorage.getItem('deepseekModel') || 'deepseek-v4-pro';
-      const dsModel = (rawDs === 'deepseek-reasoner' || rawDs === 'deepseek-r1')
-        ? 'deepseek-v4-pro'
-        : (rawDs === 'deepseek-chat' || rawDs === 'deepseek-v3')
-          ? 'deepseek-v4-flash'
+      const rawDs = localStorage.getItem('deepseekModel') || 'deepseek-reasoner';
+      const dsModel = (rawDs === 'deepseek-v4-pro' || rawDs === 'deepseek-r1')
+        ? 'deepseek-reasoner'
+        : (rawDs === 'deepseek-v4-flash' || rawDs === 'deepseek-v3')
+          ? 'deepseek-chat'
           : rawDs;
       setDeepseekModel(dsModel);
     };
@@ -1001,10 +1032,53 @@ export default function AdminLessonsImport({ onBack }) {
     setError('');
   };
 
-  const fetchGeminiWithPdf = async (base64Data, fileType) => {
-    const modelToUse = geminiModel || 'gemini-3.5-flash';
+  const buildExtractionUserPrompt = (pageCount, solveSolutions, preExtractedPdfText = '') => {
+    const pageNote = pageCount && pageCount > 1
+      ? `⚠️ CE DOCUMENT COMPORTE EXACTEMENT ${pageCount} PAGES (de la page 1 à la page ${pageCount}).\nTu DOIS IMPÉRATIVEMENT lire, parcourir et extraire l'intégralité de CHAQUE page de la page 1 jusqu'à la dernière page ${pageCount} sans t'arrêter en cours de route et sans sauter aucune section.`
+      : `⚠️ Tu DOIS IMPÉRATIVEMENT extraire l'intégralité absolue du document du début à la toute fin sans rien omettre.`;
+
+    const textFusion = preExtractedPdfText && preExtractedPdfText.trim()
+      ? `\n\n📄 TEXTE BRUT DÉTECTÉ DIRECTEMENT DU PDF (Utilise impérativement ce flux textuel pour vérifier que CHAQUE exercice, sous-question et formule est fidèlement extrait) :\n"""\n${preExtractedPdfText.trim()}\n"""\n`
+      : '';
+
+    const commonRules = `
+${pageNote}
+${textFusion}
+🎯 EXIGENCES STRICTES D'EXHAUSTIVITÉ TOTALE (AUCUN MANQUE TOLÉRÉ) :
+1. COURS THÉORIQUES (الدروس النظرية) :
+   - Extrais L'INTÉGRALITÉ des chapitres, sections et sous-sections.
+   - Inclus CHAQUE définition (تعريف), propriété (خاصية), théorème (مبرهنة), corollaire (نتيجة), démonstration/preuve (برهان), exemple (مثال), remarque (ملاحظة), activité (نشاط) et application (تطبيق).
+   - Ne résume RIEN, ne tronque AUCUNE formule mathématique.
+
+2. SÉRIES D'EXERCICES ET DEVOIRS (سلاسل التمارين والفروض والامتحانات) :
+   - Extrais TOUS les exercices du premier au dernier (Exercice 1, Exercice 2, Exercice 3, etc.).
+   - Pour CHAQUE exercice, extrais l'énoncé COMPLET avec ABSOLUMENT TOUTES les questions et sous-questions (1., 2.a., 2.b., 3.a., etc.) dans "content" et dans "items".
+   - Il est STRICTEMENT INTERDIT de ne copier que la première ligne d'un exercice.
+   - Ne retourne JAMAIS une liste vide de sections si le document contient des exercices ou du cours.
+
+3. CONSERVATION STRICTE DE LA LANGUE D'ORIGINE :
+   - Si le document est en ARABE, extrais TOUT en arabe (titres, cours, énoncés, remarques). Ne traduis JAMAIS vers le français.
+   - Si le document est en FRANÇAIS, extrais TOUT en français.
+
+4. SYNTAXE LATEX RIGOUREUSE :
+   - Encadre CHAQUE symbole, lettre de variable ($x, y, n, u_n$) et formule mathématique par $...$ (inline) ou $$...$$ (display).
+`;
+
+    if (solveSolutions) {
+      return `${commonRules}\nTranscris et extrais l'intégralité absolue du document, résous les exercices de manière détaillée dans "solution" et génère le JSON complet.`;
+    } else {
+      return `${commonRules}\nExtrais et structure fidèlement tout le contenu sans résoudre. IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "interactive_answers" comme tableau vide []. Ne résous rien et génère le JSON complet.`;
+    }
+  };
+
+  const fetchGeminiWithPdf = async (base64Data, fileType, pageCount) => {
+    const rawModel = geminiModel || 'gemini-3.6-flash';
+    const modelToUse = (rawModel === 'gemini-2.5-flash') ? 'gemini-3.6-flash' : rawModel;
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${geminiKey}`;
     
+    const isPdf = (fileType && fileType.includes('pdf')) || uploadFile?.name?.toLowerCase().endsWith('.pdf');
+    const safeMime = isPdf ? 'application/pdf' : (fileType && fileType.includes('/') ? fileType : 'image/jpeg');
+
     const solveSolutions = localStorage.getItem('gemini_solve_solutions') !== 'false';
     const NO_SOLUTION_ADDENDUM = `
 ⚠️ INSTRUCTION STRICTE — MODE EXTRACTION UNIQUEMENT (SANS RÉSOLUTION) :
@@ -1018,9 +1092,16 @@ export default function AdminLessonsImport({ onBack }) {
       ? SYSTEM_PROMPT
       : SYSTEM_PROMPT + NO_SOLUTION_ADDENDUM;
 
-    const userText = solveSolutions
-      ? "Transcris et extrais l'intégralité absolue de ce document DANS SA LANGUE D'ORIGINE (si le document est en arabe, extrais TOUT en arabe sans traduire en français). POUR LES SÉRIES D'EXERCICES ET TEMARINE : Extrais TOUTES LES QUESTIONS ET SOUS-QUESTIONS (1., 2.a., 2.b., 3., etc.) sans exception. Ne t'arrête JAMAIS à la première phrase d'un exercice ! Extrais l'énoncé complet du début à la fin de chaque exercice dans \"content\" et dans \"items\". Ne résume rien et génère le JSON complet."
-      : "Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le document est en arabe, extrais TOUT en arabe sans traduire en français). POUR LES SÉRIES D'EXERCICES ET TEMARINE : Extrais TOUTES LES QUESTIONS ET SOUS-QUESTIONS (1., 2.a., 2.b., 3., etc.) sans exception. Ne t'arrête JAMAIS à la première phrase ! Extrais l'énoncé complet du début à la fin de chaque exercice dans \"content\" et dans \"items\". IMPORTANT : Laisse le champ \"solution\" vide (\"\") pour chaque exercice et \"interactive_answers\" comme tableau vide []. Ne résous rien.";
+    let preExtractedPdfText = '';
+    if (isPdf && uploadFile) {
+      try {
+        preExtractedPdfText = await extractTextFromPdf(uploadFile);
+      } catch (err) {
+        console.warn('[PDF Text Pre-extraction Failed, continuing with binary]:', err);
+      }
+    }
+
+    const userText = buildExtractionUserPrompt(pageCount, solveSolutions, preExtractedPdfText);
 
     const payload = {
       contents: [
@@ -1028,7 +1109,7 @@ export default function AdminLessonsImport({ onBack }) {
           parts: [
             {
               inlineData: {
-                mimeType: fileType,
+                mimeType: safeMime,
                 data: base64Data
               }
             },
@@ -1060,10 +1141,25 @@ export default function AdminLessonsImport({ onBack }) {
     }
 
     const data = await res.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const candidate = data?.candidates?.[0];
+    if (!candidate || !candidate.content?.parts) {
+      throw new Error("L'API Gemini n'a retourné aucun contenu.");
+    }
+
+    // Filter out thought parts (Gemini 2.5 / 3.x Flash thinking reasoning)
+    const nonThoughtParts = candidate.content.parts.filter(p => !p.thought);
+    const textParts = (nonThoughtParts.length > 0 ? nonThoughtParts : candidate.content.parts)
+      .map(p => p.text || '')
+      .join('');
+
+    if (!textParts.trim()) {
+      throw new Error("La réponse textuelle de Gemini est vide.");
+    }
+
+    return textParts;
   };
 
-  const streamClaudeWithPdf = async (base64Data, fileType) => {
+  const streamClaudeWithPdf = async (base64Data, fileType, pageCount) => {
     const endpoint = proxyUrl || 'https://api.anthropic.com/v1/messages';
     const headers = {
       'Content-Type': 'application/json',
@@ -1076,10 +1172,11 @@ export default function AdminLessonsImport({ onBack }) {
       headers['anthropic-dangerous-direct-browser-access'] = 'true';
     }
 
-    const isPdf = fileType === 'application/pdf';
+    const isPdf = (fileType && fileType.includes('pdf')) || uploadFile?.name?.toLowerCase().endsWith('.pdf');
+    const safeMime = isPdf ? 'application/pdf' : (fileType && fileType.includes('/') ? fileType : 'image/jpeg');
     const sourceBlock = isPdf
       ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64Data } }
-      : { type: 'image', source: { type: 'base64', media_type: fileType, data: base64Data } };
+      : { type: 'image', source: { type: 'base64', media_type: safeMime, data: base64Data } };
 
     const solveSolutions = localStorage.getItem('claude_solve_solutions') !== 'false';
     const NO_SOLUTION_ADDENDUM = `
@@ -1094,16 +1191,24 @@ export default function AdminLessonsImport({ onBack }) {
       ? SYSTEM_PROMPT
       : SYSTEM_PROMPT + NO_SOLUTION_ADDENDUM;
 
-    const userText = solveSolutions
-      ? "Transcris et extrais l'intégralité absolue de ce document DANS SA LANGUE D'ORIGINE (si le document est en arabe, extrais TOUT en arabe sans traduire en français). POUR LES SÉRIES D'EXERCICES ET TEMARINE : Extrais TOUTES LES QUESTIONS ET SOUS-QUESTIONS (1., 2.a., 2.b., 3., etc.) sans exception. Ne t'arrête JAMAIS à la première phrase d'un exercice ! Extrais l'énoncé complet du début à la fin de chaque exercice dans \"content\" et dans \"items\". Ne résume rien et génère le JSON complet."
-      : "Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le document est en arabe, extrais TOUT en arabe sans traduire en français). POUR LES SÉRIES D'EXERCICES ET TEMARINE : Extrais TOUTES LES QUESTIONS ET SOUS-QUESTIONS (1., 2.a., 2.b., 3., etc.) sans exception. Ne t'arrête JAMAIS à la première phrase ! Extrais l'énoncé complet du début à la fin de chaque exercice dans \"content\" et dans \"items\". IMPORTANT : Laisse le champ \"solution\" vide (\"\") pour chaque exercice et \"interactive_answers\" comme tableau vide []. Ne résous rien.";
+    let preExtractedPdfText = '';
+    if (isPdf && uploadFile) {
+      try {
+        preExtractedPdfText = await extractTextFromPdf(uploadFile);
+      } catch (err) {
+        console.warn('[PDF Text Pre-extraction Failed, continuing with binary]:', err);
+      }
+    }
+
+    const userText = buildExtractionUserPrompt(pageCount, solveSolutions, preExtractedPdfText);
+    const maxTokens = (claudeModel && (claudeModel.includes('3-7') || claudeModel.includes('opus-4') || claudeModel.includes('sonnet-4'))) ? 16000 : 8192;
 
     const res = await fetch(endpoint, {
       method: 'POST',
       headers,
       body: JSON.stringify({
         model: claudeModel,
-        max_tokens: 16000,
+        max_tokens: maxTokens,
         stream: true,
         system: systemContent,
         messages: [{
@@ -1163,12 +1268,12 @@ export default function AdminLessonsImport({ onBack }) {
     return fullText;
   };
 
-  const fetchDeepSeekWithText = async (pdfText) => {
-    const rawModel = deepseekModel || 'deepseek-v4-pro';
-    const modelToUse = (rawModel === 'deepseek-reasoner' || rawModel === 'deepseek-r1')
-      ? 'deepseek-v4-pro'
-      : (rawModel === 'deepseek-chat' || rawModel === 'deepseek-v3')
-        ? 'deepseek-v4-flash'
+  const fetchDeepSeekWithText = async (pdfText, pageCount) => {
+    const rawModel = deepseekModel || 'deepseek-reasoner';
+    const modelToUse = (rawModel === 'deepseek-v4-pro' || rawModel === 'deepseek-r1')
+      ? 'deepseek-reasoner'
+      : (rawModel === 'deepseek-v4-flash' || rawModel === 'deepseek-v3')
+        ? 'deepseek-chat'
         : rawModel;
     const cleanUrl = deepseekUrl.trim().replace(/\/$/, '');
     const endpoint = `${cleanUrl}/v1/chat/completions`;
@@ -1187,15 +1292,10 @@ export default function AdminLessonsImport({ onBack }) {
       ? SYSTEM_PROMPT
       : SYSTEM_PROMPT + NO_SOLUTION_ADDENDUM;
 
-    const userContent = solveSolutions
-      ? `TEXTE DU DOCUMENT :
+    const userContent = `TEXTE DU DOCUMENT EXTRAIT DU PDF :
 ${pdfText}
 
-Transcris et extrais l'intégralité absolue de ce texte DANS SA LANGUE D'ORIGINE (si le document est en arabe, extrais TOUT en arabe sans traduire en français). POUR LES SÉRIES D'EXERCICES ET TEMARINE : Extrais TOUTES LES QUESTIONS ET SOUS-QUESTIONS (1., 2.a., 2.b., 3., etc.) sans exception. Ne t'arrête JAMAIS à la première phrase d'un exercice ! Extrais l'énoncé complet du début à la fin de chaque exercice dans "content" et dans "items". Ne résume rien et génère le JSON complet.`
-      : `TEXTE DU DOCUMENT :
-${pdfText}
-
-Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le document est en arabe, extrais TOUT en arabe sans traduire en français). POUR LES SÉRIES D'EXERCICES ET TEMARINE : Extrais TOUTES LES QUESTIONS ET SOUS-QUESTIONS (1., 2.a., 2.b., 3., etc.) sans exception. Ne t'arrête JAMAIS à la première phrase ! Extrais l'énoncé complet du début à la fin de chaque exercice dans "content" et dans "items". IMPORTANT : Laisse le champ "solution" vide ("") pour chaque exercice et "interactive_answers" comme tableau vide []. Ne résous rien.`;
+${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
 
     const payload = {
       model: modelToUse,
@@ -1203,6 +1303,7 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
         { role: "system", content: systemContent },
         { role: "user",   content: userContent }
       ],
+      max_tokens: 8192,
       response_format: !modelToUse.includes('reasoner') ? { type: 'json_object' } : undefined,
       temperature: 0.1
     };
@@ -1269,25 +1370,37 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
     }, 800);
 
     try {
+      let pageCount = pdfTotalPages || 1;
+      const isPdfFile = uploadFile.type === 'application/pdf' || uploadFile.name?.toLowerCase().endsWith('.pdf');
+      if (isPdfFile) {
+        try {
+          const buf = await uploadFile.arrayBuffer();
+          const d = await pdfjsLib.getDocument({ data: buf }).promise;
+          pageCount = d.numPages;
+          setPdfTotalPages(d.numPages);
+        } catch (pageErr) {
+          console.warn('[PageCount] Error getting page count:', pageErr);
+        }
+      }
+
       let rawText = '';
       
       if (provider === 'claude') {
         const base64Data = await fileToBase64(uploadFile);
-        setProgress('Envoi du document à Anthropic Claude...');
-        rawText = await streamClaudeWithPdf(base64Data, uploadFile.type);
+        setProgress(`Envoi du document (${pageCount} page(s)) à Anthropic Claude...`);
+        rawText = await streamClaudeWithPdf(base64Data, uploadFile.type, pageCount);
       } else if (provider === 'deepseek') {
-        const isPdf = uploadFile.type === 'application/pdf';
-        if (!isPdf) {
+        if (!isPdfFile) {
           throw new Error("DeepSeek ne prend en charge que les fichiers textuels (PDF). Veuillez utiliser Gemini ou Claude pour les images.");
         }
-        setProgress('Extraction du texte du PDF...');
+        setProgress(`Extraction du texte du PDF (${pageCount} page(s))...`);
         const pdfText = await extractTextFromPdf(uploadFile);
         setProgress('Envoi du texte à DeepSeek...');
-        rawText = await fetchDeepSeekWithText(pdfText);
+        rawText = await fetchDeepSeekWithText(pdfText, pageCount);
       } else {
         const base64Data = await fileToBase64(uploadFile);
-        setProgress('Envoi du fichier à Google Gemini...');
-        rawText = await fetchGeminiWithPdf(base64Data, uploadFile.type);
+        setProgress(`Envoi du fichier (${pageCount} page(s)) à Google Gemini...`);
+        rawText = await fetchGeminiWithPdf(base64Data, uploadFile.type, pageCount);
       }
 
       if (!rawText) {
@@ -1343,8 +1456,39 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
 
       console.log('[Extraction Response]:', parsed);
 
-      const header = parsed?.header || {};
-      const rawSections = Array.isArray(parsed) ? parsed : (parsed?.sections || []);
+      const header = parsed?.header || (parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {});
+      let rawSections = [];
+      if (Array.isArray(parsed)) {
+        rawSections = parsed;
+      } else if (parsed && typeof parsed === 'object') {
+        if (Array.isArray(parsed.sections)) rawSections = parsed.sections;
+        else if (Array.isArray(parsed.items)) rawSections = parsed.items;
+        else if (Array.isArray(parsed.exercises)) rawSections = parsed.exercises;
+        else if (Array.isArray(parsed.exercices)) rawSections = parsed.exercices;
+        else if (Array.isArray(parsed.series)) rawSections = parsed.series;
+        else if (Array.isArray(parsed.serie)) rawSections = parsed.serie;
+        else if (Array.isArray(parsed.questions)) rawSections = parsed.questions;
+        else if (Array.isArray(parsed.parties)) rawSections = parsed.parties;
+        else if (Array.isArray(parsed.content)) rawSections = parsed.content;
+        else if (Array.isArray(parsed.data)) rawSections = parsed.data;
+        else if (Array.isArray(parsed.cours)) rawSections = parsed.cours;
+        else if (parsed.course && Array.isArray(parsed.course.sections)) rawSections = parsed.course.sections;
+        else if (parsed.course && Array.isArray(parsed.course.items)) rawSections = parsed.course.items;
+        else {
+          const arrayProp = Object.values(parsed).find(val => Array.isArray(val) && val.length > 0 && typeof val[0] === 'object');
+          if (arrayProp) {
+            rawSections = arrayProp;
+          }
+        }
+      }
+
+      if (rawSections.length === 0) {
+        if (parsed.content || parsed.questions || parsed.exercice || parsed.title) {
+          rawSections = [parsed];
+        } else {
+          throw new Error("L'IA n'a retourné aucun exercice ni contenu pour ce document. Veuillez vérifier le document ou réessayer avec un autre modèle d'IA.");
+        }
+      }
 
       // Populate form state safely
       setFicheTitle(header.fiche_title || header.title || '');
@@ -2082,8 +2226,9 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                   value={claudeModel}
                   onChange={e => { setClaudeModel(e.target.value); localStorage.setItem('claudeModel', e.target.value); }}
                 >
-                  <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (Recommandé)</option>
-                  <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (Rapide)</option>
+                  <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (Recommandé - Stable & Précis)</option>
+                  <option value="claude-3-7-sonnet-20250219">Claude 3.7 Sonnet (Dernier modèle - Raisonnement Hybride)</option>
+                  <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (Ultra Rapide & Économique)</option>
                   <option value="claude-3-opus-20240229">Claude 3 Opus (Haute précision)</option>
                 </select>
               ) : provider === 'deepseek' ? (
@@ -2092,8 +2237,8 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                   value={deepseekModel}
                   onChange={e => { setDeepseekModel(e.target.value); localStorage.setItem('deepseekModel', e.target.value); }}
                 >
-                  <option value="deepseek-v4-pro">deepseek-v4-pro (R1 - Réflexion / Raisonnement)</option>
-                  <option value="deepseek-v4-flash">deepseek-v4-flash (Flash - Rapide & Économique)</option>
+                  <option value="deepseek-reasoner">DeepSeek-R1 (Reasoner - Déduction & Raisonnement Approfondi)</option>
+                  <option value="deepseek-chat">DeepSeek-V3 (Chat - Flash, Rapide & Polyvalent)</option>
                 </select>
               ) : (
                 <select
@@ -2101,11 +2246,11 @@ Extrais et structure FIDÈLEMENT tout le contenu DANS SA LANGUE D'ORIGINE (si le
                   value={geminiModel}
                   onChange={e => { setGeminiModel(e.target.value); localStorage.setItem('geminiModel', e.target.value); }}
                 >
-                  <option value="gemini-2.5-flash">Gemini 2.5 Flash (Recommandé - Ultra Rapide)</option>
-                  <option value="gemini-2.5-flash-thinking">Gemini 2.5 Flash Thinking (Résolution & LaTeX Avancés)</option>
-                  <option value="gemini-2.5-pro">Gemini 2.5 Pro (Haute précision)</option>
-                  <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
-                  <option value="gemini-3.1-pro">Gemini 3.1 Pro</option>
+                  <option value="gemini-3.6-flash">Gemini 3.6 Flash (Recommandé - Dernière version)</option>
+                  <option value="gemini-3.5-flash">Gemini 3.5 Flash (Ultra Rapide & 1M Contexte)</option>
+                  <option value="gemini-3.5-flash-thinking">Gemini 3.5 Flash Thinking (Résolution & LaTeX Avancés)</option>
+                  <option value="gemini-3.1-pro">Gemini 3.1 Pro (Précision Maximale Concours)</option>
+                  <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
                   <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
                   <option value="gemini-1.5-flash">Gemini 1.5 Flash (Legacy)</option>
                 </select>

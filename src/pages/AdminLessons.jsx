@@ -10,7 +10,8 @@ import {
   BookOpen, Sparkles, Search, Trash2, Eye, Edit, FileText,
   CheckCircle, XCircle, Library, PlusCircle, AlertCircle, Languages,
   Edit3, CheckSquare, Square, MinusSquare, X, Check, Filter, Layers,
-  CheckCheck, HelpCircle, Loader2
+  CheckCheck, HelpCircle, Loader2, Calendar, ArrowUpDown,
+  LayoutGrid, List, User, ChevronRight
 } from 'lucide-react';
 import TranslateModal from '../components/TranslateModal';
 import LessonBulkEditModal from '../components/LessonBulkEditModal';
@@ -78,6 +79,10 @@ export default function AdminLessons() {
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    sessionStorage.setItem('last_lessons_origin', '/admin/lessons');
+  }, []);
   const [success, setSuccess] = useState('');
   const [selectedLevelFilter, setSelectedLevelFilter] = useState('Tous');
   const [selectedDocTypeFilter, setSelectedDocTypeFilter] = useState('Tous');
@@ -91,6 +96,8 @@ export default function AdminLessons() {
   const [showConfirmBulkDelete, setShowConfirmBulkDelete] = useState(false);
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'active' | 'inactive'
+  const [sortOrder, setSortOrder] = useState('newest'); // 'newest' | 'oldest'
+  const [viewMode, setViewMode] = useState('table'); // 'table' | 'cards'
 
   const handleGenerateQcmFromLesson = async (lesson) => {
     const geminiKey = localStorage.getItem('geminiApiKey') || '';
@@ -127,8 +134,8 @@ export default function AdminLessons() {
       // 2. Call Gemini model
       const storedModel = localStorage.getItem('geminiModel');
       // Validate model name — only accept known valid Gemini models
-      const validModels = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-1.5-flash', 'gemini-1.5-pro'];
-      const modelToUse = validModels.includes(storedModel) ? storedModel : 'gemini-2.5-flash';
+      const validModels = ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3.5-flash-thinking', 'gemini-3.1-pro', 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+      const modelToUse = (storedModel === 'gemini-2.5-flash') ? 'gemini-3.6-flash' : (validModels.includes(storedModel) ? storedModel : 'gemini-3.6-flash');
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${geminiKey}`;
 
       // 3. Detect lesson language (Arabic or French)
@@ -239,7 +246,11 @@ ${sectionsContentText}
       }
 
       const data = await res.json();
-      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      const candidate = data?.candidates?.[0];
+      const nonThoughtParts = candidate?.content?.parts?.filter(p => !p.thought) || [];
+      const rawText = (nonThoughtParts.length > 0 ? nonThoughtParts : (candidate?.content?.parts || []))
+        .map(p => p.text || '')
+        .join('');
       
       let questions = [];
       try {
@@ -355,17 +366,33 @@ ${sectionsContentText}
     }
   };
 
+  // Helper: format date nicely
+  const formatDate = (dateStr) => {
+    if (!dateStr) return null;
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return null;
+      return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+    } catch { return null; }
+  };
+
   // Filtering Logic (All lessons are Mathematics)
-  const filteredLessons = lessons.filter(l => {
-    const matchesSearch = l.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          l.teacher?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLevel = selectedLevelFilter === 'Tous' || normalizeLevel(l.level) === selectedLevelFilter;
-    const matchesDocType = selectedDocTypeFilter === 'Tous' || l.docType === selectedDocTypeFilter;
-    const matchesStatus = statusFilter === 'all' || 
-                          (statusFilter === 'active' && l.isActive) || 
-                          (statusFilter === 'inactive' && !l.isActive);
-    return matchesSearch && matchesLevel && matchesDocType && matchesStatus;
-  });
+  const filteredLessons = lessons
+    .filter(l => {
+      const matchesSearch = l.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            l.teacher?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesLevel = selectedLevelFilter === 'Tous' || normalizeLevel(l.level) === selectedLevelFilter;
+      const matchesDocType = selectedDocTypeFilter === 'Tous' || l.docType === selectedDocTypeFilter;
+      const matchesStatus = statusFilter === 'all' || 
+                            (statusFilter === 'active' && l.isActive) || 
+                            (statusFilter === 'inactive' && !l.isActive);
+      return matchesSearch && matchesLevel && matchesDocType && matchesStatus;
+    })
+    .sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+    });
 
   // Selection state helpers
   const isAllSelected = filteredLessons.length > 0 && filteredLessons.every(l => selectedLessonIds.includes(l.id));
@@ -518,18 +545,51 @@ ${sectionsContentText}
             </p>
           </div>
 
-          <button
-            onClick={() => navigate('/admin/ai-lessons')}
-            className="btn"
-            style={{
-              background: 'linear-gradient(135deg, var(--violet), var(--emerald))',
-              border: 'none', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem',
-              padding: '0.7rem 1.3rem', fontSize: '0.85rem', borderRadius: '12px',
-              boxShadow: '0 8px 20px rgba(124, 58, 237, 0.2)'
-            }}
-          >
-            <PlusCircle size={16} /> Générer une fiche (IA)
-          </button>
+          {/* Header right actions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
+
+            <button
+              onClick={() => navigate('/admin/ai-lessons')}
+              className="btn"
+              style={{
+                background: 'linear-gradient(135deg, var(--violet), var(--emerald))',
+                border: 'none', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem',
+                padding: '0.7rem 1.3rem', fontSize: '0.85rem', borderRadius: '12px',
+                boxShadow: '0 8px 20px rgba(124, 58, 237, 0.2)'
+              }}
+            >
+              <PlusCircle size={16} /> Générer une fiche (IA)
+            </button>
+
+            {/* View mode toggle */}
+            <div style={{ display: 'flex', background: 'var(--bg-glass)', border: '1px solid var(--border)', borderRadius: '10px', padding: '3px', gap: '2px' }}>
+              <button
+                onClick={() => setViewMode('table')}
+                title="Vue tableau"
+                style={{
+                  padding: '0.42rem 0.6rem', borderRadius: '7px', border: 'none', cursor: 'pointer',
+                  background: viewMode === 'table' ? 'var(--violet)' : 'transparent',
+                  color: viewMode === 'table' ? '#fff' : 'var(--text-muted)',
+                  display: 'flex', alignItems: 'center', transition: 'all 0.18s ease'
+                }}
+              >
+                <List size={16} />
+              </button>
+              <button
+                onClick={() => setViewMode('cards')}
+                title="Vue cartes"
+                style={{
+                  padding: '0.42rem 0.6rem', borderRadius: '7px', border: 'none', cursor: 'pointer',
+                  background: viewMode === 'cards' ? 'var(--violet)' : 'transparent',
+                  color: viewMode === 'cards' ? '#fff' : 'var(--text-muted)',
+                  display: 'flex', alignItems: 'center', transition: 'all 0.18s ease'
+                }}
+              >
+                <LayoutGrid size={16} />
+              </button>
+            </div>
+
+          </div>
         </header>
 
         {/* ── Status Notifications ── */}
@@ -662,9 +722,7 @@ ${sectionsContentText}
             value={selectedLevelFilter}
             onChange={(e) => setSelectedLevelFilter(e.target.value)}
             className="input-control"
-            style={{
-              fontSize: '0.85rem', minWidth: '165px', flex: '1'
-            }}
+            style={{ fontSize: '0.85rem', minWidth: '165px', flex: '1' }}
           >
             <option value="Tous">Tous les niveaux</option>
             <option value="common_core_sci">TC Scientifique</option>
@@ -681,9 +739,7 @@ ${sectionsContentText}
             value={selectedDocTypeFilter}
             onChange={(e) => setSelectedDocTypeFilter(e.target.value)}
             className="input-control"
-            style={{
-              fontSize: '0.85rem', minWidth: '150px', flex: '1'
-            }}
+            style={{ fontSize: '0.85rem', minWidth: '150px', flex: '1' }}
           >
             <option value="Tous">Tous les types</option>
             <option value="course">Cours (درس)</option>
@@ -693,10 +749,33 @@ ${sectionsContentText}
             <option value="concours">Concours (مباراة)</option>
           </select>
 
+          {/* Date Sort Dropdown */}
+          <div style={{ position: 'relative', flex: '1', minWidth: '170px' }}>
+            <div style={{
+              position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)',
+              color: 'var(--violet)', pointerEvents: 'none', display: 'flex', alignItems: 'center'
+            }}>
+              <ArrowUpDown size={15} />
+            </div>
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="input-control"
+              style={{
+                fontSize: '0.85rem', width: '100%', paddingLeft: '2.25rem',
+                border: sortOrder !== 'newest' ? '1px solid rgba(113, 109, 242, 0.5)' : '1px solid var(--border)',
+                background: sortOrder !== 'newest' ? 'rgba(113, 109, 242, 0.07)' : 'var(--bg-glass)',
+              }}
+            >
+              <option value="newest">🆕 Ajout : Récent → Ancien</option>
+              <option value="oldest">📅 Ajout : Ancien → Récent</option>
+            </select>
+          </div>
+
         </div>
 
         {/* ── Lessons List ── */}
-        <div className="glass-panel" style={{ overflow: 'hidden', padding: 0 }}>
+        <div className={viewMode === 'cards' ? '' : 'glass-panel'} style={viewMode === 'cards' ? {} : { overflow: 'hidden', padding: 0 }}>
           {loadingLessons ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '4rem 0', color: 'var(--text-muted)' }}>
               <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid rgba(99,102,241,0.1)', borderTop: '3px solid var(--violet)', animation: 'spinList 1s linear infinite', marginBottom: '1rem' }} />
@@ -708,32 +787,220 @@ ${sectionsContentText}
               <BookOpen size={44} style={{ margin: '0 auto 1rem', opacity: 0.3, display: 'block' }} />
               <p style={{ fontWeight: 700, margin: 0 }}>Aucune fiche de cours trouvée.</p>
               <p style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>
-                {searchTerm || selectedSubject !== 'Tous' 
-                  ? 'Essayez de réinitialiser vos critères de recherche.' 
-                  : 'Générez votre première fiche de cours à l\'aide de l\'IA.'}
+                {searchTerm ? 'Essayez de réinitialiser vos critères de recherche.' : 'Générez votre première fiche de cours à l\'aide de l\'IA.'}
               </p>
+            </div>
+          ) : viewMode === 'cards' ? (
+            /* ────────────── CARD GRID VIEW ────────────── */
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
+              gap: '1.25rem'
+            }}>
+              {filteredLessons.map((l) => {
+                const isSelected = selectedLessonIds.includes(l.id);
+                const docTypeColor = l.docType === 'homework' ? 'var(--danger)' : l.docType === 'exercises' ? 'var(--warning)' : l.docType === 'concours' ? 'var(--emerald)' : l.docType === 'national' ? '#a855f7' : '#3B82F6';
+                const docTypeBg = l.docType === 'homework' ? 'rgba(239,68,68,0.09)' : l.docType === 'exercises' ? 'rgba(245,158,11,0.09)' : l.docType === 'concours' ? 'rgba(16,185,129,0.09)' : l.docType === 'national' ? 'rgba(168,85,247,0.09)' : 'rgba(59,130,246,0.09)';
+                const docTypeLabel = l.docType === 'homework' ? 'Devoir surveillé' : l.docType === 'exercises' ? "Série d'exercices" : l.docType === 'concours' ? 'Concours' : l.docType === 'national' ? 'Examen National' : 'Cours';
+                return (
+                  <div
+                    key={l.id}
+                    className="glass-panel"
+                    style={{
+                      padding: '1.4rem',
+                      display: 'flex', flexDirection: 'column', gap: '0.85rem',
+                      border: isSelected ? '1.5px solid var(--violet)' : '1px solid var(--border)',
+                      background: isSelected ? 'rgba(113,109,242,0.06)' : 'var(--bg-glass)',
+                      position: 'relative', transition: 'all 0.2s ease',
+                      cursor: 'default'
+                    }}
+                    onMouseEnter={e => {
+                      if (!isSelected) {
+                        e.currentTarget.style.borderColor = 'var(--border-hover)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!isSelected) {
+                        e.currentTarget.style.borderColor = 'var(--border)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '';
+                      }
+                    }}
+                  >
+                    {/* Checkbox top-right */}
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleToggleSelectLesson(l.id)}
+                      onClick={e => e.stopPropagation()}
+                      style={{
+                        position: 'absolute', top: '0.9rem', right: '0.9rem',
+                        width: '15px', height: '15px', accentColor: 'var(--violet)', cursor: 'pointer'
+                      }}
+                    />
+
+                    {/* Badges row */}
+                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', paddingRight: '1.5rem' }}>
+                      <span style={{
+                        background: 'rgba(113,109,242,0.09)', color: 'var(--violet)',
+                        padding: '0.22rem 0.6rem', borderRadius: '6px', fontSize: '0.71rem', fontWeight: 700
+                      }}>
+                        {l.subject || 'Mathématiques'}
+                      </span>
+                      <span style={{
+                        background: docTypeBg, color: docTypeColor,
+                        padding: '0.22rem 0.6rem', borderRadius: '6px', fontSize: '0.71rem', fontWeight: 700
+                      }}>
+                        {docTypeLabel}
+                      </span>
+                    </div>
+
+                    {/* Title */}
+                    <Link
+                      to={`/admin/lessons/${l.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ textDecoration: 'none' }}
+                    >
+                      <h3 style={{
+                        fontSize: '0.97rem', fontWeight: 700, margin: 0,
+                        color: 'var(--text-main)', lineHeight: 1.45,
+                        letterSpacing: '-0.01em', transition: 'color 0.15s'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.color = 'var(--violet)'}
+                      onMouseLeave={e => e.currentTarget.style.color = 'var(--text-main)'}
+                      >
+                        {renderWithMath(l.title)}
+                      </h3>
+                    </Link>
+
+                    {/* Statut badge */}
+                    <div>
+                      <button
+                        onClick={() => handleToggleStatus(l.id, l.isActive)}
+                        style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '0.28rem',
+                          padding: '0.22rem 0.65rem', borderRadius: '20px',
+                          fontSize: '0.7rem', fontWeight: 700,
+                          border: l.isActive ? '1px solid rgba(16,185,129,0.2)' : '1px solid rgba(239,68,68,0.2)',
+                          cursor: 'pointer',
+                          background: l.isActive ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
+                          color: l.isActive ? 'var(--emerald)' : 'var(--danger)',
+                          transition: 'all 0.18s'
+                        }}
+                        title="Basculer le statut"
+                      >
+                        {l.isActive ? <CheckCircle size={10} /> : <XCircle size={10} />}
+                        {l.isActive ? 'Actif' : 'Masqué'}
+                      </button>
+                    </div>
+
+                    {/* Footer: teacher + date + actions */}
+                    <div style={{
+                      marginTop: 'auto', paddingTop: '0.85rem',
+                      borderTop: '1px solid var(--border)',
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem'
+                    }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', minWidth: 0 }}>
+                        {l.teacher && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.72rem', color: 'var(--text-subtle)', overflow: 'hidden' }}>
+                            <User size={11} style={{ flexShrink: 0 }} />
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.teacher}</span>
+                          </div>
+                        )}
+                        {formatDate(l.createdAt) && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.68rem', color: 'var(--text-subtle)' }}>
+                            <Calendar size={10} style={{ flexShrink: 0, color: 'var(--violet)', opacity: 0.7 }} />
+                            <span>{formatDate(l.createdAt)}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action buttons */}
+                      <div style={{ display: 'flex', gap: '0.22rem', flexShrink: 0 }}>
+                        <Link
+                          to={`/admin/lessons/${l.id}`}
+                          target="_blank" rel="noopener noreferrer"
+                          className="btn-outline"
+                          title="Consulter"
+                          style={{ padding: '0.38rem', borderRadius: '7px', border: '1px solid var(--border)', display: 'inline-flex', alignItems: 'center', color: 'inherit', textDecoration: 'none' }}
+                        >
+                          <Eye size={13} />
+                        </Link>
+                        <Link
+                          to={`/admin/lessons/${l.id}/edit`}
+                          target="_blank" rel="noopener noreferrer"
+                          className="btn-outline"
+                          title="Modifier"
+                          style={{ padding: '0.38rem', borderRadius: '7px', border: '1px solid rgba(113,109,242,0.3)', color: 'var(--violet)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
+                        >
+                          <Edit size={13} />
+                        </Link>
+                        <button
+                          onClick={() => setShowTranslateModal(l)}
+                          className="btn-outline" title="Traduire"
+                          style={{ padding: '0.38rem', borderRadius: '7px', border: '1px solid rgba(66,133,244,0.3)', color: '#4285F4' }}
+                        >
+                          <Languages size={13} />
+                        </button>
+                        <button
+                          onClick={() => generateFichePedagogiqueWithAI(l, { profName, profPhone, profSchool: classes[0]?.name })}
+                          className="btn-outline" title="Fiche Pédagogique IA"
+                          style={{ padding: '0.38rem', borderRadius: '7px', border: 'none', background: 'linear-gradient(135deg,#10b981,#059669)', color: '#fff' }}
+                        >
+                          <Sparkles size={13} />
+                        </button>
+                        <button
+                          onClick={() => setShowConfirmDelete(l.id)}
+                          className="btn-outline" title="Supprimer"
+                          style={{ padding: '0.38rem', borderRadius: '7px', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--danger)' }}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '780px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '860px', fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                 <thead>
-                  <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)' }}>
+                  <tr style={{ background: 'rgba(255,255,255,0.025)', borderBottom: '1px solid var(--border)' }}>
                     {/* Checkbox column */}
-                    <th style={{ width: '46px', padding: '1.25rem 0.85rem', textAlign: 'center' }}>
+                    <th style={{ width: '48px', padding: '0.9rem 0.85rem', textAlign: 'center' }}>
                       <input
                         type="checkbox"
                         checked={isAllSelected}
                         ref={el => { if (el) el.indeterminate = isSomeSelected; }}
                         onChange={handleToggleSelectAll}
-                        style={{ width: '16px', height: '16px', accentColor: 'var(--violet)', cursor: 'pointer' }}
+                        style={{ width: '15px', height: '15px', accentColor: 'var(--violet)', cursor: 'pointer' }}
                         title={isAllSelected ? "Tout désélectionner" : "Tout sélectionner"}
                       />
                     </th>
-                    <th style={{ padding: '1.25rem 1.25rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Fiche de Cours</th>
-                    <th style={{ padding: '1.25rem 1.25rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Niveau / Classe</th>
-                    <th style={{ padding: '1.25rem 1.25rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Type</th>
-                    <th style={{ padding: '1.25rem 1.25rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Statut</th>
-                    <th style={{ padding: '1.25rem 1.25rem', fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Actions</th>
+                    <th style={{ padding: '0.9rem 1rem', fontWeight: 700, fontSize: '0.72rem', color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Fiche de Cours</th>
+                    <th style={{ padding: '0.9rem 1rem', fontWeight: 700, fontSize: '0.72rem', color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Niveau / Classe</th>
+                    <th style={{ padding: '0.9rem 1rem', fontWeight: 700, fontSize: '0.72rem', color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Type</th>
+                    <th
+                      onClick={() => setSortOrder(s => s === 'newest' ? 'oldest' : 'newest')}
+                      style={{
+                        padding: '0.9rem 1rem', fontWeight: 700, fontSize: '0.72rem',
+                        color: 'var(--violet)', textTransform: 'uppercase', letterSpacing: '0.08em',
+                        cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap'
+                      }}
+                      title="Cliquer pour inverser le tri par date"
+                    >
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <Calendar size={12} />
+                        Date ajout
+                        <span style={{ fontSize: '0.65rem', opacity: 0.8, fontWeight: 900 }}>{sortOrder === 'newest' ? '▼' : '▲'}</span>
+                      </span>
+                    </th>
+                    <th style={{ padding: '0.9rem 1rem', fontWeight: 700, fontSize: '0.72rem', color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Statut</th>
+                    <th style={{ padding: '0.9rem 1rem', fontWeight: 700, fontSize: '0.72rem', color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -744,34 +1011,35 @@ ${sectionsContentText}
                         key={l.id} 
                         style={{ 
                           borderBottom: '1px solid var(--border)', 
-                          background: isSelected ? 'rgba(99, 102, 241, 0.08)' : undefined,
-                          transition: 'background 0.15s ease' 
+                          background: isSelected ? 'rgba(99, 102, 241, 0.06)' : undefined,
+                          transition: 'background 0.18s ease'
                         }}
                         className="table-row-hover"
                       >
                         {/* Checkbox */}
-                        <td style={{ width: '46px', padding: '1.15rem 0.85rem', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                        <td style={{ width: '48px', padding: '1rem 0.85rem', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => handleToggleSelectLesson(l.id)}
-                            style={{ width: '16px', height: '16px', accentColor: 'var(--violet)', cursor: 'pointer' }}
+                            style={{ width: '15px', height: '15px', accentColor: 'var(--violet)', cursor: 'pointer' }}
                           />
                         </td>
 
                         {/* Fiche details */}
-                        <td style={{ padding: '1.15rem 1.25rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+                        <td style={{ padding: '1rem 1rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                             <div style={{ 
-                              width: '38px', height: '38px', borderRadius: '10px', 
-                              background: l.isActive ? 'rgba(99, 102, 241, 0.08)' : 'rgba(255,255,255,0.04)',
+                              width: '36px', height: '36px', borderRadius: '9px', flexShrink: 0,
+                              background: l.isActive ? 'rgba(113, 109, 242, 0.1)' : 'rgba(255,255,255,0.04)',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              color: l.isActive ? 'var(--violet)' : 'var(--text-muted)', flexShrink: 0
+                              color: l.isActive ? 'var(--violet)' : 'var(--text-subtle)',
+                              border: l.isActive ? '1px solid rgba(113,109,242,0.15)' : '1px solid rgba(255,255,255,0.06)'
                             }}>
-                              <BookOpen size={16} />
+                              <BookOpen size={15} />
                             </div>
-                            <div>
-                              <div style={{ fontWeight: 700, fontSize: '0.92rem' }}>
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontWeight: 600, fontSize: '0.88rem', lineHeight: 1.35, letterSpacing: '-0.01em' }}>
                                 <Link
                                   to={`/admin/lessons/${l.id}`}
                                   target="_blank"
@@ -785,12 +1053,12 @@ ${sectionsContentText}
                                 </Link>
                               </div>
                               {(l.teacher || l.chapterNumber) && (
-                                <div style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', marginTop: '0.2rem', display: 'flex', gap: '0.45rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                                <div style={{ fontSize: '0.73rem', color: 'var(--text-subtle)', marginTop: '0.28rem', display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center', lineHeight: 1.2 }}>
                                   {l.chapterNumber && (
-                                    <span style={{ color: 'var(--violet)', fontWeight: 700 }}>Ch. {l.chapterNumber}</span>
+                                    <span style={{ color: 'var(--violet)', fontWeight: 700, fontSize: '0.7rem' }}>Ch.{l.chapterNumber}</span>
                                   )}
                                   {l.teacher && (
-                                    <span style={{ color: 'var(--text-muted)' }}>{l.chapterNumber ? '• ' : ''}{l.teacher}</span>
+                                    <span style={{ color: 'var(--text-subtle)', fontWeight: 500 }}>{l.chapterNumber ? '· ' : ''}{l.teacher}</span>
                                   )}
                                 </div>
                               )}
@@ -799,20 +1067,21 @@ ${sectionsContentText}
                         </td>
 
                         {/* Niveau / Classe */}
-                        <td style={{ padding: '1.15rem 1.25rem' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'flex-start' }}>
+                        <td style={{ padding: '1rem 1rem' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', alignItems: 'flex-start' }}>
                             <span style={{ 
                               background: 'rgba(255,255,255,0.04)',
                               color: 'var(--text-main)',
-                              padding: '0.2rem 0.55rem', borderRadius: '6px', fontSize: '0.74rem', fontWeight: 800,
-                              border: '1px solid var(--border)'
+                              padding: '0.22rem 0.6rem', borderRadius: '6px',
+                              fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.01em',
+                              border: '1px solid rgba(255,255,255,0.08)', lineHeight: 1.4
                             }}>
                               {getLevelLabel(l.level)}
                             </span>
                             {Array.isArray(l.schools) && l.schools.length > 0 && (
-                              <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+                              <div style={{ display: 'flex', gap: '0.2rem', flexWrap: 'wrap' }}>
                                 {l.schools.map((sc, scIdx) => (
-                                  <span key={scIdx} style={{ fontSize: '0.68rem', color: 'var(--violet)', background: 'rgba(99, 102, 241, 0.1)', padding: '0.05rem 0.4rem', borderRadius: '4px', fontWeight: 700 }}>
+                                  <span key={scIdx} style={{ fontSize: '0.67rem', color: 'var(--violet)', background: 'rgba(113, 109, 242, 0.1)', padding: '0.08rem 0.45rem', borderRadius: '4px', fontWeight: 700, letterSpacing: '0.02em' }}>
                                     {sc}
                                   </span>
                                 ))}
@@ -822,38 +1091,70 @@ ${sectionsContentText}
                         </td>
 
                         {/* Type */}
-                        <td style={{ padding: '1.15rem 1.25rem' }}>
+                        <td style={{ padding: '1rem 1rem' }}>
                           <span style={{ 
-                            background: l.docType === 'homework' ? 'rgba(239, 68, 68, 0.08)' : l.docType === 'exercises' ? 'rgba(245, 158, 11, 0.08)' : l.docType === 'concours' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(59, 130, 246, 0.08)',
-                            color: l.docType === 'homework' ? 'var(--danger)' : l.docType === 'exercises' ? 'var(--warning)' : l.docType === 'concours' ? 'var(--emerald)' : '#3B82F6',
-                            padding: '0.25rem 0.65rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800
+                            background: l.docType === 'homework' ? 'rgba(239,68,68,0.09)' : l.docType === 'exercises' ? 'rgba(245,158,11,0.09)' : l.docType === 'concours' ? 'rgba(16,185,129,0.09)' : l.docType === 'national' ? 'rgba(168,85,247,0.09)' : 'rgba(59,130,246,0.09)',
+                            color: l.docType === 'homework' ? 'var(--danger)' : l.docType === 'exercises' ? 'var(--warning)' : l.docType === 'concours' ? 'var(--emerald)' : l.docType === 'national' ? '#a855f7' : '#3B82F6',
+                            padding: '0.28rem 0.7rem', borderRadius: '20px', fontSize: '0.73rem', fontWeight: 700,
+                            letterSpacing: '0.01em', whiteSpace: 'nowrap', lineHeight: 1.4
                           }}>
-                            {l.docType === 'homework' ? 'Devoir surveillé' : l.docType === 'exercises' ? 'Série d\'exercices' : l.docType === 'concours' ? 'Concours' : l.docType === 'national' ? 'Examen National' : 'Cours'}
+                            {l.docType === 'homework' ? 'Devoir surveillé' : l.docType === 'exercises' ? "Série d'exercices" : l.docType === 'concours' ? 'Concours' : l.docType === 'national' ? 'Examen National' : 'Cours'}
                           </span>
                         </td>
 
+                        {/* Date Ajout */}
+                        <td style={{ padding: '1rem 1rem' }}>
+                          {formatDate(l.createdAt) ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.18rem' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.32rem' }}>
+                                <Calendar size={11} style={{ color: 'var(--violet)', flexShrink: 0, opacity: 0.85 }} />
+                                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}>
+                                  {formatDate(l.createdAt)}
+                                </span>
+                              </div>
+                              <span style={{ fontSize: '0.69rem', color: 'var(--text-subtle)', paddingLeft: '1.05rem', fontWeight: 500 }}>
+                                {(() => {
+                                  try {
+                                    const diff = Math.floor((Date.now() - new Date(l.createdAt).getTime()) / 86400000);
+                                    if (diff === 0) return "Aujourd'hui";
+                                    if (diff === 1) return 'Hier';
+                                    if (diff < 7) return `Il y a ${diff}j`;
+                                    if (diff < 30) return `Il y a ${Math.floor(diff/7)} sem.`;
+                                    if (diff < 365) return `Il y a ${Math.floor(diff/30)} mois`;
+                                    return `Il y a ${Math.floor(diff/365)} an(s)`;
+                                  } catch { return ''; }
+                                })()}
+                              </span>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '0.78rem', color: 'var(--text-subtle)', fontStyle: 'italic' }}>—</span>
+                          )}
+                        </td>
+
                         {/* Statut */}
-                        <td style={{ padding: '1.15rem 1.25rem' }}>
+                        <td style={{ padding: '1rem 1rem' }}>
                           <button
                             onClick={() => handleToggleStatus(l.id, l.isActive)}
                             style={{
-                              display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
-                              padding: '0.25rem 0.65rem', borderRadius: '20px', fontSize: '0.74rem', fontWeight: 700,
-                              border: 'none', cursor: 'pointer',
-                              background: l.isActive ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)',
+                              display: 'inline-flex', alignItems: 'center', gap: '0.32rem',
+                              padding: '0.3rem 0.75rem', borderRadius: '20px',
+                              fontSize: '0.73rem', fontWeight: 700, letterSpacing: '0.01em',
+                              border: l.isActive ? '1px solid rgba(16,185,129,0.2)' : '1px solid rgba(239,68,68,0.2)',
+                              cursor: 'pointer',
+                              background: l.isActive ? 'rgba(16,185,129,0.09)' : 'rgba(239,68,68,0.09)',
                               color: l.isActive ? 'var(--emerald)' : 'var(--danger)',
-                              transition: 'all 0.15s ease'
+                              transition: 'all 0.18s ease', lineHeight: 1
                             }}
                             title="Cliquer pour basculer le statut"
                           >
-                            {l.isActive ? <CheckCircle size={12} /> : <XCircle size={12} />}
+                            {l.isActive ? <CheckCircle size={11} /> : <XCircle size={11} />}
                             {l.isActive ? 'Actif' : 'Masqué'}
                           </button>
                         </td>
 
                         {/* Actions */}
-                        <td style={{ padding: '1.15rem 1.25rem', textAlign: 'right' }}>
-                          <div style={{ display: 'inline-flex', gap: '0.35rem', alignItems: 'center', justifyContent: 'flex-end' }}>
+                        <td style={{ padding: '1rem 1rem', textAlign: 'right' }}>
+                          <div style={{ display: 'inline-flex', gap: '0.28rem', alignItems: 'center', justifyContent: 'flex-end' }}>
                             <Link
                               to={`/admin/lessons/${l.id}`}
                               target="_blank"

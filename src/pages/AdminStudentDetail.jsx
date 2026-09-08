@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getAllProgress, getMockHistory, getLoginLogs } from '../services/userService';
 import { 
@@ -54,8 +54,21 @@ function useIsMobile() {
 export default function AdminStudentDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { users, plans, activateSubscription, cancelSubscription, updateStudentCRM, deleteStudent } = useAuth();
   const isMobile = useIsMobile();
+
+  const goBack = () => {
+    if (location.state?.from) {
+      navigate(location.state.from);
+      return;
+    }
+    if (window.history.length > 2) {
+      navigate(-1);
+      return;
+    }
+    navigate('/admin/users');
+  };
   
   const [isWaHovered, setIsWaHovered] = useState(false);
   
@@ -356,7 +369,7 @@ export default function AdminStudentDetail() {
       {/* ── Top Navigation ── */}
       <div style={{ marginBottom: '2rem', display:'flex', alignItems:'center', gap:'1rem' }}>
         <button 
-          onClick={() => navigate('/admin/users')}
+          onClick={goBack}
           aria-label="Retour à la liste des élèves"
           style={{ background:'var(--bg-glass)', border:'1px solid var(--border)', borderRadius:'12px', width:'40px', height:'40px', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--text-main)', cursor:'pointer' }}
         >

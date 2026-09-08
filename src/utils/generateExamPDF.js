@@ -147,7 +147,7 @@ const getTemplateStyles = (style) => {
       /* === LYCÉE ANISSE / DEVOIR SURVEILLÉ MAROCAIN === */
       .anisse-header-frame {
         display: grid;
-        grid-template-columns: 1.6fr 3.2fr 1.6fr 0.9fr;
+        grid-template-columns: 1.6fr 3.1fr 1.6fr 1.15fr;
         border: 1.5px solid #005086;
         border-radius: 4px;
         background: #ffffff;
@@ -204,26 +204,32 @@ const getTemplateStyles = (style) => {
         font-weight: 700;
       }
       .anisse-col.col-qr {
-        padding: 0.25rem;
+        padding: 0.35rem 0.45rem;
         align-items: center;
         justify-content: center;
         background: #005086;
         color: #ffffff;
       }
-      .anisse-col.col-qr img {
-        width: 44px;
-        height: 44px;
-        border-radius: 2px;
+      .anisse-col.col-qr img,
+      .anisse-col.col-qr .qr-img {
+        width: 52px;
+        height: 52px;
+        border-radius: 4px;
         background: #ffffff;
-        padding: 2px;
+        padding: 3px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+        display: block;
       }
       .anisse-col.col-qr .qr-label {
-        font-size: 0.55rem;
-        font-weight: 800;
-        letter-spacing: 0.1em;
-        margin-top: 0.15rem;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 0.65rem;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        margin-top: 0.25rem;
         text-transform: uppercase;
         color: #ffffff;
+        line-height: 1.1;
+        text-align: center;
       }
       .anisse-sub-bar {
         display: flex;

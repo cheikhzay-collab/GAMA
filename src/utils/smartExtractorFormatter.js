@@ -152,16 +152,10 @@ export function smartNormalizeOptions(options) {
 export function smartNumberQuestions(questions) {
   if (!Array.isArray(questions)) return [];
 
-  // Trier d'abord par numéro existant si disponible
-  const sorted = [...questions].sort((a, b) => {
-    const numA = parseInt(a.question_number || a.num || 999, 10);
-    const numB = parseInt(b.question_number || b.num || 999, 10);
-    return numA - numB;
-  });
-
+  // Conserver l'ordre chronologique exact d'extraction du document
   const seenNumbers = new Set();
 
-  return sorted.map((q, index) => {
+  return questions.map((q, index) => {
     let cleanNum = parseInt(q.question_number || q.num, 10);
 
     // Si le numéro est invalide, manquant ou déjà vu, lui attribuer le numéro séquentiel exact (index + 1)
@@ -219,7 +213,11 @@ async function callGeminiAi(prompt, systemPrompt, apiKey, model = 'gemini-1.5-fl
   }
 
   const data = await res.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  const candidate = data.candidates?.[0];
+  const nonThoughtParts = candidate?.content?.parts?.filter(p => !p.thought) || [];
+  const text = (nonThoughtParts.length > 0 ? nonThoughtParts : (candidate?.content?.parts || []))
+    .map(p => p.text || '')
+    .join('');
   if (!text) throw new Error("Aucune réponse reçue du modèle IA.");
 
   let clean = text.trim();

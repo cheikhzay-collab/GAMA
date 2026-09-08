@@ -744,21 +744,22 @@ export const generateCourseSummaryHTML = (data, qrDataUrl = '') => {
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      border: 1.2px solid #005086;
-      border-radius: 4px;
+      border: 1.5px solid #005086;
+      border-radius: 5px;
       overflow: hidden;
       background: #ffffff;
+      box-shadow: 0 1px 4px rgba(0, 80, 134, 0.12);
     }
     .series-qr-img {
-      width: 44px;
-      height: 44px;
+      width: 52px;
+      height: 52px;
       display: block;
-      padding: 2px;
+      padding: 3px;
       background: #ffffff;
     }
     .series-qr-placeholder {
-      width: 44px;
-      height: 44px;
+      width: 52px;
+      height: 52px;
       background: #ffffff;
       display: flex;
       align-items: center;
@@ -768,14 +769,15 @@ export const generateCourseSummaryHTML = (data, qrDataUrl = '') => {
       width: 100%;
       background: #005086;
       color: #ffffff;
-      font-size: 7.5px;
+      font-size: 9px;
       font-weight: 900;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       text-align: center;
-      padding: 2px 2px;
-      line-height: 1.1;
+      padding: 3px 4px;
+      line-height: 1.15;
       box-sizing: border-box;
-      font-family: inherit;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      text-transform: uppercase;
     }
     /* ── 3 Columns Continuous Flow (Sequential across columns, filling down to bottom) ── */
     .cs-columns-container {

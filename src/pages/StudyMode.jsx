@@ -49,6 +49,16 @@ export default function StudyMode() {
   const location = useLocation();
   const fromPath = location.state?.from || (user ? '/dashboard' : '/schools');
 
+  const handleBack = () => {
+    if (location.state?.from) {
+      navigate(location.state.from);
+    } else if (window.history.length > 2) {
+      navigate(-1);
+    } else {
+      navigate(fromPath);
+    }
+  };
+
   // State hooks declared at the very top to avoid accessed-before-declaration ReferenceErrors
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768);
   const [sessionStarted, setSessionStarted] = useState(!!examId || !!topicId);
@@ -413,14 +423,14 @@ export default function StudyMode() {
         {/* Top Header Bar */}
         <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
           <button 
-            onClick={() => navigate(user ? '/dashboard' : '/schools')}
+            onClick={handleBack}
             className="btn-outline"
             style={{ 
               padding: '0.5rem 1rem', fontSize: '0.85rem', fontWeight: 800, 
               display: 'inline-flex', alignItems: 'center', gap: '0.4rem' 
             }}
           >
-            <ArrowLeft size={16} /> {user ? 'Retour au Dashboard' : 'Retour aux écoles'}
+            <ArrowLeft size={16} /> {location.state?.from ? 'Retour' : user ? 'Retour au Dashboard' : 'Retour aux écoles'}
           </button>
         </div>
 
@@ -630,7 +640,7 @@ export default function StudyMode() {
           <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem' }}>
             Ce module ne contient aucune question. Contactez l'administration.
           </p>
-          <button className="btn" onClick={() => navigate(fromPath)}>
+          <button className="btn" onClick={handleBack}>
             Retour
           </button>
         </div>
@@ -661,7 +671,7 @@ export default function StudyMode() {
                 Forcer une révision (10 cartes)
               </button>
             )}
-            <button className="btn" onClick={() => navigate(fromPath)} style={{ width: '100%' }}>
+            <button className="btn" onClick={handleBack} style={{ width: '100%' }}>
               Retour
             </button>
           </div>
@@ -677,7 +687,7 @@ export default function StudyMode() {
         sessionHistory={sessionHistory}
         examName={isParcours ? "Session de révision du jour" : topicId ? `Chapitre : ${topicId}` : currentExam.name}
         onForceReview={isParcours || topicId ? null : handleForceReview}
-        onBackToDashboard={() => navigate(fromPath)}
+        onBackToDashboard={handleBack}
         user={user}
       />
     );

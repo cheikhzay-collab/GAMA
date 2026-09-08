@@ -250,7 +250,8 @@ function AppContent() {
             <Route path="/admin/ai-import" element={<AdminRoute><AdminAIGenerator /></AdminRoute>} />
             <Route path="/admin/ai-lessons" element={<AdminRoute><AdminAIGenerator /></AdminRoute>} />
             <Route path="/admin/lessons" element={<AdminRoute><AdminLessons /></AdminRoute>} />
-            <Route path="/admin/lessons/:id" element={<AdminRoute><LessonViewerPage /></AdminRoute>} />
+            <Route path="/admin/lessons/:id" element={<LessonViewerPage />} />
+            <Route path="/lessons/:id" element={<LessonViewerPage />} />
             <Route path="/admin/lessons/:id/edit" element={<AdminRoute><AdminLessonEdit /></AdminRoute>} />
             <Route path="/admin/ebooks" element={<AdminRoute><AdminEbooks /></AdminRoute>} />
             <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />

@@ -1,12 +1,11 @@
-// src/pages/LevelsPage.jsx
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getActiveLessons } from '../services/lessonService';
 import { 
   GraduationCap, Search, ArrowLeft, BookOpen, 
   User, ChevronRight, Sparkles, BookOpenCheck, FolderOpen,
-  FileDown, Play, Clock, BrainCircuit, Zap
+  FileDown, Play, Clock, BrainCircuit, Zap, LayoutGrid, List, Calendar
 } from 'lucide-react';
 import { renderWithMath } from '../utils/mathRenderer';
 import { mapLegacySchoolToLevel, normalizeLevel } from '../utils/levelHelpers';
@@ -96,18 +95,43 @@ const MAIN_LEVELS = [
 export default function LevelsPage() {
   const { user, exams, schools, loadExamQuestions, trackDownload } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // Navigation states:
-  // selectedParentId: 'tc', '1bac', '2bac'
-  // selectedBranchId: 'common_core_sci', etc.
-  const [selectedParentId, setSelectedParentId] = useState(null);
-  const [selectedBranchId, setSelectedBranchId] = useState(null);
+  // Navigation states synced with URL search params (?level=2bac&branch=2bac_pc_svt)
+  const selectedParentId = searchParams.get('level') || null;
+  const selectedBranchId = searchParams.get('branch') || null;
+
+  const setSelectedParentId = (parentId) => {
+    if (parentId) {
+      setSearchParams({ level: parentId });
+    } else {
+      setSearchParams({});
+    }
+  };
+
+  const setSelectedBranchId = (branchId) => {
+    if (branchId) {
+      setSearchParams({ level: selectedParentId || '', branch: branchId });
+    } else if (selectedParentId) {
+      setSearchParams({ level: selectedParentId });
+    } else {
+      setSearchParams({});
+    }
+  };
+
+  // Remember the exact origin so lesson viewer can return reliably
+  useEffect(() => {
+    const fullUrl = window.location.pathname + window.location.search;
+    sessionStorage.setItem('last_lessons_origin', fullUrl);
+  }, [selectedParentId, selectedBranchId]);
 
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('Tous');
   const [activeTab, setActiveTab] = useState('all'); // 'all', 'course', 'exercises', 'homework'
+  const [lessonViewMode, setLessonViewMode] = useState('cards'); // 'cards' | 'list'
 
   // Load active lessons
   useEffect(() => {
@@ -552,7 +576,8 @@ export default function LevelsPage() {
               />
             </div>
 
-            {/* Subject Filters */}
+          {/* Subject Filters + View Toggle */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', flex: 1 }}>
             {subjects.length > 2 && (
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {subjects.map(sub => (
@@ -573,6 +598,35 @@ export default function LevelsPage() {
                 ))}
               </div>
             )}
+
+            {/* View mode toggle — always visible, pushed to the right */}
+            <div style={{ display: 'flex', background: 'var(--bg-glass)', border: '1px solid var(--border)', borderRadius: '10px', padding: '3px', gap: '2px', marginLeft: 'auto' }}>
+              <button
+                onClick={() => setLessonViewMode('list')}
+                title="Vue liste"
+                style={{
+                  padding: '0.4rem 0.55rem', borderRadius: '7px', border: 'none', cursor: 'pointer',
+                  background: lessonViewMode === 'list' ? 'var(--violet)' : 'transparent',
+                  color: lessonViewMode === 'list' ? '#fff' : 'var(--text-muted)',
+                  display: 'flex', alignItems: 'center', transition: 'all 0.18s ease'
+                }}
+              >
+                <List size={15} />
+              </button>
+              <button
+                onClick={() => setLessonViewMode('cards')}
+                title="Vue cartes"
+                style={{
+                  padding: '0.4rem 0.55rem', borderRadius: '7px', border: 'none', cursor: 'pointer',
+                  background: lessonViewMode === 'cards' ? 'var(--violet)' : 'transparent',
+                  color: lessonViewMode === 'cards' ? '#fff' : 'var(--text-muted)',
+                  display: 'flex', alignItems: 'center', transition: 'all 0.18s ease'
+                }}
+              >
+                <LayoutGrid size={15} />
+              </button>
+            </div>
+          </div>
           </div>
 
           {/* Document Type Tabs */}
@@ -851,6 +905,75 @@ export default function LevelsPage() {
               })}
             </div>
           ) : (
+            /* ──── LESSONS GRID / LIST ──── */
+            lessonViewMode === 'list' ? (
+              /* ──── LIST VIEW ──── */
+              <div className="glass-panel" style={{ overflow: 'hidden', padding: 0 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+                  <thead>
+                    <tr style={{ background: 'rgba(255,255,255,0.025)', borderBottom: '1px solid var(--border)' }}>
+                      <th style={{ padding: '0.9rem 1.25rem', fontWeight: 700, fontSize: '0.72rem', color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Fiche de Cours</th>
+                      <th style={{ padding: '0.9rem 1rem', fontWeight: 700, fontSize: '0.72rem', color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Type</th>
+                      <th style={{ padding: '0.9rem 1rem', fontWeight: 700, fontSize: '0.72rem', color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Enseignant</th>
+                      <th style={{ padding: '0.9rem 1rem', fontWeight: 700, fontSize: '0.72rem', color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Date</th>
+                      <th style={{ padding: '0.9rem 1.25rem', fontWeight: 700, fontSize: '0.72rem', color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'right' }}>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredLessons.map((l) => {
+                      const accent = selectedParent?.textColor || 'var(--violet)';
+                      const docTypeColor = l.docType === 'homework' ? 'var(--danger)' : l.docType === 'exercises' ? 'var(--warning)' : l.docType === 'concours' ? 'var(--emerald)' : '#3B82F6';
+                      const docTypeBg = l.docType === 'homework' ? 'rgba(239,68,68,0.09)' : l.docType === 'exercises' ? 'rgba(245,158,11,0.09)' : l.docType === 'concours' ? 'rgba(16,185,129,0.09)' : 'rgba(59,130,246,0.09)';
+                      const docTypeLabel = l.docType === 'homework' ? 'Devoir surveillé' : l.docType === 'exercises' ? "Série d'exercices" : l.docType === 'concours' ? 'Concours' : 'Cours';
+                      const createdAt = l.createdAt ? new Date(l.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : null;
+                      return (
+                        <tr
+                          key={l.id}
+                          className="table-row-hover"
+                          style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.15s' }}
+                          onClick={() => l.isExam ? navigate(`/study?exam=${l.examId}`) : navigate(`/admin/lessons/${l.id}`, { state: { from: window.location.pathname + window.location.search } })}
+                        >
+                          <td style={{ padding: '1rem 1.25rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
+                              <div style={{ width: 34, height: 34, borderRadius: '8px', flexShrink: 0, background: `${accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: accent }}>
+                                <BookOpen size={14} />
+                              </div>
+                              <span style={{ fontWeight: 600, fontSize: '0.88rem', lineHeight: 1.35, letterSpacing: '-0.01em', color: 'var(--text-main)', cursor: 'pointer' }}>
+                                {l.title}
+                              </span>
+                            </div>
+                          </td>
+                          <td style={{ padding: '1rem 1rem' }}>
+                            <span style={{ background: docTypeBg, color: docTypeColor, padding: '0.22rem 0.65rem', borderRadius: '20px', fontSize: '0.71rem', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                              {docTypeLabel}
+                            </span>
+                          </td>
+                          <td style={{ padding: '1rem 1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', color: 'var(--text-subtle)' }}>
+                              <User size={11} />
+                              <span>{l.teacher || "Prof. L'CONQ"}</span>
+                            </div>
+                          </td>
+                          <td style={{ padding: '1rem 1rem' }}>
+                            {createdAt ? (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.73rem', color: 'var(--text-subtle)' }}>
+                                <Calendar size={11} style={{ color: accent, opacity: 0.8 }} />
+                                <span>{createdAt}</span>
+                              </div>
+                            ) : <span style={{ color: 'var(--text-subtle)', fontSize: '0.75rem' }}>—</span>}
+                          </td>
+                          <td style={{ padding: '1rem 1.25rem', textAlign: 'right' }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontWeight: 700, color: accent, fontSize: '0.78rem', cursor: 'pointer' }}>
+                              {l.isExam ? 'Commencer' : 'Ouvrir le cours'} <ChevronRight size={13} />
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
@@ -862,9 +985,9 @@ export default function LevelsPage() {
                     key={l.id}
                     onClick={() => {
                        if (l.isExam) {
-                        navigate(`/study?exam=${l.examId}`, { state: { from: window.location.pathname } });
+                        navigate(`/study?exam=${l.examId}`, { state: { from: window.location.pathname + window.location.search } });
                       } else {
-                        navigate(`/admin/lessons/${l.id}`);
+                        navigate(`/admin/lessons/${l.id}`, { state: { from: window.location.pathname + window.location.search } });
                       }
                     }}
                     className="glass-panel"
@@ -934,6 +1057,7 @@ export default function LevelsPage() {
                 );
               })}
             </div>
+            )
           )}
 
         </div>

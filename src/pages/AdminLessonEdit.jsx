@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getLessonById, updateLesson } from '../services/lessonService';
 import { getAllClasses } from '../services/classService';
@@ -75,8 +75,26 @@ const autoRepairMathText = (str) => {
 export default function AdminLessonEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, loading: authLoading } = useAuth();
   const isMobile = useIsMobile();
+
+  const goBack = () => {
+    if (location.state?.from) {
+      navigate(location.state.from);
+      return;
+    }
+    const savedOrigin = sessionStorage.getItem('last_lessons_origin');
+    if (savedOrigin) {
+      navigate(savedOrigin);
+      return;
+    }
+    if (window.history.length > 2) {
+      navigate(-1);
+      return;
+    }
+    navigate('/admin/lessons');
+  };
 
   // Component States
   const [lesson, setLesson] = useState(null);
@@ -1811,7 +1829,7 @@ export default function AdminLessonEdit() {
         paddingBottom: '1rem'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-          <button onClick={() => navigate('/admin/lessons')} className="btn-outline" style={{ padding: '0.5rem 0.75rem' }} title="Retour aux cours">
+          <button onClick={goBack} className="btn-outline" style={{ padding: '0.5rem 0.75rem' }} title="Retour aux cours">
             <ArrowLeft size={16} />
           </button>
           <div>

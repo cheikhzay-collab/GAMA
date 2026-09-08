@@ -26,6 +26,16 @@ export default function MockExamMode() {
   const location = useLocation();
   const fromPath = location.state?.from || (user ? '/dashboard' : '/levels');
 
+  const handleReturn = () => {
+    if (location.state?.from) {
+      navigate(location.state.from);
+    } else if (window.history.length > 2) {
+      navigate(-1);
+    } else {
+      navigate(fromPath);
+    }
+  };
+
   // Restore answers saved before Google OAuth redirect (guest flow)
   const [guestAnswersRestored, setGuestAnswersRestored] = useState(false);
   const [guestResults, setGuestResults] = useState(null);
@@ -272,7 +282,7 @@ export default function MockExamMode() {
       <div className="focus-layout flex items-center justify-center" style={{ height: '100vh' }}>
         <div className="glass-panel text-center" style={{ padding: '3rem' }}>
           <h2 style={{ marginBottom: '1rem' }}>Aucun examen sélectionné</h2>
-          <button className="btn" onClick={onReturn}>
+          <button className="btn" onClick={handleReturn}>
             <ArrowLeft size={16} /> Retour
           </button>
         </div>
@@ -289,7 +299,7 @@ export default function MockExamMode() {
           questions={questions}
           answers={answers}
           exam={currentExam}
-          onReturn={onReturn}
+          onReturn={handleReturn}
           schoolBranding={schoolBranding}
         />
       </div>
@@ -302,7 +312,7 @@ export default function MockExamMode() {
       <div className="focus-header" style={{ padding: '0.6rem clamp(0.75rem, 3vw, 1.5rem)', height: '55px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <button
           className="btn-ghost"
-          onClick={onReturn}
+          onClick={handleReturn}
           style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600, fontSize: '0.85rem' }}
         >
           <ArrowLeft size={16} /> <span className="hide-xs">Quitter</span>

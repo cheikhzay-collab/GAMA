@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { 
   ArrowLeft, Download, Check, X, Eye, EyeOff, Edit,
   BookOpen, Calendar, User, Phone, CheckCircle, AlertCircle,
@@ -562,8 +562,28 @@ const calculateTotalPoints = (text, isArabicMode) => {
 
 export default function LessonViewerPage() {
   const { id } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { user, loading: authLoading, profName, profPhone, trackDownload } = useAuth();
+
+  // Smart back navigation: return to the page that opened this lesson
+  const goBack = () => {
+    if (location.state?.from) {
+      navigate(location.state.from);
+      return;
+    }
+    const savedOrigin = sessionStorage.getItem('last_lessons_origin');
+    if (savedOrigin) {
+      navigate(savedOrigin);
+      return;
+    }
+    if (window.history.length > 2) {
+      navigate(-1);
+      return;
+    }
+    navigate(user?.role === 'admin' ? '/admin/lessons' : '/levels');
+  };
+
 
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
 
@@ -1095,7 +1115,7 @@ export default function LessonViewerPage() {
         <AlertCircle size={48} className="text-danger" style={{ marginBottom: '1rem' }} />
         <h2 style={{ color: 'var(--text-main)', fontWeight: 800 }}>Erreur de chargement</h2>
         <p style={{ color: 'var(--text-muted)', maxWidth: '400px', marginBottom: '1.5rem' }}>{error || "Une erreur inconnue est survenue."}</p>
-        <button onClick={() => navigate(user?.role === 'admin' ? '/admin/lessons' : '/levels')} className="btn">Retour aux fiches</button>
+        <button onClick={goBack} className="btn">Retour aux fiches</button>
       </div>
     );
   }
@@ -2284,7 +2304,7 @@ export default function LessonViewerPage() {
         gap: '1rem'
       }}>
         <button 
-          onClick={() => navigate(user?.role === 'admin' ? '/admin/lessons' : '/levels')}
+          onClick={goBack}
           className="btn-outline"
           style={{ 
             padding: '0.45rem 0.9rem', fontSize: '0.8rem', fontWeight: 700, borderRadius: '99px',
@@ -2415,7 +2435,7 @@ export default function LessonViewerPage() {
           {/* Edit button */}
           {user?.role === 'admin' && (
             <button 
-              onClick={() => navigate(`/admin/lessons/${id}/edit`)}
+              onClick={() => navigate(`/admin/lessons/${id}/edit`, { state: { from: window.location.pathname } })}
               className="btn-outline"
               style={{
                 padding: '0.45rem 0.9rem',

@@ -253,10 +253,22 @@ const extractObjectsBraceTracking = (text) => {
       if (c === '{') { if (depth++ === 0) objStart = i; }
       else if (c === '}') {
         if (--depth === 0 && objStart !== -1) {
-          try { 
-            const parsedObj = JSON.parse(text.slice(objStart, i + 1));
-            results.push(parsedObj); 
-          } catch { /* skip malformed */ }
+          const slice = text.slice(objStart, i + 1);
+          let parsedObj = null;
+          try {
+            parsedObj = JSON.parse(slice);
+          } catch {
+            try {
+              parsedObj = JSON.parse(escapeUnescapedQuotesInJson(escapeLiteralNewlinesInJson(sanitizeLatexJson(slice))));
+            } catch {
+              try {
+                parsedObj = JSON.parse(repairTruncatedJson(escapeUnescapedQuotesInJson(escapeLiteralNewlinesInJson(sanitizeLatexJson(slice)))));
+              } catch { /* skip only if completely unparseable */ }
+            }
+          }
+          if (parsedObj && (parsedObj.question || parsedObj.question_number || parsedObj.text || parsedObj.context)) {
+            results.push(parsedObj);
+          }
           objStart = -1;
         }
       }
@@ -688,18 +700,26 @@ export default function AdminAIImport({ onBack }) {
   const [provider, setProvider] = useState(() => draft?.provider || localStorage.getItem('aiImportProvider') || 'gemini');
   const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('geminiApiKey') || '');
   const [geminiModel, setGeminiModel] = useState(() => {
-    let m = draft?.geminiModel || localStorage.getItem('geminiModel') || 'gemini-3.5-flash';
+    let m = draft?.geminiModel || localStorage.getItem('geminiModel');
+    if (!m || m === 'gemini-2.5-flash') {
+      localStorage.setItem('geminiModel', 'gemini-3.6-flash');
+      return 'gemini-3.6-flash';
+    }
     return m;
   });
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('claudeApiKey') || '');
   const [proxyUrl, setProxyUrl] = useState(() => localStorage.getItem('claudeProxyUrl') || '');
-  const [claudeModel, setClaudeModel] = useState(() => localStorage.getItem('claudeModel') || 'claude-opus-4-5');
+  const [claudeModel, setClaudeModel] = useState(() => {
+    const m = draft?.claudeModel || localStorage.getItem('claudeModel');
+    if (!m || m.includes('4-5') || m === 'claude-3-haiku-20240307') return 'claude-3-5-sonnet-20241022';
+    return m;
+  });
   const [deepseekKey, setDeepseekKey] = useState(() => localStorage.getItem('deepseekApiKey') || 'sk-12a7032f07d740348c607ef947a0a9f7');
   const [deepseekUrl, setDeepseekUrl] = useState(() => localStorage.getItem('deepseekApiUrl') || 'https://api.deepseek.com');
   const [deepseekModel, setDeepseekModel] = useState(() => {
-    let m = draft?.deepseekModel || localStorage.getItem('deepseekModel') || 'deepseek-v4-pro';
-    if (m === 'deepseek-reasoner' || m === 'deepseek-r1') return 'deepseek-v4-pro';
-    if (m === 'deepseek-chat' || m === 'deepseek-v3') return 'deepseek-v4-flash';
+    let m = draft?.deepseekModel || localStorage.getItem('deepseekModel') || 'deepseek-reasoner';
+    if (m === 'deepseek-v4-pro' || m === 'deepseek-r1') return 'deepseek-reasoner';
+    if (m === 'deepseek-v4-flash' || m === 'deepseek-v3') return 'deepseek-chat';
     return m;
   });
   const [pdfFile, setPdfFile] = useState(null);
@@ -828,8 +848,9 @@ export default function AdminAIImport({ onBack }) {
     setCorrectionPageFrom(1);
     setCorrectionPageTo(1);
     setProvider('gemini');
-    setGeminiModel('gemini-3.5-flash');
-    setDeepseekModel('deepseek-v4-pro');
+    setGeminiModel('gemini-3.6-flash');
+    setDeepseekModel('deepseek-reasoner');
+    setClaudeModel('claude-3-5-sonnet-20241022');
     setError('');
     setProgress('');
   };
@@ -843,7 +864,8 @@ export default function AdminAIImport({ onBack }) {
     const buf = await file.arrayBuffer();
     const doc = await pdfjsLib.getDocument({ data: buf }).promise;
     setTotalPages(doc.numPages);
-    setPageTo(Math.min(doc.numPages, 15));
+    setPageFrom(1);
+    setPageTo(doc.numPages);
   };
 
   // Helper to fetch QCM from Gemini API with schema enforcement
@@ -867,15 +889,16 @@ Tu dois extraire les questions et les choix de réponses EXACTEMENT telles qu'el
 Pour les réponses correctes (field 'correct_answer'), tu dois STRICTEMENT extraire la lettre de réponse depuis la grille de correction ou le corrigé officiel présent dans le fichier aux pages spécifiées. N'essaye pas de résoudre la question toi-même et ne change pas la réponse officielle sous aucun prétexte, même si tu penses qu'elle est fausse ou incomplète. Extrais la réponse telle qu'elle est indiquée dans le corrigé/grille du document.
 Pour le champ 'astuce', extrais/résume l'explication officielle fournie dans le document aux pages de correction spécifiées, sans inventer ta propre explication.
 `;
-      userPromptText = `${pageNote}\n\nExtrais toutes les questions en associant les réponses du corrigé et retourne le JSON demandé.`;
+      userPromptText = `${pageNote}\n\nExtrais absolument TOUTES les questions QCM de la première à la toute dernière sans exception en associant les réponses du corrigé et retourne le JSON demandé complet sans rien omettre ni tronquer.`;
     } else {
       pageNote = totalPages && (pageFrom > 1 || pageTo < totalPages)
-        ? `Concentre-toi uniquement sur les pages ${pageFrom} à ${pageTo} du document (ignore les autres).\n`
+        ? `Concentre-toi sur les pages ${pageFrom} à ${pageTo} du document.\n`
         : '';
-      userPromptText = `${pageNote}Extrais TOUTES les questions QCM de ce document et retourne le JSON demandé.`;
+      userPromptText = `${pageNote}Extrais TOUTES les questions QCM de ce document de la première à la toute dernière sans exception, sans aucune omission ni troncature, et retourne le JSON demandé.`;
     }
 
-    const modelToUse = geminiModel || 'gemini-3.5-flash';
+    const rawModel = geminiModel || 'gemini-3.6-flash';
+    const modelToUse = (rawModel === 'gemini-2.5-flash') ? 'gemini-3.6-flash' : rawModel;
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${geminiKey}`;
     
     // Create fresh AbortController for this request
@@ -906,6 +929,8 @@ Pour le champ 'astuce', extrais/résume l'explication officielle fournie dans le
       },
       generationConfig: {
         responseMimeType: "application/json",
+        maxOutputTokens: 65536,
+        temperature: 0.1,
         responseSchema: {
           type: "ARRAY",
           items: {
@@ -945,7 +970,14 @@ Pour le champ 'astuce', extrais/résume l'explication officielle fournie dans le
     }
 
     const data = await res.json();
-    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const candidate = data?.candidates?.[0];
+    if (!candidate || !candidate.content?.parts) {
+      throw new Error("L'API Gemini n'a retourné aucun contenu.");
+    }
+    const nonThoughtParts = candidate.content.parts.filter(p => !p.thought);
+    const rawText = (nonThoughtParts.length > 0 ? nonThoughtParts : candidate.content.parts)
+      .map(p => p.text || '')
+      .join('');
     return parseAiJson(rawText);
   };
 
@@ -970,12 +1002,12 @@ Tu dois extraire les questions et les choix de réponses EXACTEMENT telles qu'el
 Pour les réponses correctes (field 'correct_answer'), tu dois STRICTEMENT extraire la lettre de réponse depuis la grille de correction ou le corrigé officiel présent dans le fichier aux pages spécifiées. N'essaye pas de résoudre la question toi-même et ne change pas la réponse officielle sous aucun prétexte, même si tu penses qu'elle est fausse ou incomplète. Extrais la réponse telle qu'elle est indiquée dans le corrigé/grille du document.
 Pour le champ 'astuce', extrais/résume l'explication officielle fournie dans le document aux pages de correction spécifiées, sans inventer ta propre explication.
 `;
-      userPromptText = `${pageNote}\n\nExtrais toutes les questions en associant les réponses du corrigé et retourne le JSON demandé.`;
+      userPromptText = `${pageNote}\n\nExtrais absolument TOUTES les questions QCM de la première à la toute dernière sans exception en associant les réponses du corrigé et retourne le JSON demandé complet sans rien omettre ni tronquer.`;
     } else {
       pageNote = totalPages && (pageFrom > 1 || pageTo < totalPages)
-        ? `Concentre-toi uniquement sur les pages ${pageFrom} à ${pageTo} du document (ignore les autres).\n`
+        ? `Concentre-toi sur les pages ${pageFrom} à ${pageTo} du document.\n`
         : '';
-      userPromptText = `${pageNote}Extrais TOUTES les questions QCM de ce document et retourne le JSON demandé.`;
+      userPromptText = `${pageNote}Extrais TOUTES les questions QCM de ce document de la première à la toute dernière sans exception, sans aucune omission ni troncature, et retourne le JSON demandé.`;
     }
 
     // Read the SSE stream
@@ -1090,19 +1122,19 @@ ${pdfText}
 TEXTE DU CORRIGÉ:
 ${correctionText}
 `;
-      userPromptText = `${pageNote}\n\nExtrais toutes les questions en associant les réponses du corrigé et retourne le tableau JSON demandé.`;
+      userPromptText = `${pageNote}\n\nExtrais absolument TOUTES les questions QCM de la première à la toute dernière sans exception en associant les réponses du corrigé et retourne le tableau JSON demandé sans rien omettre.`;
     } else {
       pageNote = `TEXTE DES QUESTIONS EXTRAIT DU PDF:
 ${pdfText}
 `;
-      userPromptText = `${pageNote}Extrais TOUTES les questions QCM de ce texte et retourne le tableau JSON demandé.`;
+      userPromptText = `${pageNote}Extrais TOUTES les questions QCM de ce texte de la première à la toute dernière sans exception, sans aucune omission ni troncature, et retourne le tableau JSON demandé.`;
     }
 
-    const rawModel = deepseekModel || 'deepseek-v4-pro';
-    const modelToUse = (rawModel === 'deepseek-reasoner' || rawModel === 'deepseek-r1')
-      ? 'deepseek-v4-pro'
-      : (rawModel === 'deepseek-chat' || rawModel === 'deepseek-v3')
-        ? 'deepseek-v4-flash'
+    const rawModel = deepseekModel || 'deepseek-reasoner';
+    const modelToUse = (rawModel === 'deepseek-v4-pro' || rawModel === 'deepseek-r1')
+      ? 'deepseek-reasoner'
+      : (rawModel === 'deepseek-v4-flash' || rawModel === 'deepseek-v3')
+        ? 'deepseek-chat'
         : rawModel;
     const cleanUrl = deepseekUrl.trim().replace(/\/$/, '');
     const endpoint = `${cleanUrl}/v1/chat/completions`;
@@ -1122,6 +1154,7 @@ ${pdfText}
           content: userPromptText
         }
       ],
+      max_tokens: 8192,
       response_format: !modelToUse.includes('reasoner') && !modelToUse.includes('pro') ? { type: 'json_object' } : undefined,
       temperature: 0.1
     };
@@ -1695,14 +1728,19 @@ ${pdfText}
             <div className="input-group" style={{ marginBottom: '1.5rem' }}>
               <label>Modèle Claude <span style={{fontWeight:400, color:'var(--text-muted)'}}>— ID exact de l'API</span></label>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
-                {['claude-opus-4-5','claude-sonnet-4-5','claude-haiku-4-5','claude-3-5-sonnet-20241022','claude-3-haiku-20240307'].map(m => (
-                  <button key={m} type="button"
-                    onClick={() => { setClaudeModel(m); localStorage.setItem('claudeModel', m); }}
+                {[
+                  { id: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet (Recommandé - Stable & Précis)' },
+                  { id: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet (Raisonnement Hybride)' },
+                  { id: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku (Rapide & Économique)' },
+                  { id: 'claude-3-opus-20240229', label: 'Claude 3 Opus (Haute précision)' }
+                ].map(item => (
+                  <button key={item.id} type="button"
+                    onClick={() => { setClaudeModel(item.id); localStorage.setItem('claudeModel', item.id); }}
                     style={{ padding: '0.3rem 0.65rem', borderRadius: 8, border: '1px solid', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
-                      borderColor: claudeModel === m ? 'var(--violet)' : 'var(--border)',
-                      background: claudeModel === m ? 'rgba(124,58,237,0.15)' : 'var(--bg-glass)',
-                      color: claudeModel === m ? 'var(--violet)' : 'var(--text-muted)'
-                    }}>{m}</button>
+                      borderColor: claudeModel === item.id ? 'var(--violet)' : 'var(--border)',
+                      background: claudeModel === item.id ? 'rgba(124,58,237,0.15)' : 'var(--bg-glass)',
+                      color: claudeModel === item.id ? 'var(--violet)' : 'var(--text-muted)'
+                    }}>{item.label}</button>
                 ))}
               </div>
               <input
@@ -1710,27 +1748,28 @@ ${pdfText}
                 className="input-control"
                 value={claudeModel}
                 onChange={e => { setClaudeModel(e.target.value); localStorage.setItem('claudeModel', e.target.value); }}
-                placeholder="ex: claude-opus-4-5"
+                placeholder="ex: claude-3-5-sonnet-20241022"
                 style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
               />
               <p style={{ marginTop: '0.4rem', fontSize: '0.73rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                💡 Vérifiez les IDs disponibles sur{' '}
-                <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" className="text-violet">console.anthropic.com</a>{' '}
-                → Models. La clé API doit venir de <strong>console.anthropic.com</strong> (≠ claude.ai).
+                💡 Recommandé : <strong>claude-3-5-sonnet-20241022</strong> (Ultra stable, précis et optimal pour l&apos;extraction de concours et documents complexes).
               </p>
             </div>
           ) : provider === 'deepseek' ? (
             <div className="input-group" style={{ marginBottom: '1.5rem' }}>
               <label>Modèle DeepSeek <span style={{fontWeight:400, color:'var(--text-muted)'}}>— ID exact de l&apos;API</span></label>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
-                {['deepseek-v4-pro', 'deepseek-v4-flash'].map(m => (
-                  <button key={m} type="button"
-                    onClick={() => { setDeepseekModel(m); localStorage.setItem('deepseekModel', m); }}
+                {[
+                  { id: 'deepseek-reasoner', label: 'DeepSeek-R1 (Reasoner - Réflexion & Maths Approfondis)' },
+                  { id: 'deepseek-chat', label: 'DeepSeek-V3 (Chat - Flash, Rapide & Économique)' }
+                ].map(item => (
+                  <button key={item.id} type="button"
+                    onClick={() => { setDeepseekModel(item.id); localStorage.setItem('deepseekModel', item.id); }}
                     style={{ padding: '0.3rem 0.65rem', borderRadius: 8, border: '1px solid', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
-                      borderColor: (deepseekModel === m || (m === 'deepseek-v4-pro' && (deepseekModel === 'deepseek-reasoner' || deepseekModel === 'deepseek-r1'))) ? '#00BA7C' : 'var(--border)',
-                      background: (deepseekModel === m || (m === 'deepseek-v4-pro' && (deepseekModel === 'deepseek-reasoner' || deepseekModel === 'deepseek-r1'))) ? 'rgba(0,186,124,0.15)' : 'var(--bg-glass)',
-                      color: (deepseekModel === m || (m === 'deepseek-v4-pro' && (deepseekModel === 'deepseek-reasoner' || deepseekModel === 'deepseek-r1'))) ? '#00BA7C' : 'var(--text-muted)'
-                    }}>{m === 'deepseek-v4-pro' ? 'deepseek-v4-pro (R1 - Réflexion / Raisonnement)' : 'deepseek-v4-flash (Flash - Rapide & Économique)'}</button>
+                      borderColor: (deepseekModel === item.id || (item.id === 'deepseek-reasoner' && (deepseekModel === 'deepseek-v4-pro' || deepseekModel === 'deepseek-r1')) || (item.id === 'deepseek-chat' && (deepseekModel === 'deepseek-v4-flash' || deepseekModel === 'deepseek-v3'))) ? '#00BA7C' : 'var(--border)',
+                      background: (deepseekModel === item.id || (item.id === 'deepseek-reasoner' && (deepseekModel === 'deepseek-v4-pro' || deepseekModel === 'deepseek-r1')) || (item.id === 'deepseek-chat' && (deepseekModel === 'deepseek-v4-flash' || deepseekModel === 'deepseek-v3'))) ? 'rgba(0,186,124,0.15)' : 'var(--bg-glass)',
+                      color: (deepseekModel === item.id || (item.id === 'deepseek-reasoner' && (deepseekModel === 'deepseek-v4-pro' || deepseekModel === 'deepseek-r1')) || (item.id === 'deepseek-chat' && (deepseekModel === 'deepseek-v4-flash' || deepseekModel === 'deepseek-v3'))) ? '#00BA7C' : 'var(--text-muted)'
+                    }}>{item.label}</button>
                 ))}
               </div>
               <input
@@ -1738,25 +1777,33 @@ ${pdfText}
                 className="input-control"
                 value={deepseekModel}
                 onChange={e => { setDeepseekModel(e.target.value); localStorage.setItem('deepseekModel', e.target.value); }}
-                placeholder="ex: deepseek-v4-pro"
+                placeholder="ex: deepseek-reasoner"
                 style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
               />
               <p style={{ marginTop: '0.4rem', fontSize: '0.73rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                💡 Utilisez <strong>deepseek-v4-pro</strong> (DeepSeek R1) pour le raisonnement logique poussé et la résolution d&apos;exercices complexes, ou <strong>deepseek-v4-flash</strong> pour l&apos;extraction ultra rapide et économique.
+                💡 Utilisez <strong>deepseek-reasoner</strong> (DeepSeek-R1) pour le raisonnement logique poussé et la résolution d&apos;exercices complexes, ou <strong>deepseek-chat</strong> (DeepSeek-V3) pour l&apos;extraction ultra rapide et économique.
               </p>
             </div>
           ) : (
             <div className="input-group" style={{ marginBottom: '1.5rem' }}>
               <label>Modèle Gemini <span style={{fontWeight:400, color:'var(--text-muted)'}}>— ID exact de l'API</span></label>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
-                {['gemini-2.5-flash', 'gemini-2.5-flash-thinking', 'gemini-2.5-pro', 'gemini-3.5-flash', 'gemini-3.1-pro', 'gemini-2.0-flash', 'gemini-1.5-flash'].map(m => (
-                  <button key={m} type="button"
-                    onClick={() => { setGeminiModel(m); localStorage.setItem('geminiModel', m); }}
+                {[
+                  { id: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash (Recommandé)' },
+                  { id: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash' },
+                  { id: 'gemini-3.5-flash-thinking', label: 'Gemini 3.5 Flash Thinking' },
+                  { id: 'gemini-3.1-pro', label: 'Gemini 3.1 Pro' },
+                  { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+                  { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
+                  { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' }
+                ].map(item => (
+                  <button key={item.id} type="button"
+                    onClick={() => { setGeminiModel(item.id); localStorage.setItem('geminiModel', item.id); }}
                     style={{ padding: '0.3rem 0.65rem', borderRadius: 8, border: '1px solid', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
-                      borderColor: geminiModel === m ? '#4285F4' : 'var(--border)',
-                      background: geminiModel === m ? 'rgba(66,133,244,0.15)' : 'var(--bg-glass)',
-                      color: geminiModel === m ? '#4285F4' : 'var(--text-muted)'
-                    }}>{m}</button>
+                      borderColor: (geminiModel === item.id || (item.id === 'gemini-3.6-flash' && geminiModel === 'gemini-2.5-flash')) ? '#4285F4' : 'var(--border)',
+                      background: (geminiModel === item.id || (item.id === 'gemini-3.6-flash' && geminiModel === 'gemini-2.5-flash')) ? 'rgba(66,133,244,0.15)' : 'var(--bg-glass)',
+                      color: (geminiModel === item.id || (item.id === 'gemini-3.6-flash' && geminiModel === 'gemini-2.5-flash')) ? '#4285F4' : 'var(--text-muted)'
+                    }}>{item.label}</button>
                 ))}
               </div>
               <input
@@ -1764,13 +1811,11 @@ ${pdfText}
                 className="input-control"
                 value={geminiModel}
                 onChange={e => { setGeminiModel(e.target.value); localStorage.setItem('geminiModel', e.target.value); }}
-                placeholder="ex: gemini-3.5-flash"
+                placeholder="ex: gemini-3.6-flash"
                 style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
               />
               <p style={{ marginTop: '0.4rem', fontSize: '0.73rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                💡 Vérifiez les IDs disponibles sur{' '}
-                <a href="https://aistudio.google.com" target="_blank" rel="noopener noreferrer" style={{ color: '#4285F4', fontWeight: 600 }}>aistudio.google.com</a>.
-                Le modèle <strong>gemini-3.5-flash</strong> ou <strong>gemini-3.1-pro</strong> est recommandé pour sa rapidité et son respect strict du schéma de sortie.
+                💡 Recommandé : <strong>gemini-3.6-flash</strong> ou <strong>gemini-3.5-flash</strong> (Dernière version officielle, haute fidélité LaTeX et extraction intégrale).
               </p>
             </div>
           )}

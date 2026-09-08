@@ -1,6 +1,6 @@
 // src/pages/AdminClassDetail.jsx
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getClassById, updateClass, removeCompetitionFromClass, updateCompetitionGrade } from '../services/classService';
 import { getAllUsers, createUserDoc, updateUserDoc } from '../services/userService';
@@ -32,7 +32,20 @@ import { normalizeLevel } from '../utils/levelHelpers';
 export default function AdminClassDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, refreshAdminData } = useAuth();
+
+  const goBack = () => {
+    if (location.state?.from) {
+      navigate(location.state.from);
+      return;
+    }
+    if (window.history.length > 2) {
+      navigate(-1);
+      return;
+    }
+    navigate('/admin/classes');
+  };
 
   // Component States
   const [classObj, setClassObj] = useState(null);
@@ -1474,7 +1487,7 @@ export default function AdminClassDetail() {
       
       {/* Back button */}
       <button 
-        onClick={() => navigate('/admin/classes')} 
+        onClick={goBack} 
         style={{
           display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
           background: 'none', border: 'none', color: 'var(--text-muted)',
