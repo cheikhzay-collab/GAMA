@@ -84,7 +84,7 @@ function getLevelBadgeInfo(levelKey, rawSchool) {
 }
 
 export default function AdminExams() {
-  const { exams, toggleExamStatus, schools, deleteExam, toggleArchiveExam, loadExamQuestions } = useAuth();
+  const { exams, toggleExamStatus, schools, deleteExam, toggleArchiveExam, loadExamQuestions, refreshExams, isRefreshingExams } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -96,6 +96,22 @@ export default function AdminExams() {
   const [openMenuId, setOpenMenuId] = useState(null);
   const [openOmrMenuId, setOpenOmrMenuId] = useState(null);
   const [downloadingOmrId, setDownloadingOmrId] = useState(null);
+  const [syncSuccessMsg, setSyncSuccessMsg] = useState('');
+
+  // Auto-refresh from Supabase on mount
+  useEffect(() => {
+    if (refreshExams) {
+      refreshExams({ forceRefresh: true });
+    }
+  }, []);
+
+  const handleManualSync = async () => {
+    if (refreshExams) {
+      const res = await refreshExams({ forceRefresh: true });
+      setSyncSuccessMsg(`Base de données synchronisée (${res?.length || 0} QCM)`);
+      setTimeout(() => setSyncSuccessMsg(''), 3500);
+    }
+  };
 
   // Close dropdown menu when clicking outside
   useEffect(() => {
@@ -398,6 +414,10 @@ export default function AdminExams() {
           cursor: pointer;
           transition: all 0.15s ease;
         }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
       `}</style>
 
       {/* ── Top Header ── */}
@@ -408,17 +428,89 @@ export default function AdminExams() {
               <Library size={22} color="#fff" />
             </div>
             <div>
-              <h1 style={{ fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.025em', margin: 0, color: 'var(--text-main)' }}>
-                Bibliothèque QCM
-              </h1>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.86rem', margin: 0, marginTop: '2px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <h1 style={{ fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.025em', margin: 0, color: 'var(--text-main)' }}>
+                  Bibliothèque QCM
+                </h1>
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '0.2rem 0.65rem',
+                  borderRadius: '999px',
+                  background: 'rgba(16, 185, 129, 0.08)',
+                  border: '1px solid rgba(16, 185, 129, 0.25)',
+                  color: '#059669',
+                  fontSize: '0.72rem',
+                  fontWeight: 700
+                }}>
+                  <span style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: '50%',
+                    background: '#10B981',
+                    boxShadow: '0 0 6px #10B981',
+                    display: 'inline-block'
+                  }} />
+                  Supabase Connecté ({exams?.length || 0} QCM)
+                </span>
+                {syncSuccessMsg && (
+                  <span style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '0.2rem 0.6rem',
+                    borderRadius: '999px',
+                    background: 'rgba(113, 109, 242, 0.1)',
+                    border: '1px solid rgba(113, 109, 242, 0.25)',
+                    color: 'var(--violet)',
+                    fontSize: '0.72rem',
+                    fontWeight: 700
+                  }}>
+                    <CheckCircle2 size={12} /> {syncSuccessMsg}
+                  </span>
+                )}
+              </div>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.86rem', margin: 0, marginTop: '4px' }}>
                 Gestion centralisée des concours, annales, corrections et banques d'exercices
               </p>
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.65rem', width: isMobile ? '100%' : 'auto' }}>
+        <div style={{ display: 'flex', gap: '0.65rem', width: isMobile ? '100%' : 'auto', flexWrap: 'wrap' }}>
+          <button
+            onClick={handleManualSync}
+            disabled={isRefreshingExams}
+            title="Synchroniser immédiatement avec la base de données Supabase"
+            style={{
+              flex: isMobile ? 1 : 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 7,
+              padding: '0.65rem 1.05rem',
+              borderRadius: 11,
+              background: 'var(--bg-card)',
+              color: 'var(--text-main)',
+              border: '1px solid var(--border)',
+              fontWeight: 700,
+              fontSize: '0.86rem',
+              cursor: isRefreshingExams ? 'wait' : 'pointer',
+              boxShadow: 'var(--shadow-card)',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <RotateCcw
+              size={15}
+              style={{
+                color: 'var(--violet)',
+                animation: isRefreshingExams ? 'spin 1s linear infinite' : 'none'
+              }}
+            />
+            <span>{isRefreshingExams ? 'Synchronisation...' : (isMobile ? 'Sync' : 'Actualiser DB')}</span>
+          </button>
+
           <button
             onClick={() => setShowEbook(true)}
             style={{

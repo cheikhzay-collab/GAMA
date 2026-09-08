@@ -1389,6 +1389,24 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const [isRefreshingExams, setIsRefreshingExams] = useState(false);
+
+  const refreshExams = useCallback(async (options = { forceRefresh: true }) => {
+    setIsRefreshingExams(true);
+    try {
+      const freshExams = await getAllExams(options);
+      if (Array.isArray(freshExams)) {
+        setExams(freshExams);
+      }
+      return freshExams;
+    } catch (err) {
+      console.warn('[AuthContext] refreshExams error:', err);
+      return exams;
+    } finally {
+      setIsRefreshingExams(false);
+    }
+  }, [exams]);
+
   const updateUserTier = async (userId, newTier) => {
     if (SUPABASE_ENABLED) {
       try {
@@ -2391,7 +2409,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{ 
-      user, users, login, logout, register, loginWithGoogle: loginGoogle, exams, addExam, updateUserTier, updateProfile,
+      user, users, login, logout, register, loginWithGoogle: loginGoogle, exams, refreshExams, isRefreshingExams, addExam, updateUserTier, updateProfile,
       toggleExamStatus, updateExamDetails, deleteExam, toggleArchiveExam,
       plans, getPlans: getPlansConfig, getPlansConfig, activateSubscription, cancelSubscription, updateStudentCRM, deleteStudent, addPlan, removePlan, updatePlan,
       activationCodes, generateActivationCodes, redeemActivationCode,

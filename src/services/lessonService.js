@@ -171,18 +171,23 @@ export const getAllLessons = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('lessons_all', async () => {
-    // 1. Try Supabase if configured (with timeout to prevent freezing on slow/cold connections)
+    // 1. Try Supabase metadata view (ultra-fast projection, excludes heavy content jsonb)
     if (supabase) {
       try {
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Supabase fetch timeout')), 2500)
-        );
-        const fetchPromise = supabase
-          .from('lessons')
+        let { data, error } = await supabase
+          .from('lessons_metadata')
           .select('*')
           .order('created_at', { ascending: false });
 
-        const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
+        if (error || !data) {
+          // Fallback to lessons table with lightweight columns
+          const fallback = await supabase
+            .from('lessons')
+            .select('id, title, subject, chapter_number, teacher, phone, schools, level, doc_type, is_active, is_archived, created_at, updated_at')
+            .order('created_at', { ascending: false });
+          data = fallback.data;
+          error = fallback.error;
+        }
 
         if (!error && Array.isArray(data) && data.length > 0) {
           const mapped = data.map(mapDBToLesson);
@@ -190,7 +195,7 @@ export const getAllLessons = async (options = {}) => {
           return mapped;
         }
       } catch (err) {
-        console.warn('[Supabase] Failed to fetch lessons (or timeout), trying fallback:', err);
+        console.warn('[Supabase] Failed to fetch lessons:', err);
       }
     }
 

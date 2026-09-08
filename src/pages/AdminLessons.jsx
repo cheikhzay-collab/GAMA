@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
-  getAllLessons, toggleLessonStatus, deleteLesson, updateLesson
+  getAllLessons, getLessonById, toggleLessonStatus, deleteLesson, updateLesson
 } from '../services/lessonService';
 import { queryCache } from '../services/queryCache';
 import { getAllClasses } from '../services/classService';
@@ -11,7 +11,7 @@ import {
   CheckCircle, XCircle, Library, PlusCircle, AlertCircle, Languages,
   Edit3, CheckSquare, Square, MinusSquare, X, Check, Filter, Layers,
   CheckCheck, HelpCircle, Loader2, Calendar, ArrowUpDown,
-  LayoutGrid, List, User, ChevronRight
+  LayoutGrid, List, User, ChevronRight, RotateCcw
 } from 'lucide-react';
 import TranslateModal from '../components/TranslateModal';
 import LessonBulkEditModal from '../components/LessonBulkEditModal';
@@ -98,6 +98,8 @@ export default function AdminLessons() {
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'active' | 'inactive'
   const [sortOrder, setSortOrder] = useState('newest'); // 'newest' | 'oldest'
   const [viewMode, setViewMode] = useState('table'); // 'table' | 'cards'
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [syncSuccessMsg, setSyncSuccessMsg] = useState('');
 
   const handleGenerateQcmFromLesson = async (lesson) => {
     const geminiKey = localStorage.getItem('geminiApiKey') || '';
@@ -116,8 +118,15 @@ export default function AdminLessons() {
     setSuccess('');
 
     try {
-      // 1. Extract plain text — THEORY ONLY (exclude exercises)
-      const sectionsContentText = (lesson.content?.sections || [])
+      // 1. Extract plain text — ensure full content is loaded
+      let fullLesson = lesson;
+      if (!fullLesson.content?.sections || fullLesson.content.sections.length === 0) {
+        const loaded = await getLessonById(lesson.id);
+        if (loaded) fullLesson = loaded;
+      }
+
+      // THEORY ONLY (exclude exercises)
+      const sectionsContentText = (fullLesson.content?.sections || [])
         .filter(sec => sec.type !== 'exercise') // Exclude exercise sections
         .map(sec => {
           const header = sec.section_header ? `[${sec.section_header}] ` : '';
@@ -292,6 +301,7 @@ ${sectionsContentText}
 
   // Fetch Lessons
   const fetchLessonsList = async (force = false) => {
+    if (force) setIsRefreshing(true);
     // Only show full loading spinner if we don't have any cached lessons yet
     setLessons(prev => {
       if (!prev || prev.length === 0) {
@@ -303,12 +313,17 @@ ${sectionsContentText}
       const data = await getAllLessons({ forceRefresh: force });
       if (Array.isArray(data) && data.length > 0) {
         setLessons(data);
+        if (force) {
+          setSyncSuccessMsg(`Base de données synchronisée (${data.length} fiches)`);
+          setTimeout(() => setSyncSuccessMsg(''), 3500);
+        }
       }
     } catch (err) {
       console.error(err);
       setError('Erreur lors du chargement des fiches de cours.');
     } finally {
       setLoadingLessons(false);
+      if (force) setIsRefreshing(false);
     }
   };
 
@@ -324,7 +339,7 @@ ${sectionsContentText}
   };
 
   useEffect(() => {
-    fetchLessonsList(false);
+    fetchLessonsList(true);
     fetchClassesList();
 
     const unsubscribe = queryCache.subscribe('lessons_all', (updated) => {
@@ -532,13 +547,51 @@ ${sectionsContentText}
         {/* ── Page Header ── */}
         <header style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1.5rem' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
               <div style={{ width: 44, height: 44, borderRadius: '14px', background: 'linear-gradient(135deg, var(--violet), var(--emerald))', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 20px rgba(113, 109, 242, 0.15)' }}>
                 <Library size={22} color="#fff" />
               </div>
               <h1 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.02em', margin: 0, color: 'var(--text-main)' }}>
                 Bibliothèque de Fiches de Cours
               </h1>
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '0.2rem 0.65rem',
+                borderRadius: '999px',
+                background: 'rgba(16, 185, 129, 0.08)',
+                border: '1px solid rgba(16, 185, 129, 0.25)',
+                color: '#059669',
+                fontSize: '0.72rem',
+                fontWeight: 700
+              }}>
+                <span style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: '50%',
+                  background: '#10B981',
+                  boxShadow: '0 0 6px #10B981',
+                  display: 'inline-block'
+                }} />
+                Supabase Connecté ({totalCount} Fiches)
+              </span>
+              {syncSuccessMsg && (
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '0.2rem 0.6rem',
+                  borderRadius: '999px',
+                  background: 'rgba(113, 109, 242, 0.1)',
+                  border: '1px solid rgba(113, 109, 242, 0.25)',
+                  color: 'var(--violet)',
+                  fontSize: '0.72rem',
+                  fontWeight: 700
+                }}>
+                  <CheckCircle size={12} /> {syncSuccessMsg}
+                </span>
+              )}
             </div>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>
               Gérez les fiches de cours dynamiques générées par IA avec mise en page LaTeX et impression PDF.
@@ -546,7 +599,38 @@ ${sectionsContentText}
           </div>
 
           {/* Header right actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0, flexWrap: 'wrap' }}>
+
+            <button
+              onClick={() => fetchLessonsList(true)}
+              disabled={isRefreshing}
+              title="Synchroniser immédiatement avec la base de données Supabase"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 7,
+                padding: '0.65rem 1.05rem',
+                borderRadius: 11,
+                background: 'var(--bg-card)',
+                color: 'var(--text-main)',
+                border: '1px solid var(--border)',
+                fontWeight: 700,
+                fontSize: '0.84rem',
+                cursor: isRefreshing ? 'wait' : 'pointer',
+                boxShadow: 'var(--shadow-card)',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <RotateCcw
+                size={15}
+                style={{
+                  color: 'var(--violet)',
+                  animation: isRefreshing ? 'spin 1s linear infinite' : 'none'
+                }}
+              />
+              <span>{isRefreshing ? 'Synchronisation...' : 'Actualiser DB'}</span>
+            </button>
 
             <button
               onClick={() => navigate('/admin/ai-lessons')}
