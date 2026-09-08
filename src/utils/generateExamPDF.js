@@ -426,15 +426,15 @@ const getTemplateStyles = (style, fontSize = null) => {
       .ws-section { margin-bottom: 0 !important; padding: 0 !important; }
       .ws-exercise { margin-bottom: 0.12rem !important; }
       .ws-ex-body { padding: 0.12rem 0.45rem !important; line-height: 1.26 !important; }
-      .ws-qtext { margin-bottom: 1.5px !important; line-height: 1.25 !important; font-size: 0.92em !important; }
-      .ctx-box { margin-bottom: 2px !important; padding: 1.5px 5px !important; font-size: 0.86em !important; }
+      .ws-qtext { margin-bottom: 1.5px !important; line-height: 1.25 !important; font-size: 1.0em !important; }
+      .ctx-box { margin-bottom: 2px !important; padding: 1.5px 5px !important; font-size: 0.95em !important; }
       .ws-opts { gap: 2.5px 6px !important; margin-top: 2px !important; }
       .ws-opt { padding: 2px 6px !important; border-radius: 4px !important; font-size: 1.0em !important; }
-      .ws-opt-text { font-size: 1.05em !important; }
-      .ws-opt .katex { font-size: 1.12em !important; }
-      .ws-opt-letter { width: 17px !important; height: 17px !important; font-size: 7.5pt !important; }
-      .katex { font-size: 0.94em !important; }
-      .katex-display { margin: 1px 0 !important; font-size: 0.95em !important; }
+      .ws-opt-text { font-size: 1.0em !important; line-height: 1.25 !important; }
+      .ws-opt .katex, .ws-qtext .katex { font-size: 1.0em !important; }
+      .ws-opt-letter { width: 17px !important; height: 17px !important; font-size: 7.8pt !important; }
+      .katex { font-size: 1.0em !important; }
+      .katex-display { margin: 1px 0 !important; font-size: 1.0em !important; }
       .qcard { border: none; border-bottom: 1px dashed #cbd5e1; padding: 5px 0; margin-bottom: 6px; }
       .opts { gap: 4px 10px !important; }
       .opt { padding: 2px 5px; }
@@ -480,15 +480,15 @@ const getTemplateStyles = (style, fontSize = null) => {
       .ws-exercise { margin-bottom: 0.08rem !important; }
       .ws-ex-header { display: none !important; }
       .ws-ex-body { padding: 0.08rem 0.38rem !important; line-height: 1.2 !important; border-radius: 3px 5px 5px 3px !important; }
-      .ws-qtext { margin-bottom: 1px !important; line-height: 1.2 !important; font-size: 0.9em !important; }
-      .ctx-box { margin-bottom: 1.5px !important; padding: 1px 4px !important; font-size: 0.82em !important; }
+      .ws-qtext { margin-bottom: 1px !important; line-height: 1.25 !important; font-size: 1.0em !important; }
+      .ctx-box { margin-bottom: 1.5px !important; padding: 1px 4px !important; font-size: 0.95em !important; }
       .ws-opts { gap: 2px 6px !important; margin-top: 1.5px !important; }
       .ws-opt { padding: 1.5px 5px !important; border-radius: 3px !important; font-size: 1.0em !important; }
-      .ws-opt-text { font-size: 1.05em !important; }
-      .ws-opt .katex { font-size: 1.12em !important; }
-      .ws-opt-letter { width: 16px !important; height: 16px !important; font-size: 7.2pt !important; }
-      .katex { font-size: 0.94em !important; }
-      .katex-display { margin: 1px 0 !important; font-size: 0.94em !important; }
+      .ws-opt-text { font-size: 1.0em !important; line-height: 1.25 !important; }
+      .ws-opt .katex, .ws-qtext .katex { font-size: 1.0em !important; }
+      .ws-opt-letter { width: 16px !important; height: 16px !important; font-size: 7.5pt !important; }
+      .katex { font-size: 1.0em !important; }
+      .katex-display { margin: 1px 0 !important; font-size: 1.0em !important; }
       .qcard { border: none; border-bottom: 1px dashed #cbd5e1; padding: 4px 0; margin-bottom: 5px; }
       .opts { gap: 3px 8px !important; }
       .opt { padding: 1.5px 4px; }
@@ -2140,7 +2140,7 @@ html{counter-reset:page ${startPage - 1}}
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
 }
-.ws-qtext { font-family: inherit; font-size: 0.98em; font-weight: 500; line-height: 1.34; color: #0f172a; margin-bottom: 2px;
+.ws-qtext { font-family: inherit; font-size: 1.0em; font-weight: 500; line-height: 1.34; color: #0f172a; margin-bottom: 2px;
   display: flow-root;
   break-inside: avoid;
   page-break-inside: avoid;
@@ -2161,7 +2161,7 @@ html{counter-reset:page ${startPage - 1}}
   .ws-opts-5col, .ws-opts-4col, .ws-opts-2col { grid-template-columns: 1fr; }
 }
 
-.ws-opt { display: flex; align-items: center; gap: 7px; font-size: 1.02em; color: #1e293b; padding: 2.5px 7px;
+.ws-opt { display: flex; align-items: center; gap: 7px; font-size: 1.0em; color: #1e293b; padding: 2.5px 7px;
   border-radius: 5px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
@@ -2175,13 +2175,13 @@ html{counter-reset:page ${startPage - 1}}
 }
 .ws-opt-text {
   font-family: inherit;
-  font-size: 1.05em;
+  font-size: 1.0em;
   display: inline-flex;
   align-items: center;
   flex: 1;
 }
-.ws-opt .katex {
-  font-size: 1.12em !important;
+.ws-opt .katex, .ws-qtext .katex {
+  font-size: 1.0em !important;
 }
 
 /* ── Print Styles ── */
@@ -2211,7 +2211,7 @@ html{counter-reset:page ${startPage - 1}}
     box-shadow: none !important;
   }
 }
-.katex, .katex *, .katex .mathnormal, .katex .mord, .katex .mbin, .katex .mrel, .katex .mopen, .katex .mclose, .katex .mpunct { font-size: 0.95em !important; color: inherit !important; font-weight: normal !important; white-space: nowrap !important; } .katex .mathbf, .katex .mathbf * { font-weight: bold !important; } .katex-display { margin: 4px 0; font-size: 1.0em !important; white-space: normal !important; }
+.katex { font-size: 1.0em !important; color: inherit !important; font-weight: normal !important; white-space: nowrap !important; } .katex .mathbf, .katex .mathbf * { font-weight: bold !important; } .katex-display { margin: 4px 0; font-size: 1.0em !important; white-space: normal !important; }
 ${templateCSS}
 </style>
 </head><body>
@@ -2967,7 +2967,7 @@ html{counter-reset:page ${startPage - 1}}
   .ws-opts-5col, .ws-opts-4col, .ws-opts-2col { grid-template-columns: 1fr; }
 }
 
-.ws-opt { display: flex; align-items: center; gap: 8px; font-size: 1.02em; color: #1e293b; padding: 3px 8px;
+.ws-opt { display: flex; align-items: center; gap: 8px; font-size: 1.0em; color: #1e293b; padding: 3px 8px;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
@@ -2981,13 +2981,13 @@ html{counter-reset:page ${startPage - 1}}
 }
 .ws-opt-text {
   font-family: inherit;
-  font-size: 1.05em;
+  font-size: 1.0em;
   display: inline-flex;
   align-items: center;
   flex: 1;
 }
-.ws-opt .katex {
-  font-size: 1.12em !important;
+.ws-opt .katex, .ws-qtext .katex {
+  font-size: 1.0em !important;
 }
 .ws-opt-correct {
   background: #ecfdf5 !important;
@@ -3142,7 +3142,7 @@ html{counter-reset:page ${startPage - 1}}
     box-shadow: none !important;
   }
 }
-.katex, .katex *, .katex .mathnormal, .katex .mord, .katex .mbin, .katex .mrel, .katex .mopen, .katex .mclose, .katex .mpunct { font-size: 0.95em !important; color: inherit !important; font-weight: normal !important; white-space: nowrap !important; } .katex .mathbf, .katex .mathbf * { font-weight: bold !important; } .katex-display { margin: 4px 0; font-size: 1.0em !important; white-space: normal !important; }
+.katex { font-size: 1.0em !important; color: inherit !important; font-weight: normal !important; white-space: nowrap !important; } .katex .mathbf, .katex .mathbf * { font-weight: bold !important; } .katex-display { margin: 4px 0; font-size: 1.0em !important; white-space: normal !important; }
 ${templateCSS}
 </style>
 </head><body>
@@ -3639,7 +3639,7 @@ html{counter-reset:page ${startPage - 1}}
   display:flex;
   align-items:center;
   gap:12px;
-  font-size:0.95em;
+  font-size:1.0em;
   color:#334155;
   padding:6px 12px;
   border-radius:8px;
@@ -3779,7 +3779,7 @@ html{counter-reset:page ${startPage - 1}}
   .cover{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   ${!shouldShowCover ? '.cover{display:none!important}' : ''}
 }
-.katex, .katex *, .katex .mathnormal, .katex .mord, .katex .mbin, .katex .mrel, .katex .mopen, .katex .mclose, .katex .mpunct { font-size: 0.95em !important; color: inherit !important; font-weight: normal !important; white-space: nowrap !important; } .katex .mathbf, .katex .mathbf * { font-weight: bold !important; } .katex-display { margin: 4px 0; font-size: 1.0em !important; white-space: normal !important; }
+.katex { font-size: 1.0em !important; color: inherit !important; font-weight: normal !important; white-space: nowrap !important; } .katex .mathbf, .katex .mathbf * { font-weight: bold !important; } .katex-display { margin: 4px 0; font-size: 1.0em !important; white-space: normal !important; }
 ${templateCSS}
 </style>
 </head><body>
