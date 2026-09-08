@@ -411,53 +411,87 @@ const getTemplateStyles = (style) => {
   if (style === 'compact_eco') {
     return `
       /* === COMPACT ECO OVERRIDES === */
-      @page { margin: 0.5cm 0 0.7cm 0 !important; }
-      body { font-size: 9.5pt !important; line-height: 1.45 !important; }
+      @page { 
+        margin: 0.45cm 0.55cm 0.35cm 0.55cm; 
+        @bottom-left { content: none; }
+        @bottom-right { content: none; }
+      }
+      body { font-size: 8.8pt !important; line-height: 1.28 !important; padding-bottom: 0 !important; }
       .cover { display: none !important; }
       .omr-page { display: none !important; }
-      .qcard { border: none; border-bottom: 1px dashed #cbd5e1; padding: 8px 0; margin-bottom: 12px; }
-      .qnum { background: #475569; color: #fff; border-radius: 0; padding: 2px 6px; }
-      .opts { gap: 6px 16px !important; }
-      .opt { padding: 3px 6px; }
-      .opt-badge { width: 20px; height: 20px; font-size: 7.5pt; }
-      .subj-section { margin-bottom: 15px; }
-      .section-hdr { font-size: 0.95rem; padding: 4px 8px; background: #64748b; }
-      .rule-box, .trick-box { padding: 8px 12px; margin-top: 8px; font-size: 9pt; }
-      .rule-title, .trick-title { font-size: 8pt; margin-bottom: 3px; }
+      .ws-content { padding: 0 !important; margin: 0 !important; }
+      .ws-doc-header { margin-bottom: 0.2rem !important; padding-bottom: 0.15rem !important; }
+      .ws-doc-title { font-size: 1.05rem !important; }
+      .ws-doc-meta { font-size: 0.72rem !important; }
+      .ws-section { margin-bottom: 0 !important; padding: 0 !important; }
+      .ws-exercise { margin-bottom: 0.12rem !important; }
+      .ws-ex-body { padding: 0.12rem 0.45rem !important; line-height: 1.26 !important; }
+      .ws-qtext { margin-bottom: 1.5px !important; line-height: 1.25 !important; font-size: 0.92em !important; }
+      .ctx-box { margin-bottom: 2px !important; padding: 1.5px 5px !important; font-size: 0.86em !important; }
+      .ws-opts { gap: 2px 6px !important; margin-top: 1.5px !important; }
+      .ws-opt { padding: 1.2px 5px !important; border-radius: 4px !important; font-size: 0.84em !important; }
+      .ws-opt-letter { width: 16px !important; height: 16px !important; font-size: 7.2pt !important; }
+      .katex { font-size: 0.90em !important; }
+      .katex-display { margin: 1px 0 !important; font-size: 0.90em !important; }
+      .qcard { border: none; border-bottom: 1px dashed #cbd5e1; padding: 5px 0; margin-bottom: 6px; }
+      .opts { gap: 4px 10px !important; }
+      .opt { padding: 2px 5px; }
+      .opt-badge { width: 17px; height: 17px; font-size: 7pt; }
+      .subj-section { margin-bottom: 8px; }
+      .section-hdr { font-size: 0.88rem; padding: 3px 6px; background: #64748b; }
+      .rule-box, .trick-box { padding: 5px 8px; margin-top: 5px; font-size: 8.5pt; }
       
       /* Compact Header layout directly on page 1 */
       .compact-header-box {
-        margin: 0.4cm 1.3cm 0.3cm 1.3cm;
+        margin: 0.15cm 0 0.25cm 0;
         display: flex;
         justify-content: space-between;
         align-items: center;
         border: 1px solid #cbd5e1;
         border-radius: 6px;
-        padding: 8px 12px;
+        padding: 5px 8px;
         background: #f8fafc;
       }
-      .ch-left .ch-school { font-size: 8pt; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
-      .ch-left .ch-title { font-size: 1.25rem; font-weight: 900; color: #0f172a; margin-top: 2px; }
-      .ch-right { display: flex; gap: 8px; font-size: 8pt; }
-      .ch-pill { background: #e2e8f0; color: #334155; padding: 4px 10px; border-radius: 99px; font-weight: 600; white-space: nowrap; }
-      .compact-divider { border: 0; border-top: 1.5px solid #475569; margin: 0 1.3cm 0.4cm 1.3cm; }
+      .ch-left .ch-school { font-size: 7.5pt; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+      .ch-left .ch-title { font-size: 1.1rem; font-weight: 900; color: #0f172a; margin-top: 2px; }
+      .ch-right { display: flex; gap: 8px; font-size: 7.5pt; }
+      .ch-pill { background: #e2e8f0; color: #334155; padding: 3px 8px; border-radius: 99px; font-weight: 600; white-space: nowrap; }
+      .compact-divider { border: 0; border-top: 1.5px solid #475569; margin: 0 0 0.25cm 0; }
     `;
   }
   if (style === 'super_eco') {
     return `
       /* === SUPER ECO OVERRIDES === */
-      @page { margin: 0.5cm 0 0.7cm 0 !important; }
-      body { font-size: 9.5pt !important; line-height: 1.45 !important; }
+      @page { 
+        margin: 0.35cm 0.45cm 0.3cm 0.45cm; 
+        @bottom-left { content: none; }
+        @bottom-right { content: none; }
+      }
+      body { font-size: 8.4pt !important; line-height: 1.24 !important; padding-bottom: 0 !important; }
       .cover { display: none !important; }
       .omr-page { display: none !important; }
-      .qcard { border: none; border-bottom: 1px dashed #cbd5e1; padding: 8px 0; margin-bottom: 12px; }
-      .opts { gap: 6px 16px !important; }
-      .opt { padding: 3px 6px; }
-      .opt-badge { width: 20px; height: 20px; font-size: 7.5pt; }
-      .subj-section { margin-bottom: 15px; }
-      .section-hdr { font-size: 0.95rem; padding: 4px 8px; background: #64748b; }
-      .rule-box, .trick-box { padding: 8px 12px; margin-top: 8px; font-size: 9pt; }
-      .rule-title, .trick-title { font-size: 8pt; margin-bottom: 3px; }
+      .ws-content { padding: 0 !important; margin: 0 !important; }
+      .ws-doc-header { margin-bottom: 0.15rem !important; padding-bottom: 0.12rem !important; }
+      .ws-doc-title { font-size: 0.95rem !important; }
+      .ws-doc-meta { font-size: 0.68rem !important; }
+      .ws-section { margin-bottom: 0 !important; padding: 0 !important; }
+      .ws-exercise { margin-bottom: 0.08rem !important; }
+      .ws-ex-header { display: none !important; }
+      .ws-ex-body { padding: 0.08rem 0.38rem !important; line-height: 1.2 !important; border-radius: 3px 5px 5px 3px !important; }
+      .ws-qtext { margin-bottom: 1px !important; line-height: 1.2 !important; font-size: 0.9em !important; }
+      .ctx-box { margin-bottom: 1.5px !important; padding: 1px 4px !important; font-size: 0.82em !important; }
+      .ws-opts { gap: 1.5px 5px !important; margin-top: 1px !important; }
+      .ws-opt { padding: 1px 4px !important; border-radius: 3px !important; font-size: 0.8em !important; }
+      .ws-opt-letter { width: 14px !important; height: 14px !important; font-size: 6.5pt !important; }
+      .katex { font-size: 0.88em !important; }
+      .katex-display { margin: 1px 0 !important; font-size: 0.88em !important; }
+      .qcard { border: none; border-bottom: 1px dashed #cbd5e1; padding: 4px 0; margin-bottom: 5px; }
+      .opts { gap: 3px 8px !important; }
+      .opt { padding: 1.5px 4px; }
+      .opt-badge { width: 16px; height: 16px; font-size: 6.8pt; }
+      .subj-section { margin-bottom: 6px; }
+      .section-hdr { font-size: 0.84rem; padding: 2px 5px; background: #64748b; }
+      .rule-box, .trick-box { padding: 4px 6px; margin-top: 4px; font-size: 8pt; }
       
       /* Hide elements requested by user */
       .ws-ex-pill { display: none !important; }
@@ -469,19 +503,19 @@ const getTemplateStyles = (style) => {
         align-items: center;
         justify-content: center;
         border: 1.5px solid #005086;
-        border-radius: 4px;
-        width: 22px;
-        height: 22px;
+        border-radius: 3px;
+        width: 16px;
+        height: 16px;
         font-weight: 800;
-        font-size: 9pt;
+        font-size: 7.5pt;
         color: #005086;
-        margin-right: 8px;
+        margin-right: 4px;
         vertical-align: middle;
         background: #ffffff;
       }
       html[dir="rtl"] .super-eco-num {
         margin-right: 0 !important;
-        margin-left: 8px !important;
+        margin-left: 4px !important;
       }
     `;
   }
@@ -1256,7 +1290,7 @@ export const generateSubjectHTML = async (examTitle, school, year, questions, se
           <span class="ws-ans-tag ws-ans-tag-subject">${subject.toUpperCase()}</span>
         </div>
         <div class="ws-ex-body">
-          ${q.context ? `<div class="ctx-box" style="margin-bottom: 8px;">${qnumHtml}📋 ${renderMath(q.context)} ${renderQuestionImageHTML(q, 'context')}</div>` : ''}
+          ${q.context ? `<div class="ctx-box">${qnumHtml}📋 ${renderMath(q.context)} ${renderQuestionImageHTML(q, 'context')}</div>` : ''}
           ${renderQuestionImageHTML(q, 'above')}
           <div class="ws-qtext">${renderQuestionImageHTML(q, 'side')}${q.context ? '' : qnumHtml}${renderMath(q.question || '')}</div>
           ${renderQuestionImageHTML(q, 'below')}
@@ -1315,34 +1349,16 @@ html[dir="rtl"] .katex, html[dir="rtl"] .katex-display {
 *{box-decoration-break:clone;-webkit-box-decoration-break:clone;box-sizing:border-box;margin:0;padding:0}
 body{
   font-family: ${fontFamilyCSS};
-  color:#1e293b;background:#f8fafc;font-size:${fontSizeCSS};line-height:1.65;
-  padding-bottom:1.2cm;
+  color:#1e293b;background:#f8fafc;font-size:${fontSizeCSS};line-height:1.32;
+  padding-bottom:0;
   print-color-adjust:exact;-webkit-print-color-adjust:exact;
   font-feature-settings:'liga' 1,'kern' 1;
 }
 @page{
   size:A4;
-  margin:1.5cm 1.3cm 1.0cm 1.3cm;
-  ${showPageNumbers ? `
-  @bottom-left {
-    content: "⚡ L'CONQ   |   ${examTitle}   |   ${copyrightLine}";
-    font-family: ${fontFamilyCSS};
-    font-size: 7.5pt;
-    font-weight: 500;
-    color: #64748b;
-    margin-left: 1.3cm;
-    margin-bottom: 0.35cm;
-  }
-  @bottom-right {
-    content: "${profPhone ? profPhone + '   ·   ' : ''}${siteUrl}   |   Sujet Blanc   |   " counter(page) " / " counter(pages);
-    font-family: ${fontFamilyCSS};
-    font-size: 7.5pt;
-    font-weight: 600;
-    color: #0f172a;
-    margin-right: 1.3cm;
-    margin-bottom: 0.35cm;
-  }
-  ` : ''}
+  margin: 0.45cm 0.55cm 0.35cm 0.55cm;
+  @bottom-left { content: none; }
+  @bottom-right { content: none; }
 }
 @page :first {
   @bottom-left { content: none; }
@@ -2025,7 +2041,7 @@ html{counter-reset:page ${startPage - 1}}
 
 /* ── Content offset for sidebar ── */
 .ws-content {
-  padding: ${marginCSS};
+  padding: 0;
   margin-left: ${pdfConf.showSidebar ? '85px' : '0'};
 }
 
@@ -2035,31 +2051,31 @@ html{counter-reset:page ${startPage - 1}}
   align-items: center;
   gap: 0.85rem;
   border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 0.75rem;
-  margin-top: 2.5rem;
-  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.8rem;
   page-break-inside: avoid;
   break-inside: avoid;
 }
 .ws-sec-badge {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   background: #005086;
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   flex-shrink: 0;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  box-shadow: 0 4px 10px rgba(0, 80, 134, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 80, 134, 0.15);
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
 }
 .ws-sec-pill {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #0f172a;
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -2067,22 +2083,22 @@ html{counter-reset:page ${startPage - 1}}
 }
 
 /* ── Exercise Wrapper ── */
-.ws-exercise { margin-bottom: 0.45rem;
+.ws-exercise { margin-bottom: 0.22rem;
   page-break-inside: avoid;
   break-inside: avoid;
 }
-.ws-ex-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.15rem;
+.ws-ex-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.1rem;
 }
-.ws-ex-pill { background: #005086; color: #ffffff; padding: 0.2rem 0.65rem;
-  border-radius: 10px;
+.ws-ex-pill { background: #005086; color: #ffffff; padding: 0.15rem 0.5rem;
+  border-radius: 6px;
   font-weight: 800;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 2px 8px rgba(0, 80, 134, 0.1);
+  gap: 0.4rem;
+  box-shadow: 0 2px 6px rgba(0, 80, 134, 0.08);
   font-family: 'Plus Jakarta Sans', sans-serif;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
 }
@@ -2093,17 +2109,17 @@ html{counter-reset:page ${startPage - 1}}
   background: #ffffff;
   color: #005086;
   padding: 1px 4px; border-radius: 4px;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   font-weight: 900;
 }
 .ws-ans-tag {
   font-family: 'Plus Jakarta Sans', sans-serif;
   color: #64748b;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 500;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  padding: 1px 6px; border-radius: 5px;
+  padding: 1px 5px; border-radius: 4px;
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
 }
@@ -2111,13 +2127,13 @@ html{counter-reset:page ${startPage - 1}}
 /* ── Exercise Body Box ── */
 .ws-ex-body {
   display: flow-root;
-  border-left: 3px solid #005086; background: #ffffff; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; border-radius: 4px 10px 10px 4px; padding: 0.4rem 0.75rem;
-  line-height: 1.75;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02);
+  border-left: 3px solid #005086; background: #ffffff; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; border-radius: 4px 8px 8px 4px; padding: 0.22rem 0.6rem;
+  line-height: 1.35;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02);
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
 }
-.ws-qtext { font-family: inherit; font-size: 1.0em; font-weight: 500; line-height: 1.45; color: #0f172a; margin-bottom: 4px;
+.ws-qtext { font-family: inherit; font-size: 0.98em; font-weight: 500; line-height: 1.34; color: #0f172a; margin-bottom: 2px;
   display: flow-root;
   break-inside: avoid;
   page-break-inside: avoid;
@@ -2126,7 +2142,7 @@ html{counter-reset:page ${startPage - 1}}
 }
 
 /* ── Options Grid ── */
-.ws-opts { display: grid; gap: 6px 12px; padding-left: 0; margin-top: 4px;
+.ws-opts { display: grid; gap: 3px 8px; padding-left: 0; margin-top: 2px;
   break-inside: avoid;
   page-break-inside: avoid;
 }
@@ -2138,16 +2154,16 @@ html{counter-reset:page ${startPage - 1}}
   .ws-opts-5col, .ws-opts-4col, .ws-opts-2col { grid-template-columns: 1fr; }
 }
 
-.ws-opt { display: flex; align-items: center; gap: 8px; font-size: 0.9em; color: #334155; padding: 3px 8px;
-  border-radius: 10px;
+.ws-opt { display: flex; align-items: center; gap: 6px; font-size: 0.88em; color: #334155; padding: 2px 6px;
+  border-radius: 5px;
   border: 1px solid #f1f5f9;
   background: #f8fafc;
 }
 .ws-opt-letter {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
-  font-size: 8.5pt;
-  width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; border-radius: 5px; background: #ffffff; color: #64748b; border: 1px solid #cbd5e1; font-size: 8pt;
+  font-size: 7.5pt;
+  width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; background: #ffffff; color: #64748b; border: 1px solid #cbd5e1;
   flex-shrink: 0;
 }
 .ws-opt-text {
@@ -2542,38 +2558,20 @@ html[dir="rtl"] .katex, html[dir="rtl"] .katex-display {
 *{box-decoration-break:clone;-webkit-box-decoration-break:clone;box-sizing:border-box;margin:0;padding:0}
 body{
   font-family: 'Plus Jakarta Sans', sans-serif;
-  color:#1e293b;background:#f8fafc;font-size:${fontSizeCSS};line-height:1.65;
-  padding-bottom:1.2cm;
+  color:#1e293b;background:#f8fafc;font-size:${fontSizeCSS};line-height:1.38;
+  padding-bottom:0;
   print-color-adjust:exact;-webkit-print-color-adjust:exact;
   font-feature-settings:'liga' 1,'kern' 1;
 }
 @page{
   size:A4;
-  margin:1.5cm 1.3cm 1.0cm 1.3cm;
-  ${showPageNumbers ? `
-  @bottom-left {
-    content: "⚡ L'CONQ   |   ${examTitle}   |   ${copyrightLine}";
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 7.5pt;
-    font-weight: 500;
-    color: #64748b;
-    margin-left: 1.3cm;
-    margin-bottom: 0.35cm;
-  }
-  @bottom-right {
-    content: "${profPhone ? profPhone + '   ·   ' : ''}${siteUrl}   |   Correction   |   " counter(page) " / " counter(pages);
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 7.5pt;
-    font-weight: 600;
-    color: #0f172a;
-    margin-right: 1.3cm;
-    margin-bottom: 0.35cm;
-  }
-  ` : ''}
+  margin: 0.6cm 0.7cm 0.5cm 0.7cm;
+  @bottom-left { content: none !important; }
+  @bottom-right { content: none !important; }
 }
 @page :first {
-  @bottom-left { content: none; }
-  @bottom-right { content: none; }
+  @bottom-left { content: none !important; }
+  @bottom-right { content: none !important; }
 }
 html{counter-reset:page ${startPage - 1}}
 
@@ -3259,7 +3257,7 @@ printWhenReady();
         ${sourceTag}
         <span class="ans-badge">Réponse : ${q.correct_answer || '?'}</span>
       </div>
-      ${q.context ? `<div class="ctx-box" style="margin-bottom: 8px;">📋 ${renderMath(q.context)} ${renderQuestionImageHTML(q, 'context')}</div>` : ''}
+      ${q.context ? `<div class="ctx-box" style="margin-bottom: 4px;">📋 ${renderMath(q.context)} ${renderQuestionImageHTML(q, 'context')}</div>` : ''}
       ${renderQuestionImageHTML(q, 'above')}
       <div class="qtext">${renderQuestionImageHTML(q, 'side')}${renderMath(q.question || '')}</div>
       ${renderQuestionImageHTML(q, 'below')}
@@ -3290,38 +3288,20 @@ ${getFontImportLinks()}
 body{
   font-family:${fontFamilyCSS};
   background:#fff;color:#111;
-  font-size:${fontSizeCSS};line-height:1.65;
-  padding-bottom:1.2cm;
+  font-size:${fontSizeCSS};line-height:1.38;
+  padding-bottom:0;
   print-color-adjust:exact;-webkit-print-color-adjust:exact;
   font-feature-settings:'liga' 1,'kern' 1;}
 
 @page{
   size:A4;
-  margin:1.5cm 1.3cm 1.0cm 1.3cm;
-  ${showPageNumbers ? `
-  @bottom-left {
-    content: "⚡ L'CONQ   |   ${topic}   |   ${copyrightLine}";
-    font-family: ${fontFamilyCSS};
-    font-size: 7pt;
-    font-weight: 500;
-    color: #6b7280;
-    margin-left: 1.3cm;
-    margin-bottom: 0.35cm;
-  }
-  @bottom-right {
-    content: "${profPhone ? profPhone + '   ·   ' : ''}${siteUrl}   |   " counter(page) " / " counter(pages);
-    font-family: ${fontFamilyCSS};
-    font-size: 7pt;
-    font-weight: 600;
-    color: #4b5563;
-    margin-right: 1.3cm;
-    margin-bottom: 0.35cm;
-  }
-  ` : ''}
+  margin:0.6cm 0.7cm 0.5cm 0.7cm;
+  @bottom-left { content: none !important; }
+  @bottom-right { content: none !important; }
 }
 @page :first {
-  @bottom-left { content: none; }
-  @bottom-right { content: none; }
+  @bottom-left { content: none !important; }
+  @bottom-right { content: none !important; }
 }
 html{counter-reset:page ${startPage - 1}}
 
@@ -3515,10 +3495,10 @@ html{counter-reset:page ${startPage - 1}}
   --text: #3730a3;
 }
 
-.content{padding:${marginCSS}}
+.content{padding:0;}
 .section-hdr{
   font-family:inherit;
-  font-size:1.15em;
+  font-size:1.05em;
   font-weight:bold;
   letter-spacing:1px;
   text-transform:uppercase;
@@ -3526,8 +3506,8 @@ html{counter-reset:page ${startPage - 1}}
   text-align:center;
   border-top:1.5px solid #0f172a;
   border-bottom:1.5px solid #0f172a;
-  padding:6px 0;
-  margin:2.2rem 0 1.2rem 0;
+  padding:4px 0;
+  margin:1rem 0 0.6rem 0;
   display:block;
   width:100%;
   print-color-adjust:exact;
@@ -3537,11 +3517,11 @@ html{counter-reset:page ${startPage - 1}}
 .qcard{
   border:1px solid #e2e8f0;
   border-left:4px solid var(--primary,#cbd5e1);
-  border-radius:10px;
-  padding:16px 20px;
-  margin-bottom:20px;
+  border-radius:6px;
+  padding:8px 12px;
+  margin-bottom:8px;
   background:#ffffff;
-  box-shadow:0 1px 3px 0 rgba(0, 0, 0, 0.04),0 1px 2px 0 rgba(0, 0, 0, 0.02);
+  box-shadow:none;
   ${pdfConf.avoidPageBreaks ? 'page-break-inside:avoid; break-inside:avoid;' : ''}
 }
 .card-hdr{
