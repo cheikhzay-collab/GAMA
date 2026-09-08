@@ -2463,7 +2463,7 @@ printWhenReady();
           <span class="ws-ans-tag">👁️ Réponse : <strong>${q.correct_answer || '?'}</strong></span>
         </div>
         <div class="ws-ex-body">
-          ${q.context ? `<div class="ctx-box" style="margin-bottom: 8px;">${qnumHtml}📋 ${renderMath(q.context)} ${renderQuestionImageHTML(q, 'context')}</div>` : ''}
+          ${q.context ? `<div class="ctx-box">${qnumHtml}📋 ${renderMath(q.context)} ${renderQuestionImageHTML(q, 'context')}</div>` : ''}
           ${renderQuestionImageHTML(q, 'above')}
           <div class="ws-qtext">${renderQuestionImageHTML(q, 'side')}${q.context ? '' : qnumHtml}${renderMath(q.question || '')}</div>
           ${renderQuestionImageHTML(q, 'below')}
@@ -2558,20 +2558,20 @@ html[dir="rtl"] .katex, html[dir="rtl"] .katex-display {
 *{box-decoration-break:clone;-webkit-box-decoration-break:clone;box-sizing:border-box;margin:0;padding:0}
 body{
   font-family: 'Plus Jakarta Sans', sans-serif;
-  color:#1e293b;background:#f8fafc;font-size:${fontSizeCSS};line-height:1.38;
+  color:#1e293b;background:#f8fafc;font-size:${fontSizeCSS};line-height:1.32;
   padding-bottom:0;
   print-color-adjust:exact;-webkit-print-color-adjust:exact;
   font-feature-settings:'liga' 1,'kern' 1;
 }
 @page{
   size:A4;
-  margin: 0.6cm 0.7cm 0.5cm 0.7cm;
-  @bottom-left { content: none !important; }
-  @bottom-right { content: none !important; }
+  margin: 0.45cm 0.55cm 0.35cm 0.55cm;
+  @bottom-left { content: none; }
+  @bottom-right { content: none; }
 }
 @page :first {
-  @bottom-left { content: none !important; }
-  @bottom-right { content: none !important; }
+  @bottom-left { content: none; }
+  @bottom-right { content: none; }
 }
 html{counter-reset:page ${startPage - 1}}
 
@@ -3295,13 +3295,13 @@ body{
 
 @page{
   size:A4;
-  margin:0.6cm 0.7cm 0.5cm 0.7cm;
-  @bottom-left { content: none !important; }
-  @bottom-right { content: none !important; }
+  margin: 0.45cm 0.55cm 0.35cm 0.55cm;
+  @bottom-left { content: none; }
+  @bottom-right { content: none; }
 }
 @page :first {
-  @bottom-left { content: none !important; }
-  @bottom-right { content: none !important; }
+  @bottom-left { content: none; }
+  @bottom-right { content: none; }
 }
 html{counter-reset:page ${startPage - 1}}
 
