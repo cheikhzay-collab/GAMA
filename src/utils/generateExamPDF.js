@@ -428,11 +428,13 @@ const getTemplateStyles = (style, fontSize = null) => {
       .ws-ex-body { padding: 0.12rem 0.45rem !important; line-height: 1.26 !important; }
       .ws-qtext { margin-bottom: 1.5px !important; line-height: 1.25 !important; font-size: 0.92em !important; }
       .ctx-box { margin-bottom: 2px !important; padding: 1.5px 5px !important; font-size: 0.86em !important; }
-      .ws-opts { gap: 2px 6px !important; margin-top: 1.5px !important; }
-      .ws-opt { padding: 1.2px 5px !important; border-radius: 4px !important; font-size: 0.84em !important; }
-      .ws-opt-letter { width: 16px !important; height: 16px !important; font-size: 7.2pt !important; }
-      .katex { font-size: 0.90em !important; }
-      .katex-display { margin: 1px 0 !important; font-size: 0.90em !important; }
+      .ws-opts { gap: 2.5px 6px !important; margin-top: 2px !important; }
+      .ws-opt { padding: 2px 6px !important; border-radius: 4px !important; font-size: 1.0em !important; }
+      .ws-opt-text { font-size: 1.05em !important; }
+      .ws-opt .katex { font-size: 1.12em !important; }
+      .ws-opt-letter { width: 17px !important; height: 17px !important; font-size: 7.5pt !important; }
+      .katex { font-size: 0.94em !important; }
+      .katex-display { margin: 1px 0 !important; font-size: 0.95em !important; }
       .qcard { border: none; border-bottom: 1px dashed #cbd5e1; padding: 5px 0; margin-bottom: 6px; }
       .opts { gap: 4px 10px !important; }
       .opt { padding: 2px 5px; }
@@ -480,11 +482,13 @@ const getTemplateStyles = (style, fontSize = null) => {
       .ws-ex-body { padding: 0.08rem 0.38rem !important; line-height: 1.2 !important; border-radius: 3px 5px 5px 3px !important; }
       .ws-qtext { margin-bottom: 1px !important; line-height: 1.2 !important; font-size: 0.9em !important; }
       .ctx-box { margin-bottom: 1.5px !important; padding: 1px 4px !important; font-size: 0.82em !important; }
-      .ws-opts { gap: 1.5px 5px !important; margin-top: 1px !important; }
-      .ws-opt { padding: 1px 4px !important; border-radius: 3px !important; font-size: 0.8em !important; }
-      .ws-opt-letter { width: 14px !important; height: 14px !important; font-size: 6.5pt !important; }
-      .katex { font-size: 0.88em !important; }
-      .katex-display { margin: 1px 0 !important; font-size: 0.88em !important; }
+      .ws-opts { gap: 2px 6px !important; margin-top: 1.5px !important; }
+      .ws-opt { padding: 1.5px 5px !important; border-radius: 3px !important; font-size: 1.0em !important; }
+      .ws-opt-text { font-size: 1.05em !important; }
+      .ws-opt .katex { font-size: 1.12em !important; }
+      .ws-opt-letter { width: 16px !important; height: 16px !important; font-size: 7.2pt !important; }
+      .katex { font-size: 0.94em !important; }
+      .katex-display { margin: 1px 0 !important; font-size: 0.94em !important; }
       .qcard { border: none; border-bottom: 1px dashed #cbd5e1; padding: 4px 0; margin-bottom: 5px; }
       .opts { gap: 3px 8px !important; }
       .opt { padding: 1.5px 4px; }
@@ -1047,7 +1051,10 @@ const renderQuestionImageHTML = (q, placement) => {
 /* ── Normalize option text ── */
 const optText = (opt) => {
   const raw = typeof opt === 'string' ? opt : (opt?.text || '');
-  return raw.replace(/^[A-E][).]\s*/i, '');
+  let cleaned = raw.replace(/^[A-E][).]\s*/i, '').trim();
+  // Automatically promote \frac to \dfrac in options so fractions render full-size, not shrunken scriptstyle
+  cleaned = cleaned.replace(/\\frac\b/g, '\\dfrac');
+  return cleaned;
 };
 
 
@@ -2154,20 +2161,27 @@ html{counter-reset:page ${startPage - 1}}
   .ws-opts-5col, .ws-opts-4col, .ws-opts-2col { grid-template-columns: 1fr; }
 }
 
-.ws-opt { display: flex; align-items: center; gap: 6px; font-size: 0.88em; color: #334155; padding: 2px 6px;
+.ws-opt { display: flex; align-items: center; gap: 7px; font-size: 1.02em; color: #1e293b; padding: 2.5px 7px;
   border-radius: 5px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid #e2e8f0;
   background: #f8fafc;
 }
 .ws-opt-letter {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
-  font-size: 7.5pt;
-  width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; background: #ffffff; color: #64748b; border: 1px solid #cbd5e1;
+  font-size: 8pt;
+  width: 19px; height: 19px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; background: #ffffff; color: #64748b; border: 1px solid #cbd5e1;
   flex-shrink: 0;
 }
 .ws-opt-text {
   font-family: inherit;
+  font-size: 1.05em;
+  display: inline-flex;
+  align-items: center;
+  flex: 1;
+}
+.ws-opt .katex {
+  font-size: 1.12em !important;
 }
 
 /* ── Print Styles ── */
@@ -2953,20 +2967,27 @@ html{counter-reset:page ${startPage - 1}}
   .ws-opts-5col, .ws-opts-4col, .ws-opts-2col { grid-template-columns: 1fr; }
 }
 
-.ws-opt { display: flex; align-items: center; gap: 8px; font-size: 0.9em; color: #334155; padding: 3px 8px;
-  border-radius: 10px;
-  border: 1px solid #f1f5f9;
+.ws-opt { display: flex; align-items: center; gap: 8px; font-size: 1.02em; color: #1e293b; padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
   background: #f8fafc;
 }
 .ws-opt-letter {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
-  font-size: 8.5pt;
-  width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; border-radius: 5px; background: #ffffff; color: #64748b; border: 1px solid #cbd5e1; font-size: 8pt;
+  font-size: 8pt;
+  width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; border-radius: 5px; background: #ffffff; color: #64748b; border: 1px solid #cbd5e1;
   flex-shrink: 0;
 }
 .ws-opt-text {
   font-family: inherit;
+  font-size: 1.05em;
+  display: inline-flex;
+  align-items: center;
+  flex: 1;
+}
+.ws-opt .katex {
+  font-size: 1.12em !important;
 }
 .ws-opt-correct {
   background: #ecfdf5 !important;
