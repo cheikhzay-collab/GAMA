@@ -1601,9 +1601,17 @@ export default function AdminSettings() {
                       onChange={e => setPdfFontSize(e.target.value)}
                       className="input-control"
                     >
+                      <option value="8.5pt">Très Petit (8.5pt - Ultra économique)</option>
+                      <option value="9.5pt">Compact (9.5pt)</option>
                       <option value="10pt">Petit (10pt)</option>
                       <option value="11pt">Normal (11pt - conseillé)</option>
                       <option value="12pt">Grand (12pt)</option>
+                      <option value="13pt">Très Grand (13pt)</option>
+                      <option value="14pt">Extra Grand (14pt)</option>
+                      <option value="15pt">Large (15pt)</option>
+                      <option value="16pt">Très Large (16pt)</option>
+                      <option value="18pt">Géant (18pt)</option>
+                      <option value="20pt">Maxi (20pt)</option>
                     </select>
                   </div>
 

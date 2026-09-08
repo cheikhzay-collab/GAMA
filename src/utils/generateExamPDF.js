@@ -141,7 +141,7 @@ const getFontFamilyStyle = (font) => {
 };
 
 
-const getTemplateStyles = (style) => {
+const getTemplateStyles = (style, fontSize = null) => {
   if (style === 'anisse_classic') {
     return `
       /* === LYCÉE ANISSE / DEVOIR SURVEILLÉ MAROCAIN === */
@@ -416,7 +416,7 @@ const getTemplateStyles = (style) => {
         @bottom-left { content: none; }
         @bottom-right { content: none; }
       }
-      body { font-size: 8.8pt !important; line-height: 1.28 !important; padding-bottom: 0 !important; }
+      body { font-size: ${fontSize || '8.8pt'} !important; line-height: 1.28 !important; padding-bottom: 0 !important; }
       .cover { display: none !important; }
       .omr-page { display: none !important; }
       .ws-content { padding: 0 !important; margin: 0 !important; }
@@ -467,7 +467,7 @@ const getTemplateStyles = (style) => {
         @bottom-left { content: none; }
         @bottom-right { content: none; }
       }
-      body { font-size: 8.4pt !important; line-height: 1.24 !important; padding-bottom: 0 !important; }
+      body { font-size: ${fontSize || '8.4pt'} !important; line-height: 1.24 !important; padding-bottom: 0 !important; }
       .cover { display: none !important; }
       .omr-page { display: none !important; }
       .ws-content { padding: 0 !important; margin: 0 !important; }
@@ -1106,7 +1106,7 @@ export const generateSubjectHTML = async (examTitle, school, year, questions, se
   const examId = settings.examId || 'PREVIEW';
 
   const templateStyle = pdfConf.templateStyle || 'classic_latex';
-  const templateCSS = getTemplateStyles(templateStyle);
+  const templateCSS = getTemplateStyles(templateStyle, fontSizeCSS);
   const shouldShowCover = (templateStyle === 'compact_eco' || templateStyle === 'super_eco') ? false : showCover;
 
   let schools = settings.schoolsList || ['ENSA', 'ENSAM', 'ENCG', 'Médecine / Pharmacie', 'INPT', 'INSEA'];
@@ -2350,7 +2350,7 @@ printWhenReady();
   const showTricks = settings.showTricks !== undefined ? settings.showTricks : true;
 
   const templateStyle = pdfConf.templateStyle || 'classic_latex';
-  const templateCSS = getTemplateStyles(templateStyle);
+  const templateCSS = getTemplateStyles(templateStyle, fontSizeCSS);
   const shouldShowCover = (templateStyle === 'compact_eco' || templateStyle === 'super_eco') ? false : showCover;
 
   let schools = settings.schoolsList || ['ENSA', 'ENSAM', 'ENCG', 'Médecine / Pharmacie', 'INPT', 'INSEA'];
@@ -3208,7 +3208,7 @@ printWhenReady();
   } = settings;
 
   const templateStyle = pdfConf.templateStyle || 'classic_latex';
-  const templateCSS = getTemplateStyles(templateStyle);
+  const templateCSS = getTemplateStyles(templateStyle, fontSizeCSS);
   const shouldShowCover = (templateStyle === 'compact_eco' || templateStyle === 'super_eco') ? false : showCover;
 
   const compactHeaderHtml = (templateStyle === 'compact_eco' || templateStyle === 'super_eco') ? `
