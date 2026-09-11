@@ -9,6 +9,7 @@ import {
   AlignCenter, AlignLeft, AlignRight
 } from 'lucide-react';
 import { loadPdfDocument, renderPdfPageToCanvas, cropPdfRegion } from '../utils/pdfFigureExtractor';
+import AiFigureEnhancerModal from './AiFigureEnhancerModal';
 
 /* ─── Inline Keyframe Animations ─── */
 const STYLE_TAG_ID = 'pdf-cropper-animations';
@@ -155,6 +156,7 @@ export default function PdfFigureCropperModal({
   const [previewDataUrl, setPreviewDataUrl] = useState(null);
   const [isCroppingAction, setIsCroppingAction] = useState(false);
   const [insertSuccess, setInsertSuccess] = useState(false);
+  const [isAiEnhanceOpen, setIsAiEnhanceOpen] = useState(false);
 
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -655,6 +657,25 @@ export default function PdfFigureCropperModal({
                   </div>
                 )}
               </div>
+
+              {previewDataUrl && (
+                <button
+                  type="button"
+                  onClick={() => setIsAiEnhanceOpen(true)}
+                  style={{
+                    width: '100%', marginTop: '0.45rem',
+                    background: 'linear-gradient(135deg, rgba(99,102,241,0.25), rgba(168,85,247,0.25))',
+                    border: '1px solid rgba(168,85,247,0.5)',
+                    borderRadius: 9, padding: '0.45rem 0.6rem',
+                    color: '#e9d5ff', fontSize: '0.74rem', fontWeight: 800,
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+                    boxShadow: '0 2px 8px rgba(168,85,247,0.2)'
+                  }}
+                  title="Améliorer la netteté ou régénérer en SVG avec l'IA"
+                >
+                  <Sparkles size={13} style={{ color: '#c084fc' }} /> Régénérer / HD avec l'IA
+                </button>
+              )}
             </div>
 
             {/* Destination */}
@@ -828,6 +849,18 @@ export default function PdfFigureCropperModal({
           </div>
         </div>
       </div>
+
+      {/* AI Figure Enhancer Submodal */}
+      <AiFigureEnhancerModal
+        isOpen={isAiEnhanceOpen}
+        onClose={() => setIsAiEnhanceOpen(false)}
+        imageSrc={previewDataUrl}
+        caption={figAlt}
+        onApply={(newHdUrl) => {
+          setPreviewDataUrl(newHdUrl);
+          setIsAiEnhanceOpen(false);
+        }}
+      />
     </div>
   );
 }

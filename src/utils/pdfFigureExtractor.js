@@ -77,10 +77,10 @@ export async function renderPdfPageToCanvas(pdfDoc, pageNumber, canvas, scale = 
  * @param {number} pageNumber 1-based page number
  * @param {{ x: number, y: number, width: number, height: number }} rect Normalized (0-1) or pixel rect
  * @param {boolean} isNormalized If true, x, y, width, height are between 0 and 1
- * @param {number} renderScale Scale to render for crisp cropping (default: 2.5)
+ * @param {number} renderScale Scale to render for crisp cropping (default: 3.5 for ultra-high Retina DPI)
  * @returns {Promise<string>} PNG Data URL
  */
-export async function cropPdfRegion(pdfDoc, pageNumber, rect, isNormalized = true, renderScale = 2.5) {
+export async function cropPdfRegion(pdfDoc, pageNumber, rect, isNormalized = true, renderScale = 3.5) {
   const page = await pdfDoc.getPage(pageNumber);
   const viewport = page.getViewport({ scale: renderScale });
 

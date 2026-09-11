@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Plus, Trash2, Settings, School, KeyRound, Eye, EyeOff, CheckCircle2, Sparkles, RefreshCw, Layers, MousePointerClick, Crown, Download, Sliders, FileText, Camera, MessageCircle, Volume2, BookOpen, Calendar, Palmtree, Pencil, Upload, ExternalLink, ShieldCheck, Cpu, Zap, Globe } from 'lucide-react';
 import { getAllClasses } from '../services/classService';
+import { getAiSettingsConfig, saveAiSettingsConfig } from '../services/schoolService';
 import { decodeHtmlEntities } from '../utils/security';
 
 const getSoftColorForClass = (className) => {
@@ -110,52 +111,123 @@ export default function AdminSettings() {
   const [showOpenaiKey, setShowOpenaiKey] = useState(false);
   const [openaiKeySaved, setOpenaiKeySaved] = useState(false);
 
+  // Charger les paramètres IA distants depuis Supabase (config table) au montage
+  useEffect(() => {
+    getAiSettingsConfig().then(remoteSettings => {
+      if (remoteSettings && typeof remoteSettings === 'object') {
+        if (remoteSettings.claudeApiKey && !apiKey) {
+          setApiKey(remoteSettings.claudeApiKey);
+          localStorage.setItem('claudeApiKey', remoteSettings.claudeApiKey);
+        }
+        if (remoteSettings.claudeProxyUrl && !proxyUrl) {
+          setProxyUrl(remoteSettings.claudeProxyUrl);
+          localStorage.setItem('claudeProxyUrl', remoteSettings.claudeProxyUrl);
+        }
+        if (remoteSettings.geminiApiKey && !geminiKey) {
+          setGeminiKey(remoteSettings.geminiApiKey);
+          localStorage.setItem('geminiApiKey', remoteSettings.geminiApiKey);
+        }
+        if (remoteSettings.deepseekApiKey && !deepseekKey) {
+          setDeepseekKey(remoteSettings.deepseekApiKey);
+          localStorage.setItem('deepseekApiKey', remoteSettings.deepseekApiKey);
+        }
+        if (remoteSettings.deepseekApiUrl && !deepseekUrl) {
+          setDeepseekUrl(remoteSettings.deepseekApiUrl);
+          localStorage.setItem('deepseekApiUrl', remoteSettings.deepseekApiUrl);
+        }
+        if (remoteSettings.groqApiKey && !groqKey) {
+          setGroqKey(remoteSettings.groqApiKey);
+          localStorage.setItem('groqApiKey', remoteSettings.groqApiKey);
+        }
+        if (remoteSettings.openaiApiKey && !openaiKey) {
+          setOpenaiKey(remoteSettings.openaiApiKey);
+          localStorage.setItem('openaiApiKey', remoteSettings.openaiApiKey);
+        }
+      }
+    }).catch(err => console.warn('[AdminSettings] Error fetching remote AI config:', err));
+  }, []);
+
+  const syncAiSettingsToDb = async (overrides = {}) => {
+    const payload = {
+      claudeApiKey: overrides.claudeApiKey !== undefined ? overrides.claudeApiKey : apiKey.trim(),
+      claudeProxyUrl: overrides.claudeProxyUrl !== undefined ? overrides.claudeProxyUrl : proxyUrl.trim(),
+      claude_solve_solutions: overrides.claude_solve_solutions !== undefined ? overrides.claude_solve_solutions : claudeSolveSolutions,
+      geminiApiKey: overrides.geminiApiKey !== undefined ? overrides.geminiApiKey : geminiKey.trim(),
+      gemini_solve_solutions: overrides.gemini_solve_solutions !== undefined ? overrides.gemini_solve_solutions : geminiSolveSolutions,
+      deepseekApiKey: overrides.deepseekApiKey !== undefined ? overrides.deepseekApiKey : deepseekKey.trim(),
+      deepseekApiUrl: overrides.deepseekApiUrl !== undefined ? overrides.deepseekApiUrl : (deepseekUrl.trim() || 'https://api.deepseek.com'),
+      deepseek_solve_solutions: overrides.deepseek_solve_solutions !== undefined ? overrides.deepseek_solve_solutions : deepseekSolveSolutions,
+      groqApiKey: overrides.groqApiKey !== undefined ? overrides.groqApiKey : groqKey.trim(),
+      openaiApiKey: overrides.openaiApiKey !== undefined ? overrides.openaiApiKey : openaiKey.trim(),
+    };
+    try {
+      await saveAiSettingsConfig(payload);
+    } catch (err) {
+      console.warn('[AdminSettings] Failed to persist AI settings to DB:', err);
+    }
+  };
+
   const handleToggleClaudeSolve = (val) => {
     setClaudeSolveSolutions(val);
     localStorage.setItem('claude_solve_solutions', String(val));
+    syncAiSettingsToDb({ claude_solve_solutions: val });
   };
 
   const handleToggleGeminiSolve = (val) => {
     setGeminiSolveSolutions(val);
     localStorage.setItem('gemini_solve_solutions', String(val));
+    syncAiSettingsToDb({ gemini_solve_solutions: val });
   };
 
   const handleToggleDeepseekSolve = (val) => {
     setDeepseekSolveSolutions(val);
     localStorage.setItem('deepseek_solve_solutions', String(val));
+    syncAiSettingsToDb({ deepseek_solve_solutions: val });
   };
 
   const saveApiKey = () => {
-    localStorage.setItem('claudeApiKey', apiKey.trim());
-    localStorage.setItem('claudeProxyUrl', proxyUrl.trim());
+    const trimmedKey = apiKey.trim();
+    const trimmedProxy = proxyUrl.trim();
+    localStorage.setItem('claudeApiKey', trimmedKey);
+    localStorage.setItem('claudeProxyUrl', trimmedProxy);
     localStorage.setItem('claude_solve_solutions', String(claudeSolveSolutions));
+    syncAiSettingsToDb({ claudeApiKey: trimmedKey, claudeProxyUrl: trimmedProxy });
     setKeySaved(true);
     setTimeout(() => setKeySaved(false), 2500);
   };
 
   const saveGeminiKey = () => {
-    localStorage.setItem('geminiApiKey', geminiKey.trim());
+    const trimmedKey = geminiKey.trim();
+    localStorage.setItem('geminiApiKey', trimmedKey);
     localStorage.setItem('gemini_solve_solutions', String(geminiSolveSolutions));
+    syncAiSettingsToDb({ geminiApiKey: trimmedKey });
     setGeminiKeySaved(true);
     setTimeout(() => setGeminiKeySaved(false), 2500);
   };
 
   const saveDeepseekKey = () => {
-    localStorage.setItem('deepseekApiKey', deepseekKey.trim());
-    localStorage.setItem('deepseekApiUrl', deepseekUrl.trim() || 'https://api.deepseek.com');
+    const trimmedKey = deepseekKey.trim();
+    const trimmedUrl = deepseekUrl.trim() || 'https://api.deepseek.com';
+    localStorage.setItem('deepseekApiKey', trimmedKey);
+    localStorage.setItem('deepseekApiUrl', trimmedUrl);
     localStorage.setItem('deepseek_solve_solutions', String(deepseekSolveSolutions));
+    syncAiSettingsToDb({ deepseekApiKey: trimmedKey, deepseekApiUrl: trimmedUrl });
     setDeepseekKeySaved(true);
     setTimeout(() => setDeepseekKeySaved(false), 2500);
   };
 
   const saveGroqKey = () => {
-    localStorage.setItem('groqApiKey', groqKey.trim());
+    const trimmedKey = groqKey.trim();
+    localStorage.setItem('groqApiKey', trimmedKey);
+    syncAiSettingsToDb({ groqApiKey: trimmedKey });
     setGroqKeySaved(true);
     setTimeout(() => setGroqKeySaved(false), 2500);
   };
 
   const saveOpenaiKey = () => {
-    localStorage.setItem('openaiApiKey', openaiKey.trim());
+    const trimmedKey = openaiKey.trim();
+    localStorage.setItem('openaiApiKey', trimmedKey);
+    syncAiSettingsToDb({ openaiApiKey: trimmedKey });
     setOpenaiKeySaved(true);
     setTimeout(() => setOpenaiKeySaved(false), 2500);
   };

@@ -15,6 +15,7 @@ import {
   CheckCheck, Copy, Paintbrush
 } from 'lucide-react';
 import PdfFigureCropperModal from '../components/PdfFigureCropperModal';
+import AiFigureEnhancerModal from '../components/AiFigureEnhancerModal';
 import ImageDropZone from '../components/ImageDropZone';
 import FloatingLatexPalette from '../components/FloatingLatexPalette';
 import { solveExerciseWithAI, filterBaremeByDocType } from '../utils/aiExerciseSolver';
@@ -148,6 +149,40 @@ export default function AdminLessonEdit() {
   // PDF Figure Cropper Modal State
   const [isCropperOpen, setIsCropperOpen] = useState(false);
   const [cropperTarget, setCropperTarget] = useState({ secIdx: 0, itemIdx: null });
+
+  // AI Figure Enhancer Modal State
+  const [isAiEnhancerOpen, setIsAiEnhancerOpen] = useState(false);
+  const [aiEnhancerTarget, setAiEnhancerTarget] = useState({ secIdx: 0, itemIdx: 0, imageSrc: '', caption: '' });
+
+  const handleOpenAiEnhancer = (secIdx, itemIdx, item) => {
+    setAiEnhancerTarget({
+      secIdx,
+      itemIdx,
+      imageSrc: item.url,
+      caption: item.alt || ''
+    });
+    setIsAiEnhancerOpen(true);
+  };
+
+  const handleApplyAiEnhancedFigure = (newUrl) => {
+    if (aiEnhancerTarget.secIdx === null || aiEnhancerTarget.itemIdx === null) return;
+    setSections(prev => {
+      const next = [...prev];
+      const sec = { ...next[aiEnhancerTarget.secIdx] };
+      const items = [...(sec.items || [])];
+      if (items[aiEnhancerTarget.itemIdx]) {
+        items[aiEnhancerTarget.itemIdx] = {
+          ...items[aiEnhancerTarget.itemIdx],
+          url: newUrl
+        };
+        sec.items = items;
+        next[aiEnhancerTarget.secIdx] = sec;
+      }
+      return next;
+    });
+    setSuccess(isArMode ? '✓ تم اعتماد الصورة المولدة للشكل وتطبيقها بنجاح' : '✓ Figure IA haute résolution appliquée avec succès');
+    setTimeout(() => setSuccess(''), 3000);
+  };
 
 
   const handleCropComplete = ({ url, alt, width_pct, align, targetSectionIdx, targetItemIdx }) => {
@@ -2061,6 +2096,27 @@ export default function AdminLessonEdit() {
                               <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
                                 <button
                                   type="button"
+                                  onClick={() => handleOpenAiEnhancer(secIdx, itIdx, it)}
+                                  style={{
+                                    background: 'linear-gradient(135deg, #ede9fe, #ddd6fe)',
+                                    border: '1px solid #c4b5fd',
+                                    borderRadius: '4px',
+                                    padding: '0.35rem 0.6rem',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 800,
+                                    color: '#6d28d9',
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.3rem',
+                                    boxShadow: '0 1px 2px rgba(109,40,217,0.1)'
+                                  }}
+                                  title="Améliorer la qualité ou régénérer la figure avec l'IA"
+                                >
+                                  <Sparkles size={12} style={{ color: '#7c3aed' }} /> Régénérer / HD IA
+                                </button>
+                                <button
+                                  type="button"
                                   onClick={() => {
                                     setCropperTarget({ secIdx, itemIdx: itIdx });
                                     setIsCropperOpen(true);
@@ -2691,6 +2747,15 @@ export default function AdminLessonEdit() {
         targetSectionIdx={cropperTarget.secIdx}
         targetItemIdx={cropperTarget.itemIdx}
         onCropComplete={handleCropComplete}
+      />
+
+      {/* AI Figure Enhancer Modal */}
+      <AiFigureEnhancerModal
+        isOpen={isAiEnhancerOpen}
+        onClose={() => setIsAiEnhancerOpen(false)}
+        imageSrc={aiEnhancerTarget.imageSrc}
+        caption={aiEnhancerTarget.caption}
+        onApply={handleApplyAiEnhancedFigure}
       />
 
       {/* Floating LaTeX Math Palette */}

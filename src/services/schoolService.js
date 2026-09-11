@@ -541,3 +541,68 @@ export const saveLandingArConfig = async (landingConfig) => {
     console.warn('[LocalDB] Failed to save landing AR settings locally:', err.message || err);
   }
 };
+
+/**
+ * Fetch AI Engine & API Keys settings with SWR caching.
+ */
+export const getAiSettingsConfig = async (options = {}) => {
+  const { forceRefresh = false } = options;
+
+  return queryCache.fetchWithCache('config_ai_settings', async () => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('config')
+          .select('value')
+          .eq('key', 'ai_settings')
+          .maybeSingle();
+
+        if (!error && data?.value) return data.value;
+      } catch (err) {
+        console.warn('[Supabase] Failed to fetch AI settings:', err.message || err);
+      }
+    }
+
+    try {
+      const config = await localDb.get('/config');
+      return config['ai_settings'] || null;
+    } catch (err) {
+      return null;
+    }
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 10,
+    cacheTime: 1000 * 60 * 60
+  });
+};
+
+/**
+ * Save AI Engine & API Keys settings to Supabase config table.
+ */
+export const saveAiSettingsConfig = async (settings) => {
+  queryCache.invalidate('config_ai_settings');
+
+  if (supabase) {
+    try {
+      const { error } = await supabase
+        .from('config')
+        .upsert({
+          key: 'ai_settings',
+          value: settings,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (!error) return;
+      console.warn('[Supabase] Failed to save AI settings remote:', error.message || error);
+    } catch (err) {
+      console.warn('[Supabase] Network error saving AI settings:', err.message || err);
+    }
+  }
+
+  try {
+    await localDb.post('/config', { ai_settings: settings });
+  } catch (err) {
+    console.warn('[LocalDB] Failed to save AI settings locally:', err.message || err);
+  }
+};
+
