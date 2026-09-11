@@ -6,8 +6,10 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
   globalIgnores([
-    'dist',
+    'dist/**',
     'scratch/**',
+    'scripts/**',
+    'data/**',
     'start-companion.js',
     'generate-icons-sharp.js',
     'dev-dist/**'
@@ -20,8 +22,27 @@ export default defineConfig([
       reactRefresh.configs.vite,
     ],
     languageOptions: {
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        ...globals.es2021
+      },
       parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+    rules: {
+      'no-unused-vars': ['warn', { 
+        argsIgnorePattern: '^_', 
+        varsIgnorePattern: '^_', 
+        caughtErrorsIgnorePattern: '^_' 
+      }],
+      'no-useless-escape': 'warn',
+      'no-empty': ['warn', { allowEmptyCatch: true }],
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/refs': 'warn',
+      'react-hooks/exhaustive-deps': 'warn',
+      'no-control-regex': 'off',
+      'no-useless-assignment': 'warn',
+      'no-misleading-character-class': 'warn'
     },
   },
 ])

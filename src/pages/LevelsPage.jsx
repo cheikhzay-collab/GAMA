@@ -1,15 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getActiveLessons } from '../services/lessonService';
 import { 
   GraduationCap, Search, ArrowLeft, BookOpen, 
   User, ChevronRight, Sparkles, BookOpenCheck, FolderOpen,
-  FileDown, Play, Clock, BrainCircuit, Zap, LayoutGrid, List, Calendar
+  FileDown, Play, Clock, BrainCircuit, LayoutGrid, List, Calendar
 } from 'lucide-react';
 import { renderWithMath } from '../utils/mathRenderer';
 import { mapLegacySchoolToLevel, normalizeLevel } from '../utils/levelHelpers';
 import { generateSubjectHTML, generateCorrectionHTML, openPrintWindow } from '../utils/generateExamPDF';
+import { generateAnswerSheet } from '../utils/generateAnswerSheet';
 
 const MAIN_LEVELS = [
   {
@@ -95,7 +96,6 @@ const MAIN_LEVELS = [
 export default function LevelsPage() {
   const { user, exams, schools, loadExamQuestions, trackDownload } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Navigation states synced with URL search params (?level=2bac&branch=2bac_pc_svt)
@@ -680,7 +680,6 @@ export default function LevelsPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
               {filteredLessons.map((exam, idx) => {
                 const qCount = exam.questions?.length || 0;
-                const locked = false; // All exams are freely accessible
                 const accent = selectedParent?.textColor || 'var(--violet)';
                 const accentSoft = selectedParent?.bgSoft || 'rgba(99, 102, 241, 0.08)';
 

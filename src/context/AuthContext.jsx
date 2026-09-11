@@ -2092,7 +2092,7 @@ export function AuthProvider({ children }) {
     };
 
     loadConfigAndExams();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // Fetch User-specific data (progress, history, activity, leaderboard) when a student logs in
   useEffect(() => {

@@ -4,7 +4,7 @@ import {
   ArrowLeft, Download, Check, X, Eye, EyeOff, Edit,
   BookOpen, Calendar, User, Phone, CheckCircle, AlertCircle,
   Calculator, BookOpenCheck, Loader, FileText, ChevronLeft, ChevronRight,
-  Target, Moon, Sun, ListFilter, Lightbulb, ZoomIn, ZoomOut, Settings, Layers, Palette, Type
+  Target, Moon, Sun, ListFilter, Lightbulb, ZoomIn, ZoomOut, Settings, Layers, Palette, Type, CheckCheck
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getLessonById, updateLesson } from '../services/lessonService';
@@ -657,17 +657,6 @@ export default function LessonViewerPage() {
     } catch {}
   };
 
-  const [isGeneratingAiFiche, setIsGeneratingAiFiche] = useState(false);
-
-  const handleGenerateAiFiche = async () => {
-    setIsGeneratingAiFiche(true);
-    try {
-      await generateFichePedagogiqueWithAI(lesson, { profName, profPhone });
-    } finally {
-      setIsGeneratingAiFiche(false);
-    }
-  };
-
   useEffect(() => {
     const fetchLesson = async () => {
       setLoading(true);
@@ -923,6 +912,57 @@ export default function LessonViewerPage() {
       });
       return { ...prev, content: { ...prev.content, sections: updatedSections } };
     });
+  };
+
+  const handleApplySectionStyleToAll = async (sourceSecId, targetScope = 'all') => {
+    const allSecs = lesson?.content?.sections || [];
+    const source = allSecs.find(s => s.id === sourceSecId);
+    if (!source) return;
+    const { bgColor = 'transparent', fontSize = '', lineHeight = '' } = source;
+    const updatedSections = allSecs.map(s => {
+      if (targetScope === 'exercises' && s.type !== 'exercise') return s;
+      if (targetScope === 'course' && s.type === 'exercise') return s;
+      return { 
+        ...s, 
+        bgColor, 
+        bg_color: bgColor,
+        fontSize, 
+        font_size: fontSize,
+        lineHeight, 
+        line_height: lineHeight 
+      };
+    });
+
+    setLesson(prev => ({
+      ...prev,
+      content: { ...(prev?.content || {}), sections: updatedSections }
+    }));
+
+    const isArabic = lesson?.content?.metadata?.language === 'ar';
+    const scopeNames = {
+      all: isArabic ? 'جميع أقسام وتمارين الملف' : 'toutes les sections et exercices',
+      exercises: isArabic ? 'جميع تمارين الملف فقط' : 'tous les exercices uniquement',
+      course: isArabic ? 'جميع فقرات الدرس فقط' : 'toutes les sections de cours uniquement'
+    };
+
+    if (id) {
+      try {
+        await updateLesson(id, {
+          content: {
+            ...(lesson?.content || {}),
+            sections: updatedSections
+          }
+        });
+        alert(isArabic 
+          ? `✓ تم تطبيق التنسيق وحفظه في الملف على ${scopeNames[targetScope]} بنجاح!` 
+          : `✓ Style appliqué et enregistré sur ${scopeNames[targetScope]} avec succès !`);
+      } catch (err) {
+        console.error('Auto-save error:', err);
+        alert(isArabic 
+          ? `تم تطبيق التنسيق على ${scopeNames[targetScope]}!` 
+          : `Style appliqué à ${scopeNames[targetScope]} !`);
+      }
+    }
   };
 
   const handleUpdateSectionContent = (secId, newContent) => {
@@ -1880,7 +1920,7 @@ export default function LessonViewerPage() {
           transition: all 0.3s ease;
         }
         
-        .classic-view-active .exercise-body-box {
+        .classic-view-active .exercise-body-box:not(.has-custom-bg) {
           background: #ffffff !important;
           border: 1.5px solid #005086 !important;
           border-left: 5px solid #005086 !important;
@@ -2986,6 +3026,20 @@ export default function LessonViewerPage() {
                       };
                     }
 
+                    const customTheoryBg = sec.bgColor || sec.bg_color || '';
+                    const customTheoryFontSize = sec.fontSize || sec.font_size || '';
+                    const customTheoryLineHeight = sec.lineHeight || sec.line_height || '';
+                    if (customTheoryBg && customTheoryBg !== 'transparent' && customTheoryBg !== '#ffffff') {
+                      cardStyle.background = `${customTheoryBg} !important`;
+                      cardStyle.border = '1px solid rgba(0,80,134,0.2)';
+                    }
+                    if (customTheoryFontSize) {
+                      cardStyle.fontSize = `${customTheoryFontSize} !important`;
+                    }
+                    if (customTheoryLineHeight) {
+                      cardStyle.lineHeight = `${customTheoryLineHeight} !important`;
+                    }
+
                     return (
                     <div
                       className="subsection-card"
@@ -3432,7 +3486,7 @@ export default function LessonViewerPage() {
 
                             return (
                               <div
-                                className="exercise-body-box"
+                                className={`exercise-body-box ${hasCustomBg ? 'has-custom-bg' : ''}`}
                                 style={{
                                   ...(isArabic ? {
                                     borderLeft: 'none',
@@ -3442,12 +3496,12 @@ export default function LessonViewerPage() {
                                     fontFamily: arabicFont,
                                     direction: 'rtl',
                                   } : {}),
-                                  background: hasCustomBg ? customBg : undefined,
+                                  background: hasCustomBg ? `${customBg} !important` : undefined,
                                   padding: hasCustomBg ? '0.75rem 1rem' : undefined,
                                   borderRadius: hasCustomBg ? '8px' : undefined,
                                   border: hasCustomBg ? '1px solid rgba(0,80,134,0.18)' : undefined,
-                                  fontSize: customFontSize || undefined,
-                                  lineHeight: customLineHeight || undefined,
+                                  fontSize: customFontSize ? `${customFontSize} !important` : undefined,
+                                  lineHeight: customLineHeight ? `${customLineHeight} !important` : undefined,
                                 }}
                               >
                                 {/* Direct Edit Style Toolbar */}
@@ -3540,6 +3594,31 @@ export default function LessonViewerPage() {
                                         <option value="2.0">2.0 ({isArabic ? 'واسع' : 'Spacieux'})</option>
                                       </select>
                                     </div>
+
+                                    <span style={{ color: '#cbd5e1' }}>|</span>
+
+                                    {/* Apply Style to All / تطبيق على كامل الملف */}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleApplySectionStyleToAll(sec.id, 'all')}
+                                      title={isArabic ? "تطبيق هذه التنسيقات (الخلفية، الحجم، التباعد) على جميع عناصر الملف دفعة واحدة" : "Appliquer ce style (Fond, Taille, Interligne) à tout le document"}
+                                      style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '0.25rem',
+                                        background: '#eff6ff',
+                                        color: '#005086',
+                                        border: '1px solid #bfdbfe',
+                                        borderRadius: '4px',
+                                        padding: '0.15rem 0.45rem',
+                                        fontSize: '0.7rem',
+                                        fontWeight: 800,
+                                        cursor: 'pointer'
+                                      }}
+                                    >
+                                      <CheckCheck size={12} style={{ color: '#0284c7' }} />
+                                      <span>{isArabic ? 'تطبيق على الكل' : 'Appliquer à tout'}</span>
+                                    </button>
                                   </div>
                                 )}
 

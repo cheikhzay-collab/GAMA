@@ -1071,6 +1071,24 @@ ${textFusion}
     }
   };
 
+  const MOROCCAN_SOLVE_ADDENDUM = `
+════════════════════════════════════════════════════════════
+🎯 RÈGLES DE RÉSOLUTION OFFICIELLES (INSPECTEUR PÉDAGOGIQUE MAROCAIN)
+════════════════════════════════════════════════════════════
+Pour chaque exercice, activité ou application résolue dans le champ "solution" :
+1. DÉMARCHE D'UN INSPECTEUR PÉDAGOGIQUE / PROFESSEUR AGRÉGÉ MAROCAIN :
+   - Respecte scrupuleusement le programme officiel marocain du niveau détecté (Tronc Commun, 1Bac, 2Bac PC/SVT, 2Bac SM).
+   - ⚠️ RÈGLE DE L'HÔPITAL STRICTEMENT INTERDITE pour les limites (sanctionnée par 0 pt au Baccalauréat marocain). Utiliser exclusivement les méthodes officielles : factorisation par le monôme dominant, quantité conjuguée, encadrements, ou limites usuelles ($\\lim_{x\\to 0}\\frac{e^x-1}{x}=1$, $\\lim_{x\\to 0}\\frac{\\ln(1+x)}{x}=1$).
+   - Pour 2Bac PC/SVT : ni Rolle ni TAF (utiliser uniquement le TVI et le signe de la dérivée) ; pas d'intégrales par changement de variable (uniquement IPP et primitives directes).
+   - Pour 1Bac : pas de calculs de limites par les dérivées, pas de ln/exp ni intégrales.
+   - Pour Tronc Commun : pas de limites ni de dérivées (monotonie par taux d'accroissement $T$).
+2. RIGUEUR DES HYPOTHÈSES : Énoncer et vérifier toutes les hypothèses avant d'appliquer un théorème (continuité sur $[a,b]$ pour TVI, monotonie stricte pour bijection, récurrence en 3 étapes : initialisation, hérédité, conclusion).
+3. FORMULATION & LATEX : Numérotation exacte des questions (1., 2.a., 2.b...), formules KaTeX soignées ($...$ et $$...$$), et encadrement des résultats finaux dans \\boxed{...}.
+   - ⚠️ INTERDICTION STRICTE DE \\cline : KaTeX ne supporte pas \\cline. Utiliser EXCLUSIVEMENT \\hline pour toutes les lignes de séparation !
+   - ⚠️ ENCADREMENT PAR $$ ... $$ : Tout environnement \\begin{array} ... \\end{array} (tableaux de signes, matrices) DOIT être encadré par $$ ouvrant et $$ fermant.
+   - Pour la division euclidienne de polynômes : utiliser un tableau à deux colonnes avec \\hline uniquement (SANS \\cline), ou le tableau de Horner, ou l'identification algébrique des coefficients.
+4. ÉCLAIRAGE PÉDAGOGIQUE : Terminer le corrigé par une brève remarque (💡 Remarque Pédagogique / إضاءة تربوية للمفتش) sur les pièges fréquents d'examen. RÈGLE STRICTE SUR LE BARÈME : N'inclure un barème indicatif de notation que SI le document est explicitement un Devoir Surveillé (Contrôle continu / فرض محروس) ou un Examen officiel ; pour les cours et séries d'exercices ordinaires, ne JAMAIS générer de tableau de barème ni de grille de points.`;
+
   const fetchGeminiWithPdf = async (base64Data, fileType, pageCount) => {
     const rawModel = geminiModel || 'gemini-3.6-flash';
     const modelToUse = (rawModel === 'gemini-2.5-flash') ? 'gemini-3.6-flash' : rawModel;
@@ -1089,7 +1107,7 @@ ${textFusion}
 - Cette consigne est ABSOLUE et PRIORITAIRE sur toutes les autres instructions du prompt système.`;
 
     const systemContent = solveSolutions
-      ? SYSTEM_PROMPT
+      ? SYSTEM_PROMPT + MOROCCAN_SOLVE_ADDENDUM
       : SYSTEM_PROMPT + NO_SOLUTION_ADDENDUM;
 
     let preExtractedPdfText = '';
@@ -1188,7 +1206,7 @@ ${textFusion}
 - Cette consigne est ABSOLUE et PRIORITAIRE sur toutes les autres instructions du prompt système.`;
 
     const systemContent = solveSolutions
-      ? SYSTEM_PROMPT
+      ? SYSTEM_PROMPT + MOROCCAN_SOLVE_ADDENDUM
       : SYSTEM_PROMPT + NO_SOLUTION_ADDENDUM;
 
     let preExtractedPdfText = '';
@@ -1289,7 +1307,7 @@ ${textFusion}
 - Cette consigne est ABSOLUE et PRIORITAIRE sur toutes les autres instructions du prompt système.`;
 
     const systemContent = solveSolutions
-      ? SYSTEM_PROMPT
+      ? SYSTEM_PROMPT + MOROCCAN_SOLVE_ADDENDUM
       : SYSTEM_PROMPT + NO_SOLUTION_ADDENDUM;
 
     const userContent = `TEXTE DU DOCUMENT EXTRAIT DU PDF :
@@ -1677,15 +1695,13 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
           reader.onerror = reject;
           reader.readAsDataURL(uploadFile);
         });
-        for (const sec of mappedSections) {
-          if (!Array.isArray(sec.items)) continue;
-          for (let i = 0; i < sec.items.length; i++) {
-            const it = sec.items[i];
-            if (it.type === 'image' && !it.url) {
-              sec.items[i] = { ...it, url: imageDataUrl, _isSourceImage: true };
-            }
-          }
-        }
+        mappedSections = mappedSections.map(sec => {
+          if (!Array.isArray(sec.items)) return sec;
+          return {
+            ...sec,
+            items: sec.items.map(it => (it.type === 'image' && !it.url ? { ...it, url: imageDataUrl, _isSourceImage: true } : it))
+          };
+        });
       }
 
       setSections(mappedSections);

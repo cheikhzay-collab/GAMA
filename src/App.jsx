@@ -1,8 +1,7 @@
-import React, { lazy, Suspense, useTransition, useCallback } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation, Link } from 'react-router-dom';
+import { lazy, Suspense, useTransition, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
-import { queryCache } from './services/queryCache';
 
 // Keep only the public entry screen in the initial bundle.
 import Login from './pages/Login';
@@ -34,52 +33,6 @@ const OMRScannerPage     = lazy(() => import('./pages/OMRScannerPage'));
 const RankingPage        = lazy(() => import('./pages/RankingPage'));
 const AuthCallback       = lazy(() => import('./pages/AuthCallback'));
 const PrintView          = lazy(() => import('./pages/PrintView'));
-
-// ─── Prefetch Map: route → data keys to warm ─────────────────────────────────
-// When a user hovers a nav link, prefetch the data that page needs.
-const ROUTE_PREFETCH = {
-  '/admin/classes':   ['classes_all', 'users_all'],
-  '/admin/lessons':   ['lessons_all'],
-  '/admin/exams':     ['exams_all'],
-  '/admin/dashboard': ['users_all', 'classes_all'],
-  '/levels':          ['lessons_all'],
-  '/study':           ['exams_all'],
-  '/ranking':         ['leaderboard_all'],
-};
-
-/**
- * usePrefetch — prefetches data for a route on mouse hover.
- * Call the returned handler in an onMouseEnter on nav links.
- */
-export function usePrefetch(route) {
-  return useCallback(() => {
-    const keys = ROUTE_PREFETCH[route];
-    if (!keys) return;
-    // Lazy-import the services only when needed (avoids circular imports)
-    keys.forEach((key) => {
-      const cached = queryCache.getSync(key);
-      if (cached) return; // Already in memory
-      // Trigger the right fetcher based on key prefix
-      if (key.startsWith('lessons')) {
-        import('./services/lessonService').then(m => {
-          queryCache.prefetch(key, () => m.getAllLessons());
-        });
-      } else if (key.startsWith('class')) {
-        import('./services/classService').then(m => {
-          queryCache.prefetch(key, () => m.getAllClasses());
-        });
-      } else if (key.startsWith('users')) {
-        import('./services/userService').then(m => {
-          queryCache.prefetch(key, () => m.getAllUsers());
-        });
-      } else if (key.startsWith('exams')) {
-        import('./services/examService').then(m => {
-          queryCache.prefetch(key, () => m.getAllExams());
-        });
-      }
-    });
-  }, [route]);
-}
 
 // ─── Route Guards ─────────────────────────────────────────────────────────────
 
@@ -128,14 +81,14 @@ function OAuthRedirectGuard() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  React.useEffect(() => {
+  useEffect(() => {
     const hash = window.location.hash;
     if (hash && hash.includes('access_token=') && window.location.pathname !== '/auth/callback') {
       window.history.replaceState(null, '', window.location.pathname);
     }
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const wasOAuthRedirect = sessionStorage.getItem('_oauth_in_progress') === '1';
     if (user && wasOAuthRedirect) {
       sessionStorage.removeItem('_oauth_in_progress');
@@ -155,7 +108,7 @@ function AppContent() {
   const location = useLocation();
   const [, startTransition] = useTransition();
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Wrap title update in startTransition to avoid blocking renders
     startTransition(() => {
       const path = location.pathname;

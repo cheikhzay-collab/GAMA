@@ -316,34 +316,48 @@ export const addLesson = async (lessonData) => {
   queryCache.invalidate('lessons_all');
   queryCache.set(`lesson_detail_${id}`, mapped);
 
-  // 3. Companion API (fire-and-forget)
-  const dbLesson = { id, ...mapLessonToDB(lessonData), created_at: now };
-  localDb.post('/lessons', dbLesson).catch(err => {
-    console.warn('[LocalDB] Could not sync addLesson:', err.message);
-  });
+  // 3. Companion API
+  const dbLesson = { 
+    id, 
+    ...mapLessonToDB(lessonData), 
+    level: lessonData.level || lessonData.content?.level || null,
+    doc_type: lessonData.docType || lessonData.content?.doc_type || 'course',
+    created_at: now 
+  };
+  try {
+    await localDb.post('/lessons', dbLesson);
+  } catch (err) {
+    console.warn('[LocalDB] Could not sync addLesson to companion:', err.message);
+  }
 
-  // 4. Supabase (fire-and-forget)
+  // 4. Supabase (Awaited with error logging)
   if (supabase) {
-    supabase.from('lessons').insert(dbLesson).then(({ error }) => {
-      if (error) console.warn('[Supabase] Could not sync addLesson:', error.message);
-    });
+    try {
+      const { error } = await supabase.from('lessons').insert(dbLesson);
+      if (error) {
+        console.warn('[Supabase] Could not insert lesson into DB:', error.message);
+      }
+    } catch (err) {
+      console.warn('[Supabase] addLesson network error:', err.message);
+    }
   }
 
   return id;
 };
 
 /**
- * Update dynamic fields of a lesson.
+ * Update dynamic fields of a lesson and persist to LocalStorage, Companion, and Supabase.
  */
 export const updateLesson = async (lessonId, updates) => {
   const now = new Date().toISOString();
   
-  // 1. LocalStorage first (direct, no await-getAllLessons penalty)
+  // 1. LocalStorage first (direct, fast)
   const rawLessons = readRawLessons();
   const idx = rawLessons.findIndex(l => l.id === lessonId);
+  let updatedRecord = null;
   if (idx !== -1) {
     const original = rawLessons[idx];
-    rawLessons[idx] = {
+    updatedRecord = {
       ...original,
       ...updates,
       content: {
@@ -356,10 +370,11 @@ export const updateLesson = async (lessonId, updates) => {
       docType: updates.docType || updates.content?.doc_type || original.docType,
       updatedAt: now
     };
+    rawLessons[idx] = updatedRecord;
     saveLocalStorageLessons(rawLessons);
   }
 
-  // 2. Invalidate cache after localStorage write
+  // 2. Invalidate cache after write
   queryCache.invalidate('lessons_all');
   queryCache.invalidate(`lesson_detail_${lessonId}`);
 
@@ -382,23 +397,76 @@ export const updateLesson = async (lessonId, updates) => {
     };
   }
 
-  // 4. Companion API (fire-and-forget)
-  localDb.get('/lessons').then(list => {
-    if (!Array.isArray(list)) return;
-    const lesson = list.find(l => l.id === lessonId);
-    if (!lesson) return;
-    const merged = { ...lesson, ...dbUpdates, content: { ...(lesson.content || {}), ...(dbUpdates.content || {}) } };
-    localDb.post('/lessons', merged).catch(err => {
-      console.warn('[LocalDB] Could not sync updateLesson:', err.message);
-    });
-  }).catch(() => {});
-
-  // 5. Supabase (fire-and-forget)
-  if (supabase) {
-    supabase.from('lessons').update(dbUpdates).eq('id', lessonId).then(({ error }) => {
-      if (error) console.warn('[Supabase] Could not sync updateLesson:', error.message);
-    });
+  // 4. Companion API (awaited, with fallback to insert if missing)
+  try {
+    const list = await localDb.get('/lessons');
+    if (Array.isArray(list)) {
+      const lesson = list.find(l => l.id === lessonId);
+      if (lesson) {
+        const merged = { ...lesson, ...dbUpdates, content: { ...(lesson.content || {}), ...(dbUpdates.content || {}) } };
+        await localDb.post('/lessons', merged);
+      } else {
+        const fullLesson = updatedRecord || updates;
+        const newRecord = {
+          id: lessonId,
+          ...mapLessonToDB(fullLesson),
+          ...dbUpdates,
+          created_at: fullLesson.createdAt || now
+        };
+        await localDb.post('/lessons', newRecord);
+      }
+    }
+  } catch (err) {
+    console.warn('[LocalDB] Could not sync updateLesson:', err.message);
   }
+
+  // 5. Supabase (AWAITED, with fallback to insert if record did not exist in DB yet)
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('lessons')
+        .update(dbUpdates)
+        .eq('id', lessonId)
+        .select('id');
+
+      if (error) {
+        console.error('[Supabase] Could not update lesson in DB:', error.message);
+        throw new Error(`Erreur Supabase: ${error.message}`);
+      } else if (!data || data.length === 0) {
+        // La ligne n'existait pas encore dans Supabase -> Insérer la fiche complète
+        const fullLesson = updatedRecord || updates;
+        const insertPayload = {
+          id: lessonId,
+          title: fullLesson.title || updates.title || 'Document',
+          subject: fullLesson.subject || updates.subject || null,
+          chapter_number: fullLesson.chapterNumber || updates.chapterNumber || null,
+          teacher: fullLesson.teacher || updates.teacher || null,
+          phone: fullLesson.phone || updates.phone || null,
+          schools: fullLesson.schools || updates.schools || [],
+          level: fullLesson.level || updates.level || null,
+          doc_type: fullLesson.docType || updates.docType || 'course',
+          content: fullLesson.content || dbUpdates.content || {},
+          is_active: fullLesson.isActive !== undefined ? fullLesson.isActive : true,
+          created_at: fullLesson.createdAt || now,
+          updated_at: now
+        };
+        const { error: insertErr } = await supabase.from('lessons').insert(insertPayload);
+        if (insertErr) {
+          console.error('[Supabase] Could not insert missing lesson into DB:', insertErr.message);
+          throw new Error(`Erreur insertion Supabase: ${insertErr.message}`);
+        } else {
+          console.log('[Supabase] Missing lesson inserted into DB successfully:', lessonId);
+        }
+      } else {
+        console.log('[Supabase] Lesson updated successfully in DB:', lessonId);
+      }
+    } catch (err) {
+      console.error('[Supabase] Error syncing updateLesson:', err.message);
+      throw err;
+    }
+  }
+
+  return { success: true, id: lessonId };
 };
 
 /**
@@ -420,15 +488,20 @@ export const deleteLesson = async (lessonId) => {
   queryCache.invalidate('lessons_all');
   queryCache.invalidate(`lesson_detail_${lessonId}`);
 
-  // 3. Companion API (fire-and-forget)
-  localDb.delete('/lessons', lessonId).catch(err => {
+  // 3. Companion API
+  try {
+    await localDb.delete('/lessons', lessonId);
+  } catch (err) {
     console.warn('[LocalDB] Could not sync deleteLesson:', err.message);
-  });
+  }
 
-  // 4. Supabase (fire-and-forget)
+  // 4. Supabase
   if (supabase) {
-    supabase.from('lessons').delete().eq('id', lessonId).then(({ error }) => {
+    try {
+      const { error } = await supabase.from('lessons').delete().eq('id', lessonId);
       if (error) console.warn('[Supabase] Could not sync deleteLesson:', error.message);
-    });
+    } catch (err) {
+      console.warn('[Supabase] deleteLesson network error:', err.message);
+    }
   }
 };

@@ -145,6 +145,9 @@ export const repairMathExpression = (latex) => {
     return match;
   });
 
+  // 9. Convert unsupported KaTeX \cline to \hline
+  repaired = repaired.replace(/\\cline\s*(?:\{[0-9\- ]+\}|[0-9\- ]+)/g, '\\hline');
+
   return repaired;
 };
 
@@ -295,7 +298,12 @@ function tokenizeMath(text) {
         i++;
       } else {
         if (buf) { tokens.push({ type: 'text', content: buf }); buf = ''; }
-        tokens.push({ type: 'inline', content: text.slice(i + 1, j) });
+        const mathContent = text.slice(i + 1, j);
+        if (/\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather|split)\}/.test(mathContent)) {
+          tokens.push({ type: 'block', content: mathContent });
+        } else {
+          tokens.push({ type: 'inline', content: mathContent });
+        }
         i = j + 1;
       }
       continue;
@@ -403,26 +411,46 @@ function renderTextWithBold(text) {
   });
 }
 
+/**
+ * Global master math text auto-repairer.
+ * Guarantees that all math environments (array, cases, aligned, matrix, etc.)
+ * are enclosed in $$ ... $$, repairs unbalanced or missing delimiters,
+ * and converts unsupported commands like \cline to \hline.
+ */
+export const autoRepairMathText = (text) => {
+  if (!text || typeof text !== 'string') return text;
+  let res = text;
+
+  // 1. Convert any unsupported KaTeX \cline commands to \hline
+  res = res.replace(/\\cline\s*(?:\{[0-9\- ]+\}|[0-9\- ]+)/g, '\\hline');
+
+  // 2. Normalize and cleanly wrap ALL math environments
+  // Catches bare environments, half-delimited environments (e.g. \begin{array}...\end{array}$),
+  // and forces them into well-formed display blocks ($$ ... $$)
+  res = res.replace(/(?:\${1,2}\s*)?\\begin\{(cases|aligned|matrix|pmatrix|vmatrix|array|gather|split)\}([\s\S]*?)\\end\{\1\}(?:\s*\${1,2})?/g, (_, env, body) => {
+    const cleanBody = body.replace(/\\cline\s*(?:\{[0-9\- ]+\}|[0-9\- ]+)/g, '\\hline');
+    return `\n\n$$\\begin{${env}}${cleanBody}\\end{${env}}$$\n\n`;
+  });
+
+  // 3. Repair common corrupted LaTeX commands
+  res = res
+    .replace(/(?<![a-zA-Z\\])ight\b/g, '\\right')
+    .replace(/(?<!\\)right\b/g, '\\right')
+    .replace(/(?<!\\)left\b/g, '\\left')
+    .replace(/(?<![a-zA-Z\\])frac\{/g, '\\frac{')
+    .replace(/(?<![a-zA-Z\\])dfrac\{/g, '\\dfrac{')
+    .replace(/(?<![a-zA-Z\\])rac\{/g, '\\frac{');
+
+  // 4. Wrap standalone bare \boxed{...} with $ if not already in math
+  res = res.replace(/(?<![$a-zA-Z0-9_\\])(\\boxed\{[^{}]+\})(?![$a-zA-Z0-9_\\])/g, '$$$1$$');
+
+  return res;
+};
+
 // Helper to retroactively repair LaTeX formulas corrupted by JSON string escaping (e.g., \right becoming ight)
 const repairCorruptedLatex = (text) => {
   if (!text) return text;
-  return text
-    // Replace " ight" or control-char + "ight" or lone "ight" (not preceded by letter/backslash) with "\right"
-    .replace(/(?<![a-zA-Z\\])ight\b/g, '\\right')
-    // Replace "right" (not preceded by backslash) with "\right"
-    .replace(/(?<!\\)right\b/g, '\\right')
-    // Replace "left" (not preceded by backslash) with "\left"
-    .replace(/(?<!\\)left\b/g, '\\left')
-    // Replace "frac{" (not preceded by letter/backslash) with "\frac{"
-    .replace(/(?<![a-zA-Z\\])frac\{/g, '\\frac{')
-    // Replace "dfrac{" (not preceded by letter/backslash) with "\dfrac{"
-    .replace(/(?<![a-zA-Z\\])dfrac\{/g, '\\dfrac{')
-    // Replace "rac{" (not preceded by letter/backslash) with "\frac{" (in case f was stripped as form feed)
-    .replace(/(?<![a-zA-Z\\])rac\{/g, '\\frac{')
-    // Repair unclosed math environments missing trailing $ (e.g., "$... \begin{cases} ... \end{cases}" with no closing $)
-    .replace(/(\$(?:(?!\$).)*?\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\}[\s\S]*?\\end\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\})(?!\$)/g, '$1$')
-    // Wrap bare math environments without any dollar delimiters
-    .replace(/(?<![\$\\])(\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\}[\s\S]*?\\end\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\})(?!\$)/g, '$$$1$$');
+  return autoRepairMathText(text);
 };
 
 /* ─── 8. Main render function ────────────────────────────────────────────────

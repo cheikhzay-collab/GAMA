@@ -79,7 +79,12 @@ const renderLatexToHtml = (text) => {
     .replace(/&amp;/g, '&')
     .replace(/&#039;/g, "'")
     .replace(/&quot;/g, '"')
-    .replace(/\\\\([a-zA-Z]+)/g, '\\$1');
+    .replace(/&#x27;/g, "'")
+    .replace(/&#x60;/g, '`')
+    // Fix double-backslash LaTeX commands (e.g. \\frac → \frac, \\iff → \iff, \\begin → \begin)
+    .replace(/\\\\([a-zA-Z]+)/g, '\\$1')
+    // Fix double-backslash before non-alpha chars that are valid LaTeX (e.g. \\\\ → \\)
+    .replace(/\\\\(?=[{},|^_])/g, '\\');
 
   // Repair unclosed math environments missing trailing $ (e.g., "$... \begin{cases} ... \end{cases}" with no closing $)
   s = s.replace(/(\$(?:(?!\$).)*?\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\}[\s\S]*?\\end\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\})(?!\$)/g, '$1$');
@@ -158,9 +163,9 @@ const renderLatexToHtml = (text) => {
   processed = processed.replace(/\$\$([\s\S]+?)\$\$/g, (_, math) => {
     try {
       const cleanMath = unescapeMathEntities(math.trim());
-      return katex.renderToString(cleanMath, { displayMode: true, throwOnError: false });
+      return katex.renderToString(cleanMath, { displayMode: true, throwOnError: false, strict: 'ignore' });
     } catch {
-      return math;
+      return `<span style="font-style:italic;opacity:0.75">${math}</span>`;
     }
   });
 
@@ -168,9 +173,9 @@ const renderLatexToHtml = (text) => {
   processed = processed.replace(/\$(\s*\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\}[\s\S]*?\\end\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\}\s*)\$/g, (_, math) => {
     try {
       const cleanMath = unescapeMathEntities(math.trim());
-      return katex.renderToString(cleanMath, { displayMode: false, throwOnError: false });
+      return katex.renderToString(cleanMath, { displayMode: true, throwOnError: false, strict: 'ignore' });
     } catch {
-      return math;
+      return `<span style="font-style:italic;opacity:0.75">${math}</span>`;
     }
   });
 
@@ -178,9 +183,9 @@ const renderLatexToHtml = (text) => {
   processed = processed.replace(/\$([^\$\n]+?)\$/g, (_, math) => {
     try {
       const cleanMath = unescapeMathEntities(math.trim());
-      return katex.renderToString(cleanMath, { displayMode: false, throwOnError: false });
+      return katex.renderToString(cleanMath, { displayMode: false, throwOnError: false, strict: 'ignore' });
     } catch {
-      return math;
+      return `<span style="font-style:italic;opacity:0.75">${math}</span>`;
     }
   });
 
@@ -188,9 +193,9 @@ const renderLatexToHtml = (text) => {
   processed = processed.replace(/\\\(([\s\S]+?)\\\)/g, (_, math) => {
     try {
       const cleanMath = unescapeMathEntities(math.trim());
-      return katex.renderToString(cleanMath, { displayMode: false, throwOnError: false });
+      return katex.renderToString(cleanMath, { displayMode: false, throwOnError: false, strict: 'ignore' });
     } catch {
-      return math;
+      return `<span style="font-style:italic;opacity:0.75">${math}</span>`;
     }
   });
 
@@ -198,9 +203,9 @@ const renderLatexToHtml = (text) => {
   processed = processed.replace(/\\\[([\s\S]+?)\\\]/g, (_, math) => {
     try {
       const cleanMath = unescapeMathEntities(math.trim());
-      return katex.renderToString(cleanMath, { displayMode: true, throwOnError: false });
+      return katex.renderToString(cleanMath, { displayMode: true, throwOnError: false, strict: 'ignore' });
     } catch {
-      return math;
+      return `<span style="font-style:italic;opacity:0.75">${math}</span>`;
     }
   });
 
@@ -212,13 +217,22 @@ const renderLatexToHtml = (text) => {
 
 const escapeHtml = (unsafe) => {
   if (!unsafe) return '';
-  return String(unsafe)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+  // Protect math blocks ($...$ and $$...$$) from HTML entity encoding
+  // Only escape HTML-special characters in TEXT portions, not inside math delimiters
+  const str = String(unsafe);
+  const parts = str.split(/(\$\$[\s\S]*?\$\$|\$[^\$\n]+?\$)/g);
+  return parts.map((part, idx) => {
+    if (idx % 2 === 1) return part; // inside math block: leave untouched!
+    return part
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+      // Note: do NOT escape apostrophes (') — they're safe in HTML content
+      // and escaping them breaks LaTeX like \iff when passed through renderLatexToHtml
+  }).join('');
 };
+
 
 // Markdown Table Parser to HTML
 const renderMarkdownTableHtml = (lines) => {

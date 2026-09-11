@@ -3001,7 +3001,6 @@ export default function AdminLogbook() {
                                           toggleSectionPreview(s.id || s.title);
                                         }}
                                         style={{
-                                          background: 'transparent',
                                           border: 'none',
                                           color: isPreviewOpen ? 'var(--violet)' : 'var(--text-muted)',
                                           cursor: 'pointer',

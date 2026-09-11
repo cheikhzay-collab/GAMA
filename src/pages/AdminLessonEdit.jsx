@@ -11,13 +11,14 @@ import {
   Table, Image as ImageIcon, Sparkles, Check, X,
   Type, Palette, BookOpen, Layers, Lightbulb, CornerDownLeft,
   GraduationCap, School, Phone, Globe, Tag, Bookmark, CheckSquare, Settings2, Users, Languages,
-  Zap, Award, Search, Target, MessageSquare, Link2, HelpCircle, Info, Pin
+  Zap, Award, Search, Target, MessageSquare, Link2, HelpCircle, Info, Pin,
+  CheckCheck, Copy, Paintbrush
 } from 'lucide-react';
 import PdfFigureCropperModal from '../components/PdfFigureCropperModal';
 import ImageDropZone from '../components/ImageDropZone';
 import FloatingLatexPalette from '../components/FloatingLatexPalette';
-import { solveExerciseWithAI } from '../utils/aiExerciseSolver';
-import { renderWithMath } from '../utils/mathRenderer';
+import { solveExerciseWithAI, filterBaremeByDocType } from '../utils/aiExerciseSolver';
+import { renderWithMath, autoRepairMathText } from '../utils/mathRenderer';
 import { normalizeLevel, getLevelDisplayName } from '../utils/levelHelpers';
 
 function useIsMobile() {
@@ -43,7 +44,7 @@ const MOROCCAN_LEVELS = [
 ];
 
 const DOC_TYPES = [
-  { id: 'course', labelFr: 'Cours théorique (Fiche)', labelAr: 'درس نظري (جذاذة تربوية)' },
+  { id: 'course', labelFr: 'Cours théorique', labelAr: 'درس نظري' },
   { id: 'exercises', labelFr: 'Série d\'exercices', labelAr: 'سلسلة تمارين تطبيقية' },
   { id: 'homework', labelFr: 'Devoir surveillé (Contrôle)', labelAr: 'فرض محروس (مراقبة مستمرة)' },
   { id: 'national', labelFr: 'Examen National', labelAr: 'امتحان وطني موحد' },
@@ -62,15 +63,7 @@ const COMMON_SUBJECTS = [
   'Éducation Islamique'
 ];
 
-const autoRepairMathText = (str) => {
-  if (!str || typeof str !== 'string') return str;
-  let res = str;
-  // Repair unclosed math environments missing trailing $ (e.g. "$... \begin{cases} ... \end{cases}" with no closing $)
-  res = res.replace(/(\$(?:(?!\$).)*?\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\}[\s\S]*?\\end\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\})(?!\$)/g, '$1$');
-  // Wrap bare math environments without any dollar delimiters
-  res = res.replace(/(?<![\$\\])(\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\}[\s\S]*?\\end\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\})(?!\$)/g, '$$$1$$');
-  return res;
-};
+
 
 export default function AdminLessonEdit() {
   const { id } = useParams();
@@ -122,6 +115,13 @@ export default function AdminLessonEdit() {
   const [isGeneralInfoExpanded, setIsGeneralInfoExpanded] = useState(true);
   const [columnsCount, setColumnsCount] = useState(2);
 
+  // Global Style States (Apply to all sections/exercises)
+  const [globalBgColor, setGlobalBgColor] = useState('transparent');
+  const [globalFontSize, setGlobalFontSize] = useState('');
+  const [globalLineHeight, setGlobalLineHeight] = useState('');
+  const [globalScope, setGlobalScope] = useState('all'); // 'all' | 'exercises' | 'course'
+  const [applyStyleMenuIndex, setApplyStyleMenuIndex] = useState(null);
+
   // Pedagogical Objectives (Fiche header fields)
   const [capacitesAttendues, setCapacitesAttendues] = useState('');
   const [contenus, setContenus] = useState('');
@@ -142,22 +142,13 @@ export default function AdminLessonEdit() {
   // Floating LaTeX Math Palette State
   const [isLatexPaletteOpen, setIsLatexPaletteOpen] = useState(false);
   const [solvingSecIdx, setSolvingSecIdx] = useState(null);
+  const [solvingAll, setSolvingAll] = useState(false);
+  const [solveAllProgress, setSolveAllProgress] = useState(null);
 
   // PDF Figure Cropper Modal State
   const [isCropperOpen, setIsCropperOpen] = useState(false);
   const [cropperTarget, setCropperTarget] = useState({ secIdx: 0, itemIdx: null });
 
-  // Keyboard shortcut for quick save
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        handleSaveLesson();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [ficheTitle, subject, chapterNumber, teacher, phone, prepTitle, selectedLevel, docType, docLanguage, sections, capacitesAttendues, contenus, leContenu]);
 
   const handleCropComplete = ({ url, alt, width_pct, align, targetSectionIdx, targetItemIdx }) => {
     setSections(prev => {
@@ -260,7 +251,7 @@ export default function AdminLessonEdit() {
 
   // Section manipulation helpers
   const handleAddSection = (type = 'exercise') => {
-    const newId = `sec-${Date.now()}`;
+    const newId = `sec-${sections.length + 1}-${type}`;
     const titles = {
       exercise: 'Nouvel Exercice',
       content: 'Nouvelle Section de Cours',
@@ -294,6 +285,232 @@ export default function AdminLessonEdit() {
 
   const handleUpdateSection = (index, field, value) => {
     setSections(sections.map((sec, i) => i === index ? { ...sec, [field]: value } : sec));
+  };
+
+  // Close apply style dropdown menu when clicking outside
+  useEffect(() => {
+    const handleOutsideClick = () => setApplyStyleMenuIndex(null);
+    if (applyStyleMenuIndex !== null) {
+      window.addEventListener('click', handleOutsideClick);
+      return () => window.removeEventListener('click', handleOutsideClick);
+    }
+  }, [applyStyleMenuIndex]);
+
+  // Apply single section's styling to all or scoped sections + Auto-save to DB
+  const handleApplySectionStyleToAll = async (sourceIndex, targetScope = 'all') => {
+    const source = sections[sourceIndex];
+    if (!source) return;
+    const { bgColor = 'transparent', fontSize = '', lineHeight = '' } = source;
+    
+    const updatedSections = sections.map(s => {
+      if (targetScope === 'exercises' && s.type !== 'exercise') return s;
+      if (targetScope === 'course' && s.type === 'exercise') return s;
+      return { 
+        ...s, 
+        bgColor, 
+        bg_color: bgColor,
+        fontSize, 
+        font_size: fontSize,
+        lineHeight, 
+        line_height: lineHeight 
+      };
+    });
+    setSections(updatedSections);
+
+    const scopeNames = {
+      all: isArMode ? 'جميع أقسام وتمارين الملف' : 'toutes les sections et exercices',
+      exercises: isArMode ? 'جميع تمارين الملف فقط' : 'tous les exercices uniquement',
+      course: isArMode ? 'جميع فقرات الدرس فقط' : 'toutes les sections de cours uniquement'
+    };
+
+    // Auto-save immediately to database & localStorage
+    if (id) {
+      try {
+        await updateLesson(id, {
+          title: ficheTitle,
+          subject,
+          chapterNumber,
+          teacher,
+          phone,
+          schools,
+          level: selectedLevel,
+          docType: docType,
+          columnsCount: Number(columnsCount),
+          isActive: isActiveStatus,
+          content: {
+            level: selectedLevel,
+            doc_type: docType,
+            columns_count: Number(columnsCount),
+            metadata: {
+              ...lesson?.content?.metadata,
+              language: docLanguage
+            },
+            header: {
+              prep_title: prepTitle,
+              schools,
+              subject,
+              fiche_title: ficheTitle,
+              chapter_number: chapterNumber,
+              teacher,
+              phone,
+              capacites_attendues: capacitesAttendues,
+              contenus: contenus,
+              le_contenu: leContenu
+            },
+            sections: updatedSections
+          }
+        });
+        setLesson(prev => ({
+          ...prev,
+          title: ficheTitle,
+          subject,
+          chapterNumber,
+          teacher,
+          phone,
+          schools,
+          level: selectedLevel,
+          docType,
+          columnsCount: Number(columnsCount),
+          isActive: isActiveStatus,
+          content: {
+            ...(prev?.content || {}),
+            level: selectedLevel,
+            doc_type: docType,
+            columns_count: Number(columnsCount),
+            header: {
+              ...(prev?.content?.header || {}),
+              prep_title: prepTitle,
+              schools,
+              subject,
+              fiche_title: ficheTitle,
+              chapter_number: chapterNumber,
+              teacher,
+              phone
+            },
+            sections: updatedSections
+          }
+        }));
+        setSuccess(isArMode 
+          ? `✓ تم تطبيق التنسيق وحفظه فعلياً في قاعدة البيانات (${scopeNames[targetScope]})!` 
+          : `✓ Style appliqué et enregistré dans la base de données (${scopeNames[targetScope]}) !`);
+      } catch (err) {
+        console.error('Auto-save error:', err);
+        setSuccess(isArMode 
+          ? `تم تطبيق التنسيق على ${scopeNames[targetScope]}! (يرجى النقر على حفظ لتأكيد التخزين)` 
+          : `Style appliqué à ${scopeNames[targetScope]} !`);
+      }
+    } else {
+      setSuccess(isArMode 
+        ? `تم تطبيق التنسيق على ${scopeNames[targetScope]}!` 
+        : `Style appliqué à ${scopeNames[targetScope]} !`);
+    }
+    setTimeout(() => setSuccess(''), 4500);
+  };
+
+  // Apply global style bar settings to all or scoped sections + Auto-save to DB
+  const handleApplyGlobalStyleToAll = async () => {
+    const updatedSections = sections.map(s => {
+      if (globalScope === 'exercises' && s.type !== 'exercise') return s;
+      if (globalScope === 'course' && s.type === 'exercise') return s;
+      return { 
+        ...s, 
+        bgColor: globalBgColor, 
+        bg_color: globalBgColor,
+        fontSize: globalFontSize, 
+        font_size: globalFontSize,
+        lineHeight: globalLineHeight, 
+        line_height: globalLineHeight 
+      };
+    });
+    setSections(updatedSections);
+
+    const scopeNames = {
+      all: isArMode ? 'جميع أقسام وتمارين الملف' : 'toutes les sections et exercices',
+      exercises: isArMode ? 'جميع تمارين الملف فقط' : 'tous les exercices uniquement',
+      course: isArMode ? 'جميع فقرات الدرس فقط' : 'toutes les sections de cours uniquement'
+    };
+
+    if (id) {
+      try {
+        await updateLesson(id, {
+          title: ficheTitle,
+          subject,
+          chapterNumber,
+          teacher,
+          phone,
+          schools,
+          level: selectedLevel,
+          docType: docType,
+          columnsCount: Number(columnsCount),
+          isActive: isActiveStatus,
+          content: {
+            level: selectedLevel,
+            doc_type: docType,
+            columns_count: Number(columnsCount),
+            metadata: {
+              ...lesson?.content?.metadata,
+              language: docLanguage
+            },
+            header: {
+              prep_title: prepTitle,
+              schools,
+              subject,
+              fiche_title: ficheTitle,
+              chapter_number: chapterNumber,
+              teacher,
+              phone,
+              capacites_attendues: capacitesAttendues,
+              contenus: contenus,
+              le_contenu: leContenu
+            },
+            sections: updatedSections
+          }
+        });
+        setLesson(prev => ({
+          ...prev,
+          title: ficheTitle,
+          subject,
+          chapterNumber,
+          teacher,
+          phone,
+          schools,
+          level: selectedLevel,
+          docType,
+          columnsCount: Number(columnsCount),
+          isActive: isActiveStatus,
+          content: {
+            ...(prev?.content || {}),
+            level: selectedLevel,
+            doc_type: docType,
+            columns_count: Number(columnsCount),
+            header: {
+              ...(prev?.content?.header || {}),
+              prep_title: prepTitle,
+              schools,
+              subject,
+              fiche_title: ficheTitle,
+              chapter_number: chapterNumber,
+              teacher,
+              phone
+            },
+            sections: updatedSections
+          }
+        }));
+        setSuccess(isArMode 
+          ? `✓ تم تطبيق التنسيق الموحد وحفظه فعلياً في قاعدة البيانات (${scopeNames[globalScope]})!` 
+          : `✓ Style global appliqué et enregistré dans la base de données (${scopeNames[globalScope]}) !`);
+      } catch (err) {
+        console.error('Auto-save error:', err);
+        setSuccess(isArMode 
+          ? `تم تطبيق التنسيق على ${scopeNames[globalScope]}!` 
+          : `Style global appliqué avec succès à ${scopeNames[globalScope]} !`);
+      }
+    } else {
+      setSuccess(isArMode 
+        ? `تم تطبيق التنسيق الموحد على ${scopeNames[globalScope]}!` 
+        : `Style global appliqué avec succès à ${scopeNames[globalScope]} !`);
+    }
+    setTimeout(() => setSuccess(''), 4500);
   };
 
   const handleMoveSection = (index, direction) => {
@@ -505,12 +722,18 @@ export default function AdminLessonEdit() {
     try {
       const generatedSolution = await solveExerciseWithAI(contentToSolve, {
         level: selectedLevel,
-        subject: subject || 'Mathématiques',
-        language: docLanguage || 'fr',
-        docTitle: ficheTitle || ''
+        subject: subject || (isArMode ? 'الرياضيات' : 'Mathématiques'),
+        language: docLanguage || (isArMode ? 'ar' : 'fr'),
+        docTitle: ficheTitle || '',
+        chapterTitle: ficheTitle || '',
+        sectionTitle: sec.title || sec.section_header || '',
+        secType: sec.type || 'exercise',
+        docType: docType || 'course',
+        capacitesAttendues: capacitesAttendues || '',
+        contenus: contenus || ''
       });
 
-      const repairedSolution = autoRepairMathText(generatedSolution);
+      const repairedSolution = filterBaremeByDocType(autoRepairMathText(generatedSolution), docType || 'course', ficheTitle);
       handleUpdateSection(secIdx, 'solution', repairedSolution);
       setSuccess(isArMode ? 'تم حل التمرين بالذكاء الاصطناعي بنجاح ✓' : 'Corrigé généré par IA avec succès ✓');
       setTimeout(() => setSuccess(''), 3500);
@@ -522,6 +745,66 @@ export default function AdminLessonEdit() {
     }
   };
 
+  // AI-Powered Bulk Exercise Solver (Moroccan Inspector Method)
+  const handleAiSolveAllExercises = async () => {
+    const exerciseSections = sections
+      .map((sec, idx) => ({ ...sec, idx }))
+      .filter(sec => (sec.type === 'exercise' || sec.type === 'activity') && (sec.content || '').trim().length > 0);
+
+    if (exerciseSections.length === 0) {
+      alert(isArMode ? 'لا توجد تمارين أو تطبيقات تحتوي على نص لحلها في هذه الوثيقة.' : "Aucun exercice ou application contenant un énoncé n'a été trouvé dans ce document.");
+      return;
+    }
+
+    const confirmMsg = isArMode
+      ? `سيتم حل ${exerciseSections.length} تمرين/تطبيق بالذكاء الاصطناعي وفق التوجيهات التربوية المغربية ومنهجية المفتش التربوي لمادة الرياضيات. هل تريد المتابعة؟`
+      : `Résoudre ${exerciseSections.length} exercices/applications par IA selon les Orientations Pédagogiques Marocaines (Méthode de l'Inspecteur). Continuer ?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    setSolvingAll(true);
+    setError('');
+    let successCount = 0;
+    let failCount = 0;
+
+    for (let i = 0; i < exerciseSections.length; i++) {
+      const ex = exerciseSections[i];
+      setSolveAllProgress({ current: i + 1, total: exerciseSections.length, title: ex.title || `Exercice ${i + 1}` });
+      setSolvingSecIdx(ex.idx);
+
+      try {
+        const generated = await solveExerciseWithAI(ex.content.trim(), {
+          level: selectedLevel,
+          subject: subject || (isArMode ? 'الرياضيات' : 'Mathématiques'),
+          language: docLanguage || (isArMode ? 'ar' : 'fr'),
+          docTitle: ficheTitle || '',
+          chapterTitle: ficheTitle || '',
+          sectionTitle: ex.title || ex.section_header || '',
+          secType: ex.type || 'exercise',
+          docType: docType || 'course',
+          capacitesAttendues: capacitesAttendues || '',
+          contenus: contenus || ''
+        });
+
+        const repaired = filterBaremeByDocType(autoRepairMathText(generated), docType || 'course', ficheTitle);
+        handleUpdateSection(ex.idx, 'solution', repaired);
+        successCount++;
+      } catch (err) {
+        console.error(`AI Bulk Solve error on exercise ${ex.idx}:`, err);
+        failCount++;
+      }
+    }
+
+    setSolvingSecIdx(null);
+    setSolvingAll(false);
+    setSolveAllProgress(null);
+
+    const resultMsg = isArMode
+      ? `اكتمل الحل: تم حل ${successCount} تمرين بنجاح وفق التوجيهات المغربية ${failCount > 0 ? `(وفشل ${failCount})` : ''} ✓`
+      : `Résolution terminée : ${successCount} exercices résolus avec succès selon les normes officielles marocaines ${failCount > 0 ? `(${failCount} échecs)` : ''} ✓`;
+    setSuccess(resultMsg);
+    setTimeout(() => setSuccess(''), 4500);
+  };
+
   // Direct Image Insertion Handler (Paste, Drag&Drop, Upload, Camera)
   const handleDirectImageInsert = (dataUrl, alt = 'Figure') => {
     let targetSecIdx = activeFieldTarget?.secIdx;
@@ -531,7 +814,7 @@ export default function AdminLessonEdit() {
     
     if (sections.length === 0) {
       const newSec = {
-        id: `sec-${Date.now()}`,
+        id: 'sec-img-1',
         title: 'Section avec Figure',
         type: 'content',
         section_number: '',
@@ -576,6 +859,12 @@ export default function AdminLessonEdit() {
     try {
       const cleanedSections = sections.map(sec => ({
         ...sec,
+        bgColor: sec.bgColor || sec.bg_color || 'transparent',
+        bg_color: sec.bgColor || sec.bg_color || 'transparent',
+        fontSize: sec.fontSize || sec.font_size || '',
+        font_size: sec.fontSize || sec.font_size || '',
+        lineHeight: sec.lineHeight || sec.line_height || '',
+        line_height: sec.lineHeight || sec.line_height || '',
         content: autoRepairMathText(sec.content),
         solution: autoRepairMathText(sec.solution),
         items: (sec.items || []).map(it => ({
@@ -609,6 +898,7 @@ export default function AdminLessonEdit() {
             schools,
             subject,
             fiche_title: ficheTitle,
+            chapter_number: chapterNumber,
             teacher,
             phone,
             capacites_attendues: capacitesAttendues,
@@ -620,17 +910,42 @@ export default function AdminLessonEdit() {
       };
 
       await updateLesson(id, lessonData);
-      setSuccess('Fiche de cours enregistrée avec succès ✓');
+      setLesson(prev => ({
+        ...prev,
+        ...lessonData,
+        content: {
+          ...(prev?.content || {}),
+          ...lessonData.content
+        }
+      }));
+
+      setSuccess(isArMode 
+        ? '✓ تم حفظ التعديلات والإعدادات بنجاح في قاعدة البيانات' 
+        : '✓ Fiche et paramètres enregistrés avec succès dans la base de données');
       setTimeout(() => {
         setSuccess('');
       }, 3500);
     } catch (e) {
       console.error(e);
-      setError(`Erreur lors de la modification : ${e.message}`);
+      setError(isArMode 
+        ? `فشل الحفظ في قاعدة البيانات: ${e.message}` 
+        : `Erreur lors de l'enregistrement dans la base de données : ${e.message}`);
     } finally {
       setSaving(false);
     }
   };
+
+  // Keyboard shortcut for quick save
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSaveLesson();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [ficheTitle, subject, chapterNumber, teacher, phone, prepTitle, selectedLevel, docType, docLanguage, sections, capacitesAttendues, contenus, leContenu]);
 
   const isArMode = docLanguage === 'ar' || /[\u0600-\u06FF]/.test(ficheTitle + ' ' + subject + ' ' + (sections || []).map(s => s.title + ' ' + (s.content || '')).join(' '));
 
@@ -1022,7 +1337,7 @@ export default function AdminLessonEdit() {
           const docTypeConfig = {
             course: {
               badge: 'COURS (درس)',
-              placeholder: 'TITRE DU COURS / FICHE PÉDAGOGIQUE...',
+              placeholder: 'TITRE DU COURS...',
               col1Title: isArMode ? 'القدرات المنتظرة' : 'LES CAPACITÉS ATTENDUES',
               col1Placeholder: 'Entrez les capacités attendues...',
               col2Title: isArMode ? 'المحتويات' : 'CONTENUS DU COURS',
@@ -1180,10 +1495,10 @@ export default function AdminLessonEdit() {
                 style={{
                   border: `1.5px solid ${currentStyle.border}`,
                   borderRadius: '8px',
-                  background: currentStyle.bg,
+                  background: sec.bgColor && sec.bgColor !== 'transparent' ? sec.bgColor : currentStyle.bg,
                   padding: '1.25rem',
                   position: 'relative',
-                  transition: 'box-shadow 0.2s ease',
+                  transition: 'background 0.2s ease, box-shadow 0.2s ease',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
                 }}
               >
@@ -1267,7 +1582,7 @@ export default function AdminLessonEdit() {
                   
                   {/* Primary Statement / Content Block */}
                   <div style={{
-                    background: '#ffffff',
+                    background: sec.bgColor && sec.bgColor !== 'transparent' ? sec.bgColor : '#ffffff',
                     padding: '0.85rem',
                     borderRadius: '6px',
                     border: `1.5px solid ${currentStyle.border}35`
@@ -1363,6 +1678,144 @@ export default function AdminLessonEdit() {
                             <option value="1.75">1.75 (Aéré)</option>
                             <option value="2.0">2.0 (Spacieux)</option>
                           </select>
+                        </div>
+
+                        <span style={{ color: '#cbd5e1' }}>|</span>
+
+                        {/* Apply Style to All / تطبيق التنسيق على كامل الملف */}
+                        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'stretch' }} onClick={e => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            onClick={() => handleApplySectionStyleToAll(secIdx, 'all')}
+                            title={isArMode ? "تطبيق هذه التنسيقات (الخلفية، الحجم، التباعد) على جميع عناصر الملف دفعة واحدة" : "Appliquer ce style (Fond, Taille, Interligne) à tout le document"}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.25rem',
+                              background: '#eff6ff',
+                              color: '#005086',
+                              border: '1px solid #bfdbfe',
+                              borderRight: isArMode ? '1px solid #bfdbfe' : 'none',
+                              borderLeft: isArMode ? 'none' : '1px solid #bfdbfe',
+                              borderRadius: isArMode ? '0 4px 4px 0' : '4px 0 0 4px',
+                              padding: '0.15rem 0.45rem',
+                              fontSize: '0.7rem',
+                              fontWeight: 800,
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            <CheckCheck size={12} style={{ color: '#0284c7' }} />
+                            <span>{isArMode ? 'تطبيق على الكل' : 'Appliquer à tout'}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setApplyStyleMenuIndex(prev => prev === secIdx ? null : secIdx);
+                            }}
+                            title={isArMode ? "خيارات التطبيق" : "Options d'application"}
+                            style={{
+                              background: '#eff6ff',
+                              color: '#005086',
+                              border: '1px solid #bfdbfe',
+                              borderRadius: isArMode ? '4px 0 0 4px' : '0 4px 4px 0',
+                              padding: '0.15rem 0.25rem',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center'
+                            }}
+                          >
+                            <ChevronDown size={11} />
+                          </button>
+
+                          {applyStyleMenuIndex === secIdx && (
+                            <div style={{
+                              position: 'absolute',
+                              top: '100%',
+                              right: isArMode ? 0 : 'auto',
+                              left: isArMode ? 'auto' : 0,
+                              zIndex: 100,
+                              marginTop: '4px',
+                              background: '#ffffff',
+                              border: '1px solid #cbd5e1',
+                              borderRadius: '6px',
+                              boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
+                              padding: '0.35rem',
+                              minWidth: '220px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '2px',
+                              direction: isArMode ? 'rtl' : 'ltr'
+                            }}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleApplySectionStyleToAll(secIdx, 'all');
+                                  setApplyStyleMenuIndex(null);
+                                }}
+                                style={{
+                                  padding: '0.4rem 0.6rem',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 700,
+                                  textAlign: isArMode ? 'right' : 'left',
+                                  background: 'transparent',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  color: '#1e293b'
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                              >
+                                📑 {isArMode ? 'تطبيق على كامل الملف (جميع العناصر)' : 'Appliquer à tout le document'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleApplySectionStyleToAll(secIdx, 'exercises');
+                                  setApplyStyleMenuIndex(null);
+                                }}
+                                style={{
+                                  padding: '0.4rem 0.6rem',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 700,
+                                  textAlign: isArMode ? 'right' : 'left',
+                                  background: 'transparent',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  color: '#1e293b'
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                              >
+                                📝 {isArMode ? 'تطبيق على جميع التمارين فقط' : 'Appliquer aux exercices seulement'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleApplySectionStyleToAll(secIdx, 'course');
+                                  setApplyStyleMenuIndex(null);
+                                }}
+                                style={{
+                                  padding: '0.4rem 0.6rem',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 700,
+                                  textAlign: isArMode ? 'right' : 'left',
+                                  background: 'transparent',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  color: '#1e293b'
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                              >
+                                📖 {isArMode ? 'تطبيق على فقرات الدرس فقط' : 'Appliquer au cours seulement'}
+                              </button>
+                            </div>
+                          )}
                         </div>
 
                         <span style={{ color: '#cbd5e1' }}>|</span>
@@ -1848,10 +2301,47 @@ export default function AdminLessonEdit() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {sections.some(s => (s.type === 'exercise' || s.type === 'activity') && (s.content || '').trim()) && (
+            <button
+              type="button"
+              onClick={handleAiSolveAllExercises}
+              disabled={solvingAll || saving}
+              className="btn-outline"
+              style={{
+                padding: '0.5rem 0.95rem',
+                fontSize: '0.84rem',
+                fontWeight: 800,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                background: solvingAll ? 'rgba(16, 185, 129, 0.1)' : 'rgba(99, 102, 241, 0.08)',
+                borderColor: solvingAll ? 'var(--emerald)' : 'rgba(99, 102, 241, 0.3)',
+                color: solvingAll ? 'var(--emerald)' : 'var(--violet)'
+              }}
+              title={isArMode ? "حل جميع تمارين الدرس بالذكاء الاصطناعي بطريقة المفتش التربوي المغربي" : "Résoudre tous les exercices par IA (Méthode de l'Inspecteur Marocain)"}
+            >
+              {solvingAll ? (
+                <>
+                  <Loader2 className="animate-spin" size={15} />
+                  <span>
+                    {isArMode
+                      ? `جاري الحل (${solveAllProgress?.current || 0}/${solveAllProgress?.total || 0})...`
+                      : `Résolution (${solveAllProgress?.current || 0}/${solveAllProgress?.total || 0})...`}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Sparkles size={15} style={{ color: '#eab308' }} />
+                  <span>{isArMode ? 'حل جميع التمارين (IA)' : 'Résoudre tous les exercices (IA)'}</span>
+                </>
+              )}
+            </button>
+          )}
+
           <button
             type="button"
             onClick={handleSaveLesson}
-            disabled={saving}
+            disabled={saving || solvingAll}
             className="btn-primary"
             style={{ padding: '0.5rem 1.1rem', fontSize: '0.85rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
           >
@@ -1977,6 +2467,114 @@ export default function AdminLessonEdit() {
                     </button>
                   );
                 })}
+              </div>
+
+              <div style={{ height: '24px', width: '1px', background: 'var(--border)' }} />
+
+              {/* Global Unified Document Styler */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0, 80, 134, 0.05)', padding: '0.3rem 0.65rem', borderRadius: '8px', border: '1px solid rgba(0, 80, 134, 0.15)', flexWrap: 'wrap' }}>
+                <Paintbrush size={14} style={{ color: '#005086' }} />
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#005086' }}>
+                  {isArMode ? 'تنسيق موحد للملف :' : 'Style Global :'}
+                </span>
+                
+                {/* Global Background Palette */}
+                <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+                  {[
+                    { label: 'Sans fond', val: 'transparent', color: '#ffffff', border: '#cbd5e1' },
+                    { label: 'Bleu doux', val: '#f0f9ff', color: '#f0f9ff', border: '#bae6fd' },
+                    { label: 'Jaune doux', val: '#fefce8', color: '#fefce8', border: '#fef08a' },
+                    { label: 'Vert menthe', val: '#f0fdf4', color: '#f0fdf4', border: '#bbf7d0' },
+                    { label: 'Gris élégant', val: '#f8fafc', color: '#f8fafc', border: '#e2e8f0' },
+                    { label: 'Rose pastel', val: '#fff1f2', color: '#fff1f2', border: '#fecdd3' },
+                  ].map(c => (
+                    <button
+                      key={c.val}
+                      type="button"
+                      onClick={() => setGlobalBgColor(c.val)}
+                      title={c.label}
+                      style={{
+                        width: '16px',
+                        height: '16px',
+                        borderRadius: '50%',
+                        background: c.color,
+                        border: `2px solid ${globalBgColor === c.val ? '#005086' : c.border}`,
+                        cursor: 'pointer',
+                        padding: 0
+                      }}
+                    />
+                  ))}
+                  <input
+                    type="color"
+                    value={globalBgColor && globalBgColor !== 'transparent' ? globalBgColor : '#ffffff'}
+                    onChange={e => setGlobalBgColor(e.target.value)}
+                    title="Couleur personnalisée"
+                    style={{ width: '18px', height: '18px', padding: 0, border: 'none', borderRadius: '3px', cursor: 'pointer', background: 'transparent' }}
+                  />
+                </div>
+
+                <span style={{ color: 'var(--border)' }}>|</span>
+
+                {/* Global Font Size */}
+                <select
+                  value={globalFontSize}
+                  onChange={e => setGlobalFontSize(e.target.value)}
+                  style={{ fontSize: '0.72rem', padding: '2px 5px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#334155', fontWeight: 600, outline: 'none' }}
+                >
+                  <option value="">{isArMode ? 'الحجم (افتراضي)' : 'Taille (9.2pt)'}</option>
+                  <option value="8pt">8pt (Compact)</option>
+                  <option value="8.5pt">8.5pt</option>
+                  <option value="9.2pt">9.2pt (Normal)</option>
+                  <option value="10pt">10pt</option>
+                  <option value="11pt">11pt (Grand)</option>
+                </select>
+
+                {/* Global Line Height */}
+                <select
+                  value={globalLineHeight}
+                  onChange={e => setGlobalLineHeight(e.target.value)}
+                  style={{ fontSize: '0.72rem', padding: '2px 5px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#334155', fontWeight: 600, outline: 'none' }}
+                >
+                  <option value="">{isArMode ? 'التباعد (عادي 1.55)' : 'Interligne (1.55)'}</option>
+                  <option value="1.3">1.3 (Serré)</option>
+                  <option value="1.55">1.55 (Standard)</option>
+                  <option value="1.75">1.75 (Aéré)</option>
+                  <option value="2.0">2.0 (Spacieux)</option>
+                </select>
+
+                {/* Scope selector */}
+                <select
+                  value={globalScope}
+                  onChange={e => setGlobalScope(e.target.value)}
+                  style={{ fontSize: '0.72rem', padding: '2px 5px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#334155', fontWeight: 700, outline: 'none' }}
+                >
+                  <option value="all">{isArMode ? 'كامل الملف (الكل)' : 'Tout le document'}</option>
+                  <option value="exercises">{isArMode ? 'التمارين فقط' : 'Exercices uniquement'}</option>
+                  <option value="course">{isArMode ? 'فقرات الدرس فقط' : 'Cours uniquement'}</option>
+                </select>
+
+                <button
+                  type="button"
+                  onClick={handleApplyGlobalStyleToAll}
+                  style={{
+                    background: 'linear-gradient(135deg, #005086, #0284c7)',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '5px',
+                    padding: '0.28rem 0.75rem',
+                    fontSize: '0.74rem',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    boxShadow: '0 2px 6px rgba(0,80,134,0.2)'
+                  }}
+                  title={isArMode ? "تطبيق هذه الإعدادات الموحدة على جميع عناصر الملف المحددة" : "Appliquer ce style global à tout le document"}
+                >
+                  <CheckCheck size={13} />
+                  <span>{isArMode ? 'تطبيق على الملف' : 'Appliquer'}</span>
+                </button>
               </div>
             </div>
           )}

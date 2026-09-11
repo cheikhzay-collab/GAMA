@@ -17,8 +17,6 @@ import TranslateModal from '../components/TranslateModal';
 import LessonBulkEditModal from '../components/LessonBulkEditModal';
 import { renderWithMath } from '../utils/mathRenderer';
 import { normalizeLevel } from '../utils/levelHelpers';
-import { generateFichePedagogiquePDF } from '../utils/generateFichePedagogiquePDF';
-import { generateFichePedagogiqueWithAI } from '../utils/aiFicheGenerator';
 
 const getLevelLabel = (rawLevel) => {
   const level = normalizeLevel(rawLevel);
@@ -1030,13 +1028,6 @@ ${sectionsContentText}
                           <Languages size={13} />
                         </button>
                         <button
-                          onClick={() => generateFichePedagogiqueWithAI(l, { profName, profPhone, profSchool: classes[0]?.name })}
-                          className="btn-outline" title="Fiche Pédagogique IA"
-                          style={{ padding: '0.38rem', borderRadius: '7px', border: 'none', background: 'linear-gradient(135deg,#10b981,#059669)', color: '#fff' }}
-                        >
-                          <Sparkles size={13} />
-                        </button>
-                        <button
                           onClick={() => setShowConfirmDelete(l.id)}
                           className="btn-outline" title="Supprimer"
                           style={{ padding: '0.38rem', borderRadius: '7px', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--danger)' }}
@@ -1268,15 +1259,6 @@ ${sectionsContentText}
                               style={{ padding: '0.42rem', borderRadius: '7px', border: '1px solid rgba(66, 133, 244, 0.3)', color: '#4285F4' }}
                             >
                               <Languages size={15} />
-                            </button>
-
-                            <button
-                              onClick={() => generateFichePedagogiqueWithAI(l, { profName, profPhone, profSchool: classes[0]?.name })}
-                              className="btn-outline"
-                              title="Générer Fiche Pédagogique (IA)"
-                              style={{ padding: '0.42rem', borderRadius: '7px', border: 'none', background: 'linear-gradient(135deg, #10b981, #059669)', color: '#ffffff' }}
-                            >
-                              <Sparkles size={15} />
                             </button>
 
                             <button
