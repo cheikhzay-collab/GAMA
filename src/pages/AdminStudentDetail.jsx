@@ -5,10 +5,12 @@ import { getAllProgress, getMockHistory, getLoginLogs } from '../services/userSe
 import { 
   ArrowLeft, Crown, User, Calendar, Target, 
   BarChart3, Clock, BookOpen, TrendingUp, Loader2,
-  Phone, MapPin, FileDown, FileText,
+  Phone, MapPin, FileDown, FileText, Printer,
   MessageSquare, AlertCircle, Plus, Trash2, Send, CheckSquare
 } from 'lucide-react';
 import { unescapeHTML } from '../utils/security';
+import { openStudentProgressPrintWindow } from '../utils/generateStudentProgressPDF';
+import { getAllClasses } from '../services/classService';
 
 const WhatsAppIcon = ({ size = 20, ...props }) => (
   <svg 
@@ -129,6 +131,25 @@ export default function AdminStudentDetail() {
     };
 
     fetchStudentData();
+  }, [student]);
+
+  const [studentClass, setStudentClass] = useState(null);
+
+  useEffect(() => {
+    if (!student) return;
+    const fetchClass = async () => {
+      try {
+        const classes = await getAllClasses();
+        const found = classes.find(c => 
+          c.id === (student.classId || student.class_id) || 
+          c.students?.some(s => s.id === student.id || s.massarCode === student.id || s.massarCode === student.massarCode)
+        );
+        if (found) setStudentClass(found);
+      } catch (err) {
+        console.warn('Could not fetch student class:', err);
+      }
+    };
+    fetchClass();
   }, [student]);
 
   useEffect(() => {
@@ -376,6 +397,35 @@ export default function AdminStudentDetail() {
           <ArrowLeft size={20} />
         </button>
         <h2 style={{ margin:0 }}>Dossier de l'élève</h2>
+        <button
+          type="button"
+          onClick={() => {
+            openStudentProgressPrintWindow(student, studentClass || {}, {
+              teacher: 'Professeur de Mathématiques',
+              school: 'Lycée Qualifiant 18 Novembre',
+              subject: 'Mathématiques'
+            });
+          }}
+          className="btn"
+          style={{
+            marginLeft: 'auto',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+            color: '#ffffff',
+            border: 'none',
+            borderRadius: '10px',
+            padding: '0.55rem 1.15rem',
+            fontSize: '0.85rem',
+            fontWeight: 800,
+            cursor: 'pointer',
+            boxShadow: '0 4px 14px rgba(2, 132, 199, 0.3)'
+          }}
+          title="Imprimer la fiche de suivi et bilan individuel de l'élève (PDF)"
+        >
+          <Printer size={16} /> Bilan de Progression (PDF)
+        </button>
       </div>
 
       <div className="dashboard-grid">

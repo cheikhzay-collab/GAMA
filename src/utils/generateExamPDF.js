@@ -1111,6 +1111,7 @@ export const generateSubjectHTML = async (examTitle, school, year, questions, se
   const showPageNumbers = settings.showPageNumbers !== undefined ? settings.showPageNumbers : true;
   const startPage = settings.startPage !== undefined ? settings.startPage : 1;
   const examId = settings.examId || 'PREVIEW';
+  const variantBadge = settings.variantBadge || (settings.modelVariant ? (String(settings.modelVariant).toUpperCase().includes('MODÈLE') ? settings.modelVariant : `MODÈLE ${settings.modelVariant}`) : '');
 
   const templateStyle = pdfConf.templateStyle || 'classic_latex';
   const templateCSS = getTemplateStyles(templateStyle, fontSizeCSS);
@@ -1232,7 +1233,7 @@ export const generateSubjectHTML = async (examTitle, school, year, questions, se
     <div class="cover-divider"></div>
     
     <div class="cover-header-group">
-      <div class="cover-tag">${docInfo.coverTag}</div>
+      <div class="cover-tag">${docInfo.coverTag}${variantBadge ? ` · ${variantBadge}` : ''}</div>
       <div class="cover-topic">${cleanTitle}</div>
       <div class="cover-desc">${formattedSchool} &nbsp;·&nbsp; ${docInfo.typeLabel}${year ? ` &nbsp;·&nbsp; ${year}` : ''}</div>
     </div>
@@ -2242,7 +2243,7 @@ ${settings.premiumOmr === true ? `
 
   <div class="omr-header">
     <div class="omr-header-logo">${schoolDisplay.toUpperCase()}<span></span></div>
-    <div class="omr-header-subtitle">Grille de Réponses Optique · Scanner Automatique</div>
+    <div class="omr-header-subtitle">Grille de Réponses Optique · Scanner Automatique${variantBadge ? ` · <strong style="color:#0284c7; background:#e0f2fe; padding:1px 6px; border-radius:4px;">${variantBadge}</strong>` : ''}</div>
     <div class="omr-header-title">${cleanTitle}</div>
     <div class="omr-header-qr">
       <img src="${premiumQrUrl}" alt="QR Code" />
@@ -2302,7 +2303,7 @@ ${settings.premiumOmr === true ? `
     <div>A.S : <strong>${year || '2025/2026'}</strong></div>
   </div>
   <div class="anisse-col col-center">
-    <div class="main-title">${cleanTitle || 'Devoir Surveillé N° 1 (Semestre 1)'}</div>
+    <div class="main-title">${cleanTitle || 'Devoir Surveillé N° 1 (Semestre 1)'}${variantBadge ? `<span style="display:inline-block; margin-left:8px; vertical-align:middle; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:4px; background:${variantBadge.includes('B') ? '#fef3c7' : '#e0f2fe'}; color:${variantBadge.includes('B') ? '#92400e' : '#0369a1'}; border:1px solid ${variantBadge.includes('B') ? '#f59e0b' : '#0284c7'}; letter-spacing:0.05em;">${variantBadge}</span>` : ''}</div>
     <div class="sub-title">${schoolDisplay}</div>
   </div>
   <div class="anisse-col col-right">
@@ -2320,7 +2321,7 @@ ${settings.premiumOmr === true ? `
   ` : `
   <div class="ws-doc-header">
     <div class="ws-doc-header-left">
-      <h1 class="ws-doc-title">${cleanTitle}</h1>
+      <h1 class="ws-doc-title">${cleanTitle}${variantBadge ? `<span style="display:inline-block; margin-left:8px; vertical-align:middle; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:6px; background:${variantBadge.includes('B') ? '#fef3c7' : '#e0f2fe'}; color:${variantBadge.includes('B') ? '#92400e' : '#0369a1'}; border:1px solid ${variantBadge.includes('B') ? '#f59e0b' : '#0284c7'};">${variantBadge}</span>` : ''}</h1>
       <div class="ws-doc-meta">${formattedSchool} &nbsp;·&nbsp; ${teacherDisplay}${year ? ` &nbsp;·&nbsp; ${year}` : ''}</div>
     </div>
     <div class="ws-doc-header-right">
@@ -2362,6 +2363,7 @@ printWhenReady();
   const showPageNumbers = settings.showPageNumbers !== undefined ? settings.showPageNumbers : true;
   const startPage = settings.startPage !== undefined ? settings.startPage : 1;
   const showTricks = settings.showTricks !== undefined ? settings.showTricks : true;
+  const variantBadge = settings.variantBadge || (settings.modelVariant ? (String(settings.modelVariant).toUpperCase().includes('MODÈLE') ? settings.modelVariant : `MODÈLE ${settings.modelVariant}`) : '');
 
   const templateStyle = pdfConf.templateStyle || 'classic_latex';
   const templateCSS = getTemplateStyles(templateStyle, fontSizeCSS);
@@ -2410,7 +2412,7 @@ printWhenReady();
     <div class="cover-divider"></div>
     
     <div class="cover-header-group">
-      <div class="cover-tag">CORRIGÉ DÉTAILLÉ</div>
+      <div class="cover-tag">CORRIGÉ DÉTAILLÉ${variantBadge ? ` · ${variantBadge}` : ''}</div>
       <div class="cover-topic">${cleanTitle}</div>
       <div class="cover-desc">${formattedSchool} &nbsp;·&nbsp; ${docInfo.typeLabel} (Corrigé)${year ? ` &nbsp;·&nbsp; ${year}` : ''}</div>
     </div>
@@ -3171,7 +3173,7 @@ ${coverHtml}
     <div>A.S : <strong>${year || '2025/2026'}</strong></div>
   </div>
   <div class="anisse-col col-center">
-    <div class="main-title">${cleanTitle || 'Devoir Surveillé N° 1 (Semestre 1)'}</div>
+    <div class="main-title">${cleanTitle || 'Devoir Surveillé N° 1 (Semestre 1)'}${variantBadge ? `<span style="display:inline-block; margin-left:8px; vertical-align:middle; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:4px; background:${variantBadge.includes('B') ? '#fef3c7' : '#e0f2fe'}; color:${variantBadge.includes('B') ? '#92400e' : '#0369a1'}; border:1px solid ${variantBadge.includes('B') ? '#f59e0b' : '#0284c7'}; letter-spacing:0.05em;">${variantBadge}</span>` : ''}</div>
     <div class="sub-title" style="color: #7c3aed;">${schoolDisplay} — CORRIGÉ</div>
   </div>
   <div class="anisse-col col-right">
@@ -3189,7 +3191,7 @@ ${coverHtml}
   ` : `
   <div class="ws-doc-header" style="border-bottom-color: #7c3aed;">
     <div class="ws-doc-header-left">
-      <h1 class="ws-doc-title">${cleanTitle}</h1>
+      <h1 class="ws-doc-title">${cleanTitle}${variantBadge ? `<span style="display:inline-block; margin-left:8px; vertical-align:middle; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:6px; background:${variantBadge.includes('B') ? '#fef3c7' : '#e0f2fe'}; color:${variantBadge.includes('B') ? '#92400e' : '#0369a1'}; border:1px solid ${variantBadge.includes('B') ? '#f59e0b' : '#0284c7'};">${variantBadge}</span>` : ''}</h1>
       <div class="ws-doc-meta">${formattedSchool} &nbsp;·&nbsp; ${teacherDisplay} &nbsp;·&nbsp; Corrigé${year ? ` &nbsp;·&nbsp; ${year}` : ''}</div>
     </div>
     <div class="ws-doc-header-right">

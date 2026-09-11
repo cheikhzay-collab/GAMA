@@ -14,6 +14,7 @@ import { renderWithMath } from '../utils/mathRenderer';
 import { uploadAsset } from '../services/storageService';
 import { getExamQuestionsOnly, addExam } from '../services/examService';
 import { getLevelDisplayName, mapLegacySchoolToLevel } from '../utils/levelHelpers';
+import ExamVariantModal from '../components/ExamVariantModal';
 
 /* ─────────────────────────────────────────────────────────────
    Tiny LaTeX toolbar
@@ -428,6 +429,7 @@ export default function AdminExamEdit() {
   const [editLevel, setEditLevel] = useState('');
   const [editYear, setEditYear] = useState('');
   const [editTier, setEditTier] = useState('freemium');
+  const [showVariantModal, setShowVariantModal] = useState(false);
 
   // Stable exam ID for effect dependency
   const examId = exam?.id;
@@ -987,13 +989,14 @@ Tu dois analyser la question et :
           </button>
           <button
             type="button"
-            onClick={handleGenerateModelBVariant}
-            title="Générer un Modèle B parallèle avec ordre aléatoire des questions et réponses"
+            onClick={() => setShowVariantModal(true)}
+            title="Générer, comparer et imprimer le Modèle B (Anti-Triche & Isomorphisme Pédagogique)"
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '0.55rem 1.1rem', fontSize: '0.82rem', borderRadius: 10,
               background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
-              color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer'
+              color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer',
+              boxShadow: '0 2px 10px rgba(139,92,246,0.3)'
             }}
           >
             <Shuffle size={14} /> Modèle B (Anti-Triche)
@@ -1679,6 +1682,26 @@ Tu dois analyser la question et :
         </div>
       </div>
     )}
+
+    {/* Anti-Cheat Equivalence Model A / Model B Modal */}
+    <ExamVariantModal
+      isOpen={showVariantModal}
+      onClose={() => setShowVariantModal(false)}
+      exam={{
+        ...exam,
+        name: editName || exam?.name,
+        school: editSchool || exam?.school,
+        level: editLevel || exam?.level,
+        year: editYear || exam?.year,
+        tier: editTier || exam?.tier
+      }}
+      questions={localQuestions}
+      onApplyVariant={(newQuestions) => {
+        setLocalQuestions(newQuestions);
+        markDirty();
+        setShowVariantModal(false);
+      }}
+    />
     </>
   );
 }

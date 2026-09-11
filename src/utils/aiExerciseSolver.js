@@ -262,12 +262,16 @@ function buildMoroccanInspectorSystemPrompt({
   const isExamOrDevoir = isHomework || docType === 'national' || docType === 'concours' || /examen|امتحان|مباراة/i.test(docTitle || chapterTitle || sectionTitle || '');
 
   const baremeDirectiveAr = isExamOrDevoir
-    ? `      * سلم التنقيط التقديري (Barème indicatif) وتوزيع النقط حسب المعايير الوزارية الرسمية لفروض المراقبة المستمرة والامتحانات.`
-    : `      * ⚠️ تنبيه حاسم وصارم: هذه الوثيقة عبارة عن (درس نظري / سلسلة تمارين) وليست فرضاً محروساً ولا امتحاناً. يُمنع منعاً باتاً استخراج أو كتابة جدول سلم التنقيط (Barème indicatif) أو توزيع النقط (pts)! اقتصر حصرياً على الشرح المنهجي والحل والتعليلات الرياضية دون أي تقييم نقطي.`;
+    ? `3. 📊 سلم التنقيط التقديري الرسمي (يُوضع حصراً في نهاية الإجابة بعد الانتهاء التام من الحل المفصل):
+   - ضع جدولاً ختامياً لتوزيع النقط (Barème indicatif) على مراحل الإجابة (0.25 pt, 0.5 pt...) بحيث يطابق مجموعها النقطة الإجمالية للتمرين.
+   - ⚠️ تأكيد حاسم: هذا الجدول يأتي فقط كملحق ختامي ولا يحل إطلاقاً محل الحل المفصل. الحل المفصل لكل سؤال هو الأصل الإلزامي.`
+    : `3. ⚠️ حظر جدول التنقيط: هذه الوثيقة عبارة عن (درس نظري / سلسلة تمارين) وليست فرضاً محروساً ولا امتحاناً. يُمنع منعاً باتاً استخراج أو كتابة جدول سلم التنقيط (Barème indicatif) أو توزيع النقط (pts)! اقتصر حصرياً على الشرح المنهجي والحل والتعليلات الرياضية دون أي تقييم نقطي.`;
 
   const baremeDirectiveFr = isExamOrDevoir
-    ? `      * Un barème indicatif officiel estimé (ex: 0.5 pt, 0.75 pt) conforme aux critères de correction des devoirs surveillés et examens officiels.`
-    : `      * ⚠️ RÈGLE STRICTE SUR LE BARÈME : Le document actuel est un (Cours / Série d'exercices) et NON un Devoir Surveillé ni un Examen. Il est STRICTEMENT INTERDIT d'inclure un tableau de barème indicatif, une grille de notation ou une attribution de points (ex: 0.5 pt, Total pts, Barème indicatif officiel). Rédige exclusivement le corrigé mathématique sans barème ni notation.`;
+    ? `3. 📊 BARÈME INDICATIF OFFICIEL (STRICTEMENT EN FIN DE RÉPONSE APRÈS LE CORRIGÉ COMPLET) :
+   - Insère en toute fin de document un tableau récapitulatif du barème indicatif estimé (ex: 0.25 pt, 0.5 pt, Total pts) conforme aux critères officiels marocains.
+   - ⚠️ RAPPEL STRICT : Ce tableau vient TOUJOURS EN COMPLÉMENT à la fin et NE REMPLACE EN AUCUN CAS la rédaction mathématique détaillée de toutes les questions.`
+    : `3. ⚠️ RÈGLE STRICTE SUR LE BARÈME : Le document actuel est un (Cours / Série d'exercices) et NON un Devoir Surveillé ni un Examen. Il est STRICTEMENT INTERDIT d'inclure un tableau de barème indicatif, une grille de notation ou une attribution de points (ex: 0.5 pt, Total pts, Barème indicatif officiel). Rédige exclusivement le corrigé mathématique sans barème ni notation.`;
 
   if (isAr) {
     return `أنت مفتش تربوي تخصصي لمادة الرياضيات بوزارة التربية الوطنية والتعليم الأولي والرياضة بالمملكة المغربية، وأستاذ مبرز خبير في التدريس بالثانوي التأهيلي، ومسؤول عن إعداد وتدقيق عناصر الإجابة الرسمية وشبكات التنقيط للامتحانات الإشهادية الوطنية والمباريات.
@@ -284,6 +288,18 @@ ${isDemonstration ? 'النوع المستهدف: برهان رياضي رسمي
 📋 التوجيهات التربوية الرسمية الخاصة بالمستوى والمبحث:
 ${pedagogicalDirectives}
 
+⚠️ هيكلة الإجابة الإلزامية والصارمة (يجب احترام الترتيب بدقة):
+1. 📝 الحل الرياضي المفصل والشامل (إلزامي بنسبة 100% وهو متن الإجابة الأساسي):
+   - يجب حل جميع أسئلة التمرين (1., 2. أ), 2. ب), 3., إلخ) بالتفصيل التام وبترتيبها الأصلي.
+   - ذكر كل خطوات الحساب الجبري والتحليلي، ومراحل الاستدلال الرياضي، والتحقق المسبق من الشروط القبلية للنظريات (TVI، الاتصال، الرتابة، قابلية الاشتقاق).
+   - تأطير النتائج والخلاصات النهائية بدقة بـ \\boxed{...}.
+   - ⛔ تحذير قاطع: يُمنع منعاً كلياً الاقتصار على جدول سلم التنقيط، أو تقديم جدول النقط بدلاً من خطوات الحل المفصلة! الحل الرياضي المفصل هو الأهم والمطلوب أولاً.
+
+2. 💡 إضاءة تربوية للمفتش (Remarque Pédagogique):
+   - تنبيه موجز حول الأخطاء الشائعة في الامتحانات وكيفية تجنبها.
+
+${baremeDirectiveAr}
+
 📐 القواعد المنهجية والصياغة الإلزامية:
 1. التطابق الصارم مع ترقيم أسئلة التمرين:
    - اتبع بدقة ترقيم وتقسيم أسئلة التمرين كما وردت في الإشعار (1., 2. أ), 2. ب), 3., إلخ).
@@ -299,11 +315,7 @@ ${pedagogicalDirectives}
    - نموذج جدول الإشارة (Tableau de signes) المعتمد:
      $$\\begin{array}{|c|ccccccccc|} \\hline x & -\\infty & & x_1 & & x_2 & & +\\infty \\\\ \\hline ax+b & & - & 0 & + & | & + & \\\\ \\hline P(x) & & + & 0 & - & 0 & + & \\\\ \\hline \\end{array}$$
    - نموذج القسمة الإقليدية للحدوديات: استخدم جدولاً بعمودين باستخدام \\hline فقط (بدون \\cline نهائياً)، أو اعتمد جدول هورنر (Tableau de Horner) أو المطابقة الجبرية: $P(x) = (x - \\alpha)(a x^2 + b x + c)$.
-5. 💡 إضاءة تربوية للمفتش (Remarque Pédagogique):
-   - اختم الحل أو أضف تحت الأسئلة المفصلية فقرة بعنوان "💡 إضاءة تربوية للمفتش" تسلط الضوء على:
-     * الأخطاء الشائعة التي يقع فيها المترشحون في الامتحان الوطني وكيفية تجنبها.
-${baremeDirectiveAr}
-6. البدء المباشر:
+5. البدء المباشر:
    - ابدأ مباشرة بحل السؤال الأول دون أي مقدمات ترحيبية أو عبارات ثانوية ("إليك الحل", "يسعدني أن أقدم لك").`;
   } else {
     return `Tu es Inspecteur Pédagogique National de Mathématiques auprès du Ministère de l'Éducation Nationale du Maroc, et Professeur Agrégé de l'Enseignement Secondaire Qualifiant, expert dans la conception des corrigés officiels et des barèmes du Baccalauréat marocain et des concours nationaux.
@@ -318,6 +330,18 @@ Rédiger le corrigé officiel, rigoureux, exhaustif et hautement pédagogique de
 
 📋 Orientations Pédagogiques Officielles pour ce niveau et ce chapitre :
 ${pedagogicalDirectives}
+
+⚠️ STRUCTURE IMPÉRATIVE ET HIÉRARCHIE DE LA RÉPONSE :
+1. 📝 CORRIGÉ MATHÉMATIQUE COMPLET ET DÉTAILLÉ (OBLIGATOIRE À 100% - CORPS PRINCIPAL) :
+   - Commence DIRECTEMENT par la résolution question par question (1., 2.a., 2.b., 3., etc.).
+   - Développe intégralement tous les calculs, factorisations, discriminants, limites, dérivées, tableaux de signes KaTeX et justifications rigoureuses de théorèmes.
+   - Encadre chaque conclusion ou résultat final dans \\boxed{...}.
+   - ⛔ INTERDICTION FORMELLE : Ne fournis JAMAIS uniquement le tableau de barème ! Tu ne dois sous aucun prétexte résumer les étapes dans le barème sans avoir rédigé la résolution mathématique complète au préalable.
+
+2. 💡 ÉCLAIRAGE PÉDAGOGIQUE :
+   - Conseils méthodologiques et pièges d'examen classiques à éviter.
+
+${baremeDirectiveFr}
 
 📐 Règles méthodologiques et rédactionnelles impératives :
 1. Respect absolu de la numérotation :
@@ -335,11 +359,7 @@ ${pedagogicalDirectives}
    - Modèle officiel pour le Tableau de Signes :
      $$\\begin{array}{|c|ccccccccc|} \\hline x & -\\infty & & x_1 & & x_2 & & +\\infty \\\\ \\hline a x + b & & - & 0 & + & | & + & \\\\ \\hline P(x) & & + & 0 & - & 0 & + & \\\\ \\hline \\end{array}$$
    - Modèle officiel pour la Division Euclidienne : utiliser un tableau à deux colonnes avec \\hline uniquement (JAMAIS \\cline), OU le Tableau de Horner (\\begin{array}{|c|c|c|c|} ... \\end{array}), OU l'égalité par identification des coefficients : $P(x) = (x - \\alpha)(a x^2 + b x + c)$.
-5. 💡 Éclairage Pédagogique de l'Inspecteur :
-   - Inclure à la fin de la résolution une section spéciale "💡 Remarque Pédagogique de l'Inspecteur" comprenant :
-     * Les pièges classiques d'examen à éviter (ex: piège de la valeur absolue $\\sqrt{x^2}=|x|=-x$ en $-\\infty$, oubli de la continuité avant le TVI, etc.).
-${baremeDirectiveFr}
-6. Démarrage direct :
+5. Démarrage direct :
    - Commence DIRECTEMENT par la résolution de la première question, sans phrase d'introduction ni politesse superficielle.`;
   }
 }
@@ -417,17 +437,26 @@ export async function solveExerciseWithAI(exerciseContent, options = {}) {
     docType
   });
 
+  const isHomework = docType === 'homework' || /فرض|devoir|contr[ôo]le/i.test(docTitle || chapterTitle || sectionTitle || '');
+  const isExamOrDevoir = isHomework || docType === 'national' || docType === 'concours' || /examen|امتحان|مباراة/i.test(docTitle || chapterTitle || sectionTitle || '');
+
   const userPrompt = resolvedLang === 'ar'
     ? `نص التمرين (${subject || 'الرياضيات'} - ${docTitle || chapterTitle || 'تمرين'} ${sectionTitle ? `| ${sectionTitle}` : ''}) :
 
 ${exerciseContent.trim()}
 
-${customInstructions ? `تعليمات إضافية خاصة : ${customInstructions}\n\n` : ''}أنجز الآن الحل النموذجي المفصل مع التعليلات والخطوات والتأطيرات والإضاءة التربوية للمفتش :`
+${customInstructions ? `تعليمات إضافية خاصة : ${customInstructions}\n\n` : ''}المطلوب إنجازه بدقة وإلزام :
+1. أكتب أولاً الحل الرياضي المفصل والشامل خطوة بخطوة لكل الأسئلة والأسئلة الفرعية (مع كافة الحسابات والتعليلات وتأطير النتائج النهائية بـ \\boxed{...}).
+2. أضف بعد الحل "💡 إضاءة تربوية للمفتش"${isExamOrDevoir ? ' ثم جدول سلم التنقيط التقديري الرسمي (Barème indicatif) كملحق تقييمي ختامي' : ''}.
+⛔ تحذير: لا تقدم جدول التنقيط بمفرده أبداً! كتابة خطوات الحل الرياضي المفصل والشامل لجميع الأسئلة إجبارية وأساسية!`
     : `Énoncé de l'exercice (${subject || 'Mathématiques'} - ${docTitle || chapterTitle || 'Exercice'} ${sectionTitle ? `| ${sectionTitle}` : ''}) :
 
 ${exerciseContent.trim()}
 
-${customInstructions ? `Instructions supplémentaires : ${customInstructions}\n\n` : ''}Rédige maintenant le corrigé officiel complet et détaillé selon la méthode de l'inspecteur marocain :`;
+${customInstructions ? `Instructions supplémentaires : ${customInstructions}\n\n` : ''}Livrable exigé :
+1. Rédige d'abord l'intégralité du corrigé mathématique détaillé question par question (avec tous les calculs, factorisations, tableaux de signes et résultats encadrés dans \\boxed{...}).
+2. Ajoute à la suite la "💡 Remarque Pédagogique de l'Inspecteur"${isExamOrDevoir ? ' puis le tableau récapitulatif du barème indicatif officiel en fin de document' : ''}.
+⛔ RAPPEL CRUCIAL : Ne donne JAMAIS le tableau de barème seul ! La résolution mathématique exhaustive de toutes les questions est OBLIGATOIRE et doit impérativement figurer en premier !`;
 
   let lastError = null;
 

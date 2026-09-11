@@ -9,6 +9,8 @@ import { getLogbookEntries } from '../services/logbookService';
 import { getAllExams, getExamById, getExamQuestionsOnly } from '../services/examService';
 import { generateBatchAnswerSheets } from '../utils/generateAnswerSheet';
 import { exportToMassarCSV } from '../utils/massarBridge';
+import ClassDiagnosticRemediationModal from '../components/ClassDiagnosticRemediationModal';
+import { openStudentProgressPrintWindow } from '../utils/generateStudentProgressPDF';
 
 import { 
   ArrowLeft, Users, FileSpreadsheet, CheckSquare, Plus, Trash2, 
@@ -55,6 +57,7 @@ export default function AdminClassDetail() {
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showDiagnosticModal, setShowDiagnosticModal] = useState(false);
 
   // Quick Grader (Numpad) States
   const [showQuickGrader, setShowQuickGrader] = useState(false);
@@ -1607,6 +1610,24 @@ export default function AdminClassDetail() {
                 <FileSpreadsheet size={15} /> Exporter Massar (CSV)
               </button>
               <button 
+                onClick={() => {
+                  openStudentProgressPrintWindow(students, classObj, {
+                    teacher: user?.name || 'Professeur de Mathématiques',
+                    school: 'Lycée Qualifiant 18 Novembre',
+                    subject: 'Mathématiques'
+                  });
+                }}
+                className="btn-outline"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  fontSize: '0.85rem', padding: '0.6rem 1.1rem', borderRadius: '10px',
+                  borderColor: '#0284c7', color: '#0284c7', fontWeight: 700
+                }}
+                title="Imprimer les bilans de progression individuels pour tous les élèves de la classe (PDF)"
+              >
+                <Printer size={15} /> Bilans Individuels (PDF)
+              </button>
+              <button 
                 onClick={() => setShowAddStudent(true)}
                 className="btn"
                 style={{
@@ -1650,6 +1671,38 @@ export default function AdminClassDetail() {
 
           {activeTab === 'grades' && (
             <>
+              <button 
+                onClick={() => setShowDiagnosticModal(true)}
+                className="btn"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  fontSize: '0.85rem', padding: '0.6rem 1.1rem', borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #4338ca 0%, #6366f1 100%)', border: 'none',
+                  color: '#fff', fontWeight: 800,
+                  boxShadow: '0 4px 14px rgba(67, 56, 202, 0.35)'
+                }}
+                title="Analyse diagnostique des résultats et génération des fiches de soutien et remédiation"
+              >
+                <Sparkles size={15} /> Diagnostic & Soutien (IA)
+              </button>
+              <button 
+                onClick={() => {
+                  openStudentProgressPrintWindow(students, classObj, {
+                    teacher: user?.name || 'Professeur de Mathématiques',
+                    school: 'Lycée Qualifiant 18 Novembre',
+                    subject: 'Mathématiques'
+                  });
+                }}
+                className="btn-outline"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  fontSize: '0.85rem', padding: '0.6rem 1.1rem', borderRadius: '10px',
+                  borderColor: '#0284c7', color: '#0284c7', fontWeight: 700
+                }}
+                title="Imprimer les bilans de progression individuels pour tous les élèves de la classe (PDF)"
+              >
+                <Printer size={15} /> Bilans Individuels (PDF)
+              </button>
               <button 
                 onClick={() => handlePrint('grades')}
                 className="btn-outline"
@@ -3272,6 +3325,15 @@ export default function AdminClassDetail() {
           </div>
         </div>
       )}
+
+      {/* ── Diagnostic & Remediation Modal ── */}
+      <ClassDiagnosticRemediationModal
+        isOpen={showDiagnosticModal}
+        onClose={() => setShowDiagnosticModal(false)}
+        classObj={classObj || {}}
+        students={students || []}
+        teacherName={user?.name || 'Professeur de Mathématiques'}
+      />
 
     </div>
   );

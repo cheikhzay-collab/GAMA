@@ -1086,8 +1086,9 @@ Pour chaque exercice, activité ou application résolue dans le champ "solution"
 3. FORMULATION & LATEX : Numérotation exacte des questions (1., 2.a., 2.b...), formules KaTeX soignées ($...$ et $$...$$), et encadrement des résultats finaux dans \\boxed{...}.
    - ⚠️ INTERDICTION STRICTE DE \\cline : KaTeX ne supporte pas \\cline. Utiliser EXCLUSIVEMENT \\hline pour toutes les lignes de séparation !
    - ⚠️ ENCADREMENT PAR $$ ... $$ : Tout environnement \\begin{array} ... \\end{array} (tableaux de signes, matrices) DOIT être encadré par $$ ouvrant et $$ fermant.
-   - Pour la division euclidienne de polynômes : utiliser un tableau à deux colonnes avec \\hline uniquement (SANS \\cline), ou le tableau de Horner, ou l'identification algébrique des coefficients.
-4. ÉCLAIRAGE PÉDAGOGIQUE : Terminer le corrigé par une brève remarque (💡 Remarque Pédagogique / إضاءة تربوية للمفتش) sur les pièges fréquents d'examen. RÈGLE STRICTE SUR LE BARÈME : N'inclure un barème indicatif de notation que SI le document est explicitement un Devoir Surveillé (Contrôle continu / فرض محروس) ou un Examen officiel ; pour les cours et séries d'exercices ordinaires, ne JAMAIS générer de tableau de barème ni de grille de points.`;
+4. ÉCLAIRAGE PÉDAGOGIQUE & BARÈME :
+   - RÈGLE ABSOLUE : Tu DOIS OBLIGATOIREMENT rédiger d'abord l'intégralité du corrigé mathématique détaillé question par question.
+   - N'inclure un barème indicatif de notation que SI le document est explicitement un Devoir Surveillé (Contrôle continu / فرض محروس) ou un Examen officiel. Ce barème doit être placé STRICTEMENT À LA FIN du corrigé en tant que tableau récapitulatif additionnel, et ne doit JAMAIS remplacer ni occulter la résolution détaillée. Pour les cours et séries d'exercices ordinaires, ne JAMAIS générer de tableau de barème.`;
 
   const fetchGeminiWithPdf = async (base64Data, fileType, pageCount) => {
     const rawModel = geminiModel || 'gemini-3.6-flash';
