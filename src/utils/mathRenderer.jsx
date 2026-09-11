@@ -332,6 +332,12 @@ export const wrapStandaloneLatexCommands = (text) => {
   const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[^\$\n]+?\$)/g);
   return parts.map((part, idx) => {
     if (idx % 2 === 1) return part; // inside existing math block, leave as-is
+
+    // If the non-math part already contains unresolved complex LaTeX, do NOT blindly wrap single operators!
+    if (/[\\^_{}]/.test(part) && /\\(?:lim|frac|dfrac|sqrt|sum|int|prod|begin)\b/.test(part)) {
+      return part;
+    }
+
     return part
       .replace(/[\u2115]/g, '$\\mathbb{N}$')
       .replace(/[\u211D]/g, '$\\mathbb{R}$')
@@ -354,48 +360,57 @@ export const wrapStandaloneLatexCommands = (text) => {
 
 function autoWrapLatex(text) {
   if (!text) return '';
-  
-  // First, always wrap any standalone LaTeX commands (like \mathbb{N}, \in, etc.) in $...$
-  const withMathCommands = wrapStandaloneLatexCommands(text);
-  if (withMathCommands !== text || withMathCommands.includes('$')) {
-    return withMathCommands;
-  }
+  if (text.includes('$')) return text;
   
   // Don't auto-wrap if it's a markdown bullet point or contains markdown bold/italic
-  if (/^\s*[\*\-+]\s+/.test(withMathCommands) || withMathCommands.includes('**') || /(?<!\*)\*[^*]+\*/.test(withMathCommands)) {
-    return withMathCommands;
+  if (/^\s*[\*\-+]\s+/.test(text) || text.includes('**') || /(?<!\*)\*[^*]+\*/.test(text)) {
+    return text;
   }
   
   // Any text containing Arabic characters is a textual sentence/instruction, NEVER wrap the whole string in $...$
-  if (/[\u0600-\u06FF]/.test(withMathCommands)) {
-    return withMathCommands;
+  if (/[\u0600-\u06FF]/.test(text)) {
+    return text;
   }
-  
-  // Check if it looks like a sentence (contains spaces and regular alphabetic words)
-  if (withMathCommands.includes(' ')) {
-    const words = withMathCommands.split(/\s+/);
-    const mathCommands = new Set(['sin', 'cos', 'tan', 'lim', 'log', 'ln', 'exp', 'max', 'min', 'det', 'dim', 'ker', 'mod']);
-    for (const word of words) {
-      if (/^[a-zA-Z]{3,}$/.test(word) && !mathCommands.has(word.toLowerCase())) {
-        return withMathCommands; // Do not wrap sentences!
+
+  // Check if string starts with an item label like "a.", "1.", "b)", "1)", "(a)", "**1.**", etc.
+  const prefixMatch = text.match(/^(\s*(?:\*\*[a-zA-Z0-9]+[.)]\*\*|\([a-zA-Z0-9]+\)|[a-zA-Z0-9]+[.)])\s*)(.*)$/);
+  let prefix = '';
+  let candidate = text;
+  if (prefixMatch) {
+    prefix = prefixMatch[1];
+    candidate = prefixMatch[2];
+  }
+
+  // Check if candidate looks like a normal language sentence
+  if (candidate.includes(' ')) {
+    // Strip mathematical punctuation: brackets, parens, commas, plus, minus, slashes, braces, backslashes
+    const cleanWords = candidate.replace(/[{}\[\]\(\),;=+\-*\/\\]/g, ' ').split(/\s+/).filter(Boolean);
+    const mathCommands = new Set(['sin', 'cos', 'tan', 'lim', 'log', 'ln', 'exp', 'max', 'min', 'det', 'dim', 'ker', 'mod', 'frac', 'sqrt', 'infty', 'to', 'pi', 'dx', 'dy', 'dt', 'df']);
+    for (const word of cleanWords) {
+      if (/^[a-zA-ZÀ-ÿ]{3,}$/.test(word) && !mathCommands.has(word.toLowerCase())) {
+        return text; // It contains normal text words
       }
     }
   }
 
   const mathWords = /\b(?:sqrt|pi|theta|infty|sin|cos|tan|ln|log|exp|lim)\b/i;
-  const hasDivision = /\b\d+\s*\/\s*\d+\b/.test(withMathCommands) || 
-                      /\b[a-zA-Z0-9_]\s*\/\s*[a-zA-Z0-9(]/.test(withMathCommands) ||
-                      /\)\s*\/\s*[\d(a-zA-Z]/.test(withMathCommands) ||
-                      /[\d(a-zA-Z]\s*\/\s*\(/.test(withMathCommands);
+  const hasDivision = /\b\d+\s*\/\s*\d+\b/.test(candidate) || 
+                      /\b[a-zA-Z0-9_]\s*\/\s*[a-zA-Z0-9(]/.test(candidate) ||
+                      /\)\s*\/\s*[\d(a-zA-Z]/.test(candidate) ||
+                      /[\d(a-zA-Z]\s*\/\s*\(/.test(candidate);
 
-  if (/[\\^_{}]/.test(withMathCommands) || 
-      LATEX_COMMAND_RE.test(withMathCommands) || 
-      mathWords.test(withMathCommands) || 
-      withMathCommands.includes('*') || 
-      hasDivision) {
-    return `$${withMathCommands}$`;
+  if (/[\\^_{}]/.test(candidate) || 
+      LATEX_COMMAND_RE.test(candidate) || 
+      mathWords.test(candidate) || 
+      candidate.includes('*') || 
+      hasDivision ||
+      /^[\[\]].*[\[\]]$/.test(candidate.trim())) {
+    if (prefix) {
+      return `${prefix}$${candidate}$`;
+    }
+    return `$${text}$`;
   }
-  return withMathCommands;
+  return text;
 }
 
 function renderTextWithBold(text) {
@@ -534,7 +549,7 @@ const renderTableSegment = (segment, key) => {
   });
   
   const renderCellContent = (cellText) => {
-    const toParse = autoWrapLatex(cellText);
+    const toParse = wrapStandaloneLatexCommands(autoWrapLatex(cellText));
     const tokens = tokenizeMath(toParse);
     if (tokens.length === 1 && tokens[0].type === 'text') {
       return renderTextWithBold(tokens[0].content);

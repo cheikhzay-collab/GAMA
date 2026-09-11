@@ -69,11 +69,65 @@ const splitLevelTitle = (rawLevel, isArabic = false) => {
   return { line1: s, line2: '' };
 };
 
+const LATEX_COMMAND_RE = /\\(?:boxed|lim|frac|dfrac|left|right|cdot|sqrt|sum|int|prod|infty|to|ln|log|exp|sin|cos|tan|arcsin|arccos|arctan|alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|lambda|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|chi|psi|omega|Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Upsilon|Phi|Psi|Omega|mathbb|mathcal|mathbf|mathrm|text|vec|hat|bar|tilde|overline|underline|widehat|widetilde|dot|ddot|pm|mp|times|div|cap|cup|in|notin|subset|supset|leq|geq|le|ge|neq|approx|equiv|sim|forall|exists|partial|nabla|rightarrow|leftarrow|Rightarrow|Leftarrow|Leftrightarrow|iff|implies|quad|qquad|ell|Re|Im|max|min|sup|inf|det|dim|ker|rank|mod|circ|bullet|star|oplus|otimes|begin|end)\b/;
+
+function autoWrapLatex(text) {
+  if (!text) return '';
+  if (text.includes('$') || text.includes('\\(') || text.includes('\\[') || text.includes('$$')) return text;
+  
+  if (/^\s*[\*\-+]\s+/.test(text) || text.includes('**') || /(?<!\*)\*[^*]+\*/.test(text)) {
+    return text;
+  }
+  
+  if (/[\u0600-\u06FF]/.test(text)) {
+    return text;
+  }
+
+  const prefixMatch = text.match(/^(\s*(?:\*\*[a-zA-Z0-9]+[.)]\*\*|\([a-zA-Z0-9]+\)|[a-zA-Z0-9]+[.)])\s*)(.*)$/);
+  let prefix = '';
+  let candidate = text;
+  if (prefixMatch) {
+    prefix = prefixMatch[1];
+    candidate = prefixMatch[2];
+  }
+
+  if (candidate.includes(' ')) {
+    const cleanWords = candidate.replace(/[{}\[\]\(\),;=+\-*\/\\]/g, ' ').split(/\s+/).filter(Boolean);
+    const mathCommands = new Set(['sin', 'cos', 'tan', 'lim', 'log', 'ln', 'exp', 'max', 'min', 'det', 'dim', 'ker', 'mod', 'frac', 'sqrt', 'infty', 'to', 'pi', 'dx', 'dy', 'dt', 'df']);
+    for (const word of cleanWords) {
+      if (/^[a-zA-ZÀ-ÿ]{3,}$/.test(word) && !mathCommands.has(word.toLowerCase())) {
+        return text;
+      }
+    }
+  }
+
+  const mathWords = /\b(?:sqrt|pi|theta|infty|sin|cos|tan|ln|log|exp|lim)\b/i;
+  const hasDivision = /\b\d+\s*\/\s*\d+\b/.test(candidate) || 
+                      /\b[a-zA-Z0-9_]\s*\/\s*[a-zA-Z0-9(]/.test(candidate) ||
+                      /\)\s*\/\s*[\d(a-zA-Z]/.test(candidate) ||
+                      /[\d(a-zA-Z]\s*\/\s*\(/.test(candidate);
+
+  if (/[\\^_{}]/.test(candidate) || 
+      LATEX_COMMAND_RE.test(candidate) || 
+      mathWords.test(candidate) || 
+      candidate.includes('*') || 
+      hasDivision ||
+      /^[\[\]].*[\[\]]$/.test(candidate.trim())) {
+    if (prefix) {
+      return `${prefix}$${candidate}$`;
+    }
+    return `$${text}$`;
+  }
+
+  return text;
+}
+
 // KaTeX render helper for print HTML
 const renderLatexToHtml = (text) => {
   if (!text || typeof text !== 'string') return '';
+  const preprocessed = autoWrapLatex(text);
 
-  let s = text
+  let s = preprocessed
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&amp;/g, '&')
@@ -95,6 +149,11 @@ const renderLatexToHtml = (text) => {
   const parts = s.split(/(\$\$[\s\S]*?\$\$|\$[^\$\n]+?\$)/g);
   let processed = parts.map((part, idx) => {
     if (idx % 2 === 1) return part; // inside existing math block: leave untouched!
+
+    // If the non-math part already contains unresolved complex LaTeX, do NOT blindly wrap single operators!
+    if (/[\\^_{}]/.test(part) && /\\(?:lim|frac|dfrac|sqrt|sum|int|prod|begin)\b/.test(part)) {
+      return part;
+    }
 
     let textPart = part
       .replace(/\\notin\b/g, '__LATEX_NOTIN__')

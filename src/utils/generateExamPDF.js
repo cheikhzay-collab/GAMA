@@ -553,35 +553,50 @@ const repairCorruptedLatex = (text) => {
 const LATEX_COMMAND_RE = /\\(?:lim|frac|dfrac|left|right|cdot|sqrt|sum|int|prod|infty|to|ln|log|exp|sin|cos|tan|arcsin|arccos|arctan|alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|lambda|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|chi|psi|omega|Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Upsilon|Phi|Psi|Omega|mathbb|mathcal|mathbf|mathrm|text|vec|hat|bar|tilde|overline|underline|widehat|widetilde|dot|ddot|pm|mp|times|div|cap|cup|in|notin|subset|supset|leq|geq|le|ge|neq|approx|equiv|sim|forall|exists|partial|nabla|rightarrow|leftarrow|Rightarrow|Leftarrow|Leftrightarrow|iff|implies|quad|qquad|ell|Re|Im|max|min|sup|inf|det|dim|ker|rank|mod|circ|bullet|star|oplus|otimes|begin|end)\b/;
 
 function autoWrapLatex(text) {
+  if (!text) return '';
   if (text.includes('$')) return text;
   
   // Don't auto-wrap if it's a markdown bullet point or contains markdown bold/italic
   if (/^\s*[\*\-+]\s+/.test(text) || text.includes('**') || /(?<!\*)\*[^*]+\*/.test(text)) {
     return text;
   }
-  
-  // Check if it looks like a sentence (contains spaces and regular alphabetic words)
-  if (text.includes(' ')) {
-    const words = text.split(/\s+/);
-    const mathCommands = new Set(['sin', 'cos', 'tan', 'lim', 'log', 'ln', 'exp', 'max', 'min', 'det', 'dim', 'ker', 'mod']);
-    for (const word of words) {
-      if (/^[a-zA-Z]{3,}$/.test(word) && !mathCommands.has(word.toLowerCase())) {
-        return text; // Do not wrap sentences!
+
+  // Check if string starts with an item label like "a.", "1.", "b)", "1)", "(a)", "**1.**", etc.
+  const prefixMatch = text.match(/^(\s*(?:\*\*[a-zA-Z0-9]+[.)]\*\*|\([a-zA-Z0-9]+\)|[a-zA-Z0-9]+[.)])\s*)(.*)$/);
+  let prefix = '';
+  let candidate = text;
+  if (prefixMatch) {
+    prefix = prefixMatch[1];
+    candidate = prefixMatch[2];
+  }
+
+  // Check if candidate looks like a normal language sentence
+  if (candidate.includes(' ')) {
+    // Strip mathematical punctuation: brackets, parens, commas, plus, minus, slashes, braces, backslashes
+    const cleanWords = candidate.replace(/[{}\[\]\(\),;=+\-*\/\\]/g, ' ').split(/\s+/).filter(Boolean);
+    const mathCommands = new Set(['sin', 'cos', 'tan', 'lim', 'log', 'ln', 'exp', 'max', 'min', 'det', 'dim', 'ker', 'mod', 'frac', 'sqrt', 'infty', 'to', 'pi', 'dx', 'dy', 'dt', 'df']);
+    for (const word of cleanWords) {
+      if (/^[a-zA-ZÀ-ÿ]{3,}$/.test(word) && !mathCommands.has(word.toLowerCase())) {
+        return text; // It contains normal text words
       }
     }
   }
 
   const mathWords = /\b(?:sqrt|pi|theta|infty|sin|cos|tan|ln|log|exp|lim)\b/i;
-  const hasDivision = /\b\d+\s*\/\s*\d+\b/.test(text) || 
-                      /\b[a-zA-Z0-9_]\s*\/\s*[a-zA-Z0-9(]/.test(text) ||
-                      /\)\s*\/\s*[\d(a-zA-Z]/.test(text) ||
-                      /[\d(a-zA-Z]\s*\/\s*\(/.test(text);
+  const hasDivision = /\b\d+\s*\/\s*\d+\b/.test(candidate) || 
+                      /\b[a-zA-Z0-9_]\s*\/\s*[a-zA-Z0-9(]/.test(candidate) ||
+                      /\)\s*\/\s*[\d(a-zA-Z]/.test(candidate) ||
+                      /[\d(a-zA-Z]\s*\/\s*\(/.test(candidate);
 
-  if (/[\\^_{}]/.test(text) || 
-      LATEX_COMMAND_RE.test(text) || 
-      mathWords.test(text) || 
-      text.includes('*') || 
-      hasDivision) {
+  if (/[\\^_{}]/.test(candidate) || 
+      LATEX_COMMAND_RE.test(candidate) || 
+      mathWords.test(candidate) || 
+      candidate.includes('*') || 
+      hasDivision ||
+      /^[\[\]].*[\[\]]$/.test(candidate.trim())) {
+    if (prefix) {
+      return `${prefix}$${candidate}$`;
+    }
     return `$${text}$`;
   }
   return text;
