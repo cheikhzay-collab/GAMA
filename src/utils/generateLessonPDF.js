@@ -786,25 +786,22 @@ const parseExerciseTitle = (title, fallbackIdx, isArabicMode = false) => {
   clean = clean.replace(/\*\*/g, '').trim();
 
   // Handle Arabic titles: "تمرين 1" or "تمرين: 1"
-  if (isArabicMode || /^\u062a\u0645\u0631\u064a\u0646/.test(clean)) {
-    const arabicMatch = clean.match(/^\u062a\u0645\u0631\u064a\u0646[:\s]*([\d١-٩]+)\s*(.*)$/);
-    if (arabicMatch) {
-      return { number: arabicMatch[1], label: arabicMatch[2].trim() };
-    }
-    // fallback: extract any number from the title
-    const numMatch = clean.match(/([\d]+)/);
-    return { number: numMatch ? numMatch[1] : String(fallbackIdx + 1), label: '' };
+  const arabicMatch = clean.match(/^تمرين[:\s]*([\d١-٩]+)?\s*[:\-–—\s]*(.*)$/);
+  if (arabicMatch && (isArabicMode || arabicMatch[1])) {
+    return { number: arabicMatch[1] || String(fallbackIdx + 1), label: (arabicMatch[2] || '').trim() };
   }
 
   // Original French parsing
-  const prefixMatch = clean.match(/^Exercice\s*(?:N?°|N)?\s*/i);
-  if (prefixMatch) clean = clean.substring(prefixMatch[0].length).trim();
-  const match = clean.match(/^([0-9a-zA-Z\s]+)(.*)$/);
-  if (match) {
-    const number = match[1].trim();
-    let label = match[2].trim().replace(/^[:\-–—\s]+/, '').trim();
-    return { number: number || String(fallbackIdx + 1), label };
+  const prefixMatch = clean.match(/^Exercice\s*(?:N?°|N)?\s*([0-9a-zA-Z]+)?\s*[:\-–—\s]*(.*)$/i);
+  if (prefixMatch) {
+    return { number: prefixMatch[1] || String(fallbackIdx + 1), label: (prefixMatch[2] || '').trim() };
   }
+
+  const match = clean.match(/^([0-9a-zA-Z]+)\s*[:.\-–—\s]+(.*)$/);
+  if (match) {
+    return { number: match[1].trim(), label: match[2].trim() };
+  }
+
   return { number: clean || String(fallbackIdx + 1), label: '' };
 };
 
@@ -860,15 +857,19 @@ const renderHomeworkBody = (text, isArabicMode) => {
     let pointsStr = '';
     const match = cleanLine.match(pointsRegex);
     if (match) {
-      pointsStr = match[0];
+      const valStr = match[1].replace(',', '.');
+      const numVal = parseFloat(valStr);
+      const ptsWord = isArabicMode ? 'ن' : (numVal > 1 ? 'pts' : 'pt');
+      pointsStr = `(${match[1]} ${ptsWord})`;
       cleanLine = cleanLine.replace(pointsRegex, '').replace(/\s{2,}/g, ' ').trim();
     } else {
       const pMatch = cleanLine.match(parenthesizedNumRegex);
       if (pMatch) {
         const prefix = pMatch[1];
-        const val = pMatch[2];
-        const ptsWord = isArabicMode ? 'ن' : 'pts';
-        pointsStr = `(${val} ${ptsWord})`;
+        const valStr = pMatch[2].replace(',', '.');
+        const numVal = parseFloat(valStr);
+        const ptsWord = isArabicMode ? 'ن' : (numVal > 1 ? 'pts' : 'pt');
+        pointsStr = `(${pMatch[2]} ${ptsWord})`;
         cleanLine = cleanLine.replace(parenthesizedNumRegex, prefix).trim();
       }
     }
@@ -1030,20 +1031,51 @@ export const generateLessonHTML = (lesson, settings = {}) => {
   const isThreeColumns = isExercises && columnsCount === 3;
   const isConcours = lesson.docType === 'concours' || content?.doc_type === 'concours';
   const checkArabicText = () => {
-    if (content?.metadata?.language === 'ar') return true;
-    const textToTest = [
-      lesson.title,
-      subject,
-      header?.fiche_title,
-      header?.subject,
-      ...(sections || []).map(s => s?.title)
-    ].filter(Boolean).join(' ');
-    return /[\u0600-\u06FF]/.test(textToTest);
+    // 1. Explicit settings or metadata language (Highest priority)
+    const lang = (
+      settings?.language ||
+      content?.metadata?.language ||
+      lesson?.language ||
+      content?.language ||
+      header?.language ||
+      ''
+    ).toLowerCase().trim();
+    if (lang === 'ar' || lang.startsWith('ar-')) return true;
+    if (lang === 'fr' || lang.startsWith('fr-') || lang === 'en' || lang.startsWith('en-')) return false;
+
+    // 2. Explicit direction settings
+    const explicitDir = (content?.metadata?.dir || lesson?.dir || '').toLowerCase().trim();
+    if (explicitDir === 'rtl') return true;
+    if (explicitDir === 'ltr') return false;
+
+    // 3. Title markers (e.g. from translation suffixes)
+    const allTitles = `${lesson?.title || ''} ${header?.fiche_title || ''}`;
+    if (/\(نسخة عربية\)/i.test(allTitles)) return true;
+    if (/\(version fran[çc]aise\)/i.test(allTitles) || /\(english version\)/i.test(allTitles)) return false;
+
+    // 4. Sample the actual body content (questions, exercise text, section contents)
+    // Exclude teacher name, school, or subject which might be legacy Arabic metadata
+    const contentSample = (sections || [])
+      .map(s => `${s?.title || ''} ${s?.content || ''} ${(s?.items || []).map(it => it?.text || '').join(' ')}`)
+      .join(' ');
+
+    const arabicLetters = (contentSample.match(/[\u0600-\u06FF]/g) || []).length;
+    const latinLetters = (contentSample.match(/[a-zA-Z]/g) || []).length;
+
+    if (arabicLetters > 0 || latinLetters > 0) {
+      return arabicLetters > latinLetters;
+    }
+
+    // 5. Fallback: test title
+    const titleAr = (allTitles.match(/[\u0600-\u06FF]/g) || []).length;
+    const titleLat = (allTitles.match(/[a-zA-Z]/g) || []).length;
+    return titleAr > titleLat;
   };
   const isArabic = checkArabicText();
-  const levelKey = lesson.level || content?.level || '';
+  const levelKey = lesson.level || content?.level || header?.level || '';
   const levelDisplayName = getLevelDisplayName(levelKey, isArabic);
-  const levelText = levelDisplayName || prepTitle || '';
+  const fallbackLevel = prepTitle ? (isArabic ? prepTitle : getLevelDisplayName(prepTitle, false)) : '';
+  const levelText = levelDisplayName || fallbackLevel || '';
 
   // ── Retrieve WhatsApp phone number from Platform Settings ─────────────────
   let settingsPhone = '';
@@ -3140,6 +3172,14 @@ html[dir="rtl"] .homework-bareme-cell {
 html[dir="rtl"] .homework-bareme-header {
   border-right: none;
   border-left: 2px solid #ffffff;
+}
+html[dir="ltr"] .homework-content-cell {
+  text-align: left !important;
+  direction: ltr !important;
+}
+html[dir="rtl"] .homework-content-cell {
+  text-align: right !important;
+  direction: rtl !important;
 }
 
 

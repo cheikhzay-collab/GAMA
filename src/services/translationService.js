@@ -124,26 +124,39 @@ function buildTranslationPrompt(lesson, targetLang) {
 - النص العربي يُكتب من اليمين إلى اليسار (RTL).
 - استخدم صياغة الأستاذ المغربي في تدريس الرياضيات، وليس ترجمة حرفية.
 - المصطلحات الرياضية يجب أن تتطابق مع ما هو موجود في الكتاب المدرسي المغربي.
+- حوّل وحدات النقط من الفرنسية إلى العربية: "(1 pt)" أو "(2 pts)" تُصبح "(1 ن)" أو "(2 ن)".
 ${MOROCCAN_MATH_GLOSSARY}
-` : '';
+` : `
+- Le texte français s'écrit de gauche à droite (LTR).
+- Utilise rigoureusement la terminologie mathématique marocaine officielle du programme BIOF (Baccalauréat International Option Français).
+- Traduis fidèlement et rigoureusement tous les énoncés, questions, consignes, solutions et titres en français.
+- Convertis les unités de barème arabes "(1 ن)" en notation française : "(1 pt)" ou "(x pts)".
+`;
 
-  return `أنت مترجم متخصص في ترجمة الدروس والمحتوى الرياضي المغربي إلى ${langName}.
+  return `أنت مترجم متخصص في ترجمة الدروس والامتحانات الرياضية المغربية إلى ${langName}.
 
 ## قواعد صارمة يجب اتباعها:
 1. **الحفاظ على LaTeX**: كل معادلة تبدأ بـ $ أو $$ أو \\begin تُحافظ عليها كما هي بدون أي تغيير. لا تترجم أي رموز رياضية.
 2. **Markdown**: الحفاظ على تنسيق **نص غامق** و*نص مائل* كما هو.
 3. **هيكل JSON**: الإخراج يجب أن يكون JSON صالح 100% بنفس هيكل الإدخال. لا تُضف تعليقات // داخل JSON.
 4. **لا تُضف ولا تحذف**: لا تُضف شرحاً إضافياً، ترجم فقط.
+5. **ترجمة كائن header بالكامل**:
+   - ترجم fiche_title إلى ${langName}.
+   - اجعل حقل subject هو "${targetLang === 'ar' ? 'الرياضيات' : targetLang === 'en' ? 'Mathematics' : 'Mathématiques'}".
+   - ترجم prep_title أو level إن وُجدا إلى ما يقابلهما في ${langName}.
+6. **ترجمة الأقسام والتمارين**:
+   - ترجم title (مثلاً: "تمرين 1" ↔ "Exercice 1").
+   - ترجم نصوص الأسئلة text و content و solution بالكامل إلى ${langName}.
 ${rtlNote}
 
-## الدرس المطلوب ترجمته:
+## الدرس أو الامتحان المطلوب ترجمته:
 ${JSON.stringify(lesson.content, null, 2)}
 
 ## المطلوب:
-أرجع JSON كامل يمثل محتوى الدرس المترجم إلى ${langName}. 
-- اترجم حقول: title, section_header, accent_text, text, content, solution, label وما شابهها.
+أرجع JSON كامل يمثل محتوى الدرس/الامتحان المترجم بالكامل إلى ${langName}.
+- ترجم حقول: title, section_header, accent_text, text, content, solution, label وما شابهها.
 - لا تترجم: id, type, section_number, question_idx, expected_answer, notation_columns (math_blocks), table_data.
-- عنوان الدرس الرئيسي يُترجم أيضاً.
+- عنوان الدرس/الامتحان الرئيسي في header يُترجم أيضاً.
 
 أرجع فقط JSON نقياً بدون أي نص إضافي قبله أو بعده، ابدأ مباشرة بـ { :`;
 }
@@ -455,12 +468,41 @@ export async function translateLesson(lesson, targetLang, options = {}) {
     fr: '(Version Française)',
   }[targetLang] || '';
 
+  const subjectMap = {
+    ar: 'الرياضيات',
+    fr: 'Mathématiques',
+    en: 'Mathematics'
+  };
+
+  const rawTitle = translatedContent?.header?.fiche_title || lesson.title || 'Fiche';
+  const cleanBaseTitle = rawTitle
+    .replace(/\s*\(نسخة عربية\)|\s*\(Version Fran[çc]aise\)|\s*\(English Version\)/gi, '')
+    .trim();
+
+  const finalTitle = `${cleanBaseTitle} ${langSuffix}`.trim();
+  const finalSubject = subjectMap[targetLang] || translatedContent?.header?.subject || lesson.subject;
+
+  if (!translatedContent.header) translatedContent.header = {};
+  translatedContent.header.fiche_title = cleanBaseTitle;
+  translatedContent.header.subject = finalSubject;
+  translatedContent.header.language = targetLang;
+  translatedContent.header.dir = targetLang === 'ar' ? 'rtl' : 'ltr';
+
   const translatedLesson = {
     ...lesson,
     id: undefined,
-    title: `${translatedContent?.header?.fiche_title || lesson.title} ${langSuffix}`.trim(),
+    title: finalTitle,
+    subject: finalSubject,
+    language: targetLang,
     content: {
       ...translatedContent,
+      header: {
+        ...(translatedContent.header || {}),
+        fiche_title: cleanBaseTitle,
+        subject: finalSubject,
+        language: targetLang,
+        dir: targetLang === 'ar' ? 'rtl' : 'ltr',
+      },
       metadata: {
         ...(translatedContent.metadata || {}),
         translatedFrom: lesson.id,
