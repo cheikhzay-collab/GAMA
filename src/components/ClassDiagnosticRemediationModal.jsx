@@ -18,8 +18,6 @@ export default function ClassDiagnosticRemediationModal({
   students = [],
   teacherName = 'Professeur de Mathématiques'
 }) {
-  if (!isOpen) return null;
-
   const controlsList = classObj.controls || [];
   const [selectedControl, setSelectedControl] = useState(controlsList[0] || 'Contrôle 1');
   const [activeSubTab, setActiveSubTab] = useState('analysis'); // 'analysis' | 'worksheets'
@@ -243,6 +241,8 @@ Formate en Markdown avec KaTeX ($...$ et $$...$$).`;
       alert('Erreur lors de l\'enregistrement : ' + err.message);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div style={{

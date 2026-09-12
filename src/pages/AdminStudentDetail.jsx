@@ -173,12 +173,13 @@ export default function AdminStudentDetail() {
   const handleUpdateStage = async (newStage) => {
     try {
       setCrmLoading(true);
+      const newInteractionId = 'stage_' + (student.id || student.uid || 'st') + '_' + (crmInteractions.length + 1);
       const updatedCrm = {
         ...crmData,
         stage: newStage,
         interactions: [
           {
-            id: Date.now().toString(),
+            id: newInteractionId,
             type: 'note',
             content: `Changement de statut CRM vers: ${newStage}`,
             date: new Date().toISOString(),

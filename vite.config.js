@@ -102,7 +102,7 @@ export default defineConfig({
             return 'vendor-sheets';
           }
           // ── Icons (lucide-react is large) ─────────────────────────
-          if (id.includes('lucide-react')) {
+          if (id.includes('lucide')) {
             return 'vendor-icons';
           }
           // ── Supabase client ───────────────────────────────────────

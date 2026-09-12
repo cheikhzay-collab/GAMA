@@ -163,6 +163,14 @@ export default function ImageDropZone({
     }
   }, [showFlash]);
 
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+    setIsCapturing(false);
+  }, []);
+
   const capturePhoto = useCallback(() => {
     if (!videoRef.current) return;
     
@@ -179,15 +187,7 @@ export default function ImageDropZone({
     }
     showFlash('📸 تم التقاط الصورة وإدراجها');
     stopCamera();
-  }, [onImageInsert, showFlash]);
-
-  const stopCamera = useCallback(() => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.stop());
-      streamRef.current = null;
-    }
-    setIsCapturing(false);
-  }, []);
+  }, [onImageInsert, showFlash, stopCamera]);
 
   useEffect(() => {
     return () => {

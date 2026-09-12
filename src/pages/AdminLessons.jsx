@@ -264,7 +264,7 @@ ${sectionsContentText}
         questions = JSON.parse(rawText);
       } catch (err) {
         console.error("Failed to parse JSON:", rawText);
-        throw new Error("Le format de réponse de l'IA est invalide.");
+        throw new Error("Le format de réponse de l'IA est invalide.", { cause: err });
       }
 
       if (!Array.isArray(questions) || questions.length === 0) {
