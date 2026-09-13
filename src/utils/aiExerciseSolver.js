@@ -500,8 +500,8 @@ ${customInstructions ? `Instructions supplémentaires : ${customInstructions}\n\
   // ── 2. Engine 2 : Google Gemini (Haute disponibilité et rapidité) ──
   if (availableEngines.includes('gemini')) {
     const storedModel = localStorage.getItem('geminiModel');
-    const preferredModel = (!storedModel || storedModel === 'gemini-2.5-flash') ? 'gemini-3.6-flash' : storedModel;
-    const modelsToTry = [preferredModel, 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    const preferredModel = (!storedModel || storedModel.includes('3.6') || storedModel.includes('3.5') || storedModel.includes('3.7')) ? 'gemini-2.5-flash' : storedModel;
+    const modelsToTry = [preferredModel, 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-pro', 'gemini-1.5-pro', 'gemini-1.5-flash'];
     const uniqueModels = Array.from(new Set(modelsToTry));
 
     for (const model of uniqueModels) {

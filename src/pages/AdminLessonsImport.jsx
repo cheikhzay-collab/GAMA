@@ -802,9 +802,9 @@ export default function AdminLessonsImport({ onBack }) {
   const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('geminiApiKey') || '');
   const [geminiModel, setGeminiModel] = useState(() => {
     const m = localStorage.getItem('geminiModel');
-    if (!m || m === 'gemini-2.5-flash') {
-      localStorage.setItem('geminiModel', 'gemini-3.6-flash');
-      return 'gemini-3.6-flash';
+    if (!m || m.includes('3.6') || m.includes('3.5') || m.includes('3.7') || m.includes('3.1')) {
+      localStorage.setItem('geminiModel', 'gemini-2.5-flash');
+      return 'gemini-2.5-flash';
     }
     return m;
   });
@@ -1023,7 +1023,7 @@ export default function AdminLessonsImport({ onBack }) {
       setProvider(localStorage.getItem('aiImportProvider') || 'gemini');
       setGeminiKey(localStorage.getItem('geminiApiKey') || '');
       const rawGemini = localStorage.getItem('geminiModel');
-      const geminiModelToSet = (!rawGemini || rawGemini === 'gemini-2.5-flash') ? 'gemini-3.6-flash' : rawGemini;
+      const geminiModelToSet = (!rawGemini || rawGemini.includes('3.6') || rawGemini.includes('3.5') || rawGemini.includes('3.7') || rawGemini.includes('3.1')) ? 'gemini-2.5-flash' : rawGemini;
       setGeminiModel(geminiModelToSet);
       setClaudeKey(localStorage.getItem('claudeApiKey') || '');
       const rawClaude = localStorage.getItem('claudeModel');
@@ -1141,10 +1141,6 @@ Pour chaque exercice, activité ou application résolue dans le champ "solution"
    - N'inclure un barème indicatif de notation que SI le document est explicitement un Devoir Surveillé (Contrôle continu / فرض محروس) ou un Examen officiel. Ce barème doit être placé STRICTEMENT À LA FIN du corrigé en tant que tableau récapitulatif additionnel, et ne doit JAMAIS remplacer ni occulter la résolution détaillée. Pour les cours et séries d'exercices ordinaires, ne JAMAIS générer de tableau de barème.`;
 
   const fetchGeminiWithPdf = async (base64Data, fileType, pageCount) => {
-    const rawModel = geminiModel || 'gemini-3.6-flash';
-    const modelToUse = (rawModel === 'gemini-2.5-flash') ? 'gemini-3.6-flash' : rawModel;
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${geminiKey}`;
-    
     const isPdf = (fileType && fileType.includes('pdf')) || uploadFile?.name?.toLowerCase().endsWith('.pdf');
     const safeMime = isPdf ? 'application/pdf' : (fileType && fileType.includes('/') ? fileType : 'image/jpeg');
 
@@ -1172,60 +1168,110 @@ Pour chaque exercice, activité ou application résolue dans le champ "solution"
 
     const userText = buildExtractionUserPrompt(pageCount, solveSolutions, preExtractedPdfText);
 
-    const payload = {
-      contents: [
-        {
-          parts: [
-            {
-              inlineData: {
-                mimeType: safeMime,
-                data: base64Data
+    // Dynamic model cascade for Gemini with automatic failover & quota resilience
+    let userPref = (geminiModel || '').trim();
+    if (userPref.includes('3.6') || userPref.includes('3.5') || userPref.includes('3.7') || userPref.includes('3.1')) {
+      userPref = 'gemini-2.5-flash';
+    }
+    const defaultCascade = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-pro', 'gemini-1.5-pro', 'gemini-1.5-flash'];
+    const cascade = Array.from(new Set([userPref, ...defaultCascade].filter(Boolean)));
+
+    let lastErr = null;
+
+    for (let i = 0; i < cascade.length; i++) {
+      const modelToUse = cascade[i];
+      setProgress(`Envoi à Google Gemini [${modelToUse}] (${i + 1}/${cascade.length})...`);
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${geminiKey}`;
+
+      const payload = {
+        contents: [
+          {
+            parts: [
+              {
+                inlineData: {
+                  mimeType: safeMime,
+                  data: base64Data
+                }
+              },
+              {
+                text: userText
               }
-            },
-            {
-              text: userText
-            }
-          ]
+            ]
+          }
+        ],
+        systemInstruction: {
+          parts: [{ text: systemContent }]
+        },
+        generationConfig: {
+          responseMimeType: "application/json",
+          maxOutputTokens: 65536,
+          temperature: 0.1
         }
-      ],
-      systemInstruction: {
-        parts: [{ text: systemContent }]
-      },
-      generationConfig: {
-        responseMimeType: "application/json",
-        maxOutputTokens: 65536,
-        temperature: 0.1
+      };
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          const msg = err?.error?.message || `Erreur HTTP ${res.status}`;
+          const isQuota = (res.status === 429 || /quota|resource_exhausted/i.test(msg));
+          const isNotFound = (res.status === 404);
+
+          if (isNotFound) {
+            console.warn(`[Gemini Direct] Model ${modelToUse} not found (404). Trying next fallback...`);
+            continue;
+          }
+
+          if (isQuota) {
+            console.warn(`[Gemini Direct] Model ${modelToUse} hit quota (429). Trying next fallback tier...`);
+            if (i < cascade.length - 1) {
+              setProgress(`Quota atteint sur ${modelToUse}. Bascule automatique vers le modèle de secours...`);
+              await new Promise(r => setTimeout(r, 2000));
+              continue;
+            } else {
+              // Wait for quota reset on last attempt
+              for (let rem = 20; rem > 0; rem -= 5) {
+                setProgress(`Quota saturé (429). Pause de régénération : reprise dans ${rem}s...`);
+                await new Promise(r => setTimeout(r, 5000));
+              }
+            }
+          }
+          throw new Error(`Gemini [${modelToUse}]: ${msg}`);
+        }
+
+        const data = await res.json();
+        const candidate = data?.candidates?.[0];
+        if (!candidate || !candidate.content?.parts) {
+          throw new Error(`Gemini [${modelToUse}] n'a retourné aucun contenu.`);
+        }
+
+        // Filter out thought parts (Gemini thinking reasoning)
+        const nonThoughtParts = candidate.content.parts.filter(p => !p.thought);
+        const textParts = (nonThoughtParts.length > 0 ? nonThoughtParts : candidate.content.parts)
+          .map(p => p.text || '')
+          .join('');
+
+        if (!textParts.trim()) {
+          throw new Error(`La réponse textuelle de Gemini [${modelToUse}] est vide.`);
+        }
+
+        return textParts;
+      } catch (err) {
+        lastErr = err;
+        console.warn(`[Gemini Direct] Model ${modelToUse} failed:`, err.message);
+        if (i < cascade.length - 1) {
+          setProgress(`Bascule automatique du modèle vers le secours suivant...`);
+          await new Promise(r => setTimeout(r, 1500));
+        }
       }
-    };
-
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err?.error?.message || `Erreur HTTP ${res.status}`);
     }
 
-    const data = await res.json();
-    const candidate = data?.candidates?.[0];
-    if (!candidate || !candidate.content?.parts) {
-      throw new Error("L'API Gemini n'a retourné aucun contenu.");
-    }
-
-    // Filter out thought parts (Gemini 2.5 / 3.x Flash thinking reasoning)
-    const nonThoughtParts = candidate.content.parts.filter(p => !p.thought);
-    const textParts = (nonThoughtParts.length > 0 ? nonThoughtParts : candidate.content.parts)
-      .map(p => p.text || '')
-      .join('');
-
-    if (!textParts.trim()) {
-      throw new Error("La réponse textuelle de Gemini est vide.");
-    }
-
-    return textParts;
+    throw lastErr || new Error("Tous les modèles Gemini de secours ont échoué.");
   };
 
   const streamClaudeWithPdf = async (base64Data, fileType, pageCount) => {
@@ -1813,6 +1859,11 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
       }
     }
 
+    if (!rawSections || rawSections.length === 0) {
+      setError("Cette fiche ne contient aucune section exploitable ou est vide. Le document ne peut pas être chargé sans contenu.");
+      return;
+    }
+
     const defaultTitle = docName ? docName.replace(/\.[^/.]+$/, "") : '';
     setFicheTitle(header.fiche_title || header.title || defaultTitle || 'Fiche de cours');
     setSubject(header.subject || 'Mathématiques');
@@ -2006,6 +2057,11 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
       if (!fullTask || !fullTask.result) {
         throw new Error("Données extraites introuvables pour cette tâche. Veuillez patienter ou relancer.");
       }
+      const res = fullTask.result;
+      const secs = res.sections || res.items || res.exercises || res.exercices || [];
+      if (Array.isArray(secs) && secs.length === 0 && !res.content && !res.questions) {
+        throw new Error("Le résultat extrait est vide (0 section). Aucune donnée exploitable à afficher.");
+      }
       setTaskUnderReview(fullTask);
       loadParsedLesson(fullTask.result, fullTask.fileName);
     } catch (err) {
@@ -2134,6 +2190,10 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
   const handleSaveLesson = async () => {
     if (!ficheTitle.trim() || !subject.trim()) {
       setError('Le titre et la matière sont obligatoires.');
+      return;
+    }
+    if (!sections || sections.length === 0) {
+      setError("Impossible d'enregistrer une fiche sans section ou sans contenu. Veuillez d'abord ajouter du contenu ou relancer l'extraction.");
       return;
     }
 
@@ -2684,11 +2744,11 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
                       value={geminiModel}
                       onChange={e => { setGeminiModel(e.target.value); localStorage.setItem('geminiModel', e.target.value); }}
                     >
-                      <option value="gemini-3.6-flash">Gemini 3.6 Flash (Recommandé - Vitesse & Précision)</option>
-                      <option value="gemini-3.5-flash">Gemini 3.5 Flash (Ultra Rapide & 1M Contexte)</option>
-                      <option value="gemini-3.5-flash-thinking">Gemini 3.5 Flash Thinking (Raisonnement)</option>
-                      <option value="gemini-3.1-pro">Gemini 3.1 Pro (Précision Concours)</option>
-                      <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                      <option value="gemini-2.5-flash">Gemini 2.5 Flash (Recommandé - Vitesse & Haute précision)</option>
+                      <option value="gemini-2.0-flash">Gemini 2.0 Flash (Ultra Rapide)</option>
+                      <option value="gemini-2.5-pro">Gemini 2.5 Pro (Raisonnement approfondi & Concours)</option>
+                      <option value="gemini-1.5-pro">Gemini 1.5 Pro (Précision Maximale)</option>
+                      <option value="gemini-1.5-flash">Gemini 1.5 Flash (Économique & Léger)</option>
                     </select>
                   )}
                 </div>

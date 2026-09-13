@@ -607,8 +607,8 @@ export default function AdminExamEdit() {
     setIsGeneratingAiFigure(true);
 
     try {
-      const rawModel = localStorage.getItem('geminiModel') || 'gemini-3.6-flash';
-      const model = rawModel === 'gemini-2.5-flash' ? 'gemini-3.6-flash' : rawModel;
+      const rawModel = localStorage.getItem('geminiModel') || 'gemini-2.5-flash';
+      const model = (rawModel.includes('3.6') || rawModel.includes('3.5') || rawModel.includes('3.7')) ? 'gemini-2.5-flash' : rawModel;
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
       const prompt = `Tu es un expert en conception de figures scientifiques vectorielles en SVG pour des QCM de mathématiques, physique et chimie.

@@ -334,22 +334,156 @@ const parseJsonWithResilience = (rawText) => {
   throw new Error(`Échec d'analyse du JSON produit par l'IA : ${lastError?.message || 'JSON invalide'}`);
 };
 
-// ─── AI API Drivers with Exponential Backoff Auto-Retry ───────────────────────
+// ─── AI API Drivers with Cascading Model Fallback & Quota Resilience ─────────
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-const callGeminiWithRetry = async ({ base64Data, fileType, pageCount, preExtractedPdfText, solveSolutions, apiKey, model, onProgress }) => {
-  const modelToUse = (!model || model === 'gemini-2.5-flash') ? 'gemini-3.6-flash' : model;
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${apiKey}`;
+// Verified high-performing models per provider
+const FALLBACK_MODELS = {
+  gemini: [
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-2.5-pro',
+    'gemini-1.5-pro',
+    'gemini-1.5-flash'
+  ],
+  claude: [
+    'claude-3-7-sonnet-20250219',
+    'claude-3-5-sonnet-20241022',
+    'claude-3-5-haiku-20241022'
+  ],
+  deepseek: [
+    'deepseek-reasoner',
+    'deepseek-chat'
+  ]
+};
 
-  const isPdf = (fileType && fileType.includes('pdf'));
-  const safeMime = isPdf ? 'application/pdf' : (fileType && fileType.includes('/') ? fileType : 'image/jpeg');
+// Build unique ordered cascade list of models to try
+const resolveModelCascade = (provider, userPreferredModel) => {
+  const defaults = FALLBACK_MODELS[provider] || FALLBACK_MODELS.gemini;
+  let cleanUser = (userPreferredModel || '').trim();
 
-  const systemContent = solveSolutions
-    ? SYSTEM_PROMPT + MOROCCAN_SOLVE_ADDENDUM
-    : SYSTEM_PROMPT + NO_SOLUTION_ADDENDUM;
+  // Normalize obsolete or speculative model names
+  if (provider === 'gemini') {
+    if (cleanUser === 'gemini-3.6-flash' || cleanUser === 'gemini-3.5-flash' || cleanUser === 'gemini-3.7' || cleanUser === 'gemini-3.5-flash-thinking' || cleanUser === 'gemini-3.1-pro') {
+      cleanUser = 'gemini-2.5-flash';
+    }
+  }
 
-  const userText = buildExtractionUserPrompt(pageCount, solveSolutions, preExtractedPdfText);
+  const cascade = [];
+  if (cleanUser) {
+    cascade.push(cleanUser);
+  }
+  for (const m of defaults) {
+    if (!cascade.includes(m)) {
+      cascade.push(m);
+    }
+  }
+  return cascade;
+};
+
+// Quota wait helper with live countdown updates
+const waitForQuotaRegeneration = async (seconds, modelName, onProgress) => {
+  console.log(`[Worker] Quota exhausted for ${modelName}. Waiting ${seconds}s for quota regeneration...`);
+  for (let rem = seconds; rem > 0; rem -= 5) {
+    const chunk = Math.min(5, rem);
+    if (onProgress) {
+      onProgress(30, `Quota API saturé pour [${modelName}] (HTTP 429). Pause intelligente : reprise dans ${rem}s...`);
+    }
+    await sleep(chunk * 1000);
+  }
+};
+
+// Strict Document Validation: Ensure output is NOT an empty shell
+const validateExtractedDocument = (parsed) => {
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error("Format JSON invalide : aucun objet structuré trouvé.");
+  }
+
+  let rawSections = [];
+  if (Array.isArray(parsed)) {
+    rawSections = parsed;
+  } else if (Array.isArray(parsed.sections)) {
+    rawSections = parsed.sections;
+  } else if (Array.isArray(parsed.items)) {
+    rawSections = parsed.items;
+  } else if (Array.isArray(parsed.exercises)) {
+    rawSections = parsed.exercises;
+  } else if (Array.isArray(parsed.exercices)) {
+    rawSections = parsed.exercices;
+  } else if (Array.isArray(parsed.series)) {
+    rawSections = parsed.series;
+  } else if (Array.isArray(parsed.serie)) {
+    rawSections = parsed.serie;
+  } else if (Array.isArray(parsed.questions)) {
+    rawSections = parsed.questions;
+  } else if (Array.isArray(parsed.parties)) {
+    rawSections = parsed.parties;
+  } else if (Array.isArray(parsed.content)) {
+    rawSections = parsed.content;
+  } else if (Array.isArray(parsed.data)) {
+    rawSections = parsed.data;
+  } else if (Array.isArray(parsed.cours)) {
+    rawSections = parsed.cours;
+  } else if (parsed.course && Array.isArray(parsed.course.sections)) {
+    rawSections = parsed.course.sections;
+  } else if (parsed.course && Array.isArray(parsed.course.items)) {
+    rawSections = parsed.course.items;
+  } else {
+    const arrayProp = Object.values(parsed).find(val => Array.isArray(val) && val.length > 0 && typeof val[0] === 'object');
+    if (arrayProp) {
+      rawSections = arrayProp;
+    }
+  }
+
+  // Fallback if parsed is directly a single section object
+  if (rawSections.length === 0) {
+    if (parsed.content || parsed.questions || parsed.exercice || parsed.title) {
+      rawSections = [parsed];
+    }
+  }
+
+  if (!rawSections || rawSections.length === 0) {
+    throw new Error("Document vide : aucune section ni exercice n'a été extrait par le modèle.");
+  }
+
+  // Ensure at least one section has substantial content (not a blank/empty placeholder)
+  const hasSubstantiveContent = rawSections.some(sec => {
+    if (!sec) return false;
+    if (typeof sec === 'string') return sec.trim().length > 15;
+    if (typeof sec !== 'object') return false;
+
+    const title = (sec.title || sec.section_title || sec.titre || '').trim();
+    const content = (typeof sec.content === 'string' ? sec.content : '').trim();
+    const solution = (typeof sec.solution === 'string' ? sec.solution : '').trim();
+    const items = Array.isArray(sec.items) ? sec.items : [];
+    const questions = Array.isArray(sec.questions) ? sec.questions : [];
+
+    const hasItemText = items.some(it => {
+      if (!it) return false;
+      if (typeof it === 'string') return it.trim().length > 5;
+      return (it.text && it.text.trim().length > 5) || it.url || it.type === 'table' || it.table_data;
+    });
+
+    return title.length > 3 || content.length > 15 || solution.length > 15 || hasItemText || questions.length > 0;
+  });
+
+  if (!hasSubstantiveContent) {
+    throw new Error("Document vide : les sections retournées ne contiennent aucun texte, formule ou exercice exploitable.");
+  }
+
+  const header = parsed.header || (typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {});
+  return {
+    ...parsed,
+    header,
+    sections: rawSections
+  };
+};
+
+// ─── Single Model Invocation Drivers ──────────────────────────────────────────
+
+const callGeminiSingleAttempt = async ({ model, base64Data, safeMime, userText, systemContent, apiKey }) => {
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const payload = {
     contents: [
@@ -375,84 +509,56 @@ const callGeminiWithRetry = async ({ base64Data, fileType, pageCount, preExtract
     }
   };
 
-  const MAX_RETRIES = 3;
-  let lastError = null;
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
 
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      if (attempt > 1) {
-        onProgress(35, `Tentative ${attempt}/${MAX_RETRIES} après incident temporaire...`);
-      }
-
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) {
-        const errJson = await res.json().catch(() => ({}));
-        const status = res.status;
-        const msg = errJson?.error?.message || `Erreur HTTP ${status}`;
-
-        if ((status === 429 || status >= 500) && attempt < MAX_RETRIES) {
-          const delayMs = attempt * 4000;
-          console.warn(`[Gemini] HTTP ${status} on attempt ${attempt}. Retrying in ${delayMs}ms...`);
-          onProgress(30, `API surchargée (HTTP ${status}). Nouvel essai automatique dans ${delayMs / 1000}s...`);
-          await sleep(delayMs);
-          continue;
-        }
-        throw new Error(`Gemini API: ${msg}`);
-      }
-
-      const data = await res.json();
-      const candidate = data?.candidates?.[0];
-      if (!candidate || !candidate.content?.parts) {
-        throw new Error("L'API Gemini n'a retourné aucun contenu.");
-      }
-
-      const nonThoughtParts = candidate.content.parts.filter(p => !p.thought);
-      const text = (nonThoughtParts.length > 0 ? nonThoughtParts : candidate.content.parts)
-        .map(p => p.text || '')
-        .join('');
-
-      if (!text.trim()) throw new Error("Réponse textuelle de Gemini vide.");
-      return text;
-    } catch (err) {
-      lastError = err;
-      if (attempt < MAX_RETRIES) {
-        const delayMs = attempt * 3000;
-        console.warn(`[Gemini] Network/call error on attempt ${attempt}: ${err.message}. Retrying...`);
-        onProgress(30, `Connexion interrompue (${err.message}). Réessai ${attempt + 1}/${MAX_RETRIES}...`);
-        await sleep(delayMs);
-      }
-    }
+  if (!res.ok) {
+    const errJson = await res.json().catch(() => ({}));
+    const status = res.status;
+    const msg = errJson?.error?.message || `Erreur HTTP ${status}`;
+    const err = new Error(`Gemini [${model}]: ${msg}`);
+    err.status = status;
+    err.isQuotaExceeded = (status === 429 || /resource_exhausted|quota|rate limit/i.test(msg));
+    err.isNotFound = (status === 404 || /not found/i.test(msg));
+    throw err;
   }
-  throw lastError;
+
+  const data = await res.json();
+  const candidate = data?.candidates?.[0];
+  if (!candidate || !candidate.content?.parts) {
+    throw new Error(`Gemini [${model}] n'a retourné aucun contenu.`);
+  }
+
+  const nonThoughtParts = candidate.content.parts.filter(p => !p.thought);
+  const text = (nonThoughtParts.length > 0 ? nonThoughtParts : candidate.content.parts)
+    .map(p => p.text || '')
+    .join('');
+
+  if (!text.trim()) {
+    throw new Error(`Gemini [${model}] a produit une réponse textuelle vide.`);
+  }
+
+  return text;
 };
 
-const callClaudeWithRetry = async ({ base64Data, fileType, pageCount, preExtractedPdfText, solveSolutions, apiKey, model, proxyUrl, onProgress }) => {
+const callClaudeSingleAttempt = async ({ model, base64Data, safeMime, userText, systemContent, apiKey, proxyUrl }) => {
   const endpoint = proxyUrl || 'https://api.anthropic.com/v1/messages';
   const headers = { 'Content-Type': 'application/json' };
   if (apiKey) headers['x-api-key'] = apiKey;
   headers['anthropic-version'] = '2023-06-01';
 
-  const isPdf = (fileType && fileType.includes('pdf'));
-  const safeMime = isPdf ? 'application/pdf' : (fileType && fileType.includes('/') ? fileType : 'image/jpeg');
+  const isPdf = safeMime === 'application/pdf';
   const sourceBlock = isPdf
     ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64Data } }
     : { type: 'image', source: { type: 'base64', media_type: safeMime, data: base64Data } };
 
-  const systemContent = solveSolutions
-    ? SYSTEM_PROMPT + MOROCCAN_SOLVE_ADDENDUM
-    : SYSTEM_PROMPT + NO_SOLUTION_ADDENDUM;
-
-  const userText = buildExtractionUserPrompt(pageCount, solveSolutions, preExtractedPdfText);
-  const selectedModel = model || 'claude-3-5-sonnet-20241022';
-  const maxTokens = (selectedModel.includes('3-7') || selectedModel.includes('opus-4') || selectedModel.includes('sonnet-4')) ? 16000 : 8192;
+  const maxTokens = (model.includes('3-7') || model.includes('opus-4') || model.includes('sonnet-4')) ? 16000 : 8192;
 
   const payload = {
-    model: selectedModel,
+    model,
     max_tokens: maxTokens,
     system: systemContent,
     messages: [
@@ -466,59 +572,31 @@ const callClaudeWithRetry = async ({ base64Data, fileType, pageCount, preExtract
     ]
   };
 
-  const MAX_RETRIES = 3;
-  let lastError = null;
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload)
+  });
 
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      if (attempt > 1) {
-        onProgress(35, `Tentative ${attempt}/${MAX_RETRIES} Claude en cours...`);
-      }
-
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) {
-        const errJson = await res.json().catch(() => ({}));
-        const status = res.status;
-        const msg = errJson?.error?.message || `Erreur HTTP ${status}`;
-
-        if ((status === 429 || status >= 500) && attempt < MAX_RETRIES) {
-          const delayMs = attempt * 4000;
-          onProgress(30, `API Claude occupée (HTTP ${status}). Réessai dans ${delayMs / 1000}s...`);
-          await sleep(delayMs);
-          continue;
-        }
-        throw new Error(`Claude API: ${msg}`);
-      }
-
-      const data = await res.json();
-      const text = data?.content?.[0]?.text;
-      if (!text) throw new Error("L'API Claude n'a retourné aucun texte.");
-      return text;
-    } catch (err) {
-      lastError = err;
-      if (attempt < MAX_RETRIES) {
-        const delayMs = attempt * 3000;
-        onProgress(30, `Erreur réseau Claude (${err.message}). Réessai ${attempt + 1}/${MAX_RETRIES}...`);
-        await sleep(delayMs);
-      }
-    }
+  if (!res.ok) {
+    const errJson = await res.json().catch(() => ({}));
+    const status = res.status;
+    const msg = errJson?.error?.message || `Erreur HTTP ${status}`;
+    const err = new Error(`Claude [${model}]: ${msg}`);
+    err.status = status;
+    err.isQuotaExceeded = (status === 429 || /rate_limit|overloaded/i.test(msg));
+    throw err;
   }
-  throw lastError;
+
+  const data = await res.json();
+  const text = data?.content?.[0]?.text;
+  if (!text || !text.trim()) {
+    throw new Error(`Claude [${model}] n'a retourné aucun texte.`);
+  }
+  return text;
 };
 
-const callDeepSeekWithRetry = async ({ preExtractedPdfText, pageCount, solveSolutions, apiKey, model, deepseekUrl, onProgress }) => {
-  const rawModel = model || 'deepseek-reasoner';
-  const modelToUse = (rawModel === 'deepseek-v4-pro' || rawModel === 'deepseek-r1')
-    ? 'deepseek-reasoner'
-    : (rawModel === 'deepseek-v4-flash' || rawModel === 'deepseek-v3')
-      ? 'deepseek-chat'
-      : rawModel;
-
+const callDeepSeekSingleAttempt = async ({ model, preExtractedPdfText, pageCount, solveSolutions, apiKey, deepseekUrl }) => {
   const cleanUrl = (deepseekUrl || 'https://api.deepseek.com').trim().replace(/\/$/, '');
   const endpoint = `${cleanUrl}/v1/chat/completions`;
 
@@ -529,13 +607,13 @@ const callDeepSeekWithRetry = async ({ preExtractedPdfText, pageCount, solveSolu
   const userContent = `TEXTE DU DOCUMENT EXTRAIT DU PDF :\n${preExtractedPdfText || ''}\n\n${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
 
   const payload = {
-    model: modelToUse,
+    model,
     messages: [
       { role: "system", content: systemContent },
       { role: "user", content: userContent }
     ],
     max_tokens: 8192,
-    response_format: !modelToUse.includes('reasoner') ? { type: 'json_object' } : undefined,
+    response_format: !model.includes('reasoner') ? { type: 'json_object' } : undefined,
     temperature: 0.1
   };
 
@@ -544,49 +622,28 @@ const callDeepSeekWithRetry = async ({ preExtractedPdfText, pageCount, solveSolu
     'Authorization': `Bearer ${apiKey}`
   };
 
-  const MAX_RETRIES = 3;
-  let lastError = null;
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload)
+  });
 
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      if (attempt > 1) {
-        onProgress(35, `Tentative ${attempt}/${MAX_RETRIES} DeepSeek en cours...`);
-      }
-
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) {
-        const errJson = await res.json().catch(() => ({}));
-        const status = res.status;
-        const msg = errJson?.error?.message || `Erreur HTTP ${status}`;
-
-        if ((status === 429 || status >= 500) && attempt < MAX_RETRIES) {
-          const delayMs = attempt * 4000;
-          onProgress(30, `API DeepSeek surchargée (${status}). Réessai dans ${delayMs / 1000}s...`);
-          await sleep(delayMs);
-          continue;
-        }
-        throw new Error(`DeepSeek API: ${msg}`);
-      }
-
-      const data = await res.json();
-      const content = data?.choices?.[0]?.message?.content;
-      if (!content) throw new Error("DeepSeek n'a retourné aucun contenu.");
-      return content;
-    } catch (err) {
-      lastError = err;
-      if (attempt < MAX_RETRIES) {
-        const delayMs = attempt * 3000;
-        onProgress(30, `Incident DeepSeek (${err.message}). Réessai ${attempt + 1}/${MAX_RETRIES}...`);
-        await sleep(delayMs);
-      }
-    }
+  if (!res.ok) {
+    const errJson = await res.json().catch(() => ({}));
+    const status = res.status;
+    const msg = errJson?.error?.message || `Erreur HTTP ${status}`;
+    const err = new Error(`DeepSeek [${model}]: ${msg}`);
+    err.status = status;
+    err.isQuotaExceeded = (status === 429 || /rate limit|quota/i.test(msg));
+    throw err;
   }
-  throw lastError;
+
+  const data = await res.json();
+  const content = data?.choices?.[0]?.message?.content;
+  if (!content || !content.trim()) {
+    throw new Error(`DeepSeek [${model}] n'a retourné aucun contenu.`);
+  }
+  return content;
 };
 
 // ─── Background Task Queue Controller ─────────────────────────────────────────
@@ -608,7 +665,7 @@ const initQueue = () => {
   setTimeout(processQueue, 1500);
 };
 
-// Main Queue Processing Loop
+// Main Queue Processing Loop with Multi-Model Fallback Cascade & Quota Resilience
 export const processQueue = async () => {
   if (isWorkerRunning) return;
 
@@ -637,93 +694,187 @@ export const processQueue = async () => {
       status: 'processing',
       attempts: (nextTask.attempts || 0) + 1,
       progressPercent: 10,
-      progressMessage: 'Initialisation du document et configuration...'
+      progressMessage: 'Initialisation du document et analyse des modèles disponibles...'
     });
 
     const onProgress = (percent, message) => {
       updateTaskState({ progressPercent: percent, progressMessage: message });
     };
 
-    let rawText = '';
     const provider = nextTask.provider || 'gemini';
-    onProgress(25, `Transmission du document à l'IA (${provider.toUpperCase()})...`);
+    const modelsToTry = resolveModelCascade(provider, nextTask.model);
+    console.log(`[Worker] Task ${taskId}: cascade list [${modelsToTry.join(' -> ')}]`);
 
-    if (provider === 'claude') {
-      rawText = await callClaudeWithRetry({
-        base64Data: nextTask.base64Data,
-        fileType: nextTask.fileType,
-        pageCount: nextTask.pageCount || 1,
-        preExtractedPdfText: nextTask.preExtractedPdfText || '',
-        solveSolutions: nextTask.solveSolutions !== false,
-        apiKey: nextTask.apiKey,
-        model: nextTask.model,
-        proxyUrl: nextTask.proxyUrl,
-        onProgress
-      });
-    } else if (provider === 'deepseek') {
-      rawText = await callDeepSeekWithRetry({
-        preExtractedPdfText: nextTask.preExtractedPdfText || '',
-        pageCount: nextTask.pageCount || 1,
-        solveSolutions: nextTask.solveSolutions !== false,
-        apiKey: nextTask.apiKey,
-        model: nextTask.model,
-        deepseekUrl: nextTask.deepseekUrl,
-        onProgress
-      });
-    } else {
-      // Default: Gemini
-      rawText = await callGeminiWithRetry({
-        base64Data: nextTask.base64Data,
-        fileType: nextTask.fileType,
-        pageCount: nextTask.pageCount || 1,
-        preExtractedPdfText: nextTask.preExtractedPdfText || '',
-        solveSolutions: nextTask.solveSolutions !== false,
-        apiKey: nextTask.apiKey,
-        model: nextTask.model,
-        onProgress
-      });
+    const isPdf = (nextTask.fileType && nextTask.fileType.includes('pdf'));
+    const safeMime = isPdf ? 'application/pdf' : (nextTask.fileType && nextTask.fileType.includes('/') ? nextTask.fileType : 'image/jpeg');
+    const solveSolutions = nextTask.solveSolutions !== false;
+
+    const systemContent = solveSolutions
+      ? SYSTEM_PROMPT + MOROCCAN_SOLVE_ADDENDUM
+      : SYSTEM_PROMPT + NO_SOLUTION_ADDENDUM;
+
+    const userText = buildExtractionUserPrompt(nextTask.pageCount || 1, solveSolutions, nextTask.preExtractedPdfText);
+
+    let extractedResult = null;
+    let usedModel = null;
+    const failureLog = [];
+
+    // Cascading model failover loop
+    for (let i = 0; i < modelsToTry.length; i++) {
+      const currentModel = modelsToTry[i];
+      const modelIndex = i + 1;
+      const totalModels = modelsToTry.length;
+      const baseProgress = 20 + Math.floor((i / totalModels) * 60);
+
+      onProgress(baseProgress, `Essai du modèle [${currentModel}] (${modelIndex}/${totalModels})...`);
+      console.log(`[Worker] Task ${taskId}: Trying model ${currentModel} (${modelIndex}/${totalModels})...`);
+
+      let rawText = '';
+      let modelSucceeded = false;
+
+      // Inner retry loop for transient network glitches
+      const MAX_INNER_RETRIES = 2;
+      for (let attempt = 1; attempt <= MAX_INNER_RETRIES; attempt++) {
+        try {
+          if (provider === 'claude') {
+            rawText = await callClaudeSingleAttempt({
+              model: currentModel,
+              base64Data: nextTask.base64Data,
+              safeMime,
+              userText,
+              systemContent,
+              apiKey: nextTask.apiKey,
+              proxyUrl: nextTask.proxyUrl
+            });
+          } else if (provider === 'deepseek') {
+            rawText = await callDeepSeekSingleAttempt({
+              model: currentModel,
+              preExtractedPdfText: nextTask.preExtractedPdfText || '',
+              pageCount: nextTask.pageCount || 1,
+              solveSolutions,
+              apiKey: nextTask.apiKey,
+              deepseekUrl: nextTask.deepseekUrl
+            });
+          } else {
+            // Default: Gemini
+            rawText = await callGeminiSingleAttempt({
+              model: currentModel,
+              base64Data: nextTask.base64Data,
+              safeMime,
+              userText,
+              systemContent,
+              apiKey: nextTask.apiKey
+            });
+          }
+
+          modelSucceeded = true;
+          break; // API call succeeded
+        } catch (apiErr) {
+          const isQuota = Boolean(apiErr.isQuotaExceeded || apiErr.status === 429);
+          const isNotFound = Boolean(apiErr.isNotFound || apiErr.status === 404);
+
+          console.warn(`[Worker] Model ${currentModel} attempt ${attempt} failed: ${apiErr.message}`);
+
+          if (isNotFound) {
+            // Model doesn't exist on API, immediately skip to next model
+            failureLog.push(`${currentModel}: non supporté ou introuvable (404)`);
+            break;
+          }
+
+          if (isQuota) {
+            failureLog.push(`${currentModel}: quota dépassé (429)`);
+            const hasMoreModels = i < modelsToTry.length - 1;
+            if (hasMoreModels) {
+              // Try next model tier which often has separate quota (e.g. Flash vs Pro)
+              onProgress(baseProgress, `Quota atteint sur [${currentModel}]. Bascule automatique vers le modèle de secours...`);
+              await sleep(2000);
+              break;
+            } else {
+              // If this was the last model, wait for quota regeneration and retry
+              await waitForQuotaRegeneration(30, currentModel, onProgress);
+              continue;
+            }
+          }
+
+          // Transient network or server error
+          if (attempt < MAX_INNER_RETRIES) {
+            onProgress(baseProgress, `Incident temporaire sur [${currentModel}]. Réessai dans 4s...`);
+            await sleep(4000);
+          } else {
+            failureLog.push(`${currentModel}: ${apiErr.message}`);
+          }
+        }
+      }
+
+      if (!modelSucceeded || !rawText.trim()) {
+        continue; // Proceed to next model in cascade
+      }
+
+      // Model returned text: parse and strictly validate content
+      try {
+        onProgress(baseProgress + 10, `Validation et contrôle qualité du contenu extrait (${currentModel})...`);
+        const parsed = parseJsonWithResilience(rawText);
+        const validatedDoc = validateExtractedDocument(parsed);
+
+        // Document is verified NON-EMPTY with real sections!
+        extractedResult = validatedDoc;
+        usedModel = currentModel;
+        console.log(`[Worker] Task ${taskId}: extraction succeeded with model ${currentModel}! Sections: ${validatedDoc.sections.length}`);
+        break; // SUCCESS! Break out of model cascade
+      } catch (parseOrValErr) {
+        console.warn(`[Worker] Validation failed for model ${currentModel}: ${parseOrValErr.message}`);
+        failureLog.push(`${currentModel}: ${parseOrValErr.message}`);
+        onProgress(baseProgress + 5, `Contenu incomplet retourné par [${currentModel}]. Bascule vers le modèle suivant...`);
+        await sleep(2000);
+      }
     }
 
-    onProgress(75, 'Structure LaTeX, assainissement et validation JSON...');
-    const parsed = parseJsonWithResilience(rawText);
+    // Check if any model in the cascade succeeded
+    if (!extractedResult) {
+      throw new Error(
+        `Tous les modèles testés (${modelsToTry.join(', ')}) ont échoué ou ont retourné un contenu vide.\n` +
+        `Détails : ${failureLog.join(' | ')}`
+      );
+    }
 
-    // Normalize sections count for progress preview
-    const header = parsed?.header || {};
-    const sectionsCount = Array.isArray(parsed?.sections) ? parsed.sections.length : 0;
+    // Finalize successful extraction
+    const header = extractedResult.header || {};
+    const sectionsCount = extractedResult.sections.length;
 
-    // Successful completion
     updateTaskState({
       status: 'completed',
       progressPercent: 100,
-      progressMessage: `Fiche extraite avec succès ! (${sectionsCount} sections détectées)`,
-      result: parsed,
+      progressMessage: `Fiche extraite avec succès via [${usedModel}] ! (${sectionsCount} sections détectées)`,
+      result: extractedResult,
       headerSummary: {
         ficheTitle: header.fiche_title || header.title || nextTask.fileName,
         subject: header.subject || 'Mathématiques',
         detectedLevel: header.detected_level || '2bac_pc_svt',
         docType: header.doc_type || 'course',
-        sectionsCount
+        sectionsCount,
+        extractedWithModel: usedModel
       },
-      // Remove heavy raw base64 data to keep JSON lightweight
+      // Remove heavy binary payloads
       base64Data: undefined,
       preExtractedPdfText: undefined,
       completedAt: new Date().toISOString(),
       error: null
     });
 
-    console.log(`[Worker] Task ${taskId} successfully completed!`);
+    console.log(`[Worker] Task ${taskId} successfully completed using model ${usedModel}!`);
   } catch (err) {
-    console.error(`[Worker] Task ${taskId} failed:`, err);
+    console.error(`[Worker] Task ${taskId} failed completely:`, err.message);
     updateTaskState({
       status: 'failed',
       progressPercent: 0,
       progressMessage: `Échec de l'extraction : ${err.message}`,
       error: err.message,
-      base64Data: undefined
+      result: null, // STRICTLY NULL TO PREVENT EMPTY FILES
+      base64Data: undefined,
+      preExtractedPdfText: undefined
     });
   } finally {
     isWorkerRunning = false;
-    // Process next item in queue
     setTimeout(processQueue, 500);
   }
 };

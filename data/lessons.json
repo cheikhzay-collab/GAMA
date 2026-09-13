@@ -18987,5 +18987,509 @@
     "doc_type": "exercises",
     "created_at": "2026-09-13T15:04:46.897Z",
     "createdAt": "2026-09-13T15:04:47.123Z"
+  },
+  {
+    "id": "MOCK-L-VI0M9NG6G",
+    "title": "Dérivation - Étude de fonctions",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": "Pr. Latrach Abdelkbir",
+    "phone": null,
+    "schools": [],
+    "content": {
+      "level": "2bac_pc_svt",
+      "doc_type": "exercises",
+      "is_national_exam": false,
+      "national_exam_meta": null,
+      "is_summary": false,
+      "summary_meta": null,
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "Préparation aux concours",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Dérivation - Étude de fonctions",
+        "teacher": "Pr. Latrach Abdelkbir",
+        "phone": "",
+        "is_national_exam": false,
+        "national_exam_meta": null,
+        "is_summary": false,
+        "summary_meta": null
+      },
+      "sections": [
+        {
+          "id": "act-1",
+          "section_header": "Dérivation - Étude de fonctions",
+          "title": "**Activité ① :**",
+          "type": "activity",
+          "section_number": "1",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1.** On considère $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = x^2 - 2x$.\nÉtudier la dérivabilité de $f$ en $-1$ puis interpréter le résultat graphiquement."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** On considère $g$ la fonction définie sur $\\mathbb{R}$ par $g(x) = |x - 1|$.\n**a.** Étudier la dérivabilité de $g$ à droite et à gauche en $1$ puis interpréter les résultats graphiquement.\n**b.** $g$ est-elle dérivable en $1$ ?"
+            }
+          ],
+          "solution": "**1.** Pour $f(x) = x^2 - 2x$ en $x_0 = -1$ :\n$f(-1) = (-1)^2 - 2(-1) = 3$.\n$$\\lim_{x \\to -1} \\frac{f(x) - f(-1)}{x - (-1)} = \\lim_{x \\to -1} \\frac{x^2 - 2x - 3}{x + 1} = \\lim_{x \\to -1} \\frac{(x+1)(x-3)}{x+1} = \\lim_{x \\to -1} (x - 3) = -4$$\\nDonc $f$ est dérivable en $-1$ et $f'(-1) = -4$.\n*Interprétation graphique :* La courbe $(\\mathcal{C}_f)$ admet au point d'abscisse $-1$ une tangente d'équation $y = f'(-1)(x+1) + f(-1) = -4(x+1) + 3 = -4x - 1$.\n\n**2.a.** Pour $g(x) = |x-1|$ en $x_0 = 1$ et $g(1) = 0$ :\n- À droite ($x > 1$), $g(x) = x - 1$ :\n$$\\lim_{x \\to 1^+} \\frac{g(x) - g(1)}{x - 1} = \\lim_{x \\to 1^+} \\frac{x - 1}{x - 1} = 1 = g'_d(1)$$\n$(\\mathcal{C}_g)$ admet une demi-tangente à droite en $x_0 = 1$ de coefficient directeur $1$.\n- À gauche ($x < 1$), $g(x) = -(x - 1)$ :\n$$\\lim_{x \\to 1^-} \\frac{g(x) - g(1)}{x - 1} = \\lim_{x \\to 1^-} \\frac{-(x - 1)}{x - 1} = -1 = g'_g(1)$$\n$(\\mathcal{C}_g)$ admet une demi-tangente à gauche en $x_0 = 1$ de coefficient directeur $-1$.\n\n**2.b.** Comme $g'_d(1) = 1 \\neq -1 = g'_g(1)$, la fonction $g$ n'est pas dérivable en $1$. Le point $(1,0)$ est un pointuleux (point anguleux).",
+          "content": "**1.** On considère $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = x^2 - 2x$.\nÉtudier la dérivabilité de $f$ en $-1$ puis interpréter le résultat graphiquement.\n**2.** On considère $g$ la fonction définie sur $\\mathbb{R}$ par $g(x) = |x - 1|$.\n**a.** Étudier la dérivabilité de $g$ à droite et à gauche en $1$ puis interpréter les résultats graphiquement.\n**b.** $g$ est-elle dérivable en $1$ ?",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "app-1",
+          "section_header": "Dérivation - Étude de fonctions",
+          "title": "**Application ① :**",
+          "type": "activity",
+          "section_number": "2",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "Étudier la dérivabilité de la fonction $f$ en $a$ puis interpréter graphiquement les résultats dans les cas suivants :"
+            },
+            {
+              "type": "bullet",
+              "text": "**a.** $f(x) = x^3 - x$ et $a = 2$"
+            },
+            {
+              "type": "bullet",
+              "text": "**b.** $f(x) = \\dfrac{x+1}{x}$ et $a = 1$"
+            },
+            {
+              "type": "bullet",
+              "text": "**c.** $f(x) = \\sqrt{2x + 1}$ et $a = -\\dfrac{1}{2}$ à droite."
+            }
+          ],
+          "solution": "**a.** $f(2) = 2^3 - 2 = 6$.\n$$\\lim_{x \\to 2} \\frac{f(x) - f(2)}{x - 2} = \\lim_{x \\to 2} \\frac{x^3 - x - 6}{x - 2} = \\lim_{x \\to 2} \\frac{(x-2)(x^2+2x+3)}{x-2} = \\lim_{x \\to 2} (x^2+2x+3) = 11$$\\nDonc $f$ est dérivable en $2$ et $f'(2) = 11$. $(\\mathcal{C}_f)$ admet une tangente d'équation $y = 11(x-2) + 6 = 11x - 16$.\n\n**b.** $f(1) = 2$.\n$$\\lim_{x \\to 1} \\frac{f(x) - f(1)}{x - 1} = \\lim_{x \\to 1} \\frac{\\frac{x+1}{x} - 2}{x - 1} = \\lim_{x \\to 1} \\frac{1-x}{x(x-1)} = \\lim_{x \\to 1} \\frac{-1}{x} = -1$$\\nDonc $f$ est dérivable en $1$ et $f'(1) = -1$. Tangente d'équation $y = -(x-1) + 2 = -x + 3$.\n\n**c.** $f\\left(-\\frac{1}{2}\\right) = 0$.\n$$\\lim_{x \\to -1/2^+} \\frac{f(x) - 0}{x - (-1/2)} = \\lim_{x \\to -1/2^+} \\frac{\\sqrt{2x+1}}{\\frac{2x+1}{2}} = \\lim_{x \\to -1/2^+} \\frac{2}{\\sqrt{2x+1}} = +\\infty$$\\nDonc $f$ n'est pas dérivable à droite en $a = -1/2$. $(\\mathcal{C}_f)$ admet une demi-tangente verticale dirigée vers le haut au point $\\left(-\\frac{1}{2}, 0\\right)$.",
+          "content": "Étudier la dérivabilité de la fonction $f$ en $a$ puis interpréter graphiquement les résultats dans les cas suivants :\n**a.** $f(x) = x^3 - x$ et $a = 2$\n**b.** $f(x) = \\dfrac{x+1}{x}$ et $a = 1$\n**c.** $f(x) = \\sqrt{2x + 1}$ et $a = -\\dfrac{1}{2}$ à droite.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "ex-1",
+          "section_header": "Dérivation - Étude de fonctions",
+          "title": "**Exercice ① :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "3",
+          "content": "On considère $f$ la fonction définie par :\n$$f(x) = \\begin{cases} \\dfrac{\\sqrt{x^2+1}-1}{x} & ; \\text{si } x \\neq 0 \\\\ 0 & ; \\text{si non} \\end{cases}$$\n**1.** Étudier la continuité de $f$ en $x_0 = 0$.\n**2.** Étudier la dérivabilité de $f$ en $x_0 = 0$. Interpréter graphiquement le résultat.",
+          "items": [
+            {
+              "type": "text",
+              "text": "On considère $f$ la fonction définie par :"
+            },
+            {
+              "type": "highlight_box",
+              "text": "$$f(x) = \\begin{cases} \\dfrac{\\sqrt{x^2+1}-1}{x} & ; \\text{si } x \\neq 0 \\\\ 0 & ; \\text{si non} \\end{cases}$$"
+            },
+            {
+              "type": "bullet",
+              "text": "**1.** Étudier la continuité de $f$ en $x_0 = 0$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** Étudier la dérivabilité de $f$ en $x_0 = 0$. Interpréter graphiquement le résultat."
+            }
+          ],
+          "solution": "**1. Continuité en 0 :**\n$$\\lim_{x \\to 0} f(x) = \\lim_{x \\to 0} \\frac{\\sqrt{x^2+1}-1}{x} = \\lim_{x \\to 0} \\frac{x^2}{x(\\sqrt{x^2+1}+1)} = \\lim_{x \\to 0} \\frac{x}{\\sqrt{x^2+1}+1} = 0 = f(0)$$\\nDonc $f$ est continue en $x_0 = 0$.\n\n**2. Dérivabilité en 0 :**\n$$\\lim_{x \\to 0} \\frac{f(x) - f(0)}{x - 0} = \\lim_{x \\to 0} \\frac{\\sqrt{x^2+1}-1}{x^2} = \\lim_{x \\to 0} \\frac{x^2}{x^2(\\sqrt{x^2+1}+1)} = \\lim_{x \\to 0} \\frac{1}{\\sqrt{x^2+1}+1} = \\frac{1}{2}$$\\nDonc $f$ est dérivable en $x_0 = 0$ et $f'(0) = \\frac{1}{2}$.\n*Interprétation graphique :* $(\\mathcal{C}_f)$ admet au point d'abscisse $0$ une tangente d'équation $y = \\frac{1}{2}x$.",
+          "language": "fr"
+        },
+        {
+          "id": "app-2",
+          "section_header": "Dérivation - Étude de fonctions",
+          "title": "**Application ② :**",
+          "type": "activity",
+          "section_number": "4",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "On considère $f$ la fonction définie par :"
+            },
+            {
+              "type": "highlight_box",
+              "text": "$$f(x) = \\begin{cases} \\sqrt{x} - 1 & ; 0 \\le x < 1 \\\\ \\dfrac{x^2-1}{4} & ; x \\ge 1 \\end{cases}$$"
+            },
+            {
+              "type": "bullet",
+              "text": "Étudier la continuité puis dérivabilité de $f$ en $1$."
+            }
+          ],
+          "solution": "**Continuité en 1 :**\n$f(1) = \\frac{1^2-1}{4} = 0$.\n- $\\lim_{x \\to 1^+} f(x) = \\lim_{x \\to 1^+} \\frac{x^2-1}{4} = 0 = f(1)$.\n- $\\lim_{x \\to 1^-} f(x) = \\lim_{x \\to 1^-} (\\sqrt{x} - 1) = 0 = f(1)$.\\nDonc $f$ est continue en $1$.\n\n**Dérivabilité en 1 :**\n- À droite ($x > 1$) :\n$$\\lim_{x \\to 1^+} \\frac{f(x) - f(1)}{x - 1} = \\lim_{x \\to 1^+} \\frac{x^2-1}{4(x-1)} = \\lim_{x \\to 1^+} \\frac{x+1}{4} = \\frac{1}{2} = f'_d(1)$$\n- À gauche ($0 \\le x < 1$) :\n$$\\lim_{x \\to 1^-} \\frac{f(x) - f(1)}{x - 1} = \\lim_{x \\to 1^-} \\frac{\\sqrt{x}-1}{x-1} = \\lim_{x \\to 1^-} \\frac{1}{\\sqrt{x}+1} = \\frac{1}{2} = f'_g(1)$$\\nPuisque $f'_d(1) = f'_g(1) = \\frac{1}{2}$, la fonction $f$ est dérivable en $1$ et $f'(1) = \\frac{1}{2}$.",
+          "content": "On considère $f$ la fonction définie par :\n$$f(x) = \\begin{cases} \\sqrt{x} - 1 & ; 0 \\le x < 1 \\\\ \\dfrac{x^2-1}{4} & ; x \\ge 1 \\end{cases}$$\nÉtudier la continuité puis dérivabilité de $f$ en $1$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "app-3",
+          "section_header": "Dérivation - Étude de fonctions",
+          "title": "**Application ③ :**",
+          "type": "activity",
+          "section_number": "5",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1.** Calculer les dérivées des fonctions suivantes :\n• $f(x) = \\dfrac{2x}{1+x^2}$\n• $h(x) = \\sqrt{x}\\sin(x) + \\cos(x)$\n• $g(x) = (x^2 + 1)^5$"
+            },
+            {
+              "type": "bullet",
+              "text": "**2.a.** Étudier la monotonie de la fonction $f$ ci-dessus."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.b.** Dresser le tableau de variations de $f$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.c.** En déduire que $(\\forall x \\in \\mathbb{R}): -1 \\le f(x) \\le 1$."
+            }
+          ],
+          "solution": "**1. Calcul des dérivées :**\n- $f'(x) = \\frac{2(1+x^2) - 2x(2x)}{(1+x^2)^2} = \\frac{2 + 2x^2 - 4x^2}{(1+x^2)^2} = \\frac{2(1-x^2)}{(1+x^2)^2}$.\n- Pour $x > 0$, $h'(x) = \\frac{1}{2\\sqrt{x}}\\sin(x) + \\sqrt{x}\\cos(x) - \\sin(x) = \\left(\\frac{1}{2\\sqrt{x}} - 1\\right)\\sin(x) + \\sqrt{x}\\cos(x)$.\n- $g'(x) = 5(2x)(x^2+1)^4 = 10x(x^2+1)^4$.\n\n**2.a. Monotonie de $f$ :**\\nLe dénominateur $(1+x^2)^2 > 0$. Le signe de $f'(x)$ est celui de $1-x^2 = (1-x)(1+x)$.\n- $f'(x) \\ge 0$ sur $[-1, 1]$, donc $f$ est croissante sur $[-1, 1]$.\n- $f'(x) \\le 0$ sur $]-\\infty, -1]$ et sur $[1, +\\infty[$, donc $f$ est décroissante sur ces intervalles.\n\n**2.b. Tableau de variations :**\n$f(-1) = -1$ et $f(1) = 1$. $\\lim_{x \\to \\pm\\infty} f(x) = 0$.\\nSur $]-\\infty, -1]$, $f$ décroît de $0$ à $-1$.\\nSur $[-1, 1]$, $f$ croît de $-1$ à $1$.\\nSur $[1, +\\infty[$, $f$ décroît de $1$ à $0$.\n\n**2.c.** Le minimum absolu de $f$ sur $\\mathbb{R}$ est $-1$ et son maximum absolu est $1$.\\nAinsi $(\\forall x \\in \\mathbb{R}): -1 \\le f(x) \\le 1$.",
+          "content": "**1.** Calculer les dérivées des fonctions suivantes :\n• $f(x) = \\dfrac{2x}{1+x^2}$\n• $h(x) = \\sqrt{x}\\sin(x) + \\cos(x)$\n• $g(x) = (x^2 + 1)^5$\n**2.a.** Étudier la monotonie de la fonction $f$ ci-dessus.\n**2.b.** Dresser le tableau de variations de $f$.\n**2.c.** En déduire que $(\\forall x \\in \\mathbb{R}): -1 \\le f(x) \\le 1$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "ex-2",
+          "section_header": "Dérivation - Étude de fonctions",
+          "title": "**Exercice ② :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "6",
+          "content": "I. On considère $g$ la fonction définie sur $[0; +\\infty[$ par $g(x) = x\\sqrt{x} - 1$.\n**1.** Étudier la dérivabilité de $g$ à droite en $0$. Interpréter graphiquement le résultat.\n**2.** Montrer que $g$ est dérivable sur $]0; +\\infty[$ puis calculer sa dérivée.\n**3.** Dresser le tableau de variations de $g$.\n**4.** Calculer $g(1)$ puis déduire le signe de $g$ sur $[0; +\\infty[$.\n\\nII. Soit $f$ la fonction définie sur $]0; +\\infty[$ par $f(x) = 2x - 3 + \\dfrac{4}{\\sqrt{x}}$.\n**1.** Montrer que $(\\forall x \\in ]0; +\\infty[): f'(x) = \\dfrac{2g(x)}{x\\sqrt{x}}$.\n**2.** Étudier les variations de $f$.\n**3.** Dresser le tableau de variations de $f$.\n**4.** En déduire que $(\\forall x \\in ]0; +\\infty[): f(x) \\ge 3$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "**Partie I :** On considère $g$ la fonction définie sur $[0; +\\infty[$ par $g(x) = x\\sqrt{x} - 1$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1.** Étudier la dérivabilité de $g$ à droite en $0$. Interpréter graphiquement le résultat."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** Montrer que $g$ est dérivable sur $]0; +\\infty[$ puis calculer sa dérivée."
+            },
+            {
+              "type": "bullet",
+              "text": "**3.** Dresser le tableau de variations de $g$."
+            },
+            {
+              "type": "bullet",
+              "text": "**4.** Calculer $g(1)$ puis déduire le signe de $g$ sur $[0; +\\infty[$."
+            },
+            {
+              "type": "text",
+              "text": "**Partie II :** Soit $f$ la fonction définie sur $]0; +\\infty[$ par $f(x) = 2x - 3 + \\dfrac{4}{\\sqrt{x}}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1.** Montrer que $(\\forall x \\in ]0; +\\infty[): f'(x) = \\dfrac{2g(x)}{x\\sqrt{x}}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** Étudier les variations de $f$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3.** Dresser le tableau de variations de $f$."
+            },
+            {
+              "type": "bullet",
+              "text": "**4.** En déduire que $(\\forall x \\in ]0; +\\infty[): f(x) \\ge 3$."
+            }
+          ],
+          "solution": "**Partie I :**\n**1.** $g(0) = -1$.\n$$\\lim_{x \\to 0^+} \\frac{g(x) - g(0)}{x - 0} = \\lim_{x \\to 0^+} \\frac{x\\sqrt{x}}{x} = \\lim_{x \\to 0^+} \\sqrt{x} = 0 = g'_d(0)$$\n$g$ est dérivable à droite en $0$. $(\\mathcal{C}_g)$ admet une demi-tangente horizontale à droite en $(0,-1)$.\n\n**2.** $g$ est dérivable sur $]0,+\\infty[$ comme produit et somme de fonctions dérivables.\n$g'(x) = (x^{3/2} - 1)' = \\frac{3}{2}\\sqrt{x} > 0$ pour $x > 0$.\n\n**3.** $g$ est strictement croissante sur $[0, +\\infty[$.\n\n**4.** $g(1) = 1\\sqrt{1} - 1 = 0$.\\nPour $x \\in [0, 1]$, $g(x) \\le g(1) = 0$.\\nPour $x \\in [1, +\\infty[$, $g(x) \\ge g(1) = 0$.\n\n**Partie II :**\n**1.** $f'(x) = 2 - 4 \\cdot \\left(-\\frac{1}{2x\\sqrt{x}}\\right) = 2 - \\frac{2}{x\\sqrt{x}} = \\frac{2(x\\sqrt{x}-1)}{x\\sqrt{x}} = \\frac{2g(x)}{x\\sqrt{x}}$.\n\n**2.** Le signe de $f'(x)$ est celui de $g(x)$ car $x\\sqrt{x} > 0$ sur $]0,+\\infty[$.\n$f'(x) < 0$ sur $]0, 1[$ et $f'(x) > 0$ sur $]1, +\\infty[$.\n\n**3.** $f$ est strictement décroissante sur $]0, 1]$ et strictement croissante sur $[1, +\\infty[$.\n\n**4.** Le minimum absolu de $f$ est $f(1) = 2(1) - 3 + 4 = 3$.\\nAinsi, $(\\forall x \\in ]0; +\\infty[): f(x) \\ge 3$.",
+          "language": "fr"
+        },
+        {
+          "id": "act-2",
+          "section_header": "Dérivation - Étude de fonctions",
+          "title": "**Activité ② :**",
+          "type": "activity",
+          "section_number": "7",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soient $f$ et $g$ deux fonctions définies sur $\\mathbb{R}$ par : $f(x) = \\cos(x)$ ; $g(x) = x^2 - 2x$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1.** Calculer $f'(x)$ et $g'(x)$ pour tout $x \\in \\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** Calculer $f'(x) \\times g'(f(x))$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3.** Soit $h(x) = (g \\circ f)(x)$. Déterminer $h(x)$ puis calculer $h'(x)$."
+            },
+            {
+              "type": "bullet",
+              "text": "**4.** Comparer $h'(x)$ et $f'(x) \\times g'(f(x))$."
+            }
+          ],
+          "solution": "**1.** $f'(x) = -\\sin(x)$ et $g'(x) = 2x - 2$.\n\n**2.** $g'(f(x)) = 2\\cos(x) - 2$. Ainsi, $f'(x) \\times g'(f(x)) = -\\sin(x)(2\\cos(x) - 2) = -2\\sin(x)\\cos(x) + 2\\sin(x)$.\n\n**3.** $h(x) = g(f(x)) = (\\cos(x))^2 - 2\\cos(x) = \\cos^2(x) - 2\\cos(x)$.\n$h'(x) = 2\\cos(x)(-\\sin(x)) - 2(-\\sin(x)) = -2\\sin(x)\\cos(x) + 2\\sin(x)$.\n\n**4.** On constate que $h'(x) = (g \\circ f)'(x) = f'(x) \\times g'(f(x))$.",
+          "content": "Soient $f$ et $g$ deux fonctions définies sur $\\mathbb{R}$ par : $f(x) = \\cos(x)$ ; $g(x) = x^2 - 2x$.\n**1.** Calculer $f'(x)$ et $g'(x)$ pour tout $x \\in \\mathbb{R}$.\n**2.** Calculer $f'(x) \\times g'(f(x))$.\n**3.** Soit $h(x) = (g \\circ f)(x)$. Déterminer $h(x)$ puis calculer $h'(x)$.\n**4.** Comparer $h'(x)$ et $f'(x) \\times g'(f(x))$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "app-4",
+          "section_header": "Dérivation - Étude de fonctions",
+          "title": "**Application ④ :**",
+          "type": "activity",
+          "section_number": "8",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "Calculer la dérivée des fonctions suivantes :"
+            },
+            {
+              "type": "bullet",
+              "text": "$f: x \\mapsto \\sin\\left(x^2 - \\dfrac{2}{3}x + 4\\right)$"
+            },
+            {
+              "type": "bullet",
+              "text": "$g: x \\mapsto \\cos\\left(\\dfrac{4}{x^2+4}\\right)$"
+            }
+          ],
+          "solution": "- $f'(x) = \\left(x^2 - \\frac{2}{3}x + 4\\right)' \\cos\\left(x^2 - \\frac{2}{3}x + 4\\right) = \\left(2x - \\frac{2}{3}\\right) \\cos\\left(x^2 - \\frac{2}{3}x + 4\\right)$.\n- $g'(x) = -\\left(\\frac{4}{x^2+4}\\right)' \\sin\\left(\\frac{4}{x^2+4}\\right) = -\\left(\\frac{-8x}{(x^2+4)^2}\\right) \\sin\\left(\\frac{4}{x^2+4}\\right) = \\frac{8x}{(x^2+4)^2} \\sin\\left(\\frac{4}{x^2+4}\\right)$.",
+          "content": "Calculer la dérivée des fonctions suivantes :\n$f: x \\mapsto \\sin\\left(x^2 - \\dfrac{2}{3}x + 4\\right)$\n$g: x \\mapsto \\cos\\left(\\dfrac{4}{x^2+4}\\right)$",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "app-5",
+          "section_header": "Dérivation - Étude de fonctions",
+          "title": "**Application ⑤ :**",
+          "type": "activity",
+          "section_number": "9",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = x^3 + x$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1.** Montrer que $f$ admet une fonction réciproque définie sur $\\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** Calculer $f(1)$ puis déterminer $(f^{-1})'(2)$."
+            }
+          ],
+          "solution": "**1.** $f$ est une fonction polynôme donc continue sur $\\mathbb{R}$.\n$f'(x) = 3x^2 + 1 > 0$ pour tout $x \\in \\mathbb{R}$, donc $f$ est strictement croissante sur $\\mathbb{R}$.\\nPar suite, $f$ réalise une bijection de $\\mathbb{R}$ sur $J = f(\\mathbb{R}) = ]\\lim_{x\\to -\\infty} f(x), \\lim_{x\\to +\\infty} f(x)[ = \\mathbb{R}$.\n\n**2.** $f(1) = 1^3 + 1 = 2$.\\nComme $f(1) = 2$ et $f'(1) = 3(1)^2 + 1 = 4 \\neq 0$, $f^{-1}$ est dérivable en $2$ et :\n$$(f^{-1})'(2) = \\frac{1}{f'(1)} = \\frac{1}{4}$$",
+          "content": "Soit $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = x^3 + x$.\n**1.** Montrer que $f$ admet une fonction réciproque définie sur $\\mathbb{R}$.\n**2.** Calculer $f(1)$ puis déterminer $(f^{-1})'(2)$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "app-6",
+          "section_header": "Dérivation - Étude de fonctions",
+          "title": "**Application ⑥ :**",
+          "type": "activity",
+          "section_number": "10",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1.** Calculer la dérivée de chacune des fonctions suivantes :\n**a.** $f(x) = \\sqrt[3]{x}$\n**b.** $f(x) = \\sqrt[4]{x^3}$\n**c.** $f(x) = \\sqrt[4]{1 + \\cos^2(x)}$\n**d.** $f(x) = \\sqrt[3]{x^2 + 2x}$"
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** À l'aide du nombre dérivé, calculer les limites suivantes :\n**a.** $\\lim_{x \\to 0} \\dfrac{\\sqrt[3]{x+1}-1}{x}$\n**b.** $\\lim_{x \\to 1} \\dfrac{(x^8+1)(\\sqrt[4]{x^3}+1)-4}{x-1}$"
+            }
+          ],
+          "solution": "**1. Dérivées :**\n**a.** $f'(x) = \\frac{1}{3\\sqrt[3]{x^2}}$ pour $x > 0$.\n**b.** $f(x) = x^{3/4} \\implies f'(x) = \\frac{3}{4}x^{-1/4} = \\frac{3}{4\\sqrt[4]{x}}$ pour $x > 0$.\n**c.** $f'(x) = \\frac{(1+\\cos^2(x))'}{4\\sqrt[4]{(1+\\cos^2(x))^3}} = \\frac{-2\\sin(x)\\cos(x)}{4\\sqrt[4]{(1+\\cos^2(x))^3}} = \\frac{-\\sin(2x)}{4\\sqrt[4]{(1+\\cos^2(x))^3}}$.\n**d.** $f'(x) = \\frac{2x+2}{3\\sqrt[3]{(x^2+2x)^2}}$.\n\n**2. Limites :**\n**a.** Posons $u(x) = \\sqrt[3]{x+1}$. On a $u(0) = 1$ et $u'(x) = \\frac{1}{3\\sqrt[3]{(x+1)^2}}$.\n$$\\lim_{x \\to 0} \\frac{\\sqrt[3]{x+1}-1}{x} = u'(0) = \\frac{1}{3}$$\n\n**b.** Posons $v(x) = (x^8+1)(\\sqrt[4]{x^3}+1)$. On a $v(1) = (2)(2) = 4$.\n$v'(x) = 8x^7(\\sqrt[4]{x^3}+1) + (x^8+1)\\left(\\frac{3}{4\\sqrt[4]{x}}\\right)$.\n$v'(1) = 8(2) + 2\\left(\\frac{3}{4}\\right) = 16 + \\frac{3}{2} = \\frac{35}{2}$.\n$$\\lim_{x \\to 1} \\frac{v(x) - 4}{x - 1} = v'(1) = \\frac{35}{2}$$",
+          "content": "**1.** Calculer la dérivée de chacune des fonctions suivantes :\n**a.** $f(x) = \\sqrt[3]{x}$\n**b.** $f(x) = \\sqrt[4]{x^3}$\n**c.** $f(x) = \\sqrt[4]{1 + \\cos^2(x)}$\n**d.** $f(x) = \\sqrt[3]{x^2 + 2x}$\n**2.** À l'aide du nombre dérivé, calculer les limites suivantes :\n**a.** $\\lim_{x \\to 0} \\dfrac{\\sqrt[3]{x+1}-1}{x}$\n**b.** $\\lim_{x \\to 1} \\dfrac{(x^8+1)(\\sqrt[4]{x^3}+1)-4}{x-1}$",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "ex-3",
+          "section_header": "Dérivation - Étude de fonctions",
+          "title": "**Exercice ③ :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "11",
+          "content": "Soit $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = x^3 - 3x - 3$.\n**1.** Étudier les variations de la fonction $f$.\n**2.** Soit $g$ la restriction de $f$ sur $[1; +\\infty[$.\n**a.** Montrer que $g$ admet une fonction réciproque définie sur un intervalle $J$ à déterminer.\n**b.** Montrer que l'équation $g(x) = 0$ admet une unique solution $\\alpha$ et que $2 < \\alpha < 3$.\n**c.** Montrer que : $(g^{-1})'(0) = \\dfrac{1}{3(\\alpha^2 - 1)}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = x^3 - 3x - 3$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1.** Étudier les variations de la fonction $f$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** Soit $g$ la restriction de $f$ sur $[1 ; +\\infty[$."
+            },
+            {
+              "type": "bullet",
+              "text": "**a.** Montrer que $g$ admet une fonction réciproque définie sur un intervalle $J$ à déterminer."
+            },
+            {
+              "type": "bullet",
+              "text": "**b.** Montrer que l'équation $g(x) = 0$ admet une unique solution $\\alpha$ et que $2 < \\alpha < 3$."
+            },
+            {
+              "type": "bullet",
+              "text": "**c.** Montrer que : $(g^{-1})'(0) = \\dfrac{1}{3(\\alpha^2 - 1)}$."
+            }
+          ],
+          "solution": "**1. Variations de $f$ :**\n$f'(x) = 3x^2 - 3 = 3(x-1)(x+1)$.\n- $f$ est croissante sur $]-\\infty, -1]$ et sur $[1, +\\infty[$.\n- $f$ est décroissante sur $[-1, 1]$.\n\n**2.a.** $g$ est la restriction de $f$ sur $[1, +\\infty[$.\\nSur cet intervalle, $g$ est continue et strictement croissante.\\nDonc $g$ réalise une bijection de $[1, +\\infty[$ sur $J = g([1, +\\infty[) = [g(1), \\lim_{x\\to +\\infty} g(x)[ = [-5, +\\infty[$.\n\n**2.b.** $0 \\in [-5, +\\infty[$, donc d'après le théorème des valeurs intermédiaires (TVI), l'équation $g(x) = 0$ admet une unique solution $\\alpha \\in [1, +\\infty[$.\\nCalculons $g(2) = 2^3 - 3(2) - 3 = -1 < 0$ et $g(3) = 3^3 - 3(3) - 3 = 15 > 0$.\\nPuisque $g(2) \\cdot g(3) < 0$, on a bien $2 < \\alpha < 3$.\n\n**2.c.** On a $g(\\alpha) = 0 \\iff g^{-1}(0) = \\alpha$.\n$g'(\\alpha) = 3\\alpha^2 - 3 = 3(\\alpha^2 - 1) \\neq 0$ car $\\alpha > 2$.\\nAinsi, $g^{-1}$ est dérivable en $0$ et :\n$$(g^{-1})'(0) = \\frac{1}{g'(\\alpha)} = \\frac{1}{3(\\alpha^2 - 1)}$$",
+          "language": "fr"
+        },
+        {
+          "id": "app-7",
+          "section_header": "Dérivation - Étude de fonctions",
+          "title": "**Application ⑦ :**",
+          "type": "activity",
+          "section_number": "12",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "On considère $f$ la fonction définie par $f(x) = \\dfrac{x^2+x-1}{x+2}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1.** Donner $\\mathcal{D}_f$ l'ensemble de définition de $f$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** Calculer $\\lim_{x \\to -2^+} f(x)$ et $\\lim_{x \\to -2^-} f(x)$. Interpréter les résultats."
+            },
+            {
+              "type": "bullet",
+              "text": "**3.a.** Vérifier, pour tout $x \\in \\mathcal{D}_f$, que $f(x) = x - 1 + \\dfrac{1}{x+2}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3.b.** Montrer que la droite d'équation $(D): y = x - 1$ est une asymptote oblique de $(\\mathcal{C}_f)$ au voisinage de $+\\infty$ et $-\\infty$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3.c.** Étudier les positions relatives entre la courbe $(\\mathcal{C}_f)$ et la droite $(D)$."
+            }
+          ],
+          "solution": "**1.** $\\mathcal{D}_f = \\mathbb{R} \\setminus \\{-2\\} = ]-\\infty, -2[ \\cup ]-2, +\\infty[$.\n\n**2.** $\\lim_{x \\to -2} (x^2+x-1) = 1$.\n- $\\lim_{x \\to -2^+} f(x) = \\frac{1}{0^+} = +\\infty$.\n- $\\lim_{x \\to -2^-} f(x) = \\frac{1}{0^-} = -\\infty$.\n*Interprétation :* La droite $x = -2$ est une asymptote verticale à $(\\mathcal{C}_f)$.\n\n**3.a.** $(x-1) + \\frac{1}{x+2} = \\frac{(x-1)(x+2) + 1}{x+2} = \\frac{x^2 + x - 2 + 1}{x+2} = \\frac{x^2+x-1}{x+2} = f(x)$.\n\n**3.b.** $\\lim_{x \\to \\pm\\infty} [f(x) - (x-1)] = \\lim_{x \\to \\pm\\infty} \\frac{1}{x+2} = 0$.\\nDonc $(D): y = x - 1$ est une asymptote oblique à $(\\mathcal{C}_f)$ au voisinage de $+\\infty$ et $-\\infty$.\n\n**3.c.** Signe de $f(x) - (x-1) = \\frac{1}{x+2}$ :\n- Sur $]-2, +\\infty[$, $\\frac{1}{x+2} > 0 \\implies (\\mathcal{C}_f)$ est au-dessus de $(D)$.\n- Sur $]-\\infty, -2[$, $\\frac{1}{x+2} < 0 \\implies (\\mathcal{C}_f)$ est au-dessous de $(D)$.",
+          "content": "On considère $f$ la fonction définie par $f(x) = \\dfrac{x^2+x-1}{x+2}$.\n**1.** Donner $\\mathcal{D}_f$ l'ensemble de définition de $f$.\n**2.** Calculer $\\lim_{x \\to -2^+} f(x)$ et $\\lim_{x \\to -2^-} f(x)$. Interpréter les résultats.\n**3.a.** Vérifier, pour tout $x \\in \\mathcal{D}_f$, que $f(x) = x - 1 + \\dfrac{1}{x+2}$.\n**3.b.** Montrer que la droite d'équation $(D): y = x - 1$ est une asymptote oblique de $(\\mathcal{C}_f)$ au voisinage de $+\\infty$ et $-\\infty$.\n**3.c.** Étudier les positions relatives entre la courbe $(\\mathcal{C}_f)$ et la droite $(D)$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "app-8",
+          "section_header": "Dérivation - Étude de fonctions",
+          "title": "**Application ⑧ :**",
+          "type": "activity",
+          "section_number": "13",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "Étudier la concavité de la courbe de la fonction $f$ définie par $f(x) = \\dfrac{x^2+x-1}{x+2}$ en précisant les points d'inflexion s'ils existent."
+            }
+          ],
+          "solution": "$f(x) = x - 1 + (x+2)^{-1}$.\n$f'(x) = 1 - (x+2)^{-2}$.\n$f''(x) = 2(x+2)^{-3} = \\frac{2}{(x+2)^3}$.\n- Sur $]-2, +\\infty[$, $x+2 > 0 \\implies f''(x) > 0$, la courbe $(\\mathcal{C}_f)$ est convexe (tournée vers le haut $\\cup$).\n- Sur $]-\\infty, -2[$, $x+2 < 0 \\implies f''(x) < 0$, la courbe $(\\mathcal{C}_f)$ est concave (tournée vers le bas $\\cap$).\n$f''$ ne s'annule pas sur $\\mathcal{D}_f$, donc il n'y a aucun point d'inflexion.",
+          "content": "Étudier la concavité de la courbe de la fonction $f$ définie par $f(x) = \\dfrac{x^2+x-1}{x+2}$ en précisant les points d'inflexion s'ils existent.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "app-9",
+          "section_header": "Dérivation - Étude de fonctions",
+          "title": "**Application ⑨ :**",
+          "type": "activity",
+          "section_number": "14",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "Montrer que la droite $(\\Delta): x = 1$ est un axe de symétrie de la courbe de la fonction $f$ définie par $f(x) = \\sqrt{x^2 - 2x + 3}$."
+            }
+          ],
+          "solution": "Domaine de définition : $x^2 - 2x + 3 = (x-1)^2 + 2 > 0$ pour tout $x \\in \\mathbb{R}$, donc $\\mathcal{D}_f = \\mathbb{R}$.\\nPour tout $x \\in \\mathbb{R}$ :\n1. $(2(1) - x) = (2 - x) \\in \\mathbb{R}$.\n2. $f(2 - x) = \\sqrt{(2-x)^2 - 2(2-x) + 3} = \\sqrt{4 - 4x + x^2 - 4 + 2x + 3} = \\sqrt{x^2 - 2x + 3} = f(x)$.\\nDonc la droite $(\\Delta): x = 1$ est un axe de symétrie de $(\\mathcal{C}_f)$.",
+          "content": "Montrer que la droite $(\\Delta): x = 1$ est un axe de symétrie de la courbe de la fonction $f$ définie par $f(x) = \\sqrt{x^2 - 2x + 3}$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "app-10",
+          "section_header": "Dérivation - Étude de fonctions",
+          "title": "**Application ⑩ :**",
+          "type": "activity",
+          "section_number": "15",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1.** Montrer que le point $\\Omega(-2; -3)$ est un centre de symétrie de la courbe de la fonction $f$ définie par $f(x) = \\dfrac{x^2+x-1}{x+2}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** En déduire qu'il suffit d'étudier $f$ sur $]-2; +\\infty[$."
+            }
+          ],
+          "solution": "**1.** $\\mathcal{D}_f = \\mathbb{R} \\setminus \\{-2\\}$. Pour tout $x \\in \\mathcal{D}_f$, $(-4 - x) \\in \\mathcal{D}_f$.\\nCalculons $f(-4 - x) + f(x)$ :\n$f(-4-x) = (-4-x) - 1 + \\frac{1}{(-4-x)+2} = -x - 5 - \\frac{1}{x+2}$.\n$f(-4-x) + f(x) = \\left(-x - 5 - \\frac{1}{x+2}\\right) + \\left(x - 1 + \\frac{1}{x+2}\\right) = -6 = 2(-3)$.\\nDonc $\\Omega(-2; -3)$ est un centre de symétrie de $(\\mathcal{C}_f)$.\n\n**2.** Par symétrie centrale par rapport à $\\Omega$, l'étude de $f$ sur $]-2; +\\infty[$ permet de déduire l'intégralité du comportement et du tracé de $(\\mathcal{C}_f)$ sur $]-\\infty; -2[$.",
+          "content": "**1.** Montrer que le point $\\Omega(-2; -3)$ est un centre de symétrie de la courbe de la fonction $f$ définie par $f(x) = \\dfrac{x^2+x-1}{x+2}$.\n**2.** En déduire qu'il suffit d'étudier $f$ sur $]-2; +\\infty[$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "ex-4",
+          "section_header": "Dérivation - Étude de fonctions",
+          "title": "**Exercice ④ :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "16",
+          "content": "On considère $f$ la fonction définie par $f(x) = \\dfrac{x^2+x-1}{x+2}$.\n**1.** Donner les coordonnées des points d'intersection de $(\\mathcal{C}_f)$ avec les axes du repère.\n**2.** Étudier les variations de $f$.\n**3.** Soit $g$ la restriction de $f$ sur $[-1; +\\infty[$. Montrer que $g$ admet une fonction réciproque $g^{-1}$ définie sur un intervalle $J$ à déterminer.\n**4.** Construire $(D): y = x - 1$, $(\\mathcal{C}_f)$ et $(\\mathcal{C}_{g^{-1}})$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "On considère $f$ la fonction définie par $f(x) = \\dfrac{x^2+x-1}{x+2}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1.** Donner les coordonnées des points d'intersection de $(\\mathcal{C}_f)$ avec les axes du repère."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** Étudier les variations de $f$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3.** Soit $g$ la restriction de $f$ sur $[-1; +\\infty[$. Montrer que $g$ admet une fonction réciproque $g^{-1}$ définie sur un intervalle $J$ à déterminer."
+            },
+            {
+              "type": "bullet",
+              "text": "**4.** Construire $(D): y = x - 1$, $(\\mathcal{C}_f)$ et $(\\mathcal{C}_{g^{-1}})$."
+            }
+          ],
+          "solution": "**1. Intersections avec les axes :**\n- Avec l'axe des ordonnées ($x = 0$) : $f(0) = -\\frac{1}{2} \\implies (0, -1/2)$.\n- Avec l'axe des abscisses ($f(x) = 0$) : $x^2 + x - 1 = 0 \\implies \\Delta = 5$. $x_1 = \\frac{-1-\\sqrt{5}}{2}$, $x_2 = \\frac{-1+\\sqrt{5}}{2}$.\\nLes points sont $\\left(\\frac{-1-\\sqrt{5}}{2}, 0\\right)$ et $\\left(\\frac{-1+\\sqrt{5}}{2}, 0\\right)$.\n\n**2. Variations :**\n$f'(x) = 1 - \\frac{1}{(x+2)^2} = \\frac{(x+2)^2 - 1}{(x+2)^2} = \\frac{(x+1)(x+3)}{(x+2)^2}$.\n- $f'(x) > 0$ sur $]-\\infty, -3[$ et $]-1, +\\infty[$ (strictement croissante).\n- $f'(x) < 0$ sur $]-3, -2[$ et $]-2, -1[$ (strictement décroissante).\\nExtremums locaux : $f(-3) = -5$ (maximum local) et $f(-1) = -1$ (minimum local).\n\n**3. Fonction réciproque :**\\nSur $[-1, +\\infty[$, $g$ est continue et strictement croissante.\n$J = g([-1, +\\infty[) = [g(-1), \\lim_{x\\to +\\infty} g(x)[ = [-1, +\\infty[$.\\nDonc $g$ admet une fonction réciproque $g^{-1}: [-1, +\\infty[ \\to [-1, +\\infty[$.\n\n**4. Construction :**\n- Tracer l'asymptote oblique $(D): y = x - 1$ et l'asymptote verticale $x = -2$.\n- Placer le centre de symétrie $\\Omega(-2, -3)$ et le sommet local $(-1, -1)$.\n- Tracer $(\\mathcal{C}_f)$ et obtenir $(\\mathcal{C}_{g^{-1}})$ par réflexion par rapport à la première bissectrice $y = x$.",
+          "language": "fr"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-13T16:46:47.762Z",
+    "level": "2bac_pc_svt",
+    "doc_type": "exercises",
+    "created_at": "2026-09-13T16:46:47.760Z",
+    "createdAt": "2026-09-13T16:46:47.925Z"
   }
 ]
