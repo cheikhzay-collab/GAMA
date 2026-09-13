@@ -895,18 +895,32 @@ Tu dois analyser la question et :
             <ArrowLeft size={14} /> Bibliothèque
           </button>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <h1 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-main)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <h1 style={{ margin: 0, fontSize: isMobile ? '1.15rem' : '1.35rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-main)' }}>
                 {editName || exam.name}
               </h1>
+              <span style={{
+                background: 'rgba(239, 68, 68, 0.12)',
+                color: '#ef4444',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                padding: '0.15rem 0.55rem',
+                borderRadius: '6px',
+                fontSize: '0.72rem',
+                fontWeight: 800,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem'
+              }}>
+                🏛️ وضع تعديل الامتحانات
+              </span>
               {hasUnsaved && (
                 <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--warning)', background: 'rgba(245,158,11,0.12)', padding: '0.15rem 0.45rem', borderRadius: 6, border: '1px solid rgba(245,158,11,0.25)' }}>
                   ● Non sauvegardé
                 </span>
               )}
             </div>
-            <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
-              {exam.school}{exam.year ? ` · ${exam.year}` : ''} · {localQuestions.length} questions
+            <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 3 }}>
+              {exam.school}{exam.year ? ` · ${exam.year}` : ''} · {localQuestions.length} questions • Édition interactive QCM, astuces et figures
             </p>
           </div>
         </div>

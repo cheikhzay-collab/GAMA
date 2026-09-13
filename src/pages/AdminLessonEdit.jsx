@@ -12,7 +12,7 @@ import {
   Type, Palette, BookOpen, Layers, Lightbulb, CornerDownLeft,
   GraduationCap, School, Phone, Globe, Tag, Bookmark, CheckSquare, Settings2, Users, Languages,
   Zap, Award, Search, Target, MessageSquare, Link2, HelpCircle, Info, Pin,
-  CheckCheck, Copy, Paintbrush
+  CheckCheck, Copy, Paintbrush, Columns, Wand2, RefreshCw
 } from 'lucide-react';
 import PdfFigureCropperModal from '../components/PdfFigureCropperModal';
 import AiFigureEnhancerModal from '../components/AiFigureEnhancerModal';
@@ -62,6 +62,29 @@ const COMMON_SUBJECTS = [
   'Anglais',
   'Informatique',
   'Éducation Islamique'
+];
+
+const QUICK_LATEX_CHIPS = [
+  { label: 'a/b', latex: '\\frac{a}{b}', title: 'Fraction' },
+  { label: '√x', latex: '\\sqrt{x}', title: 'Racine carrée' },
+  { label: 'lim', latex: '\\lim_{x \\to x_0}', title: 'Limite' },
+  { label: 'x²', latex: 'x^{2}', title: 'Carré / Puissance' },
+  { label: 'uₙ', latex: 'u_{n}', title: 'Indice' },
+  { label: '∑', latex: '\\sum_{k=1}^{n}', title: 'Somme' },
+  { label: '∫', latex: '\\int_{a}^{b}', title: 'Intégrale' },
+  { label: 'vec', latex: '\\vec{u}', title: 'Vecteur' },
+  { label: '∞', latex: '\\infty', title: 'Infini' },
+  { label: 'α', latex: '\\alpha', title: 'Alpha' },
+  { label: 'β', latex: '\\beta', title: 'Beta' },
+  { label: 'π', latex: '\\pi', title: 'Pi' },
+  { label: '≤', latex: '\\le', title: 'Inférieur ou égal' },
+  { label: '≥', latex: '\\ge', title: 'Supérieur ou égal' },
+  { label: '≠', latex: '\\neq', title: 'Différent' },
+  { label: '∈', latex: '\\in', title: 'Appartient' },
+  { label: '⊂', latex: '\\subset', title: 'Inclus' },
+  { label: '⇒', latex: '\\Rightarrow', title: 'Implique' },
+  { label: '⇔', latex: '\\Leftrightarrow', title: 'Équivalent' },
+  { label: '{...}', latex: '\\begin{cases} a \\\\ b \\end{cases}', title: 'Système' }
 ];
 
 
@@ -984,6 +1007,55 @@ export default function AdminLessonEdit() {
 
   const isArMode = docLanguage === 'ar' || /[\u0600-\u06FF]/.test(ficheTitle + ' ' + subject + ' ' + (sections || []).map(s => s.title + ' ' + (s.content || '')).join(' '));
 
+  const currentModeInfo = (() => {
+    if (docType === 'exercises') {
+      return {
+        id: 'exercises',
+        titleAr: 'وضع تعديل السلاسل',
+        titleFr: 'Mode Série d\'Exercices',
+        badgeAr: 'سلسلة تمارين تطبيقية',
+        badgeFr: 'Série d\'exercices',
+        color: '#10b981',
+        bgSoft: 'rgba(16, 185, 129, 0.12)',
+        borderSoft: 'rgba(16, 185, 129, 0.3)',
+        gradient: 'linear-gradient(135deg, #059669, #10b981)',
+        icon: Layers,
+        descAr: 'تنظيم سلاسل التمارين التطبيقية، إعداد أعمدة العرض، الحلول النموذجية وسلم التنقيط',
+        descFr: 'Organisation des séries d\'exercices, mise en colonnes, solutions et barèmes'
+      };
+    }
+    if (docType === 'national' || docType === 'homework' || docType === 'concours') {
+      return {
+        id: 'exam',
+        titleAr: 'وضع تعديل الامتحانات والفروض',
+        titleFr: 'Mode Examens & Devoirs',
+        badgeAr: docType === 'national' ? 'امتحان وطني موحد' : docType === 'homework' ? 'فرض محروس' : 'مباراة ولوج',
+        badgeFr: docType === 'national' ? 'Examen National' : docType === 'homework' ? 'Devoir Surveillé' : 'Concours d\'accès',
+        color: '#ef4444',
+        bgSoft: 'rgba(239, 68, 68, 0.12)',
+        borderSoft: 'rgba(239, 68, 68, 0.3)',
+        gradient: 'linear-gradient(135deg, #b91c1c, #ef4444)',
+        icon: Award,
+        descAr: 'إعداد مواضيع الامتحانات الوطنية، الفروض المحروسة ومباريات المعاهد والمدارس العليا',
+        descFr: 'Conception des examens nationaux, épreuves de contrôle et concours'
+      };
+    }
+    return {
+      id: 'course',
+      titleAr: 'وضع تعديل الدروس والملخصات',
+      titleFr: 'Mode Cours & Résumés',
+      badgeAr: docType === 'summary' ? 'ملخص درس' : 'درس نظري',
+      badgeFr: docType === 'summary' ? 'Résumé de cours' : 'Cours théorique',
+      color: '#0284c7',
+      bgSoft: 'rgba(2, 132, 199, 0.12)',
+      borderSoft: 'rgba(2, 132, 199, 0.3)',
+      gradient: 'linear-gradient(135deg, #005086, #0284c7)',
+      icon: BookOpen,
+      descAr: 'صياغة الدروس النظرية، التعريفات، الخاصيات، المبرهنات التوليدية والأمثلة التطبيقية',
+      descFr: 'Rédaction des cours théoriques, définitions, propriétés, théorèmes et exemples'
+    };
+  })();
+
   const handleToggleClass = (className) => {
     if (!className) return;
     setSchools(prev => {
@@ -1528,53 +1600,110 @@ export default function AdminLessonEdit() {
                 key={sec.id || secIdx}
                 className="word-section-block"
                 style={{
-                  border: `1.5px solid ${currentStyle.border}`,
-                  borderRadius: '8px',
+                  border: `1.5px solid ${currentStyle.border}45`,
+                  borderInlineStart: `5px solid ${currentStyle.border}`,
+                  borderRadius: '10px',
                   background: sec.bgColor && sec.bgColor !== 'transparent' ? sec.bgColor : currentStyle.bg,
-                  padding: '1.25rem',
+                  padding: isMobile ? '1rem' : '1.35rem',
                   position: 'relative',
-                  transition: 'background 0.2s ease, box-shadow 0.2s ease',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+                  transition: 'background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease',
+                  boxShadow: '0 3px 12px rgba(0,0,0,0.04)'
                 }}
               >
-                {/* Section Controls Bar (Pinned Top Right) */}
+                {/* Section Controls Bar (Pinned Top Right/Left) */}
                 <div style={{
                   position: 'absolute',
-                  top: '0.6rem',
-                  right: isArMode ? 'auto' : '0.6rem',
-                  left: isArMode ? '0.6rem' : 'auto',
+                  top: '0.65rem',
+                  right: isArMode ? 'auto' : '0.65rem',
+                  left: isArMode ? '0.65rem' : 'auto',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.35rem',
-                  background: '#ffffff',
-                  padding: '0.2rem 0.4rem',
-                  borderRadius: '6px',
+                  background: 'rgba(255, 255, 255, 0.94)',
+                  backdropFilter: 'blur(8px)',
+                  padding: '0.25rem 0.5rem',
+                  borderRadius: '8px',
                   border: '1px solid #cbd5e1',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                  zIndex: 10
                 }}>
                   <select
                     value={sec.type}
                     onChange={e => handleUpdateSection(secIdx, 'type', e.target.value)}
-                    style={{ border: 'none', background: 'transparent', fontSize: '0.75rem', fontWeight: 800, color: currentStyle.title, outline: 'none', cursor: 'pointer' }}
+                    style={{
+                      border: 'none',
+                      background: 'transparent',
+                      fontSize: '0.76rem',
+                      fontWeight: 800,
+                      color: currentStyle.title,
+                      outline: 'none',
+                      cursor: 'pointer',
+                      padding: '0.1rem 0.2rem'
+                    }}
                   >
-                    <option value="content">Cours (Général)</option>
-                    <option value="definition">Définition</option>
-                    <option value="property">Propriété</option>
-                    <option value="theorem">Théorème</option>
-                    <option value="corollary">Corollaire</option>
-                    <option value="remark">Remarque</option>
-                    <option value="example">Exemple</option>
-                    <option value="activity">Activité</option>
-                    <option value="exercise">Exercice</option>
+                    <option value="content">{isArMode ? 'فقرة درس عامة' : 'Cours (Général)'}</option>
+                    <option value="definition">{isArMode ? 'تعريف' : 'Définition'}</option>
+                    <option value="property">{isArMode ? 'خاصية' : 'Propriété'}</option>
+                    <option value="theorem">{isArMode ? 'مبرهنة' : 'Théorème'}</option>
+                    <option value="corollary">{isArMode ? 'نتيجة' : 'Corollaire'}</option>
+                    <option value="remark">{isArMode ? 'ملاحظة' : 'Remarque'}</option>
+                    <option value="example">{isArMode ? 'مثال تطبيقي' : 'Exemple'}</option>
+                    <option value="activity">{isArMode ? 'نشاط' : 'Activité'}</option>
+                    <option value="exercise">{isArMode ? 'تمرين' : 'Exercice'}</option>
                   </select>
                   <span style={{ color: '#cbd5e1' }}>|</span>
-                  <button onClick={() => handleMoveSection(secIdx, 'up')} disabled={secIdx === 0} style={{ border: 'none', background: 'transparent', cursor: secIdx === 0 ? 'not-allowed' : 'pointer', opacity: secIdx === 0 ? 0.3 : 1 }}>
+                  <button
+                    type="button"
+                    onClick={() => handleMoveSection(secIdx, 'up')}
+                    disabled={secIdx === 0}
+                    style={{
+                      border: 'none',
+                      background: 'transparent',
+                      cursor: secIdx === 0 ? 'not-allowed' : 'pointer',
+                      opacity: secIdx === 0 ? 0.25 : 1,
+                      padding: '2px',
+                      borderRadius: '4px',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    title={isArMode ? 'نقل للأعلى' : 'Monter'}
+                  >
                     <ChevronUp size={14} />
                   </button>
-                  <button onClick={() => handleMoveSection(secIdx, 'down')} disabled={secIdx === sections.length - 1} style={{ border: 'none', background: 'transparent', cursor: secIdx === sections.length - 1 ? 'not-allowed' : 'pointer', opacity: secIdx === sections.length - 1 ? 0.3 : 1 }}>
+                  <button
+                    type="button"
+                    onClick={() => handleMoveSection(secIdx, 'down')}
+                    disabled={secIdx === sections.length - 1}
+                    style={{
+                      border: 'none',
+                      background: 'transparent',
+                      cursor: secIdx === sections.length - 1 ? 'not-allowed' : 'pointer',
+                      opacity: secIdx === sections.length - 1 ? 0.25 : 1,
+                      padding: '2px',
+                      borderRadius: '4px',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    title={isArMode ? 'نقل للأسفل' : 'Descendre'}
+                  >
                     <ChevronDown size={14} />
                   </button>
-                  <button onClick={() => handleRemoveSection(secIdx)} style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer' }}>
+                  <span style={{ color: '#cbd5e1' }}>|</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveSection(secIdx)}
+                    style={{
+                      border: 'none',
+                      background: 'transparent',
+                      color: '#ef4444',
+                      cursor: 'pointer',
+                      padding: '2px',
+                      borderRadius: '4px',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    title={isArMode ? 'حذف هذه الفقرة' : 'Supprimer'}
+                  >
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -2277,133 +2406,493 @@ export default function AdminLessonEdit() {
             );
           })}
 
-          {/* Quick Add Section Buttons on Canvas */}
-          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', margin: '2rem 0', flexWrap: 'wrap' }}>
-            <button
-              onClick={() => handleAddSection('content')}
-              style={{
-                background: 'linear-gradient(135deg, #005086, #0284c7)',
-                color: '#ffffff',
-                border: 'none',
-                padding: '0.7rem 1.3rem',
-                borderRadius: '8px',
-                fontWeight: 800,
-                fontSize: '0.88rem',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                boxShadow: '0 4px 12px rgba(0,80,134,0.2)'
-              }}
-            >
-              <Plus size={16} /> + Ajouter une Section de Cours
-            </button>
-            <button
-              onClick={() => handleAddSection('exercise')}
-              style={{
-                background: 'linear-gradient(135deg, #dc2626, #ef4444)',
-                color: '#ffffff',
-                border: 'none',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '8px',
-                fontWeight: 800,
-                fontSize: '0.9rem',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                boxShadow: '0 4px 12px rgba(220,38,38,0.2)'
-              }}
-            >
-              <Plus size={16} /> + Ajouter un Exercice
-            </button>
+          {/* Quick Add Section Buttons on Canvas - Tailored to current active mode */}
+          <div style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center', margin: '2.5rem 0 1rem', flexWrap: 'wrap' }}>
+            {docType === 'exercises' ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleAddSection('exercise')}
+                  className="mode-pill-btn"
+                  style={{
+                    background: 'linear-gradient(135deg, #059669, #10b981)',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '0.8rem 1.65rem',
+                    borderRadius: '10px',
+                    fontWeight: 900,
+                    fontSize: '0.94rem',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.55rem',
+                    boxShadow: '0 4px 18px rgba(16,185,129,0.35)'
+                  }}
+                >
+                  <Plus size={18} />
+                  <span>{isArMode ? '+ إضافة تمرين جديد للسلسلة' : '+ Ajouter un Exercice à la Série'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddSection('activity')}
+                  className="mode-pill-btn"
+                  style={{
+                    background: '#f8fafc',
+                    color: '#0f172a',
+                    border: '1.5px solid #cbd5e1',
+                    padding: '0.8rem 1.35rem',
+                    borderRadius: '10px',
+                    fontWeight: 800,
+                    fontSize: '0.88rem',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.45rem'
+                  }}
+                >
+                  <Target size={16} style={{ color: '#ec4899' }} />
+                  <span>{isArMode ? '+ نشاط تطبيقي' : '+ Activité d\'application'}</span>
+                </button>
+              </>
+            ) : (docType === 'national' || docType === 'homework' || docType === 'concours') ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleAddSection('exercise')}
+                  className="mode-pill-btn"
+                  style={{
+                    background: 'linear-gradient(135deg, #b91c1c, #ef4444)',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '0.8rem 1.65rem',
+                    borderRadius: '10px',
+                    fontWeight: 900,
+                    fontSize: '0.94rem',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.55rem',
+                    boxShadow: '0 4px 18px rgba(239,68,68,0.35)'
+                  }}
+                >
+                  <Award size={18} />
+                  <span>{isArMode ? '+ إضافة تمرين / مسألة امتحان' : '+ Ajouter un Exercice / Problème d\'Examen'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddSection('content')}
+                  className="mode-pill-btn"
+                  style={{
+                    background: '#f8fafc',
+                    color: '#0f172a',
+                    border: '1.5px solid #cbd5e1',
+                    padding: '0.8rem 1.35rem',
+                    borderRadius: '10px',
+                    fontWeight: 800,
+                    fontSize: '0.88rem',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.45rem'
+                  }}
+                >
+                  <FileText size={16} style={{ color: '#0284c7' }} />
+                  <span>{isArMode ? '+ ديباجة / تعليمات الامتحان' : '+ Consignes / Préambule'}</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleAddSection('content')}
+                  className="mode-pill-btn"
+                  style={{
+                    background: 'linear-gradient(135deg, #005086, #0284c7)',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '0.8rem 1.5rem',
+                    borderRadius: '10px',
+                    fontWeight: 900,
+                    fontSize: '0.92rem',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    boxShadow: '0 4px 18px rgba(0,80,134,0.3)'
+                  }}
+                >
+                  <BookOpen size={18} />
+                  <span>{isArMode ? '+ إضافة فقرة درس' : '+ Section de Cours'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddSection('definition')}
+                  className="mode-pill-btn"
+                  style={{
+                    background: 'rgba(2, 132, 199, 0.08)',
+                    color: '#0284c7',
+                    border: '1.5px solid rgba(2, 132, 199, 0.35)',
+                    padding: '0.8rem 1.25rem',
+                    borderRadius: '10px',
+                    fontWeight: 800,
+                    fontSize: '0.88rem',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.45rem'
+                  }}
+                >
+                  <BookOpen size={16} />
+                  <span>{isArMode ? '+ تعريف' : '+ Définition'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddSection('theorem')}
+                  className="mode-pill-btn"
+                  style={{
+                    background: 'rgba(139, 92, 246, 0.08)',
+                    color: '#7c3aed',
+                    border: '1.5px solid rgba(139, 92, 246, 0.35)',
+                    padding: '0.8rem 1.25rem',
+                    borderRadius: '10px',
+                    fontWeight: 800,
+                    fontSize: '0.88rem',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.45rem'
+                  }}
+                >
+                  <Award size={16} />
+                  <span>{isArMode ? '+ مبرهنة' : '+ Théorème'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddSection('exercise')}
+                  className="mode-pill-btn"
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.08)',
+                    color: '#dc2626',
+                    border: '1.5px solid rgba(239, 68, 68, 0.35)',
+                    padding: '0.8rem 1.25rem',
+                    borderRadius: '10px',
+                    fontWeight: 800,
+                    fontSize: '0.88rem',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.45rem'
+                  }}
+                >
+                  <Plus size={16} />
+                  <span>{isArMode ? '+ تمرين تطبيقي' : '+ Exercice d\'application'}</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
     );
   };
 
+  const exerciseCount = sections.filter(s => s.type === 'exercise').length;
+  const ModeIcon = currentModeInfo.icon;
+
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '5rem' }}>
+    <div className="animate-fade-in" style={{ maxWidth: '1440px', margin: '0 auto', paddingBottom: '6rem' }}>
       
-      {/* ── Top Header & View Mode Switcher ── */}
+      {/* ── Scoped Ergonomic CSS for Office Ribbon and Mobile Responsiveness ── */}
+      <style>{`
+        .office-ribbon-tabs::-webkit-scrollbar { display: none; }
+        .office-ribbon-tabs { -ms-overflow-style: none; scrollbar-width: none; }
+        .mode-pill-btn {
+          transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .mode-pill-btn:hover {
+          transform: translateY(-1px);
+        }
+        .mode-pill-btn:active {
+          transform: scale(0.97);
+        }
+        .ribbon-action-chip {
+          transition: all 0.16s ease;
+        }
+        .ribbon-action-chip:hover {
+          transform: translateY(-1px);
+          filter: brightness(1.06);
+        }
+        @media (max-width: 768px) {
+          .word-paper-canvas {
+            padding: 1rem 0.85rem !important;
+            border-radius: 6px !important;
+          }
+          .floating-save-pill {
+            left: 1rem !important;
+            right: 1rem !important;
+            justify-content: space-between !important;
+            bottom: 1rem !important;
+          }
+        }
+      `}</style>
+
+      {/* ── Top Header Bar with Dynamic Mode Status & Quick Mode Switcher ── */}
       <header style={{
         display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '1rem',
-        flexWrap: 'wrap',
+        flexDirection: 'column',
         gap: '1rem',
+        marginBottom: '1.25rem',
         borderBottom: '1px solid var(--border)',
-        paddingBottom: '1rem'
+        paddingBottom: '1.25rem'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-          <button onClick={goBack} className="btn-outline" style={{ padding: '0.5rem 0.75rem' }} title="Retour aux cours">
-            <ArrowLeft size={16} />
-          </button>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <h1 style={{ fontSize: '1.4rem', fontWeight: 900, margin: 0, color: 'var(--text-main)' }}>
-                Éditeur Complet — {ficheTitle || 'Fiche de Cours'}
-              </h1>
-              <span style={{ background: 'rgba(99, 102, 241, 0.15)', color: 'var(--violet)', padding: '0.15rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 800 }}>
-                Word Live
-              </span>
-            </div>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', margin: 0 }}>
-              Édition visuelle en direct, formules mathématiques KaTeX et mise en page officielle.
-            </p>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {sections.some(s => (s.type === 'exercise' || s.type === 'activity') && (s.content || '').trim()) && (
+        
+        {/* Upper row: Navigation + Mode Switcher + Action buttons */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem'
+        }}>
+          
+          {/* Back & Document Title */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
             <button
-              type="button"
-              onClick={handleAiSolveAllExercises}
-              disabled={solvingAll || saving}
+              onClick={goBack}
               className="btn-outline"
               style={{
-                padding: '0.5rem 0.95rem',
-                fontSize: '0.84rem',
-                fontWeight: 800,
+                padding: '0.55rem 0.85rem',
+                borderRadius: '10px',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.4rem',
-                background: solvingAll ? 'rgba(16, 185, 129, 0.1)' : 'rgba(99, 102, 241, 0.08)',
-                borderColor: solvingAll ? 'var(--emerald)' : 'rgba(99, 102, 241, 0.3)',
-                color: solvingAll ? 'var(--emerald)' : 'var(--violet)'
+                fontWeight: 700
               }}
-              title={isArMode ? "حل جميع تمارين الدرس بالذكاء الاصطناعي بطريقة المفتش التربوي المغربي" : "Résoudre tous les exercices par IA (Méthode de l'Inspecteur Marocain)"}
+              title="Retour à la liste des fiches"
             >
-              {solvingAll ? (
-                <>
-                  <Loader2 className="animate-spin" size={15} />
-                  <span>
-                    {isArMode
-                      ? `جاري الحل (${solveAllProgress?.current || 0}/${solveAllProgress?.total || 0})...`
-                      : `Résolution (${solveAllProgress?.current || 0}/${solveAllProgress?.total || 0})...`}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <Sparkles size={15} style={{ color: '#eab308' }} />
-                  <span>{isArMode ? 'حل جميع التمارين (IA)' : 'Résoudre tous les exercices (IA)'}</span>
-                </>
-              )}
+              <ArrowLeft size={16} />
+              <span style={{ fontSize: '0.82rem' }}>Retour</span>
             </button>
-          )}
 
-          <button
-            type="button"
-            onClick={handleSaveLesson}
-            disabled={saving || solvingAll}
-            className="btn-primary"
-            style={{ padding: '0.5rem 1.1rem', fontSize: '0.85rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-          >
-            {saving ? <Loader2 className="animate-spin" size={15} /> : <Save size={15} />}
-            <span>{saving ? 'Enregistrement...' : 'Enregistrer'}</span>
-          </button>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                <h1 style={{ fontSize: isMobile ? '1.2rem' : '1.45rem', fontWeight: 900, margin: 0, color: 'var(--text-main)' }}>
+                  {ficheTitle || (isArMode ? 'وثيقة بيداغوجية غير معنونة' : 'Fiche Pédagogique')}
+                </h1>
+                <span style={{
+                  background: currentModeInfo.bgSoft,
+                  color: currentModeInfo.color,
+                  border: `1px solid ${currentModeInfo.borderSoft}`,
+                  padding: '0.2rem 0.6rem',
+                  borderRadius: '6px',
+                  fontSize: '0.74rem',
+                  fontWeight: 800,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}>
+                  <ModeIcon size={12} />
+                  {isArMode ? currentModeInfo.badgeAr : currentModeInfo.badgeFr}
+                </span>
+                <span style={{
+                  background: 'rgba(99, 102, 241, 0.12)',
+                  color: 'var(--violet)',
+                  border: '1px solid rgba(99, 102, 241, 0.25)',
+                  padding: '0.2rem 0.55rem',
+                  borderRadius: '6px',
+                  fontSize: '0.72rem',
+                  fontWeight: 800
+                }}>
+                  Word Live
+                </span>
+              </div>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', margin: '3px 0 0' }}>
+                {isArMode ? currentModeInfo.descAr : currentModeInfo.descFr}
+              </p>
+            </div>
+          </div>
+
+          {/* Primary Action Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+            {sections.some(s => (s.type === 'exercise' || s.type === 'activity') && (s.content || '').trim()) && (
+              <button
+                type="button"
+                onClick={handleAiSolveAllExercises}
+                disabled={solvingAll || saving}
+                className="btn-outline mode-pill-btn"
+                style={{
+                  padding: '0.55rem 1rem',
+                  fontSize: '0.84rem',
+                  fontWeight: 800,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  borderRadius: '10px',
+                  background: solvingAll ? 'rgba(16, 185, 129, 0.12)' : 'rgba(99, 102, 241, 0.08)',
+                  borderColor: solvingAll ? 'var(--emerald)' : 'rgba(99, 102, 241, 0.35)',
+                  color: solvingAll ? 'var(--emerald)' : 'var(--violet)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+                }}
+                title={isArMode ? "حل جميع تمارين الدرس بالسلسلة بالذكاء الاصطناعي بطريقة المفتش التربوي المغربي" : "Résoudre tous les exercices par IA (Méthode de l'Inspecteur Marocain)"}
+              >
+                {solvingAll ? (
+                  <>
+                    <Loader2 className="animate-spin" size={15} />
+                    <span>
+                      {isArMode
+                        ? `جاري الحل (${solveAllProgress?.current || 0}/${solveAllProgress?.total || 0})...`
+                        : `Résolution (${solveAllProgress?.current || 0}/${solveAllProgress?.total || 0})...`}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={15} style={{ color: '#eab308' }} />
+                    <span>{isArMode ? 'حل جميع التمارين (IA)' : 'Résoudre tous les exercices (IA)'}</span>
+                  </>
+                )}
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={handleSaveLesson}
+              disabled={saving || solvingAll}
+              className="btn-primary mode-pill-btn"
+              style={{
+                padding: '0.55rem 1.3rem',
+                fontSize: '0.86rem',
+                fontWeight: 900,
+                borderRadius: '10px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)'
+              }}
+            >
+              {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+              <span>{saving ? (isArMode ? 'جاري الحفظ...' : 'Enregistrement...') : (isArMode ? 'حفظ التعديلات' : 'Enregistrer')}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Lower row: Interactive Mode Switcher Pills (Course vs Series vs Exam) */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.75rem',
+          background: 'rgba(255, 255, 255, 0.03)',
+          border: '1px solid var(--border)',
+          borderRadius: '12px',
+          padding: '0.5rem 0.85rem'
+        }}>
+          {/* Quick Mode Switcher Pills */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', marginInlineEnd: '0.35rem' }}>
+              {isArMode ? 'وضع التعديل :' : 'Mode d\'édition :'}
+            </span>
+
+            {/* 1. Course Mode */}
+            <button
+              type="button"
+              onClick={() => setDocType('course')}
+              className="mode-pill-btn"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.42rem 0.85rem',
+                borderRadius: '8px',
+                border: (docType === 'course' || docType === 'summary') ? '1px solid rgba(2, 132, 199, 0.4)' : '1px solid transparent',
+                cursor: 'pointer',
+                fontSize: '0.8rem',
+                fontWeight: (docType === 'course' || docType === 'summary') ? 900 : 700,
+                background: (docType === 'course' || docType === 'summary')
+                  ? 'linear-gradient(135deg, #005086, #0284c7)'
+                  : 'rgba(255, 255, 255, 0.04)',
+                color: (docType === 'course' || docType === 'summary') ? '#ffffff' : 'var(--text-muted)',
+                boxShadow: (docType === 'course' || docType === 'summary') ? '0 3px 10px rgba(0, 80, 134, 0.35)' : 'none'
+              }}
+              title="التبديل إلى وضع تعديل الدروس النظرية والملخصات"
+            >
+              <BookOpen size={14} />
+              <span>{isArMode ? '📘 وضع تعديل الدروس' : '📘 Mode Cours'}</span>
+            </button>
+
+            {/* 2. Exercises Series Mode */}
+            <button
+              type="button"
+              onClick={() => setDocType('exercises')}
+              className="mode-pill-btn"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.42rem 0.85rem',
+                borderRadius: '8px',
+                border: docType === 'exercises' ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid transparent',
+                cursor: 'pointer',
+                fontSize: '0.8rem',
+                fontWeight: docType === 'exercises' ? 900 : 700,
+                background: docType === 'exercises'
+                  ? 'linear-gradient(135deg, #059669, #10b981)'
+                  : 'rgba(255, 255, 255, 0.04)',
+                color: docType === 'exercises' ? '#ffffff' : 'var(--text-muted)',
+                boxShadow: docType === 'exercises' ? '0 3px 10px rgba(16, 185, 129, 0.35)' : 'none'
+              }}
+              title="التبديل إلى وضع تعديل سلاسل التمارين التطبيقية"
+            >
+              <Layers size={14} />
+              <span>{isArMode ? '📑 وضع تعديل السلاسل' : '📑 Mode Séries'}</span>
+            </button>
+
+            {/* 3. National Exam / Homework Mode */}
+            <button
+              type="button"
+              onClick={() => setDocType('national')}
+              className="mode-pill-btn"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.42rem 0.85rem',
+                borderRadius: '8px',
+                border: (docType === 'national' || docType === 'homework' || docType === 'concours') ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid transparent',
+                cursor: 'pointer',
+                fontSize: '0.8rem',
+                fontWeight: (docType === 'national' || docType === 'homework' || docType === 'concours') ? 900 : 700,
+                background: (docType === 'national' || docType === 'homework' || docType === 'concours')
+                  ? 'linear-gradient(135deg, #b91c1c, #ef4444)'
+                  : 'rgba(255, 255, 255, 0.04)',
+                color: (docType === 'national' || docType === 'homework' || docType === 'concours') ? '#ffffff' : 'var(--text-muted)',
+                boxShadow: (docType === 'national' || docType === 'homework' || docType === 'concours') ? '0 3px 10px rgba(239, 68, 68, 0.35)' : 'none'
+              }}
+              title="التبديل إلى وضع تعديل الامتحانات الوطنية والفروض المحروسة"
+            >
+              <Award size={14} />
+              <span>{isArMode ? '🏛️ وضع تعديل الامتحانات' : '🏛️ Mode Examens'}</span>
+            </button>
+          </div>
+
+          {/* Quick Badges: Sections count, Exercises count, KaTeX active, Columns */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.74rem' }}>
+            <span style={{ background: 'rgba(255, 255, 255, 0.06)', padding: '0.2rem 0.55rem', borderRadius: '6px', color: 'var(--text-muted)', fontWeight: 700 }}>
+              {sections.length} {isArMode ? 'أقسام إجمالية' : 'sections au total'}
+            </span>
+            {exerciseCount > 0 && (
+              <span style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', padding: '0.2rem 0.55rem', borderRadius: '6px', fontWeight: 800 }}>
+                {exerciseCount} {isArMode ? 'تمارين' : 'exercices'}
+              </span>
+            )}
+            {docType === 'exercises' && (
+              <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--emerald)', padding: '0.2rem 0.55rem', borderRadius: '6px', fontWeight: 800 }}>
+                {columnsCount} {isArMode ? 'أعمدة عرض' : 'colonnes'}
+              </span>
+            )}
+            <span style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--violet)', padding: '0.2rem 0.55rem', borderRadius: '6px', fontWeight: 700 }}>
+              KaTeX $...$
+            </span>
+          </div>
         </div>
       </header>
 
@@ -2422,47 +2911,53 @@ export default function AdminLessonEdit() {
         </div>
       )}
 
-      {/* ── MICROSOFT WORD OFFICE STYLE RIBBON TOOLBAR ── */}
+      {/* ── MICROSOFT WORD / FIGMA MODERN OFFICE RIBBON TOOLBAR ── */}
       <div className="word-ribbon-container" style={{
         background: 'var(--bg-card)',
         border: '1px solid var(--border)',
-        borderRadius: '12px',
+        borderRadius: '14px',
         marginBottom: '1.5rem',
         overflow: 'hidden',
-        boxShadow: '0 4px 16px rgba(0,0,0,0.08)'
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
       }}>
         {/* Ribbon Tabs Header */}
-        <div style={{
+        <div className="office-ribbon-tabs" style={{
           display: 'flex',
           borderBottom: '1px solid var(--border)',
           background: 'rgba(255,255,255,0.02)',
-          padding: '0 0.5rem'
+          padding: '0 0.5rem',
+          overflowX: 'auto',
+          whiteSpace: 'nowrap'
         }}>
           {[
-            { id: 'home', label: 'Accueil & Styles', icon: Type },
-            { id: 'insert', label: 'Insertion & Éléments', icon: Plus }
+            { id: 'home', label: isArMode ? 'الرئيسية والفقرات' : 'Accueil & Blocs', icon: Type },
+            { id: 'math', label: isArMode ? 'صيغ ورموز LaTeX' : 'Formules KaTeX & Maths', icon: Sparkles },
+            { id: 'insert', label: isArMode ? 'إدراج الوسائط والجداول' : 'Insertion & Médias', icon: Plus },
+            { id: 'style', label: isArMode ? 'التنسيق الموحد للملف' : 'Mise en page & Style', icon: Paintbrush }
           ].map(tab => {
             const TabIcon = tab.icon;
+            const isActive = activeRibbonTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveRibbonTab(tab.id)}
                 style={{
-                  background: activeRibbonTab === tab.id ? 'var(--bg-card)' : 'transparent',
-                  color: activeRibbonTab === tab.id ? 'var(--violet)' : 'var(--text-muted)',
+                  background: isActive ? 'var(--bg-card)' : 'transparent',
+                  color: isActive ? 'var(--violet)' : 'var(--text-muted)',
                   border: 'none',
-                  borderBottom: activeRibbonTab === tab.id ? '2px solid var(--violet)' : '2px solid transparent',
-                  padding: '0.65rem 1.1rem',
+                  borderBottom: isActive ? '2.5px solid var(--violet)' : '2.5px solid transparent',
+                  padding: '0.7rem 1.25rem',
                   fontSize: '0.82rem',
-                  fontWeight: activeRibbonTab === tab.id ? 800 : 600,
+                  fontWeight: isActive ? 900 : 600,
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.4rem',
-                  transition: 'all 0.15s ease'
+                  gap: '0.45rem',
+                  transition: 'all 0.15s ease',
+                  flexShrink: 0
                 }}
               >
-                <TabIcon size={14} />
+                <TabIcon size={14} style={{ color: isActive ? 'var(--violet)' : 'inherit' }} />
                 <span>{tab.label}</span>
               </button>
             );
@@ -2470,19 +2965,20 @@ export default function AdminLessonEdit() {
         </div>
 
         {/* Ribbon Tab Content Panel */}
-        <div style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <div style={{ padding: '0.85rem 1.15rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.85rem' }}>
           
-          {/* TAB 1: ACCUEIL / FORMATTING */}
+          {/* TAB 1: ACCUEIL & BLOCS */}
           {activeRibbonTab === 'home' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', width: '100%' }}>
-              <div style={{ display: 'flex', gap: '2px', background: 'rgba(255,255,255,0.04)', padding: '2px', borderRadius: '6px', border: '1px solid var(--border)' }}>
-                <button onClick={() => insertTextOrSnippet('**Texte en gras**')} className="btn-outline" style={{ padding: '0.35rem 0.6rem', border: 'none' }} title="Gras (Ctrl+B)">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', width: '100%' }}>
+              {/* Text formatting */}
+              <div style={{ display: 'flex', gap: '2px', background: 'rgba(255,255,255,0.04)', padding: '2px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                <button onClick={() => insertTextOrSnippet('**نص بخط عريض**')} className="btn-outline ribbon-action-chip" style={{ padding: '0.4rem 0.65rem', border: 'none' }} title="Gras (Ctrl+B)">
                   <Bold size={14} />
                 </button>
-                <button onClick={() => insertTextOrSnippet('*Texte en italique*')} className="btn-outline" style={{ padding: '0.35rem 0.6rem', border: 'none' }} title="Italique (Ctrl+I)">
+                <button onClick={() => insertTextOrSnippet('*نص مائل*')} className="btn-outline ribbon-action-chip" style={{ padding: '0.4rem 0.65rem', border: 'none' }} title="Italique (Ctrl+I)">
                   <Italic size={14} />
                 </button>
-                <button onClick={() => insertTextOrSnippet('$\\underline{texte}$')} className="btn-outline" style={{ padding: '0.35rem 0.6rem', border: 'none' }} title="Souligné">
+                <button onClick={() => insertTextOrSnippet('$\\underline{texte}$')} className="btn-outline ribbon-action-chip" style={{ padding: '0.4rem 0.65rem', border: 'none' }} title="Souligné">
                   <Underline size={14} />
                 </button>
               </div>
@@ -2490,32 +2986,36 @@ export default function AdminLessonEdit() {
               <div style={{ height: '24px', width: '1px', background: 'var(--border)' }} />
 
               {/* Block Types Fast Creation */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)' }}>Ajouter Bloc :</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)' }}>
+                  {isArMode ? 'إضافة كتلة :' : 'Ajouter Bloc :'}
+                </span>
                 {[
-                  { label: 'Définition', type: 'definition', icon: BookOpen, color: '#0284c7' },
-                  { label: 'Propriété', type: 'property', icon: Zap, color: '#10b981' },
-                  { label: 'Théorème', type: 'theorem', icon: Award, color: '#8b5cf6' },
-                  { label: 'Remarque', type: 'remark', icon: MessageSquare, color: '#f59e0b' },
-                  { label: 'Activité', type: 'activity', icon: Target, color: '#ec4899' },
-                  { label: 'Exercice', type: 'exercise', icon: FileText, color: '#ef4444' }
+                  { label: isArMode ? 'تعريف' : 'Définition', type: 'definition', icon: BookOpen, color: '#0284c7' },
+                  { label: isArMode ? 'خاصية' : 'Propriété', type: 'property', icon: Zap, color: '#10b981' },
+                  { label: isArMode ? 'مبرهنة' : 'Théorème', type: 'theorem', icon: Award, color: '#8b5cf6' },
+                  { label: isArMode ? 'ملاحظة' : 'Remarque', type: 'remark', icon: MessageSquare, color: '#f59e0b' },
+                  { label: isArMode ? 'نشاط' : 'Activité', type: 'activity', icon: Target, color: '#ec4899' },
+                  { label: isArMode ? 'تمرين' : 'Exercice', type: 'exercise', icon: FileText, color: '#ef4444' }
                 ].map(b => {
                   const BIcon = b.icon;
                   return (
                     <button
                       key={b.type}
                       onClick={() => handleAddSection(b.type)}
+                      className="ribbon-action-chip"
                       style={{
                         background: 'rgba(255,255,255,0.03)',
                         border: '1px solid var(--border)',
-                        borderRadius: '6px',
-                        padding: '0.35rem 0.65rem',
-                        fontSize: '0.75rem',
+                        borderRadius: '8px',
+                        padding: '0.4rem 0.75rem',
+                        fontSize: '0.76rem',
                         fontWeight: 700,
                         cursor: 'pointer',
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '0.35rem'
+                        gap: '0.4rem',
+                        color: 'var(--text-main)'
                       }}
                     >
                       <BIcon size={13} style={{ color: b.color }} />
@@ -2524,18 +3024,120 @@ export default function AdminLessonEdit() {
                   );
                 })}
               </div>
+            </div>
+          )}
 
-              <div style={{ height: '24px', width: '1px', background: 'var(--border)' }} />
+          {/* TAB 2: MATHS & FORMULES LATEX */}
+          {activeRibbonTab === 'math' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', width: '100%' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)' }}>
+                {isArMode ? 'إدراج سريع :' : 'Insertion rapide :'}
+              </span>
 
-              {/* Global Unified Document Styler */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0, 80, 134, 0.05)', padding: '0.3rem 0.65rem', borderRadius: '8px', border: '1px solid rgba(0, 80, 134, 0.15)', flexWrap: 'wrap' }}>
-                <Paintbrush size={14} style={{ color: '#005086' }} />
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#005086' }}>
-                  {isArMode ? 'تنسيق موحد للملف :' : 'Style Global :'}
+              {QUICK_LATEX_CHIPS.map(chip => (
+                <button
+                  key={chip.label}
+                  type="button"
+                  onClick={() => insertTextOrSnippet(chip.latex)}
+                  className="ribbon-action-chip"
+                  title={`${chip.title} (${chip.latex})`}
+                  style={{
+                    padding: '0.35rem 0.65rem',
+                    fontSize: '0.76rem',
+                    borderRadius: '6px',
+                    border: '1px solid var(--border)',
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    color: 'var(--text-main)',
+                    cursor: 'pointer',
+                    fontFamily: 'monospace',
+                    fontWeight: 700
+                  }}
+                >
+                  {chip.label}
+                </button>
+              ))}
+
+              <div style={{ height: '24px', width: '1px', background: 'var(--border)', margin: '0 0.2rem' }} />
+
+              <button
+                type="button"
+                onClick={() => setIsLatexPaletteOpen(prev => !prev)}
+                className="ribbon-action-chip"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.4rem 0.85rem',
+                  borderRadius: '8px',
+                  background: isLatexPaletteOpen ? 'var(--violet)' : 'rgba(99, 102, 241, 0.12)',
+                  color: isLatexPaletteOpen ? '#ffffff' : 'var(--violet)',
+                  border: '1px solid rgba(99, 102, 241, 0.35)',
+                  fontSize: '0.78rem',
+                  fontWeight: 800,
+                  cursor: 'pointer'
+                }}
+              >
+                <Sparkles size={14} style={{ color: isLatexPaletteOpen ? '#fef08a' : 'var(--violet)' }} />
+                <span>{isArMode ? 'لوحة الرموز الكاملة' : 'Palette KaTeX Complète'}</span>
+              </button>
+            </div>
+          )}
+
+          {/* TAB 3: INSERTION & MÉDIAS */}
+          {activeRibbonTab === 'insert' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap', width: '100%' }}>
+              <button
+                onClick={() => {
+                  if (sections.length > 0) {
+                    handleAddItemToContentSection(sections.length - 1, 'table');
+                  } else {
+                    handleAddSection('content');
+                  }
+                }}
+                className="btn-outline ribbon-action-chip"
+                style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', borderRadius: '8px' }}
+              >
+                <Table size={14} />
+                <span>{isArMode ? 'إدراج جدول ذكي' : 'Insérer un Tableau'}</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setCropperTarget({ secIdx: Math.max(0, sections.length - 1), itemIdx: null });
+                  setIsCropperOpen(true);
+                }}
+                className="btn-outline ribbon-action-chip"
+                style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem', color: 'var(--emerald)', borderColor: 'rgba(16, 185, 129, 0.35)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', borderRadius: '8px' }}
+              >
+                <Crop size={14} />
+                <span>{isArMode ? 'قص شكل من PDF' : 'Découper Figure PDF'}</span>
+              </button>
+
+              <ImageDropZone
+                compact
+                onImageInsert={(dataUrl, alt) => handleDirectImageInsert(dataUrl, alt)}
+              />
+
+              <button
+                onClick={() => handleAddSection('exercise')}
+                className="btn-outline ribbon-action-chip"
+                style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem', color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.35)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', borderRadius: '8px' }}
+              >
+                <Lightbulb size={14} />
+                <span>{isArMode ? '+ تمرين جديد مع الحل' : '+ Nouvel Exercice & Corrigé'}</span>
+              </button>
+            </div>
+          )}
+
+          {/* TAB 4: MISE EN PAGE & STYLE GLOBAL */}
+          {activeRibbonTab === 'style' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap', width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Palette size={14} style={{ color: '#005086' }} />
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)' }}>
+                  {isArMode ? 'خلفية الوثيقة :' : 'Fond :'}
                 </span>
-                
-                {/* Global Background Palette */}
-                <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
                   {[
                     { label: 'Sans fond', val: 'transparent', color: '#ffffff', border: '#cbd5e1' },
                     { label: 'Bleu doux', val: '#f0f9ff', color: '#f0f9ff', border: '#bae6fd' },
@@ -2550,11 +3152,11 @@ export default function AdminLessonEdit() {
                       onClick={() => setGlobalBgColor(c.val)}
                       title={c.label}
                       style={{
-                        width: '16px',
-                        height: '16px',
+                        width: '18px',
+                        height: '18px',
                         borderRadius: '50%',
                         background: c.color,
-                        border: `2px solid ${globalBgColor === c.val ? '#005086' : c.border}`,
+                        border: `2px solid ${globalBgColor === c.val ? 'var(--violet)' : c.border}`,
                         cursor: 'pointer',
                         padding: 0
                       }}
@@ -2565,31 +3167,37 @@ export default function AdminLessonEdit() {
                     value={globalBgColor && globalBgColor !== 'transparent' ? globalBgColor : '#ffffff'}
                     onChange={e => setGlobalBgColor(e.target.value)}
                     title="Couleur personnalisée"
-                    style={{ width: '18px', height: '18px', padding: 0, border: 'none', borderRadius: '3px', cursor: 'pointer', background: 'transparent' }}
+                    style={{ width: '20px', height: '20px', padding: 0, border: 'none', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }}
                   />
                 </div>
+              </div>
 
-                <span style={{ color: 'var(--border)' }}>|</span>
+              <div style={{ height: '24px', width: '1px', background: 'var(--border)' }} />
 
-                {/* Global Font Size */}
+              {/* Global Font Size */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <Type size={13} style={{ color: 'var(--text-muted)' }} />
                 <select
                   value={globalFontSize}
                   onChange={e => setGlobalFontSize(e.target.value)}
-                  style={{ fontSize: '0.72rem', padding: '2px 5px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#334155', fontWeight: 600, outline: 'none' }}
+                  style={{ fontSize: '0.74rem', padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-main)', fontWeight: 600, outline: 'none' }}
                 >
-                  <option value="">{isArMode ? 'الحجم (افتراضي)' : 'Taille (9.2pt)'}</option>
+                  <option value="">{isArMode ? 'حجم الخط (افتراضي)' : 'Taille (9.2pt)'}</option>
                   <option value="8pt">8pt (Compact)</option>
                   <option value="8.5pt">8.5pt</option>
                   <option value="9.2pt">9.2pt (Normal)</option>
                   <option value="10pt">10pt</option>
                   <option value="11pt">11pt (Grand)</option>
                 </select>
+              </div>
 
-                {/* Global Line Height */}
+              {/* Global Line Height */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <Layers size={13} style={{ color: 'var(--text-muted)' }} />
                 <select
                   value={globalLineHeight}
                   onChange={e => setGlobalLineHeight(e.target.value)}
-                  style={{ fontSize: '0.72rem', padding: '2px 5px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#334155', fontWeight: 600, outline: 'none' }}
+                  style={{ fontSize: '0.74rem', padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-main)', fontWeight: 600, outline: 'none' }}
                 >
                   <option value="">{isArMode ? 'التباعد (عادي 1.55)' : 'Interligne (1.55)'}</option>
                   <option value="1.3">1.3 (Serré)</option>
@@ -2597,95 +3205,51 @@ export default function AdminLessonEdit() {
                   <option value="1.75">1.75 (Aéré)</option>
                   <option value="2.0">2.0 (Spacieux)</option>
                 </select>
-
-                {/* Scope selector */}
-                <select
-                  value={globalScope}
-                  onChange={e => setGlobalScope(e.target.value)}
-                  style={{ fontSize: '0.72rem', padding: '2px 5px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#334155', fontWeight: 700, outline: 'none' }}
-                >
-                  <option value="all">{isArMode ? 'كامل الملف (الكل)' : 'Tout le document'}</option>
-                  <option value="exercises">{isArMode ? 'التمارين فقط' : 'Exercices uniquement'}</option>
-                  <option value="course">{isArMode ? 'فقرات الدرس فقط' : 'Cours uniquement'}</option>
-                </select>
-
-                <button
-                  type="button"
-                  onClick={handleApplyGlobalStyleToAll}
-                  style={{
-                    background: 'linear-gradient(135deg, #005086, #0284c7)',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '5px',
-                    padding: '0.28rem 0.75rem',
-                    fontSize: '0.74rem',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
-                    boxShadow: '0 2px 6px rgba(0,80,134,0.2)'
-                  }}
-                  title={isArMode ? "تطبيق هذه الإعدادات الموحدة على جميع عناصر الملف المحددة" : "Appliquer ce style global à tout le document"}
-                >
-                  <CheckCheck size={13} />
-                  <span>{isArMode ? 'تطبيق على الملف' : 'Appliquer'}</span>
-                </button>
               </div>
-            </div>
-          )}
 
-          {/* TAB 3: INSERT ELEMENTS */}
-          {activeRibbonTab === 'insert' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', width: '100%' }}>
+              {/* Scope selector */}
+              <select
+                value={globalScope}
+                onChange={e => setGlobalScope(e.target.value)}
+                style={{ fontSize: '0.74rem', padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-main)', fontWeight: 700, outline: 'none' }}
+              >
+                <option value="all">{isArMode ? 'كامل الملف (الكل)' : 'Tout le document'}</option>
+                <option value="exercises">{isArMode ? 'التمارين فقط' : 'Exercices uniquement'}</option>
+                <option value="course">{isArMode ? 'فقرات الدرس فقط' : 'Cours uniquement'}</option>
+              </select>
+
               <button
-                onClick={() => {
-                  if (sections.length > 0) {
-                    handleAddItemToContentSection(sections.length - 1, 'table');
-                  } else {
-                    handleAddSection('content');
-                  }
+                type="button"
+                onClick={handleApplyGlobalStyleToAll}
+                className="mode-pill-btn"
+                style={{
+                  background: 'linear-gradient(135deg, #005086, #0284c7)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '0.35rem 0.85rem',
+                  fontSize: '0.76rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  boxShadow: '0 2px 8px rgba(0,80,134,0.25)'
                 }}
-                className="btn-outline"
-                style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                title={isArMode ? "تطبيق هذه الإعدادات الموحدة على جميع عناصر الملف المحددة" : "Appliquer ce style global à tout le document"}
               >
-                <Table size={14} /> Insérer un Tableau
-              </button>
-
-              <button
-                onClick={() => {
-                  setCropperTarget({ secIdx: Math.max(0, sections.length - 1), itemIdx: null });
-                  setIsCropperOpen(true);
-                }}
-                className="btn-outline"
-                style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', color: 'var(--emerald)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-              >
-                <Crop size={14} /> Découper Figure PDF
-              </button>
-
-              <ImageDropZone
-                compact
-                onImageInsert={(dataUrl, alt) => handleDirectImageInsert(dataUrl, alt)}
-              />
-
-              <button
-                onClick={() => handleAddSection('exercise')}
-                className="btn-outline"
-                style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', color: 'var(--danger)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-              >
-                <Lightbulb size={14} /> + Nouvel Exercice & Corrigé
+                <CheckCheck size={13} />
+                <span>{isArMode ? 'تطبيق على الملف' : 'Appliquer au document'}</span>
               </button>
             </div>
           )}
-
-
 
         </div>
       </div>
 
       {/* ── MAIN WORKSPACE CONTENT (Live Document Canvas) ── */}
       <ImageDropZone onImageInsert={(dataUrl, alt) => handleDirectImageInsert(dataUrl, alt)}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '1050px', margin: '0 auto' }}>
           {/* General Info Panel in Word Mode */}
           {renderGeneralInfoPanel(true)}
           {renderLiveWordDocument()}
@@ -2693,7 +3257,7 @@ export default function AdminLessonEdit() {
       </ImageDropZone>
 
       {/* ── FLOATING QUICK-SAVE BAR ── */}
-      <div style={{
+      <div className="floating-save-pill" style={{
         position: 'fixed',
         bottom: '1.5rem',
         right: '1.5rem',
@@ -2703,38 +3267,38 @@ export default function AdminLessonEdit() {
         background: 'rgba(15, 23, 42, 0.92)',
         backdropFilter: 'blur(16px)',
         border: '1px solid rgba(255,255,255,0.15)',
-        padding: '0.6rem 1.25rem',
+        padding: '0.55rem 1.15rem',
         borderRadius: '50px',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
+        boxShadow: '0 10px 32px rgba(0,0,0,0.38)',
         zIndex: 999
       }}>
-        <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>
-          {sections.length} sections • Ctrl+S pour sauvegarder
+        <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)', fontWeight: 700 }}>
+          {sections.length} {isArMode ? 'أقسام' : 'sections'} • Ctrl+S
         </span>
 
         <button
           onClick={handleSaveLesson}
           disabled={saving}
+          className="mode-pill-btn"
           style={{
             background: 'linear-gradient(135deg, #10b981, #059669)',
             color: '#ffffff',
             border: 'none',
-            padding: '0.55rem 1.25rem',
+            padding: '0.5rem 1.15rem',
             borderRadius: '30px',
-            fontWeight: 800,
-            fontSize: '0.85rem',
+            fontWeight: 900,
+            fontSize: '0.84rem',
             cursor: saving ? 'not-allowed' : 'pointer',
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.4rem',
-            boxShadow: '0 4px 12px rgba(16,185,129,0.3)',
-            transition: 'transform 0.15s ease'
+            boxShadow: '0 4px 14px rgba(16,185,129,0.35)'
           }}
         >
           {saving ? (
-            <><Loader2 className="animate-spin" size={15} /> Sauvegarde...</>
+            <><Loader2 className="animate-spin" size={14} /> {isArMode ? 'جاري الحفظ...' : 'Sauvegarde...'}</>
           ) : (
-            <><Save size={15} /> Enregistrer</>
+            <><Save size={14} /> {isArMode ? 'حفظ' : 'Enregistrer'}</>
           )}
         </button>
       </div>
