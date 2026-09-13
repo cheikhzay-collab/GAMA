@@ -140,10 +140,22 @@ const renderLatexToHtml = (text) => {
     // Fix double-backslash before non-alpha chars that are valid LaTeX (e.g. \\\\ → \\)
     .replace(/\\\\(?=[{},|^_])/g, '\\');
 
-  // Repair unclosed math environments missing trailing $ (e.g., "$... \begin{cases} ... \end{cases}" with no closing $)
-  s = s.replace(/(\$(?:(?!\$).)*?\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\}[\s\S]*?\\end\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\})(?!\$)/g, '$1$');
-  // Wrap bare math environments without any dollar delimiters
-  s = s.replace(/(?<![\$\\])(\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\}[\s\S]*?\\end\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\})(?!\$)/g, '$$$1$$');
+  // 1. Repair broken \neq (e.g. \n eq, newline + eq, or plain eq 0 in conditions)
+  s = s
+    .replace(/\\n\s*eq\b/g, '\\neq')
+    .replace(/(?<=[x-z0-9\s])\beq\s*([0-9a-zA-Z])/g, '\\neq $1')
+    .replace(/(?<![a-zA-Z\\])neq\b/g, '\\neq');
+
+  // 2. Robust math environment wrapper
+  // Matches optional equation LHS prefix (e.g. f(x) = or (S) : or u_n =) followed by \begin{env}...\end{env}
+  // and guarantees the whole equation is enclosed in display math ($$ ... $$)
+  const envPattern = /(?:(?:\$\$|\$)\s*)?((?:(?:[a-zA-Z0-9_'\(\)\s\^\{\}\[\]+\\-]+|\\left\.?|\\left\\\{)\s*[:=]\s*)?\\begin\{(cases|aligned|matrix|pmatrix|vmatrix|array|gather|split|bmatrix|Bmatrix)\}[\s\S]*?\\end\{\2\}(?:\s*\\right\.)?)(?:\s*(?:\$\$|\$))?/g;
+
+  s = s.replace(envPattern, (match, body) => {
+    let cleanBody = body.trim();
+    cleanBody = cleanBody.replace(/^\${1,2}/, '').replace(/\${1,2}$/, '').trim();
+    return `\n\n$$${cleanBody}$$\n\n`;
+  });
 
   // Split by existing math blocks: ONLY modify text OUTSIDE math blocks!
   const parts = s.split(/(\$\$[\s\S]*?\$\$|\$[^\$\n]+?\$)/g);

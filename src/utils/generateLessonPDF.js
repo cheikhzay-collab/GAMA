@@ -178,7 +178,16 @@ function tokenizeMath(text) {
         }
         buf += '$'; i++;
       }
-      else { if (buf) { tokens.push({ type: 'text', content: buf }); buf = ''; } tokens.push({ type: 'inline', content: text.slice(i + 1, j) }); i = j + 1; }
+      else {
+        if (buf) { tokens.push({ type: 'text', content: buf }); buf = ''; }
+        const mathContent = text.slice(i + 1, j);
+        if (/\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather|split|bmatrix|Bmatrix)\}/.test(mathContent)) {
+          tokens.push({ type: 'block', content: mathContent });
+        } else {
+          tokens.push({ type: 'inline', content: mathContent });
+        }
+        i = j + 1;
+      }
       continue;
     }
     buf += text[i]; i++;
@@ -266,8 +275,42 @@ const renderTextWithBold = (text) => {
   return html;
 };
 
+const repairCorruptedLatex = (text) => {
+  if (!text) return text;
+  let s = text;
+
+  // 1. Repair broken \neq (e.g. \n eq, newline + eq, or plain eq 0 in conditions)
+  s = s
+    .replace(/\\n\s*eq\b/g, '\\neq')
+    .replace(/(?<=[x-z0-9\s])\beq\s*([0-9a-zA-Z])/g, '\\neq $1')
+    .replace(/(?<![a-zA-Z\\])neq\b/g, '\\neq');
+
+  // 2. Repair other stripped backslashes
+  s = s
+    .replace(/(?<![a-zA-Z\\])ight\b/g, '\\right')
+    .replace(/(?<!\\)right\b/g, '\\right')
+    .replace(/(?<!\\)left\b/g, '\\left')
+    .replace(/(?<![a-zA-Z\\])frac\{/g, '\\frac{')
+    .replace(/(?<![a-zA-Z\\])dfrac\{/g, '\\dfrac{')
+    .replace(/(?<![a-zA-Z\\])rac\{/g, '\\frac{');
+
+  // 3. Robust math environment wrapper
+  // Matches optional equation LHS prefix (e.g. f(x) = or (S) : or u_n =) followed by \begin{env}...\end{env}
+  // and guarantees the whole equation is enclosed in display math ($$ ... $$)
+  const envPattern = /(?:(?:\$\$|\$)\s*)?((?:(?:[a-zA-Z0-9_'\(\)\s\^\{\}\[\]+\\-]+|\\left\.?|\\left\\\{)\s*[:=]\s*)?\\begin\{(cases|aligned|matrix|pmatrix|vmatrix|array|gather|split|bmatrix|Bmatrix)\}[\s\S]*?\\end\{\2\}(?:\s*\\right\.)?)(?:\s*(?:\$\$|\$))?/g;
+
+  s = s.replace(envPattern, (match, body) => {
+    let cleanBody = body.trim();
+    cleanBody = cleanBody.replace(/^\${1,2}/, '').replace(/\${1,2}$/, '').trim();
+    return `\n\n$$${cleanBody}$$\n\n`;
+  });
+
+  return s;
+};
+
 const renderLineContent = (text) => {
-  const autoWrapped = autoWrapLatex(text);
+  const repaired = repairCorruptedLatex(text);
+  const autoWrapped = autoWrapLatex(repaired);
   const prepared = wrapStandaloneLatexCommands(autoWrapped);
   const tokens = tokenizeMath(prepared);
   const html = tokens.map((tok) => {
@@ -278,24 +321,6 @@ const renderLineContent = (text) => {
   return html
     .replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*([\s\S]+?)\*/g, '<em>$1</em>');
-};
-
-const repairCorruptedLatex = (text) => {
-  if (!text) return text;
-  return text
-    .replace(/(?<![a-zA-Z\\])ight\b/g, '\\right')
-    .replace(/(?<!\\)right\b/g, '\\right')
-    .replace(/(?<!\\)left\b/g, '\\left')
-    // Replace "frac{" (not preceded by letter/backslash) with "\frac{"
-    .replace(/(?<![a-zA-Z\\])frac\{/g, '\\frac{')
-    // Replace "dfrac{" (not preceded by letter/backslash) with "\dfrac{"
-    .replace(/(?<![a-zA-Z\\])dfrac\{/g, '\\dfrac{')
-    // Replace "rac{" (not preceded by letter/backslash) with "\frac{" (in case f was stripped as form feed)
-    .replace(/(?<![a-zA-Z\\])rac\{/g, '\\frac{')
-    // Repair unclosed math environments missing trailing $ (e.g., "$... \begin{cases} ... \end{cases}" with no closing $)
-    .replace(/(\$(?:(?!\$).)*?\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\}[\s\S]*?\\end\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\})(?!\$)/g, '$1$')
-    // Wrap bare math environments without any dollar delimiters
-    .replace(/(?<![\$\\])(\\begin\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\}[\s\S]*?\\end\{(?:cases|aligned|matrix|pmatrix|vmatrix|array|gather)\})(?!\$)/g, '$$$1$$');
 };
 
 const renderLine = (line) => {
@@ -496,7 +521,8 @@ const renderTableSegmentHTML = (segment) => {
 const renderMath = (text) => {
   if (text === null || text === undefined) return '';
   
-  let rawText = String(text);
+  // Step 1: Repair corrupted LaTeX environments and commands FIRST before line splitting or \n processing
+  let rawText = repairCorruptedLatex(String(text));
   
   // Split by math blocks to safely replace literal \n outside math without corrupting LaTeX commands like \neq
   const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
@@ -505,8 +531,8 @@ const renderMath = (text) => {
       // Inside math block: only replace literal \n if NOT followed by letters (e.g. KaTeX commands)
       return part.replace(/\\n(?![a-zA-Z])/g, '\n');
     } else {
-      // Outside math block: replace all literal \n with real newlines safely
-      return part.replace(/\\n/g, '\n');
+      // Outside math block: replace literal \n safely, never breaking LaTeX commands like \neq, \notin, etc.
+      return part.replace(/\\n(?![a-zA-Z])/g, '\n');
     }
   });
   rawText = processedParts.join('');
@@ -535,8 +561,7 @@ const renderMath = (text) => {
   }
   rawText = mergedLines.join('\n');
 
-  const repaired = repairCorruptedLatex(rawText);
-  const raw = repaired;
+  const raw = rawText;
   if (!raw.trim()) return '';
 
   const segments = extractTablesAndText(raw);
@@ -722,7 +747,7 @@ const renderMathInternal = (text) => {
   normalised = normalised.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g)
     .map((part, idx) => {
       if (idx % 2 === 1) return part; // inside math — leave as-is
-      let p = part.replace(/\\n/g, '\n');
+      let p = part.replace(/\\n(?![a-zA-Z])/g, '\n');
       
       // Force line break after period followed by space and uppercase letter/backslash/math delimiter
       // NOTE: exclude when preceded by a digit (numbered list item like "1. Calculer") or single letter (like "A. Calculer")
@@ -954,8 +979,8 @@ const calculateTotalPoints = (text, isArabicMode) => {
       // Inside math block: only replace literal \n if NOT followed by letters (e.g. KaTeX commands)
       return part.replace(/\\n(?![a-zA-Z])/g, '\n');
     } else {
-      // Outside math block: replace all literal \n with real newlines safely
-      return part.replace(/\\n/g, '\n');
+      // Outside math block: replace literal \n safely, never breaking LaTeX commands like \neq, \notin, etc.
+      return part.replace(/\\n(?![a-zA-Z])/g, '\n');
     }
   });
   rawText = processedParts.join('');

@@ -79,11 +79,26 @@ export function smartFormatMathAndLatex(text) {
 
   let str = text;
 
-  // Réparer les doubles anti-slashs LaTeX accidentels
+  // 1. Réparer \neq corrompu (\n eq, bare eq 0, etc.)
+  str = str
+    .replace(/\\n\s*eq\b/g, '\\neq')
+    .replace(/(?<=[x-z0-9\s])\beq\s*([0-9a-zA-Z])/g, '\\neq $1')
+    .replace(/(?<![a-zA-Z\\])neq\b/g, '\\neq');
+
+  // 2. Réparer et envelopper les environnements mathématiques (cases, aligned, matrix, etc.)
+  const envPattern = /(?:(?:\$\$|\$)\s*)?((?:(?:[a-zA-Z0-9_'\(\)\s\^\{\}\[\]+\\-]+|\\left\.?|\\left\\\{)\s*[:=]\s*)?\\begin\{(cases|aligned|matrix|pmatrix|vmatrix|array|gather|split|bmatrix|Bmatrix)\}[\s\S]*?\\end\{\2\}(?:\s*\\right\.)?)(?:\s*(?:\$\$|\$))?/g;
+  str = str.replace(envPattern, (match, body) => {
+    let cleanBody = body.trim();
+    cleanBody = cleanBody.replace(/^\${1,2}/, '').replace(/\${1,2}$/, '').trim();
+    return `\n\n$$${cleanBody}$$\n\n`;
+  });
+
+  // 3. Réparer les doubles anti-slashs LaTeX accidentels
   str = str.replace(/\\\\([a-zA-Z]+)\b/g, '\\$1');
 
-  // Réparer les balises $ ouvertes mais non fermées
-  let dollarCount = (str.match(/(?<!\\)\$/g) || []).length;
+  // 4. Réparer les balises $ ouvertes mais non fermées en excluant les blocs $$ déjà fermés
+  const textWithoutDisplayMath = str.replace(/\$\$[\s\S]*?\$\$/g, '');
+  let dollarCount = (textWithoutDisplayMath.match(/(?<!\\)\$/g) || []).length;
   if (dollarCount % 2 !== 0) {
     str += '$';
   }

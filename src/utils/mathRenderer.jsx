@@ -436,18 +436,27 @@ export const autoRepairMathText = (text) => {
   if (!text || typeof text !== 'string') return text;
   let res = text;
 
-  // 1. Convert any unsupported KaTeX \cline commands to \hline
+  // 1. Repair broken \neq (e.g. \n eq, newline + eq, or plain eq 0 in conditions)
+  res = res
+    .replace(/\\n\s*eq\b/g, '\\neq')
+    .replace(/(?<=[x-z0-9\s])\beq\s*([0-9a-zA-Z])/g, '\\neq $1')
+    .replace(/(?<![a-zA-Z\\])neq\b/g, '\\neq');
+
+  // 2. Convert any unsupported KaTeX \cline commands to \hline
   res = res.replace(/\\cline\s*(?:\{[0-9\- ]+\}|[0-9\- ]+)/g, '\\hline');
 
-  // 2. Normalize and cleanly wrap ALL math environments
-  // Catches bare environments, half-delimited environments (e.g. \begin{array}...\end{array}$),
-  // and forces them into well-formed display blocks ($$ ... $$)
-  res = res.replace(/(?:\${1,2}\s*)?\\begin\{(cases|aligned|matrix|pmatrix|vmatrix|array|gather|split)\}([\s\S]*?)\\end\{\1\}(?:\s*\${1,2})?/g, (_, env, body) => {
-    const cleanBody = body.replace(/\\cline\s*(?:\{[0-9\- ]+\}|[0-9\- ]+)/g, '\\hline');
-    return `\n\n$$\\begin{${env}}${cleanBody}\\end{${env}}$$\n\n`;
+  // 3. Normalize and cleanly wrap ALL math environments
+  // Catches bare environments, half-delimited environments (e.g. f(x) = \begin{cases}...\end{cases}$$),
+  // and forces the entire formula (including LHS prefix) into well-formed display blocks ($$ ... $$)
+  const envPattern = /(?:(?:\$\$|\$)\s*)?((?:(?:[a-zA-Z0-9_'\(\)\s\^\{\}\[\]+\\-]+|\\left\.?|\\left\\\{)\s*[:=]\s*)?\\begin\{(cases|aligned|matrix|pmatrix|vmatrix|array|gather|split|bmatrix|Bmatrix)\}[\s\S]*?\\end\{\2\}(?:\s*\\right\.)?)(?:\s*(?:\$\$|\$))?/g;
+
+  res = res.replace(envPattern, (match, body) => {
+    let cleanBody = body.replace(/\\cline\s*(?:\{[0-9\- ]+\}|[0-9\- ]+)/g, '\\hline').trim();
+    cleanBody = cleanBody.replace(/^\${1,2}/, '').replace(/\${1,2}$/, '').trim();
+    return `\n\n$$${cleanBody}$$\n\n`;
   });
 
-  // 3. Repair common corrupted LaTeX commands
+  // 4. Repair common corrupted LaTeX commands
   res = res
     .replace(/(?<![a-zA-Z\\])ight\b/g, '\\right')
     .replace(/(?<!\\)right\b/g, '\\right')
@@ -724,7 +733,7 @@ function renderWithMathInternal(text) {
   const normalised = normalisedTemp.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g)
     .map((part, idx) => {
       if (idx % 2 === 1) return part;
-      let cleanedPart = part.replace(/\\n/g, '\n');
+      let cleanedPart = part.replace(/\\n(?![a-zA-Z])/g, '\n');
       
       // Force line break after period followed by space and uppercase letter
       // NOTE: exclude when preceded by a digit (numbered list item like "1. Calculer") or single letter (like "A. Calculer")
