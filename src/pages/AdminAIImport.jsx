@@ -701,11 +701,7 @@ export default function AdminAIImport({ onBack }) {
   const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('geminiApiKey') || '');
   const [geminiModel, setGeminiModel] = useState(() => {
     let m = draft?.geminiModel || localStorage.getItem('geminiModel');
-    if (!m || m.includes('3.6') || m.includes('3.5') || m.includes('3.7') || m.includes('3.1')) {
-      localStorage.setItem('geminiModel', 'gemini-2.5-flash');
-      return 'gemini-2.5-flash';
-    }
-    return m;
+    return m || 'gemini-3.7-flash';
   });
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('claudeApiKey') || '');
   const [proxyUrl, setProxyUrl] = useState(() => localStorage.getItem('claudeProxyUrl') || '');
@@ -897,9 +893,10 @@ Pour le champ 'astuce', extrais/résume l'explication officielle fournie dans le
       userPromptText = `${pageNote}Extrais TOUTES les questions QCM de ce document de la première à la toute dernière sans exception, sans aucune omission ni troncature, et retourne le JSON demandé.`;
     }
 
-    const rawModel = geminiModel || 'gemini-2.5-flash';
-    const modelToUse = (rawModel.includes('3.6') || rawModel.includes('3.5') || rawModel.includes('3.7')) ? 'gemini-2.5-flash' : rawModel;
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${geminiKey}`;
+    let rawModel = (geminiModel || 'gemini-3.7-flash').trim();
+    if (rawModel === '3.7' || rawModel === 'gemini-3.7') rawModel = 'gemini-3.7-flash';
+    if (rawModel === '3.5' || rawModel === 'gemini-3.5') rawModel = 'gemini-3.5-flash';
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${rawModel}:generateContent?key=${geminiKey}`;
     
     // Create fresh AbortController for this request
     abortRef.current = new AbortController();
@@ -1789,7 +1786,10 @@ ${pdfText}
               <label>Modèle Gemini <span style={{fontWeight:400, color:'var(--text-muted)'}}>— ID exact de l'API</span></label>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
                 {[
-                  { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Recommandé)' },
+                  { id: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash (Nouveau)' },
+                  { id: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash' },
+                  { id: 'gemini-3.7-pro', label: 'Gemini 3.7 Pro' },
+                  { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
                   { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
                   { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
                   { id: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
@@ -1809,11 +1809,11 @@ ${pdfText}
                 className="input-control"
                 value={geminiModel}
                 onChange={e => { setGeminiModel(e.target.value); localStorage.setItem('geminiModel', e.target.value); }}
-                placeholder="ex: gemini-2.5-flash"
+                placeholder="ex: gemini-3.7-flash"
                 style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
               />
               <p style={{ marginTop: '0.4rem', fontSize: '0.73rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                💡 Recommandé : <strong>gemini-2.5-flash</strong> ou <strong>gemini-2.0-flash</strong> (Haute fidélité LaTeX et extraction intégrale).
+                💡 Recommandé : <strong>gemini-3.7-flash</strong>, <strong>gemini-3.5-flash</strong> ou <strong>gemini-2.5-flash</strong> (Haute fidélité LaTeX et extraction intégrale).
               </p>
             </div>
           )}

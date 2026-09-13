@@ -164,9 +164,9 @@ ${JSON.stringify(lesson.content, null, 2)}
 /**
  * استدعاء Gemini API
  */
-async function callGemini(prompt, geminiKey, model = 'gemini-2.5-flash') {
-  const modelToUse = (!model || model.includes('3.6') || model.includes('3.5') || model.includes('3.7')) ? 'gemini-2.5-flash' : model;
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${geminiKey}`;
+async function callGemini(prompt, geminiKey, model = 'gemini-3.7-flash') {
+  const cleanModel = (model === '3.7' || model === 'gemini-3.7') ? 'gemini-3.7-flash' : (model === '3.5' || model === 'gemini-3.5') ? 'gemini-3.5-flash' : (model || 'gemini-3.7-flash');
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${geminiKey}`;
 
   const response = await fetch(endpoint, {
     method: 'POST',
@@ -395,8 +395,8 @@ export async function callAIWithFailover(prompt, options = {}) {
       if (prov === 'gemini') {
         const key = options.geminiKey || localStorage.getItem('geminiApiKey') || '';
         if (!key) continue;
-        const rawModel = options.geminiModel || localStorage.getItem('geminiModel') || 'gemini-2.5-flash';
-        const model = (rawModel.includes('3.6') || rawModel.includes('3.5') || rawModel.includes('3.7')) ? 'gemini-2.5-flash' : rawModel;
+        const rawModel = (options.geminiModel || localStorage.getItem('geminiModel') || 'gemini-3.7-flash').trim();
+        const model = (rawModel === '3.7' || rawModel === 'gemini-3.7') ? 'gemini-3.7-flash' : (rawModel === '3.5' || rawModel === 'gemini-3.5') ? 'gemini-3.5-flash' : rawModel;
         console.log(`[AI Failover] Attemping generation with Gemini (${model})...`);
         const text = await callGemini(prompt, key, model);
         return { text, provider: 'gemini' };

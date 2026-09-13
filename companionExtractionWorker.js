@@ -338,9 +338,12 @@ const parseJsonWithResilience = (rawText) => {
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Verified high-performing models per provider
+// Verified high-performing models per provider (including next-gen 3.7 and 3.5)
 const FALLBACK_MODELS = {
   gemini: [
+    'gemini-3.7-flash',
+    'gemini-3.5-flash',
+    'gemini-3.7-pro',
     'gemini-2.5-flash',
     'gemini-2.0-flash',
     'gemini-2.5-pro',
@@ -363,11 +366,10 @@ const resolveModelCascade = (provider, userPreferredModel) => {
   const defaults = FALLBACK_MODELS[provider] || FALLBACK_MODELS.gemini;
   let cleanUser = (userPreferredModel || '').trim();
 
-  // Normalize obsolete or speculative model names
+  // Normalize shorthand aliases for 3.7 and 3.5
   if (provider === 'gemini') {
-    if (cleanUser === 'gemini-3.6-flash' || cleanUser === 'gemini-3.5-flash' || cleanUser === 'gemini-3.7' || cleanUser === 'gemini-3.5-flash-thinking' || cleanUser === 'gemini-3.1-pro') {
-      cleanUser = 'gemini-2.5-flash';
-    }
+    if (cleanUser === '3.7' || cleanUser === 'gemini-3.7') cleanUser = 'gemini-3.7-flash';
+    if (cleanUser === '3.5' || cleanUser === 'gemini-3.5') cleanUser = 'gemini-3.5-flash';
   }
 
   const cascade = [];

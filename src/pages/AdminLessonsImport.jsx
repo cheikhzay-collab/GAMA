@@ -802,9 +802,9 @@ export default function AdminLessonsImport({ onBack }) {
   const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('geminiApiKey') || '');
   const [geminiModel, setGeminiModel] = useState(() => {
     const m = localStorage.getItem('geminiModel');
-    if (!m || m.includes('3.6') || m.includes('3.5') || m.includes('3.7') || m.includes('3.1')) {
-      localStorage.setItem('geminiModel', 'gemini-2.5-flash');
-      return 'gemini-2.5-flash';
+    if (!m) {
+      localStorage.setItem('geminiModel', 'gemini-3.7-flash');
+      return 'gemini-3.7-flash';
     }
     return m;
   });
@@ -1023,8 +1023,7 @@ export default function AdminLessonsImport({ onBack }) {
       setProvider(localStorage.getItem('aiImportProvider') || 'gemini');
       setGeminiKey(localStorage.getItem('geminiApiKey') || '');
       const rawGemini = localStorage.getItem('geminiModel');
-      const geminiModelToSet = (!rawGemini || rawGemini.includes('3.6') || rawGemini.includes('3.5') || rawGemini.includes('3.7') || rawGemini.includes('3.1')) ? 'gemini-2.5-flash' : rawGemini;
-      setGeminiModel(geminiModelToSet);
+      setGeminiModel(rawGemini || 'gemini-3.7-flash');
       setClaudeKey(localStorage.getItem('claudeApiKey') || '');
       const rawClaude = localStorage.getItem('claudeModel');
       setClaudeModel((!rawClaude || rawClaude.includes('4-5') || rawClaude === 'claude-3-haiku-20240307') ? 'claude-3-5-sonnet-20241022' : rawClaude);
@@ -1170,10 +1169,9 @@ Pour chaque exercice, activité ou application résolue dans le champ "solution"
 
     // Dynamic model cascade for Gemini with automatic failover & quota resilience
     let userPref = (geminiModel || '').trim();
-    if (userPref.includes('3.6') || userPref.includes('3.5') || userPref.includes('3.7') || userPref.includes('3.1')) {
-      userPref = 'gemini-2.5-flash';
-    }
-    const defaultCascade = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-pro', 'gemini-1.5-pro', 'gemini-1.5-flash'];
+    if (userPref === '3.7' || userPref === 'gemini-3.7') userPref = 'gemini-3.7-flash';
+    if (userPref === '3.5' || userPref === 'gemini-3.5') userPref = 'gemini-3.5-flash';
+    const defaultCascade = ['gemini-3.7-flash', 'gemini-3.5-flash', 'gemini-3.7-pro', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-pro', 'gemini-1.5-pro', 'gemini-1.5-flash'];
     const cascade = Array.from(new Set([userPref, ...defaultCascade].filter(Boolean)));
 
     let lastErr = null;
@@ -2744,9 +2742,12 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
                       value={geminiModel}
                       onChange={e => { setGeminiModel(e.target.value); localStorage.setItem('geminiModel', e.target.value); }}
                     >
-                      <option value="gemini-2.5-flash">Gemini 2.5 Flash (Recommandé - Vitesse & Haute précision)</option>
+                      <option value="gemini-3.7-flash">Gemini 3.7 Flash (Nouveau - Haute Performance & Vitesse)</option>
+                      <option value="gemini-3.5-flash">Gemini 3.5 Flash (Ultra Rapide & Contexte Large)</option>
+                      <option value="gemini-3.7-pro">Gemini 3.7 Pro (Raisonnement Complexe & Concours)</option>
+                      <option value="gemini-2.5-flash">Gemini 2.5 Flash (Éprouvé - Vitesse & Précision)</option>
                       <option value="gemini-2.0-flash">Gemini 2.0 Flash (Ultra Rapide)</option>
-                      <option value="gemini-2.5-pro">Gemini 2.5 Pro (Raisonnement approfondi & Concours)</option>
+                      <option value="gemini-2.5-pro">Gemini 2.5 Pro (Raisonnement approfondi)</option>
                       <option value="gemini-1.5-pro">Gemini 1.5 Pro (Précision Maximale)</option>
                       <option value="gemini-1.5-flash">Gemini 1.5 Flash (Économique & Léger)</option>
                     </select>
