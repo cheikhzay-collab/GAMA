@@ -448,3 +448,33 @@ CREATE POLICY "Admin Manage" ON storage.objects
   USING (bucket_id = 'gima-assets' AND public.is_admin())
   WITH CHECK (bucket_id = 'gima-assets' AND public.is_admin());
 
+
+-- ─── 12. Lesson Extraction Tasks Queue (Asynchronous Background Jobs) ─────────
+CREATE TABLE IF NOT EXISTS public.extraction_tasks (
+  id text PRIMARY KEY,
+  file_name text NOT NULL,
+  file_type text,
+  page_count integer DEFAULT 1,
+  provider text DEFAULT 'gemini',
+  model text,
+  status text DEFAULT 'pending', -- 'pending' | 'processing' | 'completed' | 'failed'
+  progress_percent integer DEFAULT 0,
+  progress_message text,
+  attempts integer DEFAULT 0,
+  max_attempts integer DEFAULT 3,
+  error_message text,
+  result_json jsonb,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+  completed_at timestamp with time zone
+);
+
+ALTER TABLE public.extraction_tasks ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Admins can manage extraction tasks." ON public.extraction_tasks;
+CREATE POLICY "Admins can manage extraction tasks." ON public.extraction_tasks
+  FOR ALL USING (public.is_admin());
+
+CREATE INDEX IF NOT EXISTS idx_extraction_tasks_status ON public.extraction_tasks(status, created_at DESC);
+
+

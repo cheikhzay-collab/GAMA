@@ -6,9 +6,18 @@ import {
   Trash2, Plus, ArrowLeft, AlertCircle, Save,
   Crop, Eye, Columns, Maximize2, ZoomIn, ZoomOut,
   ChevronLeft, ChevronRight, Image as ImageIcon,
-  CheckCircle, AlertTriangle, FileText, BookOpen, Layers, Award, Target
+  CheckCircle, AlertTriangle, FileText, BookOpen, Layers, Award, Target,
+  Clock, RefreshCw, Check, Play, ListFilter, Inbox, ArrowRight
 } from 'lucide-react';
 import { addLesson } from '../services/lessonService';
+import {
+  getExtractionTasks,
+  getExtractionTaskById,
+  createExtractionTask,
+  retryExtractionTask,
+  deleteExtractionTask,
+  isCompanionAvailable
+} from '../services/extractionTaskService';
 import { SafeInlineMath } from '../utils/mathRenderer';
 import SmartTableRenderer, { parseMarkdownTable } from '../components/SmartTableRenderer';
 import NationalExamTemplate from '../components/NationalExamTemplate';
@@ -825,6 +834,16 @@ export default function AdminLessonsImport({ onBack }) {
   const [progressPercent, setProgressPercent] = useState(0);
   const [detectedModels, setDetectedModels] = useState([]);
 
+  // ── Background Tasks State ──
+  const [activeTab, setActiveTab] = useState('upload'); // 'upload' | 'queue'
+  const [tasks, setTasks] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [submittingTasks, setSubmittingTasks] = useState(false);
+  const [loadingTaskDetails, setLoadingTaskDetails] = useState(null);
+  const [taskUnderReview, setTaskUnderReview] = useState(null);
+  const [isCompanionOnline, setIsCompanionOnline] = useState(true);
+  const [toastMessage, setToastMessage] = useState('');
+
   // Form State for editing the parsed result
   const [phase, setPhase] = useState(1); // 1 = Upload & Parse, 2 = Review & Edit
   const [ficheTitle, setFicheTitle] = useState('');
@@ -1024,12 +1043,43 @@ export default function AdminLessonsImport({ onBack }) {
     return () => window.removeEventListener('storage', sync);
   }, []);
 
+  // Poll background tasks list
+  const fetchTasksList = useCallback(async () => {
+    try {
+      const list = await getExtractionTasks();
+      setTasks(list || []);
+      const online = await isCompanionAvailable();
+      setIsCompanionOnline(online);
+    } catch (err) {
+      console.warn('[TasksList] fetch failed:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTasksList();
+    const interval = setInterval(fetchTasksList, 2500);
+    return () => clearInterval(interval);
+  }, [fetchTasksList]);
+
   const handleFileSelect = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setUploadFile(file);
-    setFileName(file.name);
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setSelectedFiles(files);
+    setUploadFile(files[0]);
+    setFileName(files.length === 1 ? files[0].name : `${files.length} fichiers sélectionnés`);
     setError('');
+  };
+
+  const handleRemoveSelectedFile = (idxToRemove) => {
+    const next = selectedFiles.filter((_, idx) => idx !== idxToRemove);
+    setSelectedFiles(next);
+    if (next.length > 0) {
+      setUploadFile(next[0]);
+      setFileName(next.length === 1 ? next[0].name : `${next.length} fichiers sélectionnés`);
+    } else {
+      setUploadFile(null);
+      setFileName('');
+    }
   };
 
   const buildExtractionUserPrompt = (pageCount, solveSolutions, preExtractedPdfText = '') => {
@@ -1730,6 +1780,261 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
     }
   };
 
+  // Helper: Populate Phase 2 form with parsed extraction result
+  const loadParsedLesson = (parsed, docName = '') => {
+    if (!parsed) return;
+    const header = parsed?.header || (parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {});
+    let rawSections = [];
+    if (Array.isArray(parsed)) {
+      rawSections = parsed;
+    } else if (parsed && typeof parsed === 'object') {
+      if (Array.isArray(parsed.sections)) rawSections = parsed.sections;
+      else if (Array.isArray(parsed.items)) rawSections = parsed.items;
+      else if (Array.isArray(parsed.exercises)) rawSections = parsed.exercises;
+      else if (Array.isArray(parsed.exercices)) rawSections = parsed.exercices;
+      else if (Array.isArray(parsed.series)) rawSections = parsed.series;
+      else if (Array.isArray(parsed.serie)) rawSections = parsed.serie;
+      else if (Array.isArray(parsed.questions)) rawSections = parsed.questions;
+      else if (Array.isArray(parsed.parties)) rawSections = parsed.parties;
+      else if (Array.isArray(parsed.content)) rawSections = parsed.content;
+      else if (Array.isArray(parsed.data)) rawSections = parsed.data;
+      else if (Array.isArray(parsed.cours)) rawSections = parsed.cours;
+      else if (parsed.course && Array.isArray(parsed.course.sections)) rawSections = parsed.course.sections;
+      else if (parsed.course && Array.isArray(parsed.course.items)) rawSections = parsed.course.items;
+      else {
+        const arrayProp = Object.values(parsed).find(val => Array.isArray(val) && val.length > 0 && typeof val[0] === 'object');
+        if (arrayProp) rawSections = arrayProp;
+      }
+    }
+
+    if (rawSections.length === 0) {
+      if (parsed.content || parsed.questions || parsed.exercice || parsed.title) {
+        rawSections = [parsed];
+      }
+    }
+
+    const defaultTitle = docName ? docName.replace(/\.[^/.]+$/, "") : '';
+    setFicheTitle(header.fiche_title || header.title || defaultTitle || 'Fiche de cours');
+    setSubject(header.subject || 'Mathématiques');
+    setPrepTitle(header.prep_title || 'Préparation aux concours');
+    setTeacher(header.teacher || '');
+    setPhone(header.phone || '');
+    setTopics(Array.isArray(header.topics) ? header.topics : []);
+    if (header.total_points) setTotalPoints(header.total_points);
+
+    const rawTitle = ((header.fiche_title || header.title || '') + ' ' + (header.prep_title || '')).trim();
+    const isSeries = /سلسلة|s[ée]rie|travaux dirig[ée]s|fiche d['’]exercices|تمارين تطبيقية|أعمال موجهة/i.test(rawTitle);
+    const isHomework = /فرض|devoir|contr[ôo]le continu|ds\s*n?°?|dm\s*n?°?/i.test(rawTitle);
+    const isConcours = /مباراة|concours|fmp|ensam?|apesa/i.test(rawTitle);
+    const isOfficialNational = !isSeries && !isHomework && !isConcours && Boolean(
+      header.doc_type === 'national' ||
+      (header.is_national_exam && /^(الامتحان الوطني الموحد|examen national)/i.test((header.fiche_title || '').trim())) ||
+      /NS\s*\d+|NR\s*\d+/i.test(rawTitle)
+    );
+    const isSummary = !isSeries && !isHomework && !isConcours && !isOfficialNational && Boolean(
+      header.doc_type === 'summary' ||
+      header.is_summary ||
+      header.summary_meta ||
+      /ملخص|r[ée]sum[ée]|synth[èe]se|fiche m[ée]mo/i.test(rawTitle)
+    );
+
+    let finalDocType = header.doc_type || 'course';
+    if (isSeries) finalDocType = 'exercises';
+    else if (isHomework) finalDocType = 'homework';
+    else if (isConcours) finalDocType = 'concours';
+    else if (isOfficialNational) finalDocType = 'national';
+    else if (isSummary) finalDocType = 'summary';
+
+    setDocType(finalDocType);
+    setIsNationalExam(isOfficialNational);
+    if (isOfficialNational && header.national_exam_meta) setNationalExamMeta(header.national_exam_meta);
+    setViewNationalTemplate(isOfficialNational);
+
+    setIsSummarySheet(isSummary);
+    if (header.summary_meta) setSummaryMeta(header.summary_meta);
+    setViewSummaryTemplate(isSummary);
+
+    const detectedLvl = header.detected_level || header.level;
+    if (detectedLvl) setSelectedLevel(normalizeLevel(detectedLvl));
+
+    let mappedSections = rawSections.map(sec => {
+      const rawItemsList = Array.isArray(sec.items) ? sec.items : [];
+      let content = typeof sec.content === 'string' ? sec.content : '';
+
+      const items = rawItemsList.map(it => {
+        if (typeof it === 'string') {
+          if (it.trim().startsWith('|') && it.trim().endsWith('|') && it.includes('\n')) {
+            const parsedTbl = parseMarkdownTable(it);
+            if (parsedTbl) {
+              return {
+                type: 'table',
+                table_data: { headers: parsedTbl.headers, rows: parsedTbl.rows, alignment: parsedTbl.alignment },
+                headers: parsedTbl.headers,
+                rows: parsedTbl.rows,
+                isVariationTable: parsedTbl.isVariationTable
+              };
+            }
+          }
+          return { type: 'text', text: it };
+        }
+        if (it && typeof it === 'object') {
+          if (it.type === 'table' || it.headers || it.table_data || (it.text && it.text.trim().startsWith('|') && it.text.trim().endsWith('|') && it.text.includes('\n'))) {
+            const headers = it.table_data?.headers || it.headers || [];
+            const rows = it.table_data?.rows || it.rows || [];
+            if (headers.length > 0 && rows.length > 0) {
+              return {
+                ...it,
+                type: 'table',
+                table_data: { headers, rows, alignment: it.alignment || it.table_data?.alignment || [] },
+                headers,
+                rows
+              };
+            }
+          }
+        }
+        return it;
+      });
+
+      if (items.length > 0 && (!content || content.trim().length < 30)) {
+        content = items.map(it => typeof it === 'string' ? it : (it.text || '')).filter(Boolean).join('\n');
+      }
+      let finalItems = items;
+      if (finalItems.length === 0 && content.trim()) {
+        const lines = content.split('\n').map(l => l.trim()).filter(Boolean);
+        finalItems = lines.map(line => {
+          const isBullet = /^(\d+|[a-zA-Z])[.)]|\*\*(\d+|[a-zA-Z])/.test(line);
+          return { type: isBullet ? 'bullet' : 'text', text: line };
+        });
+      }
+
+      const hasAr = /[\u0600-\u06FF]/.test((sec.title || '') + ' ' + content + ' ' + (sec.solution || '') + ' ' + finalItems.map(it => it.text || '').join(' '));
+      return {
+        ...sec,
+        content,
+        items: finalItems,
+        points: sec.points !== undefined && sec.points !== null ? sec.points : '',
+        language: sec.language || (hasAr ? 'ar' : 'fr')
+      };
+    });
+
+    setSections(mappedSections);
+    const isAr = /[\u0600-\u06FF]/.test((header.fiche_title || '') + ' ' + (header.subject || ''));
+    setDocLanguage(parsed?.metadata?.language || (isAr ? 'ar' : 'fr'));
+    const numMatch = (header.fiche_title || '').match(/Fiche\s*(\d+)/i);
+    if (numMatch) setChapterNumber(numMatch[1]);
+    setPhase(2);
+  };
+
+  // Launch asynchronous background tasks for selected files
+  const handleLaunchBackgroundTasks = async () => {
+    const filesToQueue = selectedFiles.length > 0 ? selectedFiles : (uploadFile ? [uploadFile] : []);
+    if (filesToQueue.length === 0) {
+      setError('Veuillez sélectionner au moins un fichier PDF ou Image.');
+      return;
+    }
+
+    if (provider === 'gemini' && !geminiKey) {
+      setError('Clé API Gemini requise. Veuillez la renseigner.');
+      return;
+    }
+    if (provider === 'claude' && !claudeKey) {
+      setError('Clé API Claude requise. Veuillez la renseigner.');
+      return;
+    }
+    if (provider === 'deepseek' && !deepseekKey) {
+      setError('Clé API DeepSeek requise. Veuillez la renseigner.');
+      return;
+    }
+
+    setSubmittingTasks(true);
+    setError('');
+
+    try {
+      for (const file of filesToQueue) {
+        let pageCount = 1;
+        let preExtractedPdfText = '';
+        const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
+        if (isPdf) {
+          try {
+            const buf = await file.arrayBuffer();
+            const d = await pdfjsLib.getDocument({ data: buf }).promise;
+            pageCount = d.numPages;
+            preExtractedPdfText = await extractTextFromPdf(file);
+          } catch (e) {
+            console.warn('[Background Queue] PDF pre-read note:', e);
+          }
+        }
+
+        const base64Data = await fileToBase64(file);
+
+        await createExtractionTask({
+          fileName: file.name,
+          fileType: file.type || (isPdf ? 'application/pdf' : 'image/jpeg'),
+          pageCount,
+          base64Data,
+          preExtractedPdfText,
+          provider,
+          apiKey: provider === 'gemini' ? geminiKey : (provider === 'claude' ? claudeKey : deepseekKey),
+          model: provider === 'gemini' ? geminiModel : (provider === 'claude' ? claudeModel : deepseekModel),
+          proxyUrl,
+          deepseekUrl,
+          solveSolutions: localStorage.getItem(`${provider}_solve_solutions`) !== 'false'
+        });
+      }
+
+      setSelectedFiles([]);
+      setUploadFile(null);
+      setFileName('');
+      setActiveTab('queue');
+      setToastMessage(`${filesToQueue.length} tâche(s) d'extraction lancée(s) en arrière-plan avec succès !`);
+      setTimeout(() => setToastMessage(''), 6000);
+      fetchTasksList();
+    } catch (err) {
+      setError(`Erreur lors de la mise en file : ${err.message}`);
+    } finally {
+      setSubmittingTasks(false);
+    }
+  };
+
+  // Review a completed task in Phase 2
+  const handleReviewTask = async (taskSummary) => {
+    setLoadingTaskDetails(taskSummary.id);
+    setError('');
+    try {
+      const fullTask = await getExtractionTaskById(taskSummary.id);
+      if (!fullTask || !fullTask.result) {
+        throw new Error("Données extraites introuvables pour cette tâche. Veuillez patienter ou relancer.");
+      }
+      setTaskUnderReview(fullTask);
+      loadParsedLesson(fullTask.result, fullTask.fileName);
+    } catch (err) {
+      setError(`Erreur lors du chargement de la fiche : ${err.message}`);
+    } finally {
+      setLoadingTaskDetails(null);
+    }
+  };
+
+  // Retry a failed task
+  const handleRetryTask = async (taskId) => {
+    try {
+      await retryExtractionTask(taskId);
+      fetchTasksList();
+    } catch (err) {
+      setError(`Impossible de relancer la tâche : ${err.message}`);
+    }
+  };
+
+  // Delete a task from queue
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await deleteExtractionTask(taskId);
+      fetchTasksList();
+    } catch (err) {
+      setError(`Erreur lors de la suppression : ${err.message}`);
+    }
+  };
+
   // State modifiers
   const handleAddSection = (type) => {
     const newId = `sec-${Date.now()}`;
@@ -1885,6 +2190,13 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
       };
 
       await addLesson(lessonData);
+      if (taskUnderReview?.id) {
+        try {
+          await deleteExtractionTask(taskUnderReview.id);
+        } catch (delErr) {
+          console.warn('[handleSaveLesson] Note deleting reviewed task:', delErr);
+        }
+      }
       navigate('/admin/lessons');
     } catch (e) {
       console.error(e);
@@ -2214,180 +2526,761 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
         </div>
       )}
 
-      {/* ── PHASE 1: Upload and Parse ── */}
+      {toastMessage && (
+        <div className="animate-fade-in" style={{
+          padding: '1rem 1.5rem',
+          borderRadius: 14,
+          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.08) 100%)',
+          border: '1px solid rgba(16, 185, 129, 0.35)',
+          marginBottom: '1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          color: 'var(--emerald)'
+        }}>
+          <CheckCircle2 size={20} />
+          <span style={{ fontWeight: 700, fontSize: '0.92rem' }}>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* ── PHASE 1: Upload and Parse OR Background Task Queue ── */}
       {phase === 1 && (
-        <div className="glass-panel" style={{ padding: '3rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1.5rem', marginBottom: '0.5rem' }}>
-            <div className="input-group" style={{ flex: 1 }}>
-              <label>Moteur d'intelligence artificielle</label>
-              <select
-                className="input-control"
-                value={provider}
-                onChange={e => {
-                  const val = e.target.value;
-                  setProvider(val);
-                  localStorage.setItem('aiImportProvider', val);
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+          {/* Tab Navigation Switcher */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '1rem',
+            padding: '0.5rem',
+            borderRadius: '16px',
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid var(--border)'
+          }}>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => setActiveTab('upload')}
+                className={activeTab === 'upload' ? 'btn' : 'btn-outline'}
+                style={{
+                  padding: '0.6rem 1.25rem',
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  background: activeTab === 'upload' ? 'var(--violet)' : 'transparent',
+                  color: activeTab === 'upload' ? '#fff' : 'var(--text-muted)'
                 }}
               >
-                <option value="gemini">Google Gemini (Sécurisé & Rapide)</option>
-                <option value="claude">Anthropic Claude (Modèle d'Examen)</option>
-                <option value="deepseek">DeepSeek AI (Super Économique)</option>
-              </select>
+                <UploadCloud size={17} />
+                Nouvelle Extraction (Fichiers)
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('queue')}
+                className={activeTab === 'queue' ? 'btn' : 'btn-outline'}
+                style={{
+                  padding: '0.6rem 1.25rem',
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  background: activeTab === 'queue' ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent',
+                  color: activeTab === 'queue' ? '#fff' : 'var(--text-muted)'
+                }}
+              >
+                <Clock size={17} />
+                File des Tâches en Arrière-Plan
+                {tasks.length > 0 && (
+                  <span style={{
+                    padding: '0.15rem 0.5rem',
+                    borderRadius: '20px',
+                    fontSize: '0.75rem',
+                    fontWeight: 800,
+                    background: activeTab === 'queue' ? 'rgba(0,0,0,0.25)' : 'var(--violet)',
+                    color: '#fff'
+                  }}>
+                    {tasks.length}
+                  </span>
+                )}
+                {tasks.some(t => t.status === 'processing') && (
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 8px #38bdf8' }} />
+                )}
+              </button>
             </div>
 
-            <div className="input-group" style={{ flex: 1 }}>
-              <label>Modèle de traitement IA</label>
-              {provider === 'claude' ? (
-                <select
-                  className="input-control"
-                  value={claudeModel}
-                  onChange={e => { setClaudeModel(e.target.value); localStorage.setItem('claudeModel', e.target.value); }}
-                >
-                  <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (Recommandé - Stable & Précis)</option>
-                  <option value="claude-3-7-sonnet-20250219">Claude 3.7 Sonnet (Dernier modèle - Raisonnement Hybride)</option>
-                  <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (Ultra Rapide & Économique)</option>
-                  <option value="claude-3-opus-20240229">Claude 3 Opus (Haute précision)</option>
-                </select>
-              ) : provider === 'deepseek' ? (
-                <select
-                  className="input-control"
-                  value={deepseekModel}
-                  onChange={e => { setDeepseekModel(e.target.value); localStorage.setItem('deepseekModel', e.target.value); }}
-                >
-                  <option value="deepseek-reasoner">DeepSeek-R1 (Reasoner - Déduction & Raisonnement Approfondi)</option>
-                  <option value="deepseek-chat">DeepSeek-V3 (Chat - Flash, Rapide & Polyvalent)</option>
-                </select>
-              ) : (
-                <select
-                  className="input-control"
-                  value={geminiModel}
-                  onChange={e => { setGeminiModel(e.target.value); localStorage.setItem('geminiModel', e.target.value); }}
-                >
-                  <option value="gemini-3.6-flash">Gemini 3.6 Flash (Recommandé - Dernière version)</option>
-                  <option value="gemini-3.5-flash">Gemini 3.5 Flash (Ultra Rapide & 1M Contexte)</option>
-                  <option value="gemini-3.5-flash-thinking">Gemini 3.5 Flash Thinking (Résolution & LaTeX Avancés)</option>
-                  <option value="gemini-3.1-pro">Gemini 3.1 Pro (Précision Maximale Concours)</option>
-                  <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                  <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-                  <option value="gemini-1.5-flash">Gemini 1.5 Flash (Legacy)</option>
-                </select>
-              )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingRight: '0.5rem' }}>
+              <span style={{
+                fontSize: '0.75rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                color: isCompanionOnline ? 'var(--emerald)' : 'var(--warning)',
+                fontWeight: 600
+              }}>
+                <span style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  background: isCompanionOnline ? '#10b981' : '#f59e0b',
+                  display: 'inline-block'
+                }} />
+                {isCompanionOnline ? 'Serveur d\'arrière-plan actif (port 5002)' : 'Mode local'}
+              </span>
             </div>
           </div>
 
-          {/* Quick API Key configurator */}
-          {provider === 'claude' && !claudeKey && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', padding: '1rem', borderRadius: 10, background: 'rgba(124,58,237,0.06)', border: '1px solid rgba(124,58,237,0.15)', fontSize: '0.8rem' }}>
-              <span style={{ fontWeight: 700, color: '#7c3aed' }}>⚠️ Clé API Claude manquante</span>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <input
-                  type="password"
-                  placeholder="Collez votre clé API Anthropic (sk-ant-...)"
-                  className="input-control"
-                  value={claudeKey}
-                  onChange={e => { setClaudeKey(e.target.value); localStorage.setItem('claudeApiKey', e.target.value); }}
-                  style={{ padding: '0.35rem 0.6rem', fontSize: '0.8rem' }}
-                />
-              </div>
-            </div>
-          )}
-          {provider === 'deepseek' && !deepseekKey && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', padding: '1rem', borderRadius: 10, background: 'rgba(0,186,124,0.06)', border: '1px solid rgba(0,186,124,0.15)', fontSize: '0.8rem' }}>
-              <span style={{ fontWeight: 700, color: '#00BA7C' }}>⚠️ Clé API DeepSeek manquante</span>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <input
-                  type="password"
-                  placeholder="Collez votre clé API DeepSeek (sk-...)"
-                  className="input-control"
-                  value={deepseekKey}
-                  onChange={e => { setDeepseekKey(e.target.value); localStorage.setItem('deepseekApiKey', e.target.value); }}
-                  style={{ padding: '0.35rem 0.6rem', fontSize: '0.8rem' }}
-                />
-              </div>
-            </div>
-          )}
-          {provider === 'gemini' && !geminiKey && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', padding: '1rem', borderRadius: 10, background: 'rgba(66,133,244,0.06)', border: '1px solid rgba(66,133,244,0.15)', fontSize: '0.8rem' }}>
-              <span style={{ fontWeight: 700, color: '#4285F4' }}>⚠️ Clé API Gemini manquante</span>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <input
-                  type="password"
-                  placeholder="Collez votre clé API Google Gemini (AIzaSy...)"
-                  className="input-control"
-                  value={geminiKey}
-                  onChange={e => { setGeminiKey(e.target.value); localStorage.setItem('geminiApiKey', e.target.value); }}
-                  style={{ padding: '0.35rem 0.6rem', fontSize: '0.8rem' }}
-                />
-              </div>
-            </div>
-          )}
+          {/* ── SUB-TAB 1: Upload Form ── */}
+          {activeTab === 'upload' && (
+            <div className="glass-panel" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1.5rem' }}>
+                <div className="input-group" style={{ flex: 1 }}>
+                  <label>Moteur d'intelligence artificielle</label>
+                  <select
+                    className="input-control"
+                    value={provider}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setProvider(val);
+                      localStorage.setItem('aiImportProvider', val);
+                    }}
+                  >
+                    <option value="gemini">Google Gemini (Recommandé - Sécurisé & Rapide)</option>
+                    <option value="claude">Anthropic Claude (Modèle d'Examen)</option>
+                    <option value="deepseek">DeepSeek AI (Super Économique)</option>
+                  </select>
+                </div>
 
-          <div className="input-group">
-            <label>Sélectionnez la fiche de cours (PDF ou Image)</label>
-            <label className="upload-zone" style={{ minHeight: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                accept="application/pdf, image/*" 
-                onChange={handleFileSelect} 
-                style={{ display: 'none' }} 
-              />
-              {!uploadFile ? (
-                <>
-                  <UploadCloud size={48} className="text-violet" style={{ marginBottom: '1rem' }} />
-                  <p style={{ fontWeight: 800, fontSize: '1rem', margin: '0 0 0.25rem 0' }}>Glissez-déposez un fichier ici</p>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Fichiers supportés : .pdf, .png, .jpg, .jpeg</span>
-                </>
-              ) : (
-                <div style={{ textAlign: 'center' }}>
-                  <CheckCircle2 size={40} className="text-emerald" style={{ margin: '0 auto 0.75rem' }} />
-                  <p style={{ fontWeight: 800, margin: '0 0 0.25rem 0' }}>{fileName}</p>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    Type : {uploadFile.type} ({(uploadFile.size / (1024 * 1024)).toFixed(2)} Mo)
+                <div className="input-group" style={{ flex: 1 }}>
+                  <label>Modèle de traitement IA</label>
+                  {provider === 'claude' ? (
+                    <select
+                      className="input-control"
+                      value={claudeModel}
+                      onChange={e => { setClaudeModel(e.target.value); localStorage.setItem('claudeModel', e.target.value); }}
+                    >
+                      <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (Stable & Précis)</option>
+                      <option value="claude-3-7-sonnet-20250219">Claude 3.7 Sonnet (Raisonnement Hybride)</option>
+                      <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (Ultra Rapide)</option>
+                      <option value="claude-3-opus-20240229">Claude 3 Opus (Haute précision)</option>
+                    </select>
+                  ) : provider === 'deepseek' ? (
+                    <select
+                      className="input-control"
+                      value={deepseekModel}
+                      onChange={e => { setDeepseekModel(e.target.value); localStorage.setItem('deepseekModel', e.target.value); }}
+                    >
+                      <option value="deepseek-reasoner">DeepSeek-R1 (Reasoner - Déduction Approfondie)</option>
+                      <option value="deepseek-chat">DeepSeek-V3 (Chat - Flash & Rapide)</option>
+                    </select>
+                  ) : (
+                    <select
+                      className="input-control"
+                      value={geminiModel}
+                      onChange={e => { setGeminiModel(e.target.value); localStorage.setItem('geminiModel', e.target.value); }}
+                    >
+                      <option value="gemini-3.6-flash">Gemini 3.6 Flash (Recommandé - Vitesse & Précision)</option>
+                      <option value="gemini-3.5-flash">Gemini 3.5 Flash (Ultra Rapide & 1M Contexte)</option>
+                      <option value="gemini-3.5-flash-thinking">Gemini 3.5 Flash Thinking (Raisonnement)</option>
+                      <option value="gemini-3.1-pro">Gemini 3.1 Pro (Précision Concours)</option>
+                      <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                    </select>
+                  )}
+                </div>
+              </div>
+
+              {/* Quick API Key configurator */}
+              {provider === 'claude' && !claudeKey && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', padding: '1rem', borderRadius: 10, background: 'rgba(124,58,237,0.06)', border: '1px solid rgba(124,58,237,0.15)', fontSize: '0.8rem' }}>
+                  <span style={{ fontWeight: 700, color: '#7c3aed' }}>⚠️ Clé API Claude manquante</span>
+                  <input
+                    type="password"
+                    placeholder="Collez votre clé API Anthropic (sk-ant-...)"
+                    className="input-control"
+                    value={claudeKey}
+                    onChange={e => { setClaudeKey(e.target.value); localStorage.setItem('claudeApiKey', e.target.value); }}
+                    style={{ padding: '0.35rem 0.6rem', fontSize: '0.8rem' }}
+                  />
+                </div>
+              )}
+              {provider === 'deepseek' && !deepseekKey && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', padding: '1rem', borderRadius: 10, background: 'rgba(0,186,124,0.06)', border: '1px solid rgba(0,186,124,0.15)', fontSize: '0.8rem' }}>
+                  <span style={{ fontWeight: 700, color: '#00BA7C' }}>⚠️ Clé API DeepSeek manquante</span>
+                  <input
+                    type="password"
+                    placeholder="Collez votre clé API DeepSeek (sk-...)"
+                    className="input-control"
+                    value={deepseekKey}
+                    onChange={e => { setDeepseekKey(e.target.value); localStorage.setItem('deepseekApiKey', e.target.value); }}
+                    style={{ padding: '0.35rem 0.6rem', fontSize: '0.8rem' }}
+                  />
+                </div>
+              )}
+              {provider === 'gemini' && !geminiKey && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', padding: '1rem', borderRadius: 10, background: 'rgba(66,133,244,0.06)', border: '1px solid rgba(66,133,244,0.15)', fontSize: '0.8rem' }}>
+                  <span style={{ fontWeight: 700, color: '#4285F4' }}>⚠️ Clé API Gemini manquante</span>
+                  <input
+                    type="password"
+                    placeholder="Collez votre clé API Google Gemini (AIzaSy...)"
+                    className="input-control"
+                    value={geminiKey}
+                    onChange={e => { setGeminiKey(e.target.value); localStorage.setItem('geminiApiKey', e.target.value); }}
+                    style={{ padding: '0.35rem 0.6rem', fontSize: '0.8rem' }}
+                  />
+                </div>
+              )}
+
+              {/* Multi-file Dropzone */}
+              <div className="input-group">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                  <label style={{ margin: 0 }}>Sélectionnez 1 ou plusieurs fiches de cours (PDF ou Images)</label>
+                  {selectedFiles.length > 0 && (
+                    <span style={{ fontSize: '0.8rem', color: 'var(--violet)', fontWeight: 700 }}>
+                      {selectedFiles.length} fichier(s) prêt(s) pour la mise en file
+                    </span>
+                  )}
+                </div>
+
+                <label className="upload-zone" style={{ minHeight: '190px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    accept="application/pdf, image/*" 
+                    multiple
+                    onChange={handleFileSelect} 
+                    style={{ display: 'none' }} 
+                  />
+                  <UploadCloud size={46} className="text-violet" style={{ marginBottom: '0.75rem' }} />
+                  <p style={{ fontWeight: 800, fontSize: '1.05rem', margin: '0 0 0.25rem 0' }}>
+                    Glissez-déposez 1 ou plusieurs fichiers ici
+                  </p>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    Sélection multiple supportée (PDF, PNG, JPG). Vous pouvez envoyer plusieurs fiches en un clic !
                   </span>
-                  <div style={{ marginTop: '1rem', textDecoration: 'underline', cursor: 'pointer', fontSize: '0.8rem' }} onClick={(e) => { e.preventDefault(); setUploadFile(null); }}>
-                    Changer de fichier
+                </label>
+              </div>
+
+              {/* Selected Files List */}
+              {selectedFiles.length > 0 && (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.6rem',
+                  padding: '1.25rem',
+                  borderRadius: '14px',
+                  background: 'rgba(255,255,255,0.02)',
+                  border: '1px solid var(--border)'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                      📑 Documents sélectionnés ({selectedFiles.length}) :
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedFiles([]); setUploadFile(null); setFileName(''); }}
+                      className="btn-outline"
+                      style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                    >
+                      Tout désélectionner
+                    </button>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.6rem' }}>
+                    {selectedFiles.map((f, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '0.6rem 0.85rem',
+                          borderRadius: '10px',
+                          background: 'rgba(255,255,255,0.03)',
+                          border: '1px solid rgba(255,255,255,0.06)',
+                          fontSize: '0.82rem'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden' }}>
+                          <FileText size={16} className="text-violet" style={{ flexShrink: 0 }} />
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>
+                            {f.name}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                            {(f.size / (1024 * 1024)).toFixed(1)} Mo
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSelectedFile(idx)}
+                            style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: '0.2rem' }}
+                            title="Retirer"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
-            </label>
-          </div>
 
-          <button 
-            onClick={handleAnalyze} 
-            className="btn" 
-            disabled={loading || !uploadFile}
-            style={{ width: '100%', padding: '1.25rem', fontSize: '1.1rem', justifyContent: 'center' }}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="animate-spin" size={20} style={{ marginRight: '0.5rem' }} />
-                Traitement en cours...
-              </>
-            ) : (
-              <>
-                <Sparkles size={20} style={{ marginRight: '0.5rem' }} />
-                Analyser et extraire le contenu
-              </>
-            )}
-          </button>
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1rem' }}>
+                <button
+                  type="button"
+                  onClick={handleLaunchBackgroundTasks}
+                  disabled={submittingTasks || (selectedFiles.length === 0 && !uploadFile)}
+                  className="btn"
+                  style={{
+                    flex: 2,
+                    padding: '1.1rem 1.5rem',
+                    fontSize: '1rem',
+                    fontWeight: 800,
+                    justifyContent: 'center',
+                    background: 'linear-gradient(135deg, var(--violet), #10b981)',
+                    boxShadow: '0 8px 24px rgba(16, 185, 129, 0.25)',
+                    color: '#fff'
+                  }}
+                >
+                  {submittingTasks ? (
+                    <>
+                      <Loader2 className="animate-spin" size={20} style={{ marginRight: '0.5rem' }} />
+                      Mise en file en cours...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={20} style={{ marginRight: '0.5rem' }} />
+                      🚀 Lancer en tâche d'arrière-plan {selectedFiles.length > 1 ? `(${selectedFiles.length} fichiers)` : ''}
+                    </>
+                  )}
+                </button>
 
-          {loading && (
-            <div className="animate-fade-in" style={{ marginTop: '1.5rem', width: '100%' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
-                <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>{progress}</span>
-                <span style={{ color: 'var(--violet)', fontWeight: 800 }}>{progressPercent}%</span>
+                {selectedFiles.length <= 1 && (
+                  <button
+                    type="button"
+                    onClick={handleAnalyze}
+                    disabled={loading || (!uploadFile && selectedFiles.length === 0)}
+                    className="btn-outline"
+                    style={{
+                      flex: 1,
+                      padding: '1.1rem 1.25rem',
+                      fontSize: '0.9rem',
+                      fontWeight: 700,
+                      justifyContent: 'center'
+                    }}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="animate-spin" size={18} style={{ marginRight: '0.5rem' }} />
+                        Extraction directe...
+                      </>
+                    ) : (
+                      <>
+                        <Play size={18} style={{ marginRight: '0.5rem' }} />
+                        Analyser directement
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
-              <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '99px', overflow: 'hidden', border: '1px solid var(--border)' }}>
-                <div style={{
-                  width: `${progressPercent}%`,
-                  height: '100%',
-                  background: 'linear-gradient(90deg, var(--violet), var(--emerald))',
-                  borderRadius: '99px',
-                  transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                  boxShadow: '0 0 10px rgba(113, 109, 242, 0.5)'
-                }} />
+
+              {loading && (
+                <div className="animate-fade-in" style={{ marginTop: '0.5rem', width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
+                    <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>{progress}</span>
+                    <span style={{ color: 'var(--violet)', fontWeight: 800 }}>{progressPercent}%</span>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '99px', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                    <div style={{
+                      width: `${progressPercent}%`,
+                      height: '100%',
+                      background: 'linear-gradient(90deg, var(--violet), var(--emerald))',
+                      borderRadius: '99px',
+                      transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                      boxShadow: '0 0 10px rgba(113, 109, 242, 0.5)'
+                    }} />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── SUB-TAB 2: Background Task Queue Dashboard ── */}
+          {activeTab === 'queue' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+              {/* Queue Controls & Stats Header */}
+              <div className="glass-panel" style={{
+                padding: '1.25rem 1.75rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '1rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Total :</span>
+                    <span style={{ fontWeight: 800, fontSize: '0.95rem' }}>{tasks.length}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#38bdf8' }} />
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>En cours :</span>
+                    <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#38bdf8' }}>
+                      {tasks.filter(t => t.status === 'processing').length}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} />
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Prêts pour révision :</span>
+                    <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--emerald)' }}>
+                      {tasks.filter(t => t.status === 'completed').length}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b' }} />
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>En attente :</span>
+                    <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#f59e0b' }}>
+                      {tasks.filter(t => t.status === 'pending').length}
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <button
+                    type="button"
+                    onClick={fetchTasksList}
+                    className="btn-outline"
+                    style={{ fontSize: '0.82rem', padding: '0.45rem 0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                  >
+                    <RefreshCw size={14} />
+                    Actualiser
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('upload')}
+                    className="btn"
+                    style={{ fontSize: '0.82rem', padding: '0.45rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                  >
+                    <Plus size={15} />
+                    Ajouter une fiche
+                  </button>
+                </div>
               </div>
+
+              {/* Tasks List */}
+              {tasks.length === 0 ? (
+                <div className="glass-panel" style={{
+                  padding: '4rem 2rem',
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '1rem'
+                }}>
+                  <div style={{
+                    width: 68,
+                    height: 68,
+                    borderRadius: '50%',
+                    background: 'rgba(124, 58, 237, 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <Inbox size={32} className="text-violet" />
+                  </div>
+                  <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800 }}>Aucune tâche dans la file</h3>
+                  <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: '450px' }}>
+                    Déposez une ou plusieurs fiches de cours dans l'onglet d'extraction. Le traitement s'exécutera de façon autonome en tâche de fond.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('upload')}
+                    className="btn"
+                    style={{ marginTop: '0.5rem', padding: '0.65rem 1.5rem', fontWeight: 700 }}
+                  >
+                    <UploadCloud size={16} style={{ marginRight: '0.5rem' }} />
+                    Déposer des fiches maintenant
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {tasks.map(task => {
+                    const isProcessing = task.status === 'processing';
+                    const isCompleted = task.status === 'completed';
+                    const isFailed = task.status === 'failed';
+                    const isPending = task.status === 'pending';
+
+                    return (
+                      <div
+                        key={task.id}
+                        className="glass-panel animate-fade-in"
+                        style={{
+                          padding: '1.5rem',
+                          borderRadius: '16px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '1rem',
+                          border: isCompleted
+                            ? '1px solid rgba(16, 185, 129, 0.35)'
+                            : isProcessing
+                              ? '1px solid rgba(56, 189, 248, 0.35)'
+                              : isFailed
+                                ? '1px solid rgba(239, 68, 68, 0.35)'
+                                : '1px solid var(--border)',
+                          background: isCompleted
+                            ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.04) 0%, rgba(255,255,255,0.01) 100%)'
+                            : isProcessing
+                              ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.04) 0%, rgba(255,255,255,0.01) 100%)'
+                              : 'var(--bg-card)'
+                        }}
+                      >
+                        {/* Task Card Header */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div style={{
+                              width: 42,
+                              height: 42,
+                              borderRadius: 12,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              background: isCompleted
+                                ? 'rgba(16, 185, 129, 0.12)'
+                                : isProcessing
+                                  ? 'rgba(56, 189, 248, 0.12)'
+                                  : isFailed
+                                    ? 'rgba(239, 68, 68, 0.12)'
+                                    : 'rgba(245, 158, 11, 0.12)',
+                              color: isCompleted
+                                ? 'var(--emerald)'
+                                : isProcessing
+                                  ? '#38bdf8'
+                                  : isFailed
+                                    ? 'var(--danger)'
+                                    : '#f59e0b'
+                            }}>
+                              {isCompleted && <CheckCircle2 size={22} />}
+                              {isProcessing && <Loader2 size={22} className="animate-spin" />}
+                              {isFailed && <AlertCircle size={22} />}
+                              {isPending && <Clock size={22} />}
+                            </div>
+
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800 }}>
+                                  {task.headerSummary?.ficheTitle || task.fileName}
+                                </h4>
+                                <span style={{
+                                  fontSize: '0.72rem',
+                                  fontWeight: 700,
+                                  textTransform: 'uppercase',
+                                  padding: '0.15rem 0.5rem',
+                                  borderRadius: 6,
+                                  background: 'rgba(255,255,255,0.06)',
+                                  color: 'var(--text-muted)'
+                                }}>
+                                  {task.provider || 'gemini'}
+                                </span>
+                              </div>
+                              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                                Fichier : {task.fileName} • {task.pageCount || 1} page(s) • Soumis à {new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Status Badge */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            {isCompleted && (
+                              <span style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                padding: '0.3rem 0.75rem',
+                                borderRadius: '20px',
+                                background: 'rgba(16, 185, 129, 0.15)',
+                                color: 'var(--emerald)',
+                                fontSize: '0.8rem',
+                                fontWeight: 800
+                              }}>
+                                <Check size={14} /> Prêt pour validation
+                              </span>
+                            )}
+                            {isProcessing && (
+                              <span style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                padding: '0.3rem 0.75rem',
+                                borderRadius: '20px',
+                                background: 'rgba(56, 189, 248, 0.15)',
+                                color: '#38bdf8',
+                                fontSize: '0.8rem',
+                                fontWeight: 800
+                              }}>
+                                <Loader2 size={14} className="animate-spin" /> En cours ({task.progressPercent}%)
+                              </span>
+                            )}
+                            {isPending && (
+                              <span style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                padding: '0.3rem 0.75rem',
+                                borderRadius: '20px',
+                                background: 'rgba(245, 158, 11, 0.15)',
+                                color: '#f59e0b',
+                                fontSize: '0.8rem',
+                                fontWeight: 800
+                              }}>
+                                <Clock size={14} /> En attente
+                              </span>
+                            )}
+                            {isFailed && (
+                              <span style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                padding: '0.3rem 0.75rem',
+                                borderRadius: '20px',
+                                background: 'rgba(239, 68, 68, 0.15)',
+                                color: 'var(--danger)',
+                                fontSize: '0.8rem',
+                                fontWeight: 800
+                              }}>
+                                <AlertTriangle size={14} /> Échec
+                              </span>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteTask(task.id)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'var(--text-muted)',
+                                cursor: 'pointer',
+                                padding: '0.35rem',
+                                borderRadius: 6
+                              }}
+                              title="Supprimer de l'historique"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Progress Bar (if processing) */}
+                        {isProcessing && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                              <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>{task.progressMessage}</span>
+                              <span style={{ color: '#38bdf8', fontWeight: 800 }}>{task.progressPercent}%</span>
+                            </div>
+                            <div style={{ width: '100%', height: '7px', background: 'rgba(255,255,255,0.05)', borderRadius: '99px', overflow: 'hidden' }}>
+                              <div style={{
+                                width: `${task.progressPercent}%`,
+                                height: '100%',
+                                background: 'linear-gradient(90deg, #38bdf8, #818cf8)',
+                                borderRadius: '99px',
+                                transition: 'width 0.4s ease'
+                              }} />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Completed Summary Pills */}
+                        {isCompleted && task.headerSummary && (
+                          <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.78rem', padding: '0.2rem 0.6rem', borderRadius: 8, background: 'rgba(255,255,255,0.04)', color: 'var(--text-main)' }}>
+                              📚 Matière : <strong>{task.headerSummary.subject}</strong>
+                            </span>
+                            <span style={{ fontSize: '0.78rem', padding: '0.2rem 0.6rem', borderRadius: 8, background: 'rgba(255,255,255,0.04)', color: 'var(--text-main)' }}>
+                              🎯 Niveau : <strong>{task.headerSummary.detectedLevel}</strong>
+                            </span>
+                            <span style={{ fontSize: '0.78rem', padding: '0.2rem 0.6rem', borderRadius: 8, background: 'rgba(16, 185, 129, 0.1)', color: 'var(--emerald)' }}>
+                              📑 Sections extraites : <strong>{task.headerSummary.sectionsCount}</strong>
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Error details (if failed) */}
+                        {isFailed && (
+                          <div style={{
+                            padding: '0.75rem 1rem',
+                            borderRadius: 10,
+                            background: 'rgba(239, 68, 68, 0.08)',
+                            fontSize: '0.8rem',
+                            color: 'var(--danger)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            flexWrap: 'wrap',
+                            gap: '0.5rem'
+                          }}>
+                            <span>{task.error || task.progressMessage}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRetryTask(task.id)}
+                              className="btn-outline"
+                              style={{
+                                fontSize: '0.78rem',
+                                padding: '0.25rem 0.65rem',
+                                color: 'var(--danger)',
+                                borderColor: 'rgba(239,68,68,0.35)'
+                              }}
+                            >
+                              <RefreshCw size={12} style={{ marginRight: '0.35rem' }} />
+                              Réessayer maintenant
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Actions Bottom Bar */}
+                        {isCompleted && (
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleReviewTask(task)}
+                              disabled={loadingTaskDetails === task.id}
+                              className="btn"
+                              style={{
+                                padding: '0.65rem 1.4rem',
+                                fontSize: '0.9rem',
+                                fontWeight: 800,
+                                background: 'linear-gradient(135deg, var(--emerald), #059669)',
+                                color: '#fff',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)'
+                              }}
+                            >
+                              {loadingTaskDetails === task.id ? (
+                                <>
+                                  <Loader2 size={16} className="animate-spin" />
+                                  Chargement de la fiche...
+                                </>
+                              ) : (
+                                <>
+                                  <Eye size={16} />
+                                  Examiner & Valider la fiche
+                                  <ArrowRight size={15} />
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -2428,7 +3321,7 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
           <div className="glass-panel" style={{ padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
               <button onClick={() => setPhase(1)} className="btn-outline" style={{ fontSize: '0.85rem' }}>
-                <ArrowLeft size={16} /> Retour au fichier
+                <ArrowLeft size={16} /> Revenir aux tâches
               </button>
               <button
                 type="button"

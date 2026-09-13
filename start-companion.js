@@ -3,6 +3,13 @@ import { exec } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import {
+  getExtractionTasks,
+  getExtractionTaskById,
+  createExtractionTask,
+  retryExtractionTask,
+  deleteExtractionTask
+} from './companionExtractionWorker.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -473,6 +480,60 @@ const server = http.createServer(async (req, res) => {
       }
     }
     return;
+  }
+
+  // ── Extraction Tasks Endpoints (Background Lesson Extractor Queue) ─────────
+  if (pathname === '/api/extraction-tasks' || pathname.startsWith('/api/extraction-tasks/')) {
+    const id = parsedUrl.searchParams.get('id') || (pathname.split('/api/extraction-tasks/')[1] || '').trim();
+    const action = parsedUrl.searchParams.get('action');
+
+    if (req.method === 'GET') {
+      if (id) {
+        const task = getExtractionTaskById(id);
+        if (!task) {
+          sendJSON(res, 404, { error: 'Tâche introuvable' });
+          return;
+        }
+        sendJSON(res, 200, task);
+      } else {
+        const tasks = getExtractionTasks();
+        sendJSON(res, 200, tasks);
+      }
+      return;
+    }
+
+    if (req.method === 'POST') {
+      try {
+        const body = await getBody(req);
+        if (action === 'retry' || pathname.endsWith('/retry') || body.action === 'retry') {
+          const targetId = id || body.id;
+          if (!targetId) {
+            sendJSON(res, 400, { error: 'ID de tâche manquant pour la relance' });
+            return;
+          }
+          const retriedTask = retryExtractionTask(targetId, body.apiKey);
+          sendJSON(res, 200, { success: true, task: retriedTask });
+          return;
+        }
+
+        // New task creation
+        const newTask = createExtractionTask(body);
+        sendJSON(res, 201, { success: true, task: newTask });
+      } catch (err) {
+        sendJSON(res, 500, { error: err.message });
+      }
+      return;
+    }
+
+    if (req.method === 'DELETE') {
+      if (!id) {
+        sendJSON(res, 400, { error: 'ID de tâche manquant pour la suppression' });
+        return;
+      }
+      deleteExtractionTask(id);
+      sendJSON(res, 200, { success: true });
+      return;
+    }
   }
 
   sendJSON(res, 404, { error: 'Not Found' });

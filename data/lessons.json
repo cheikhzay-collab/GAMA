@@ -18363,5 +18363,629 @@
     "level": "common_core_sci",
     "doc_type": "exercises",
     "updatedAt": "2026-09-07T16:33:25.246Z"
+  },
+  {
+    "id": "MOCK-L-2SW1YI68A",
+    "title": "Continuité d'une fonction",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": null,
+    "phone": null,
+    "schools": [],
+    "content": {
+      "level": "2bac_pc_svt",
+      "doc_type": "exercises",
+      "is_national_exam": false,
+      "national_exam_meta": null,
+      "is_summary": false,
+      "summary_meta": null,
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "Préparation aux concours",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Continuité d'une fonction",
+        "teacher": "",
+        "phone": "",
+        "is_national_exam": false,
+        "national_exam_meta": null,
+        "is_summary": false,
+        "summary_meta": null
+      },
+      "sections": [
+        {
+          "title": "Activité 0 : Soutien des prérequis",
+          "type": "activity",
+          "content": "Calculer les limites suivantes :\n1. $a. \\lim_{x\\to +\\infty} \\frac{2x^2+x+3}{x-1}$\n2. $b. \\lim_{x\\to -\\infty} \\frac{x|x|-4x+3}{x^5-7x+2}$\n3. $c. \\lim_{x\\to -2} \\frac{x^2+5x+6}{x+2}$\n4. $d. \\lim_{x\\to -3} \\frac{2x^2+3x-9}{x^2+x-6}$\n5. $e. \\lim_{x\\to 1} \\frac{\\sqrt{2x+7}-3}{x-1}$\n6. $f. \\lim_{x\\to -2} \\frac{\\sqrt{2x^2+1}-3\\sqrt{x+3}}{x+2}$\n7. $g. \\lim_{x\\to 2^-} \\frac{x^2+5x+6}{2-x}$\n8. $h. \\lim_{x\\to -3^+} \\frac{2x^2+x-2}{-x^2-x+6}$\n9. $i. \\lim_{x\\to 1} \\frac{\\sin(\\pi x)}{x-1}$",
+          "solution": "1. $\\lim_{x\\to +\\infty} \\frac{2x^2+x+3}{x-1} = \\lim_{x\\to +\\infty} \\frac{2x^2}{x} = \\lim_{x\\to +\\infty} 2x = +\\infty$.\n2. Pour $x < 0$, $|x| = -x$, donc $x|x| = -x^2$. Ainsi, $\\lim_{x\\to -\\infty} \\frac{-x^2-4x+3}{x^5-7x+2} = \\lim_{x\\to -\\infty} \\frac{-x^2}{x^5} = \\lim_{x\\to -\\infty} \\frac{-1}{x^3} = 0$.\n3. Forme indéterminée $0/0$. $x^2+5x+6 = (x+2)(x+3)$. D'où $\\lim_{x\\to -2} \\frac{(x+2)(x+3)}{x+2} = \\lim_{x\\to -2} (x+3) = 1$.\n4. $2x^2+3x-9 = (x+3)(2x-3)$ et $x^2+x-6 = (x+3)(x-2)$. Donc $\\lim_{x\\to -3} \\frac{(x+3)(2x-3)}{(x+3)(x-2)} = \\lim_{x\\to -3} \\frac{2x-3}{x-2} = \\frac{-9}{-5} = \\frac{9}{5}$.\n5. Multiplions par la quantité conjuguée : $\\frac{2x+7-9}{(x-1)(\\sqrt{2x+7}+3)} = \\frac{2(x-1)}{(x-1)(\\sqrt{2x+7}+3)} = \\frac{2}{\\sqrt{2x+7}+3}$. La limite vaut $\\frac{2}{6} = \\frac{1}{3}$.\n6. Utilisons la quantité conjuguée au numérateur : $(\\sqrt{2x^2+1}-3\\sqrt{x+3})(\\sqrt{2x^2+1}+3\\sqrt{x+3}) = (2x^2+1) - 9(x+3) = 2x^2-9x-26 = (x+2)(2x-13)$. D'où la limite est $\\lim_{x\\to -2} \\frac{(x+2)(2x-13)}{(x+2)(\\sqrt{2x^2+1}+3\\sqrt{x+3})} = \\frac{-17}{3+3} = -\\frac{17}{6}$.\n7. Quand $x \\to 2^-$, $x^2+5x+6 \\to 20$ et $2-x \\to 0^+$. Donc la limite est $+\\infty$.\n8. Quand $x \\to -3^+$, $2x^2+x-2 \\to 13$, $-x^2-x+6 = -(x+3)(x-2) \\to 0^+$. Donc la limite est $+\\infty$.\n9. Posons $t = x-1 \\to 0$. $\\sin(\\pi x) = \\sin(\\pi(t+1)) = -\\sin(\\pi t)$. D'où $\\lim_{t\\to 0} \\frac{-\\sin(\\pi t)}{t} = -\\pi$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Calculer les limites suivantes :"
+            },
+            {
+              "type": "bullet",
+              "text": "1. $a. \\lim_{x\\to +\\infty} \\frac{2x^2+x+3}{x-1}$"
+            },
+            {
+              "type": "bullet",
+              "text": "2. $b. \\lim_{x\\to -\\infty} \\frac{x|x|-4x+3}{x^5-7x+2}$"
+            },
+            {
+              "type": "bullet",
+              "text": "3. $c. \\lim_{x\\to -2} \\frac{x^2+5x+6}{x+2}$"
+            },
+            {
+              "type": "bullet",
+              "text": "4. $d. \\lim_{x\\to -3} \\frac{2x^2+3x-9}{x^2+x-6}$"
+            },
+            {
+              "type": "bullet",
+              "text": "5. $e. \\lim_{x\\to 1} \\frac{\\sqrt{2x+7}-3}{x-1}$"
+            },
+            {
+              "type": "bullet",
+              "text": "6. $f. \\lim_{x\\to -2} \\frac{\\sqrt{2x^2+1}-3\\sqrt{x+3}}{x+2}$"
+            },
+            {
+              "type": "bullet",
+              "text": "7. $g. \\lim_{x\\to 2^-} \\frac{x^2+5x+6}{2-x}$"
+            },
+            {
+              "type": "bullet",
+              "text": "8. $h. \\lim_{x\\to -3^+} \\frac{2x^2+x-2}{-x^2-x+6}$"
+            },
+            {
+              "type": "bullet",
+              "text": "9. $i. \\lim_{x\\to 1} \\frac{\\sin(\\pi x)}{x-1}$"
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Activité 1 : Continuité graphique",
+          "type": "activity",
+          "content": "On donne la courbe représentative d'une fonction $f$.\n1. Déterminer graphiquement $f(-1)$ et $\\lim_{x\\to -1} f(x)$. Que peut-on déduire ?\n2. Déterminer graphiquement $f(1)$, $\\lim_{x\\to 1^+} f(x)$ et $\\lim_{x\\to 1^-} f(x)$. Que peut-on dire sur $(C_f)$ au point $x_0 = 1$ ?",
+          "solution": "1. D'après le graphique, $f(-1) = 1$ et $\\lim_{x\\to -1} f(x) = 1$. Comme $\\lim_{x\\to -1} f(x) = f(-1)$, on en déduit que $f$ est continue au point $x_0 = -1$.\n2. Graphiquement, $f(1) = 0$, $\\lim_{x\\to 1^+} f(x) = 1$ et $\\lim_{x\\to 1^-} f(x) = 0$. Comme la limite à droite n'est pas égale à la limite à gauche, $f$ n'admet pas de limite en $1$ et $f$ n'est pas continue en $x_0 = 1$ (la courbe présente une rupture d'assemblage au point d'abscisse $1$).",
+          "items": [
+            {
+              "type": "text",
+              "text": "On donne la courbe représentative d'une fonction $f$."
+            },
+            {
+              "type": "bullet",
+              "text": "1. Déterminer graphiquement $f(-1)$ et $\\lim_{x\\to -1} f(x)$. Que peut-on déduire ?"
+            },
+            {
+              "type": "bullet",
+              "text": "2. Déterminer graphiquement $f(1)$, $\\lim_{x\\to 1^+} f(x)$ et $\\lim_{x\\to 1^-} f(x)$. Que peut-on dire sur $(C_f)$ au point $x_0 = 1$ ?"
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Application 1 : Continuité en un point",
+          "type": "application",
+          "content": "Étudier la continuité des fonctions suivantes au point $a$ :\n1. $\\begin{cases} f(x) = \\frac{x^3-2x+1}{x-1} & \\text{si } x \\neq 1 \\\\ f(1) = 1 \\end{cases}$ et $a = 1$.\n2. $\\begin{cases} g(x) = \\frac{x\\sqrt{x+2}-4}{x-2} & \\text{si } x \\in [-2, 2[ \\cup ]2, +\\infty[ \\\\ g(2) = \\frac{5}{2} \\end{cases}$ et $a = 2$.",
+          "solution": "1. Pour $x \\neq 1$, $x^3-2x+1 = (x-1)(x^2+x-1)$. Donc $\\lim_{x\\to 1} f(x) = \\lim_{x\\to 1} (x^2+x-1) = 1 = f(1)$. Ainsi, $f$ est continue au point $a = 1$.\n2. Pour $x \\neq 2$, $x\\sqrt{x+2}-4 = \\frac{x^2(x+2)-16}{x\\sqrt{x+2}+4} = \\frac{x^3+2x^2-16}{x\\sqrt{x+2}+4} = \\frac{(x-2)(x^2+4x+8)}{x\\sqrt{x+2}+4}$. Donc $\\lim_{x\\to 2} g(x) = \\lim_{x\\to 2} \\frac{x^2+4x+8}{x\\sqrt{x+2}+4} = \\frac{20}{8} = \\frac{5}{2} = g(2)$. Ainsi, $g$ est continue en $a = 2$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Étudier la continuité des fonctions suivantes au point $a$ :"
+            },
+            {
+              "type": "bullet",
+              "text": "1. $\\begin{cases} f(x) = \\frac{x^3-2x+1}{x-1} & \\text{si } x \\neq 1 \\\\ f(1) = 1 \\end{cases}$ et $a = 1$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. $\\begin{cases} g(x) = \\frac{x\\sqrt{x+2}-4}{x-2} & \\text{si } x \\in [-2, 2[ \\cup ]2, +\\infty[ \\\\ g(2) = \\frac{5}{2} \\end{cases}$ et $a = 2$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Exercice 1 : Continuité en un point",
+          "type": "exercise",
+          "content": "Étudier la continuité des fonctions suivantes au point $a$ :\n1. $\\begin{cases} f(x) = \\frac{x^3+2x^2+3x+2}{x^2+4x+3} & \\text{si } x \\neq -1 \\\\ f(-1) = 1 \\end{cases}$ et $a = -1$.\n2. $\\begin{cases} g(x) = \\frac{\\sin(x-2)}{x^2-2x} & \\text{si } x > 2 \\\\ g(2) = \\frac{1}{2} \\end{cases}$ et $a = 2$.",
+          "solution": "1. Factorisons le numérateur et le dénominateur par $(x+1)$ :\n$x^3+2x^2+3x+2 = (x+1)(x^2+x+2)$ et $x^2+4x+3 = (x+1)(x+3)$.\n$\\lim_{x\\to -1} f(x) = \\lim_{x\\to -1} \\frac{x^2+x+2}{x+3} = \\frac{2}{2} = 1 = f(-1)$.\\nDonc $f$ est continue en $a = -1$.\n2. $\\lim_{x\\to 2^+} g(x) = \\lim_{x\\to 2^+} \\frac{\\sin(x-2)}{x(x-2)} = \\lim_{x\\to 2^+} \\left(\\frac{\\sin(x-2)}{x-2} \\times \\frac{1}{x}\\right) = 1 \\times \\frac{1}{2} = \\frac{1}{2} = g(2)$.\\nDonc $g$ est continue à droite en $a = 2$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Étudier la continuité des fonctions suivantes au point $a$ :"
+            },
+            {
+              "type": "bullet",
+              "text": "1. $\\begin{cases} f(x) = \\frac{x^3+2x^2+3x+2}{x^2+4x+3} & \\text{si } x \\neq -1 \\\\ f(-1) = 1 \\end{cases}$ et $a = -1$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. $\\begin{cases} g(x) = \\frac{\\sin(x-2)}{x^2-2x} & \\text{si } x > 2 \\\\ g(2) = \\frac{1}{2} \\end{cases}$ et $a = 2$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Application 2 : Continuité à droite et à gauche",
+          "type": "application",
+          "content": "On considère $f$ la fonction définie par :\n$\\begin{cases} f(x) = \\frac{x}{\\sqrt{x+1}-1} & \\text{si } x > 0 \\\\ f(x) = \\frac{\\sin(2x)}{x} & \\text{si } x < 0 \\\\ f(0) = 2 \\end{cases}$\n1. Étudier la continuité de $f$ à droite et à gauche en $0$.\n2. $f$ est-elle continue en $0$ ?",
+          "solution": "1. À droite en $0$ :\n$\\lim_{x\\to 0^+} f(x) = \\lim_{x\\to 0^+} \\frac{x(\\sqrt{x+1}+1)}{x+1-1} = \\lim_{x\\to 0^+} (\\sqrt{x+1}+1) = 2 = f(0)$. Donc $f$ est continue à droite en $0$.\nÀ gauche en $0$ :\n$\\lim_{x\\to 0^-} f(x) = \\lim_{x\\to 0^-} \\frac{\\sin(2x)}{x} = 2 \\lim_{x\\to 0^-} \\frac{\\sin(2x)}{2x} = 2 = f(0)$. Donc $f$ est continue à gauche en $0$.\n2. Comme $\\lim_{x\\to 0^+} f(x) = \\lim_{x\\to 0^-} f(x) = f(0) = 2$, la fonction $f$ est continue en $0$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "On considère $f$ la fonction définie par :"
+            },
+            {
+              "type": "text",
+              "text": "$\\begin{cases} f(x) = \\frac{x}{\\sqrt{x+1}-1} & \\text{si } x > 0 \\\\ f(x) = \\frac{\\sin(2x)}{x} & \\text{si } x < 0 \\\\ f(0) = 2 \\end{cases}$"
+            },
+            {
+              "type": "bullet",
+              "text": "1. Étudier la continuité de $f$ à droite et à gauche en $0$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. $f$ est-elle continue en $0$ ?"
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Exercice 2 : Continuité par morceaux et paramètre",
+          "type": "exercise",
+          "content": "1. Soit $f$ la fonction définie par : $\\begin{cases} f(x) = \\frac{\\sqrt{x+2}-2}{x-2} & \\text{si } x > 2 \\\\ f(x) = \\frac{x^2-4x+3}{x-3} & \\text{si } x \\le 2 \\end{cases}$\nÉtudier la continuité de $f$ à droite et à gauche en $2$.\n2. Soit $g$ la fonction définie par : $\\begin{cases} g(x) = x^3 + ax & \\text{si } x > -1 \\\\ g(x) = -x + 1 & \\text{si } x \\le -1 \\end{cases}$\\nDéterminer la valeur de $a$ pour que $g$ soit continue en $-1$.",
+          "solution": "1. Valeur en $2$ : $f(2) = \\frac{2^2-4(2)+3}{2-3} = \\frac{-1}{-1} = 1$.\nÀ droite en $2$ : $\\lim_{x\\to 2^+} f(x) = \\lim_{x\\to 2^+} \\frac{x+2-4}{(x-2)(\\sqrt{x+2}+2)} = \\lim_{x\\to 2^+} \\frac{1}{\\sqrt{x+2}+2} = \\frac{1}{4}$.\\nComme $\\lim_{x\\to 2^+} f(x) = \\frac{1}{4} \\neq f(2) = 1$, $f$ n'est pas continue à droite en $2$.\nÀ gauche en $2$ : $\\lim_{x\\to 2^-} f(x) = f(2) = 1$, donc $f$ est continue à gauche en $2$.\n2. $g(-1) = -(-1)+1 = 2$.\n$\\lim_{x\\to -1^+} g(x) = (-1)^3 + a(-1) = -1 - a$.\n$g$ est continue en $-1$ si et seulement si $\\lim_{x\\to -1^+} g(x) = g(-1) \\iff -1 - a = 2 \\iff a = -3$.",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "1. Soit $f$ la fonction définie par : $\\begin{cases} f(x) = \\frac{\\sqrt{x+2}-2}{x-2} & \\text{si } x > 2 \\\\ f(x) = \\frac{x^2-4x+3}{x-3} & \\text{si } x \\le 2 \\end{cases}$"
+            },
+            {
+              "type": "text",
+              "text": "Étudier la continuité de $f$ à droite et à gauche en $2$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Soit $g$ la fonction définie par : $\\begin{cases} g(x) = x^3 + ax & \\text{si } x > -1 \\\\ g(x) = -x + 1 & \\text{si } x \\le -1 \\end{cases}$\\nDéterminer la valeur de $a$ pour que $g$ soit continue en $-1$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Application 3 : Continuité sur un intervalle",
+          "type": "application",
+          "content": "On considère $f$ la fonction définie par : $\\begin{cases} f(x) = -x + 4 & \\text{si } x < 3 \\\\ f(x) = \\frac{6-x}{x} & \\text{si } x \\ge 3 \\end{cases}$\\nMontrer que la fonction $f$ est continue sur $\\mathbb{R}$.",
+          "solution": "- Sur $]-\\infty, 3[$, $x \\mapsto -x+4$ est une fonction polynomiale, donc continue sur $]-\\infty, 3[$.\n- Sur $]3, +\\infty[$, $x \\mapsto \\frac{6-x}{x}$ est une fonction rationnelle définie sur $]3, +\\infty[$, donc continue sur $]3, +\\infty[$.\n- En $x_0 = 3$ :\n  $f(3) = \\frac{6-3}{3} = 1$.\n  $\\lim_{x\\to 3^-} (-x+4) = 1 = f(3)$.\n  $\\lim_{x\\to 3^+} \\frac{6-x}{x} = 1 = f(3)$.\n  Donc $f$ est continue en $3$.\\nConclusion : $f$ est continue sur $\\mathbb{R}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "On considère $f$ la fonction définie par : $\\begin{cases} f(x) = -x + 4 & \\text{si } x < 3 \\\\ f(x) = \\frac{6-x}{x} & \\text{si } x \\ge 3 \\end{cases}$\\nMontrer que la fonction $f$ est continue sur $\\mathbb{R}$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Application 4 : Image d'un intervalle par lecture graphique",
+          "type": "application",
+          "content": "On donne la courbe d'une fonction $f$ définie sur $[-2, 4]$.\\nDéterminer l'image des intervalles suivants $[-2, 3]$, $[0, 1]$, $[1, 3]$ et $]-1, 1]$ par $f$.",
+          "solution": "Par lecture graphique sur la courbe de $f$ :\n- $f([-2, 3]) = [-1, 4]$\n- $f([0, 1]) = [0, 1]$\n- $f([1, 3]) = [0, 2]$\n- $f(]-1, 1]) = [0, 1]$",
+          "items": [
+            {
+              "type": "text",
+              "text": "On donne la courbe d'une fonction $f$ définie sur $[-2, 4]$.\\nDéterminer l'image des intervalles suivants $[-2, 3]$, $[0, 1]$, $[1, 3]$ et $]-1, 1]$ par $f$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Application 5 : Image d'un intervalle (Fonction homographique)",
+          "type": "application",
+          "content": "Soit $f$ une fonction définie par $f(x) = \\frac{3x+2}{x-4}$.\n1. Déterminer $D_f$.\n2. Étudier la monotonie de $f$.\n3. Déterminer $f([0,1])$, $f(]4, +\\infty[)$ et $f(]-\\infty, 4[)$.",
+          "solution": "1. $D_f = \\mathbb{R} \\setminus \\{4\\} = ]-\\infty, 4[ \\cup ]4, +\\infty[$.\n2. $f'(x) = \\frac{3(-4)-2(1)}{(x-4)^2} = \\frac{-14}{(x-4)^2} < 0$. Donc $f$ est strictement décroissante sur $]-\\infty, 4[$ et sur $]4, +\\infty[$.\n3. Images d'intervalles :\n- Comme $f$ est continue et strictement décroissante sur $[0,1]$ :\n  $f([0,1]) = [f(1), f(0)] = \\left[\\frac{5}{-3}, \\frac{2}{-4}\\right] = \\left[-\\frac{5}{3}, -\\frac{1}{2}\\right]$.\n- Sur $]4, +\\infty[$ : $\\lim_{x\\to 4^+} f(x) = +\\infty$ et $\\lim_{x\\to +\\infty} f(x) = 3$.\n  Donc $f(]4, +\\infty[) = ]3, +\\infty[$.\n- Sur $]-\\infty, 4[$ : $\\lim_{x\\to -\\infty} f(x) = 3$ et $\\lim_{x\\to 4^-} f(x) = -\\infty$.\n  Donc $f(]-\\infty, 4[) = ]-\\infty, 3[$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $f$ une fonction définie par $f(x) = \\frac{3x+2}{x-4}$."
+            },
+            {
+              "type": "bullet",
+              "text": "1. Déterminer $D_f$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Étudier la monotonie de $f$."
+            },
+            {
+              "type": "bullet",
+              "text": "3. Déterminer $f([0,1])$, $f(]4, +\\infty[)$ et $f(]-\\infty, 4[)$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Exercice 3 : Tableau de variations et images d'intervalles",
+          "type": "exercise",
+          "content": "On considère $f$ une fonction définie par $f(x) = 2x^3 - 3x^2$.\n1. Dresser le tableau de variation de la fonction $f$.\n2. Déterminer les images des intervalles suivants $]-1, 0]$, $[1, 2]$, $[-1, 2[$ et $[1, +\\infty[$ par $f$.",
+          "solution": "1. $f$ est dérivable sur $\\mathbb{R}$ et $f'(x) = 6x^2 - 6x = 6x(x-1)$.\\nSigne de $f'(x)$ : positive sur $]-\\infty, 0] \\cup [1, +\\infty[$ et négative sur $[0, 1]$.\\nValeurs remarquables : $f(0) = 0$, $f(1) = -1$, $\\lim_{x\\to -\\infty} f(x) = -\\infty$, $\\lim_{x\\to +\\infty} f(x) = +\\infty$.\n$f$ est strictement croissante sur $]-\\infty, 0]$, strictement décroissante sur $[0, 1]$, et strictement croissante sur $[1, +\\infty[$.\n2. Images d'intervalles :\n- Sur $]-1, 0]$, $f$ est continue et strictement croissante, $f(-1) = -5$, $f(0) = 0$.\n  $f(]-1, 0]) = ]-5, 0]$.\n- Sur $[1, 2]$, $f$ est continue et strictement croissante, $f(1) = -1$, $f(2) = 4$.\n  $f([1, 2]) = [-1, 4]$.\n- Sur $[-1, 2[$, $f([-1, 2[) = [\\min_{[-1,2]} f, \\max_{[-1,2]} f[ = [-5, 4[$.\n- Sur $[1, +\\infty[$, $f$ est strictement croissante, $f(1) = -1$, $\\lim_{x\\to +\\infty} f(x) = +\\infty$.\n  $f([1, +\\infty[) = [-1, +\\infty[$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "On considère $f$ une fonction définie par $f(x) = 2x^3 - 3x^2$."
+            },
+            {
+              "type": "bullet",
+              "text": "1. Dresser le tableau de variation de la fonction $f$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Déterminer les images des intervalles suivants $]-1, 0]$, $[1, 2]$, $[-1, 2[$ et $[1, +\\infty[$ par $f$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Application 6 : Continuité sur un intervalle par opérations",
+          "type": "application",
+          "content": "Montrer que $f$ est continue sur $I$ dans les cas suivants :\n1. $f(x) = x^2 + 1 + \\sin(x)$ et $I = \\mathbb{R}$.\n2. $f(x) = \\cos(x) \\times \\sqrt{4x^2+5}$ et $I = \\mathbb{R}$.\n3. $f(x) = \\frac{4\\sqrt{x}}{x^2+x-2}$ et $I = ]2, +\\infty[$.",
+          "solution": "1. $x \\mapsto x^2+1$ est une fonction polynomiale donc continue sur $\\mathbb{R}$. $x \\mapsto \\sin(x)$ est continue sur $\\mathbb{R}$. Donc $f$, somme de deux fonctions continues sur $\\mathbb{R}$, est continue sur $\\mathbb{R}$.\n2. $x \\mapsto 4x^2+5$ est continue et strictement positive sur $\\mathbb{R}$, donc $x \\mapsto \\sqrt{4x^2+5}$ est continue sur $\\mathbb{R}$. Comme $x \\mapsto \\cos(x)$ est continue sur $\\mathbb{R}$, par produit $f$ est continue sur $\\mathbb{R}$.\n3. $x \\mapsto 4\\sqrt{x}$ est continue sur $]0, +\\infty[$ donc sur $]2, +\\infty[$. $x \\mapsto x^2+x-2$ est continue sur $]2, +\\infty[$ et ne s'annule pas sur $]2, +\\infty[$ (ses racines sont $1$ et $-2$). Par quotient, $f$ est continue sur $]2, +\\infty[$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Montrer que $f$ est continue sur $I$ dans les cas suivants :"
+            },
+            {
+              "type": "bullet",
+              "text": "1. $f(x) = x^2 + 1 + \\sin(x)$ et $I = \\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. $f(x) = \\cos(x) \\times \\sqrt{4x^2+5}$ et $I = \\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "3. $f(x) = \\frac{4\\sqrt{x}}{x^2+x-2}$ et $I = ]2, +\\infty[$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Application 7 : Continuité d'une fonction composée",
+          "type": "application",
+          "content": "On considère la fonction $h: x \\mapsto \\sin(x^2 - 4x + 1)$.\\nMontrer que $h$ est continue sur $\\mathbb{R}$.",
+          "solution": "Posons $u(x) = x^2 - 4x + 1$ et $v(y) = \\sin(y)$.\n- $u$ est une fonction polynomiale, donc continue sur $\\mathbb{R}$. Pour tout $x \\in \\mathbb{R}$, $u(x) \\in \\mathbb{R}$.\n- $v$ est continue sur $\\mathbb{R}$.\\nPar composition, $h = v \\circ u$ est continue sur $\\mathbb{R}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "On considère la fonction $h: x \\mapsto \\sin(x^2 - 4x + 1)$.\\nMontrer que $h$ est continue sur $\\mathbb{R}$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Application 8 : Théorème des Valeurs Intermédiaires (TVI)",
+          "type": "application",
+          "content": "1. Montrer que l'équation $x^5 - x^3 + 5x - 4 = 0$ admet au moins une solution sur l'intervalle $[0, 1]$.\n2. Montrer que l'équation $\\sin(x) + \\frac{1}{2} = -x$ admet une solution unique dans l'intervalle $\\left[-\\frac{\\pi}{6}, 0\\right]$.",
+          "solution": "1. Posons $f(x) = x^5 - x^3 + 5x - 4$.\n- $f$ est continue sur $[0, 1]$ car polynomiale.\n- $f(0) = -4 < 0$ et $f(1) = 1 - 1 + 5 - 4 = 1 > 0$.\\nDonc $f(0) \\times f(1) < 0$.\\nD'après le TVI, l'équation $f(x) = 0$ admet au moins une solution sur $[0, 1]$.\n2. Posons $g(x) = \\sin(x) + x + \\frac{1}{2}$.\n- $g$ est continue et dérivable sur $\\left[-\\frac{\\pi}{6}, 0\\right]$ avec $g'(x) = \\cos(x) + 1 > 0$ sur $\\left]-\\frac{\\pi}{6}, 0\\right[$.\\nDonc $g$ est strictement croissante sur $\\left[-\\frac{\\pi}{6}, 0\\right]$.\n- $g\\left(-\\frac{\\pi}{6}\\right) = -\\frac{1}{2} - \\frac{\\pi}{6} + \\frac{1}{2} = -\\frac{\\pi}{6} < 0$.\n- $g(0) = 0 + 0 + \\frac{1}{2} = \\frac{1}{2} > 0$.\\nComme $g\\left(-\\frac{\\pi}{6}\\right) \\times g(0) < 0$, d'après le corollaire du TVI, l'équation $g(x) = 0 \\iff \\sin(x)+\\frac{1}{2} = -x$ admet une unique solution dans $\\left[-\\frac{\\pi}{6}, 0\\right]$.",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "1. Montrer que l'équation $x^5 - x^3 + 5x - 4 = 0$ admet au moins une solution sur l'intervalle $[0, 1]$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Montrer que l'équation $\\sin(x) + \\frac{1}{2} = -x$ admet une solution unique dans l'intervalle $\\left[-\\frac{\\pi}{6}, 0\\right]$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Exercice 4 : TVI et encadrement par dichotomie",
+          "type": "exercise",
+          "content": "Soit $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = 2x^3 - 3x^2 - 1$.\n1. Montrer que l'équation $f(x) = 0$ admet une unique solution $\\alpha$ sur $[1, +\\infty[$ puis vérifier que $1 < \\alpha < 2$.\n2. Donner un encadrement de $\\alpha$ d'amplitude $0{,}25$.\n3. Donner le signe de $f$ sur $[1, +\\infty[$.",
+          "solution": "1. Sur $[1, +\\infty[$, $f'(x) = 6x(x-1) > 0$ pour $x > 1$. Donc $f$ est continue et strictement croissante sur $[1, +\\infty[$.\n$f(1) = -2 < 0$ et $\\lim_{x\\to +\\infty} f(x) = +\\infty$. $0 \\in ]-2, +\\infty[$, donc l'équation $f(x) = 0$ admet une unique solution $\\alpha$ sur $[1, +\\infty[$.\\nDe plus, $f(2) = 16 - 12 - 1 = 3 > 0$. Comme $f(1) \\times f(2) < 0$, on a $1 < \\alpha < 2$.\n2. Testons le milieu $1{,}5$ : $f(1{,}5) = 2(3{,}375) - 3(2{,}25) - 1 = 6{,}75 - 6{,}75 - 1 = -1 < 0$.\\nComme $f(1{,}5) < 0$ et $f(2) > 0$, on a $1{,}5 < \\alpha < 2$.\\nTestons $1{,}75$ : $f(1{,}75) = 2(5{,}359) - 3(3{,}0625) - 1 \\approx 10{,}718 - 9{,}1875 - 1 = 0{,}53125 > 0$.\\nComme $f(1{,}5) < 0$ et $f(1{,}75) > 0$, l'encadrement d'amplitude $0{,}25$ est : $1{,}5 < \\alpha < 1{,}75$.\n3. Sur $[1, \\alpha[$, $f(x) < 0$ ; pour $x = \\alpha$, $f(\\alpha) = 0$ ; sur $]\\alpha, +\\infty[$, $f(x) > 0$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = 2x^3 - 3x^2 - 1$."
+            },
+            {
+              "type": "bullet",
+              "text": "1. Montrer que l'équation $f(x) = 0$ admet une unique solution $\\alpha$ sur $[1, +\\infty[$ puis vérifier que $1 < \\alpha < 2$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Donner un encadrement de $\\alpha$ d'amplitude $0{,}25$."
+            },
+            {
+              "type": "bullet",
+              "text": "3. Donner le signe de $f$ sur $[1, +\\infty[$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Activité 2 : Fonction réciproque",
+          "type": "activity",
+          "content": "Soit la fonction définie sur $I = [1, 4]$ par : $f(x) = x^2 - 2x$.\n1. Montrer que $f$ est continue et strictement croissante sur $I$.\n2. Déterminer l'intervalle $J$ image de $I$ par $f$.\n3. Soit $x \\in J$ et $y \\in I$, montrer que $f(y) = x \\iff y = 1 + \\sqrt{x+1}$.\n4. On considère $g$ la fonction définie sur $J$ par $g(x) = 1 + \\sqrt{1+x}$.\\na. Remplir le tableau suivant :\n- $f(1) = \\dots$, $g(-1) = \\dots$\n- $f(2) = \\dots$, $g(0) = \\dots$\n- $f(4) = \\dots$, $g(8) = \\dots$\\nb. Que remarquez-vous ?\\nc. Montrer que $(\\forall x \\in I)\\ (g \\circ f)(x) = x$ et $(\\forall x \\in J)\\ (f \\circ g)(x) = x$.",
+          "solution": "1. $f$ est un polynôme donc continue sur $I$. $f'(x) = 2x - 2 = 2(x-1) \\ge 0$ sur $[1, 4]$. $f$ est strictement croissante sur $[1, 4]$.\n2. $J = f([1, 4]) = [f(1), f(4)] = [-1, 8]$.\n3. $f(y) = x \\iff y^2 - 2y = x \\iff (y-1)^2 - 1 = x \\iff (y-1)^2 = x+1$.\\nComme $y \\in [1, 4]$, $y-1 \\ge 0$, d'où $y-1 = \\sqrt{x+1} \\iff y = 1 + \\sqrt{x+1}$.\n4. a. $f(1) = -1$, $g(-1) = 1$ ; $f(2) = 0$, $g(0) = 2$ ; $f(4) = 8$, $g(8) = 4$.\\nb. On remarque que $g$ inverse l'action de $f$ : $g(f(y)) = y$ et $f(g(x)) = x$.\\nc. Pour $x \\in [1, 4]$ : $g(f(x)) = 1 + \\sqrt{1 + (x^2-2x)} = 1 + \\sqrt{(x-1)^2} = 1 + (x-1) = x$.\\nPour $x \\in [-1, 8]$ : $f(g(x)) = (1+\\sqrt{1+x})^2 - 2(1+\\sqrt{1+x}) = 1 + 2\\sqrt{1+x} + 1 + x - 2 - 2\\sqrt{1+x} = x$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit la fonction définie sur $I = [1, 4]$ par : $f(x) = x^2 - 2x$."
+            },
+            {
+              "type": "bullet",
+              "text": "1. Montrer que $f$ est continue et strictement croissante sur $I$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Déterminer l'intervalle $J$ image de $I$ par $f$."
+            },
+            {
+              "type": "bullet",
+              "text": "3. Soit $x \\in J$ et $y \\in I$, montrer que $f(y) = x \\iff y = 1 + \\sqrt{x+1}$."
+            },
+            {
+              "type": "bullet",
+              "text": "4. On considère $g$ la fonction définie sur $J$ par $g(x) = 1 + \\sqrt{1+x}$.\\na. Remplir le tableau suivant :"
+            },
+            {
+              "type": "text",
+              "text": "- $f(1) = \\dots$, $g(-1) = \\dots$"
+            },
+            {
+              "type": "text",
+              "text": "- $f(2) = \\dots$, $g(0) = \\dots$"
+            },
+            {
+              "type": "text",
+              "text": "- $f(4) = \\dots$, $g(8) = \\dots$\\nb. Que remarquez-vous ?\\nc. Montrer que $(\\forall x \\in I)\\ (g \\circ f)(x) = x$ et $(\\forall x \\in J)\\ (f \\circ g)(x) = x$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Application 9 : Explicitation de la fonction réciproque",
+          "type": "application",
+          "content": "On considère la fonction $f$ définie sur $[2, +\\infty[$ par $f(x) = \\sqrt{2x-4}$.\n1. Montrer que $f$ admet une fonction réciproque $f^{-1}$ définie sur un intervalle $J$ à déterminer.\n2. Déterminer l'expression de $f^{-1}(x)$ pour tout $x$ de $J$.",
+          "solution": "1. $f$ est continue sur $[2, +\\infty[$ (racine d'une fonction affine positive). $f'(x) = \\frac{1}{\\sqrt{2x-4}} > 0$ sur $]2, +\\infty[$, donc $f$ est strictement croissante sur $[2, +\\infty[$. Ainsi, $f$ réalise une bijection de $[2, +\\infty[$ sur $J = f([2, +\\infty[) = [f(2), \\lim_{x\\to +\\infty} f(x)[ = [0, +\\infty[$.\n2. Soit $x \\in [0, +\\infty[$ et $y \\in [2, +\\infty[$ :\n$f(y) = x \\iff \\sqrt{2y-4} = x \\iff 2y-4 = x^2 \\iff 2y = x^2+4 \\iff y = \\frac{x^2+4}{2}$.\\nDonc $\\forall x \\in [0, +\\infty[$, $f^{-1}(x) = \\frac{x^2+4}{2}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "On considère la fonction $f$ définie sur $[2, +\\infty[$ par $f(x) = \\sqrt{2x-4}$."
+            },
+            {
+              "type": "bullet",
+              "text": "1. Montrer que $f$ admet une fonction réciproque $f^{-1}$ définie sur un intervalle $J$ à déterminer."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Déterminer l'expression de $f^{-1}(x)$ pour tout $x$ de $J$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Exercice 5 : Fonction réciproque d'une homographique",
+          "type": "exercise",
+          "content": "On considère la fonction $g$ définie sur $]-\\infty, -1[$ par $g(x) = \\frac{2x+3}{x+1}$.\n1. Montrer que $g$ admet une fonction réciproque $g^{-1}$ définie sur un intervalle $J$ à déterminer.\n2. Déterminer l'expression de $g^{-1}(x)$ pour tout $x$ de $J$.",
+          "solution": "1. $g$ est rationnelle, donc continue sur $]-\\infty, -1[$. $g'(x) = \\frac{2(1)-3(1)}{(x+1)^2} = \\frac{-1}{(x+1)^2} < 0$.\n$g$ est strictement décroissante sur $]-\\infty, -1[$. Donc $g$ admet une fonction réciproque $g^{-1}$ définie sur $J = g(]-\\infty, -1[) = ]\\lim_{x\\to -1^-} g(x), \\lim_{x\\to -\\infty} g(x)[ = ]-\\infty, 2[$ (car $\\lim_{x\\to -1^-} 2x+3 = 1$ et $x+1 \\to 0^-$, d'où $\\lim_{x\\to -1^-} g(x) = -\\infty$, et $\\lim_{x\\to -\\infty} g(x) = 2$).\n2. Soit $x \\in ]-\\infty, 2[$ et $y \\in ]-\\infty, -1[$ :\n$g(y) = x \\iff \\frac{2y+3}{y+1} = x \\iff 2y+3 = x(y+1) \\iff y(2-x) = x-3 \\iff y = \\frac{x-3}{2-x}$.\\nDonc $\\forall x \\in ]-\\infty, 2[$, $g^{-1}(x) = \\frac{x-3}{2-x}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "On considère la fonction $g$ définie sur $]-\\infty, -1[$ par $g(x) = \\frac{2x+3}{x+1}$."
+            },
+            {
+              "type": "bullet",
+              "text": "1. Montrer que $g$ admet une fonction réciproque $g^{-1}$ définie sur un intervalle $J$ à déterminer."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Déterminer l'expression de $g^{-1}(x)$ pour tout $x$ de $J$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Application 10 : Propriétés graphiques de la fonction réciproque",
+          "type": "application",
+          "content": "On donne la courbe représentative d'une fonction $f$ définie sur $[-1, +\\infty[$.\n1. Montrer que $f$ admet une fonction réciproque $f^{-1}$ définie sur un intervalle $J$ à déterminer.\n2. Dresser le tableau de variations de $f^{-1}$.\n3. Construire la courbe représentative de $f^{-1}$.",
+          "solution": "1. D'après le graphique, $f$ est continue et strictement croissante sur $[-1, +\\infty[$. Donc $f$ admet une fonction réciproque $f^{-1}$ sur $J = f([-1, +\\infty[) = [-1, +\\infty[$ (car $f(-1) = -1$ et $\\lim_{x\\to +\\infty} f(x) = +\\infty$).\n2. $f^{-1}$ a les mêmes variations que $f$, elle est donc strictement croissante sur $[-1, +\\infty[$. $f^{-1}(-1) = -1$ et $\\lim_{x\\to +\\infty} f^{-1}(x) = +\\infty$.\n3. La courbe $(C_{f^{-1}})$ est le symétrique de $(C_f)$ par rapport à la première bissectrice (la droite d'équation $y = x$).",
+          "items": [
+            {
+              "type": "text",
+              "text": "On donne la courbe représentative d'une fonction $f$ définie sur $[-1, +\\infty[$."
+            },
+            {
+              "type": "bullet",
+              "text": "1. Montrer que $f$ admet une fonction réciproque $f^{-1}$ définie sur un intervalle $J$ à déterminer."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Dresser le tableau de variations de $f^{-1}$."
+            },
+            {
+              "type": "bullet",
+              "text": "3. Construire la courbe représentative de $f^{-1}$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Application 11 : Équations et inéquations avec racines $n$-ièmes",
+          "type": "application",
+          "content": "Résoudre dans $\\mathbb{R}$ les équations et inéquations suivantes :\n1. $x^7 = 5$\n2. $x^6 = -2$\n3. $x^4 = 81$\n4. $x^5 = -32$\n5. $\\sqrt[3]{3x-1} = 2$\n6. $\\sqrt[5]{2x-3} < 2$",
+          "solution": "1. $x^7 = 5 \\iff x = \\sqrt[7]{5}$. $S = \\{\\sqrt[7]{5}\\}$. \n2. $x^6 = -2$ impossible car $x^6 \\ge 0$. $S = \\emptyset$.\n3. $x^4 = 81 \\iff x = \\sqrt[4]{81} = 3$ ou $x = -\\sqrt[4]{81} = -3$. $S = \\{-3, 3\\}$.\n4. $x^5 = -32 \\iff x = -\\sqrt[5]{32} = -2$. $S = \\{-2\\}$.\n5. Condition : $3x-1 \\in \\mathbb{R}$. $\\sqrt[3]{3x-1} = 2 \\iff 3x-1 = 2^3 = 8 \\iff 3x = 9 \\iff x = 3$. $S = \\{3\\}$.\n6. Condition : $2x-3 \\ge 0 \\iff x \\ge \\frac{3}{2}$.\n$\\sqrt[5]{2x-3} < 2 \\iff 0 \\le 2x-3 < 2^5 = 32 \\iff 3 \\le 2x < 35 \\iff \\frac{3}{2} \\le x < \\frac{35}{2}$. $S = \\left[\\frac{3}{2}, \\frac{35}{2}\\right[$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Résoudre dans $\\mathbb{R}$ les équations et inéquations suivantes :"
+            },
+            {
+              "type": "bullet",
+              "text": "1. $x^7 = 5$"
+            },
+            {
+              "type": "bullet",
+              "text": "2. $x^6 = -2$"
+            },
+            {
+              "type": "bullet",
+              "text": "3. $x^4 = 81$"
+            },
+            {
+              "type": "bullet",
+              "text": "4. $x^5 = -32$"
+            },
+            {
+              "type": "bullet",
+              "text": "5. $\\sqrt[3]{3x-1} = 2$"
+            },
+            {
+              "type": "bullet",
+              "text": "6. $\\sqrt[5]{2x-3} < 2$"
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Application 12 : Simplification des racines $n$-ièmes",
+          "type": "application",
+          "content": "1. Simplifier $A = \\frac{\\sqrt[3]{512}}{\\sqrt[3]{64}}$, $B = \\sqrt{\\sqrt{\\sqrt[3]{729}}}$ et $C = \\frac{\\sqrt[15]{3^5} \\times \\sqrt[3]{9} \\times (\\sqrt[5]{9})^3}{\\sqrt[5]{3}}$.\n2. Mettre en ordre croissant les nombres $\\sqrt[4]{3}$, $\\sqrt[3]{2}$ et $\\sqrt{5}$.",
+          "solution": "1. Simplifications :\n- $A = \\sqrt[3]{\\frac{512}{64}} = \\sqrt[3]{8} = 2$.\n- $B = \\sqrt[2 \\times 2 \\times 3]{729} = \\sqrt[12]{3^6} = \\sqrt{3}$.\n- $C = \\frac{3^{\\frac{5}{15}} \\times 3^{\\frac{2}{3}} \\times (3^{\\frac{2}{5}})^3}{3^{\\frac{1}{5}}} = \\frac{3^{\\frac{1}{3}} \\times 3^{\\frac{2}{3}} \\times 3^{\\frac{6}{5}}}{3^{\\frac{1}{5}}} = \\frac{3^{1 + \\frac{6}{5}}}{3^{\\frac{1}{5}}} = 3^{1 + 1} = 3^2 = 9$.\n2. Rapprochons-les au même indice $\\text{PPCM}(4, 3, 2) = 12$ :\n- $\\sqrt[4]{3} = \\sqrt[12]{3^3} = \\sqrt[12]{27}$\n- $\\sqrt[3]{2} = \\sqrt[12]{2^4} = \\sqrt[12]{16}$\n- $\\sqrt{5} = \\sqrt[12]{5^6} = \\sqrt[12]{15625}$\\nComme $16 < 27 < 15625$, on a : $\\sqrt[3]{2} < \\sqrt[4]{3} < \\sqrt{5}$.",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "1. Simplifier $A = \\frac{\\sqrt[3]{512}}{\\sqrt[3]{64}}$, $B = \\sqrt{\\sqrt{\\sqrt[3]{729}}}$ et $C = \\frac{\\sqrt[15]{3^5} \\times \\sqrt[3]{9} \\times (\\sqrt[5]{9})^3}{\\sqrt[5]{3}}$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Mettre en ordre croissant les nombres $\\sqrt[4]{3}$, $\\sqrt[3]{2}$ et $\\sqrt{5}$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Exercice 6 : Calculs de simplifications complexes",
+          "type": "exercise",
+          "content": "Simplifier les nombres suivants :\n$A = \\frac{\\sqrt[3]{\\sqrt{256}} \\times \\sqrt[4]{64}}{\\sqrt[5]{24300000} \\times \\sqrt[3]{1024}}$ et $B = \\frac{\\sqrt{\\sqrt[3]{3}} \\times \\sqrt[3]{9} \\times \\sqrt[4]{9}}{\\sqrt[5]{729} \\times \\sqrt{\\sqrt{\\sqrt{3}}}}$.",
+          "solution": "- Expression $A$ :\n  Numérateur : $\\sqrt[6]{2^8} \\times \\sqrt[4]{2^6} = 2^{\\frac{4}{3}} \\times 2^{\\frac{3}{2}} = 2^{\\frac{17}{6}}$.\n  Dénominateur : $24300000 = 243 \\times 10^5 = 3^5 \\times 2^5 \\times 5^5 = (30)^5$, donc $\\sqrt[5]{24300000} = 30 = 2 \\times 3 \\times 5$.\n  $\\sqrt[3]{1024} = \\sqrt[3]{2^{10}} = 2^{\\frac{10}{3}}$.\n  Dénominateur total = $30 \\times 2^{\\frac{10}{3}} = 15 \\times 2^{1 + \\frac{10}{3}} = 15 \\times 2^{\\frac{13}{3}}$.\n  $A = \\frac{2^{\\frac{17}{6}}}{15 \\times 2^{\\frac{13}{3}}} = \\frac{2^{\\frac{17}{6} - \\frac{26}{6}}}{15} = \\frac{2^{-\\frac{3}{2}}}{15} = \\frac{1}{15 \\cdot 2\\sqrt{2}} = \\frac{\\sqrt{2}}{60}$.\n- Expression $B$ :\n  $B = \\frac{3^{\\frac{1}{6}} \\times 3^{\\frac{2}{3}} \\times 3^{\\frac{2}{4}}}{3^{\\frac{6}{5}} \\times 3^{\\frac{1}{8}}} = 3^{\\left(\\frac{1}{6} + \\frac{2}{3} + \\frac{1}{2}\\right) - \\left(\\frac{6}{5} + \\frac{1}{8}\\right)} = 3^{\\frac{4}{3} - \\frac{53}{40}} = 3^{\\frac{160-159}{120}} = 3^{\\frac{1}{120}} = \\sqrt[120]{3}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Simplifier les nombres suivants :"
+            },
+            {
+              "type": "text",
+              "text": "$A = \\frac{\\sqrt[3]{\\sqrt{256}} \\times \\sqrt[4]{64}}{\\sqrt[5]{24300000} \\times \\sqrt[3]{1024}}$ et $B = \\frac{\\sqrt{\\sqrt[3]{3}} \\times \\sqrt[3]{9} \\times \\sqrt[4]{9}}{\\sqrt[5]{729} \\times \\sqrt{\\sqrt{\\sqrt{3}}}}$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Application 13 : Limites comportant des racines $n$-ièmes",
+          "type": "application",
+          "content": "1. On considère $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = \\sqrt[3]{3x^2+4}$.\\na. Étudier la continuité de $f$ sur $\\mathbb{R}$.\\nb. Calculer $\\lim_{x\\to +\\infty} f(x)$ et $\\lim_{x\\to -\\infty} f(x)$.\n2. Calculer les limites suivantes :\\na. $\\lim_{x\\to 0} \\frac{\\sqrt[3]{x+1}-1}{x}$\\nb. $\\lim_{x\\to +\\infty} (\\sqrt[3]{x^3+1}-2x)$\\nc. $\\lim_{x\\to +\\infty} (\\sqrt[3]{x^3+x+1}-x)$",
+          "solution": "1. a. $x \\mapsto 3x^2+4$ est continue et positive sur $\\mathbb{R}$, donc $f(x) = \\sqrt[3]{3x^2+4}$ est continue sur $\\mathbb{R}$.\\nb. $\\lim_{x\\to \\pm\\infty} (3x^2+4) = +\\infty$, donc $\\lim_{x\\to \\pm\\infty} f(x) = +\\infty$.\n2. Limites :\\na. Utilisons l'identité $a^3-b^3 = (a-b)(a^2+ab+b^2)$ avec $a = \\sqrt[3]{x+1}$ et $b = 1$ :\n$\\frac{\\sqrt[3]{x+1}-1}{x} = \\frac{x+1-1}{x(\\sqrt[3]{(x+1)^2} + \\sqrt[3]{x+1} + 1)} = \\frac{1}{\\sqrt[3]{(x+1)^2} + \\sqrt[3]{x+1} + 1}$.\\nQuand $x \\to 0$, la limite vaut $\\frac{1}{1+1+1} = \\frac{1}{3}$.\\nb. Factorisons par $x$ :\n$\\sqrt[3]{x^3+1}-2x = x\\left(\\sqrt[3]{1+\\frac{1}{x^3}} - 2\\right)$.\\nQuand $x \\to +\\infty$, $x \\to +\\infty$ et $\\sqrt[3]{1+\\frac{1}{x^3}} - 2 \\to 1 - 2 = -1$. La limite vaut $-\\infty$.\\nc. Utilisons l'identité $a-b = \\frac{a^3-b^3}{a^2+ab+b^2}$ avec $a = \\sqrt[3]{x^3+x+1}$ et $b = x$ :\n$\\sqrt[3]{x^3+x+1}-x = \\frac{x^3+x+1-x^3}{\\sqrt[3]{(x^3+x+1)^2} + x\\sqrt[3]{x^3+x+1} + x^2} = \\frac{x+1}{x^2\\left(\\sqrt[3]{(1+1/x^2+1/x^3)^2} + \\sqrt[3]{1+1/x^2+1/x^3} + 1\\right)}$.\\nLe numérateur est équivalent à $x$ et le dénominateur à $3x^2$. La limite est $\\lim_{x\\to +\\infty} \\frac{x}{3x^2} = 0$.",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "1. On considère $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = \\sqrt[3]{3x^2+4}$.\\na. Étudier la continuité de $f$ sur $\\mathbb{R}$.\\nb. Calculer $\\lim_{x\\to +\\infty} f(x)$ et $\\lim_{x\\to -\\infty} f(x)$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Calculer les limites suivantes :\\na. $\\lim_{x\\to 0} \\frac{\\sqrt[3]{x+1}-1}{x}$\\nb. $\\lim_{x\\to +\\infty} (\\sqrt[3]{x^3+1}-2x)$\\nc. $\\lim_{x\\to +\\infty} (\\sqrt[3]{x^3+x+1}-x)$"
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Exercice 7 : Calculs de limites variées",
+          "type": "exercise",
+          "content": "Calculer les limites suivantes :\n1. $\\lim_{x\\to 2} \\sqrt[5]{x^3+24}$\n2. $\\lim_{x\\to +\\infty} \\sqrt[4]{x^5-3x^2+4}$\n3. $\\lim_{x\\to +\\infty} (\\sqrt[3]{x^3+x^2+2}-2x)$\n4. $\\lim_{x\\to 0} \\frac{\\sqrt[3]{x+8}-2}{x}$\n5. $\\lim_{x\\to 1} \\frac{\\sqrt[3]{x}-\\sqrt{x}}{x-1}$\n6. $\\lim_{x\\to 2} \\frac{\\sqrt[3]{x+25}-3}{x^2-3x+2}$",
+          "solution": "1. $\\lim_{x\\to 2} \\sqrt[5]{2^3+24} = \\sqrt[5]{32} = 2$.\n2. $\\lim_{x\\to +\\infty} \\sqrt[4]{x^5-3x^2+4} = \\lim_{x\\to +\\infty} \\sqrt[4]{x^5} = +\\infty$.\n3. $\\lim_{x\\to +\\infty} x\\left(\\sqrt[3]{1+\\frac{1}{x}+\\frac{2}{x^3}} - 2\\right) = +\\infty \\times (1-2) = -\\infty$.\n4. $\\frac{\\sqrt[3]{x+8}-2}{x} = \\frac{x+8-8}{x(\\sqrt[3]{(x+8)^2} + 2\\sqrt[3]{x+8} + 4)} = \\frac{1}{\\sqrt[3]{(x+8)^2} + 2\\sqrt[3]{x+8} + 4}$.\\nQuand $x \\to 0$, la limite vaut $\\frac{1}{4+4+4} = \\frac{1}{12}$.\n5. Astuce : séparer par $-1+1$ :\n$\\frac{\\sqrt[3]{x}-\\sqrt{x}}{x-1} = \\frac{\\sqrt[3]{x}-1}{x-1} - \\frac{\\sqrt{x}-1}{x-1}$.\n$\\lim_{x\\to 1} \\frac{\\sqrt[3]{x}-1}{x-1} = \\frac{1}{3}$ et $\\lim_{x\\to 1} \\frac{\\sqrt{x}-1}{x-1} = \\frac{1}{2}$.\\nLa limite cherchée vaut $\\frac{1}{3} - \\frac{1}{2} = -\\frac{1}{6}$.\n6. On a $x^2-3x+2 = (x-2)(x-1)$.\n$\\frac{\\sqrt[3]{x+25}-3}{x-2} = \\frac{x+25-27}{(x-2)(\\sqrt[3]{(x+25)^2} + 3\\sqrt[3]{x+25} + 9)} = \\frac{1}{\\sqrt[3]{27^2} + 3\\sqrt[3]{27} + 9} = \\frac{1}{9+9+9} = \\frac{1}{27}$.\\nAinsi, $\\lim_{x\\to 2} \\frac{\\sqrt[3]{x+25}-3}{(x-2)(x-1)} = \\frac{1}{27} \\times \\frac{1}{2-1} = \\frac{1}{27}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Calculer les limites suivantes :"
+            },
+            {
+              "type": "bullet",
+              "text": "1. $\\lim_{x\\to 2} \\sqrt[5]{x^3+24}$"
+            },
+            {
+              "type": "bullet",
+              "text": "2. $\\lim_{x\\to +\\infty} \\sqrt[4]{x^5-3x^2+4}$"
+            },
+            {
+              "type": "bullet",
+              "text": "3. $\\lim_{x\\to +\\infty} (\\sqrt[3]{x^3+x^2+2}-2x)$"
+            },
+            {
+              "type": "bullet",
+              "text": "4. $\\lim_{x\\to 0} \\frac{\\sqrt[3]{x+8}-2}{x}$"
+            },
+            {
+              "type": "bullet",
+              "text": "5. $\\lim_{x\\to 1} \\frac{\\sqrt[3]{x}-\\sqrt{x}}{x-1}$"
+            },
+            {
+              "type": "bullet",
+              "text": "6. $\\lim_{x\\to 2} \\frac{\\sqrt[3]{x+25}-3}{x^2-3x+2}$"
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "title": "Application 14 : Ecriture sous forme de puissance rationnelle",
+          "type": "application",
+          "content": "Écrire sous forme d'une puissance rationnelle les nombres :\n$A = \\frac{\\sqrt[3]{4} \\times 8^{\\frac{1}{2}} \\times \\sqrt[5]{2}}{\\sqrt[3]{2} \\times \\sqrt[6]{4}}$ et $B = \\frac{(27)^{\\frac{2}{7}} \\times (81)^{\\frac{1}{4}}}{3^{\\frac{17}{3}}}$.",
+          "solution": "- Pour $A$ :\n  Numérateur : $4^{\\frac{1}{3}} \\times (2^3)^{\\frac{1}{2}} \\times 2^{\\frac{1}{5}} = 2^{\\frac{2}{3}} \\times 2^{\\frac{3}{2}} \\times 2^{\\frac{1}{5}} = 2^{\\frac{2}{3} + \\frac{3}{2} + \\frac{1}{5}} = 2^{\\frac{20+45+6}{30}} = 2^{\\frac{71}{30}}$.\n  Dénominateur : $2^{\\frac{1}{3}} \\times (2^2)^{\\frac{1}{6}} = 2^{\\frac{1}{3}} \\times 2^{\\frac{1}{3}} = 2^{\\frac{2}{3}}$.\n  $A = 2^{\\frac{71}{30} - \\frac{20}{30}} = 2^{\\frac{51}{30}} = 2^{\\frac{17}{10}}$.\n- Pour $B$ :\n  Numérateur : $(3^3)^{\\frac{2}{7}} \\times (3^4)^{\\frac{1}{4}} = 3^{\\frac{6}{7}} \\times 3^1 = 3^{\\frac{13}{7}}$.\n  Dénominateur : $3^{\\frac{17}{3}}$.\n  $B = 3^{\\frac{13}{7} - \\frac{17}{3}} = 3^{\\frac{39 - 119}{21}} = 3^{-\\frac{80}{21}}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Écrire sous forme d'une puissance rationnelle les nombres :"
+            },
+            {
+              "type": "text",
+              "text": "$A = \\frac{\\sqrt[3]{4} \\times 8^{\\frac{1}{2}} \\times \\sqrt[5]{2}}{\\sqrt[3]{2} \\times \\sqrt[6]{4}}$ et $B = \\frac{(27)^{\\frac{2}{7}} \\times (81)^{\\frac{1}{4}}}{3^{\\frac{17}{3}}}$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-13T15:04:46.903Z",
+    "level": "2bac_pc_svt",
+    "doc_type": "exercises",
+    "created_at": "2026-09-13T15:04:46.897Z",
+    "createdAt": "2026-09-13T15:04:47.123Z"
   }
 ]
