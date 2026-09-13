@@ -251,7 +251,8 @@ const server = http.createServer(async (req, res) => {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', '*');
+  res.setHeader('Access-Control-Allow-Private-Network', 'true');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -539,7 +540,7 @@ const server = http.createServer(async (req, res) => {
   sendJSON(res, 404, { error: 'Not Found' });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`=================================================`);
   console.log(`🚀 L'Conq Local Companion Server & DB est en ligne !`);
   console.log(`🔌 Adresse : http://localhost:${PORT}`);

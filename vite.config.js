@@ -120,8 +120,15 @@ export default defineConfig({
     },
   },
 
-  // Dev server: faster HMR
+  // Dev server: faster HMR & Companion proxy
   server: {
+    proxy: {
+      '/companion-api': {
+        target: 'http://127.0.0.1:5002',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/companion-api/, '')
+      }
+    },
     warmup: {
       // Pre-bundle these on server start to avoid first-request lag
       clientFiles: [

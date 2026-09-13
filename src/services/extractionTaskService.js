@@ -1,48 +1,115 @@
 // src/services/extractionTaskService.js
 // Client service for Managing Asynchronous Lesson Extraction Tasks
-// Bridges Frontend UI with Companion Server (port 5002) and Supabase fallback
+// Highly resilient connector supporting Vite same-origin proxy (/companion-api),
+// direct localhost:5002, 127.0.0.1:5002, and Supabase fallback
 
 import { supabase } from '../lib/supabase';
 
-const getHost = () => (typeof window !== 'undefined' && window.location && window.location.hostname) ? window.location.hostname : '127.0.0.1';
-const COMPANION_URL = `http://${getHost()}:5002/api/extraction-tasks`;
-const COMPANION_PING = `http://${getHost()}:5002/ping`;
+// Multi-tier candidate base URLs to guarantee connection across all environments
+const getCandidateBaseUrls = () => {
+  const list = [];
+  if (typeof window !== 'undefined' && window.location) {
+    // 1. Same-origin Vite proxy (zero CORS, zero IPv4/IPv6 mismatch)
+    list.push('/companion-api');
 
+    const host = window.location.hostname;
+    if (host && host !== 'localhost' && host !== '127.0.0.1') {
+      list.push(`http://${host}:5002`);
+    }
+  }
+  // 2. Direct localhost and loopback IPv4
+  list.push('http://localhost:5002');
+  list.push('http://127.0.0.1:5002');
+  return Array.from(new Set(list));
+};
+
+let activeBaseUrl = null;
 let companionOnline = null;
 let lastCheckTime = 0;
 
-export const isCompanionAvailable = async () => {
+/**
+ * Check if the companion server is available by testing candidate endpoints
+ */
+export const isCompanionAvailable = async (forceCheck = false) => {
   const now = Date.now();
-  if (companionOnline !== null && now - lastCheckTime < 15000) {
+  if (!forceCheck && companionOnline !== null && now - lastCheckTime < 5000) {
     return companionOnline;
   }
-  try {
-    const ctrl = new AbortController();
-    const tid = setTimeout(() => ctrl.abort(), 1200);
-    const res = await fetch(COMPANION_PING, { signal: ctrl.signal });
-    clearTimeout(tid);
-    companionOnline = res.ok;
-  } catch {
-    companionOnline = false;
+
+  const bases = activeBaseUrl ? [activeBaseUrl, ...getCandidateBaseUrls()] : getCandidateBaseUrls();
+  const uniqueBases = Array.from(new Set(bases));
+
+  for (const base of uniqueBases) {
+    try {
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 3000);
+      const res = await fetch(`${base}/ping`, { signal: ctrl.signal });
+      clearTimeout(tid);
+      if (res.ok) {
+        activeBaseUrl = base;
+        companionOnline = true;
+        lastCheckTime = now;
+        return true;
+      }
+    } catch {
+      // try next candidate
+    }
   }
+
+  companionOnline = false;
   lastCheckTime = now;
-  return companionOnline;
+  return false;
+};
+
+/**
+ * Helper to execute a fetch request across candidate companion URLs
+ */
+const fetchWithFailover = async (endpointPath, options = {}) => {
+  const bases = activeBaseUrl ? [activeBaseUrl, ...getCandidateBaseUrls()] : getCandidateBaseUrls();
+  const uniqueBases = Array.from(new Set(bases));
+
+  let lastError = null;
+  for (const base of uniqueBases) {
+    try {
+      const url = `${base}${endpointPath}`;
+      const ctrl = new AbortController();
+      const timeoutMs = options.timeout || 30000;
+      const tid = setTimeout(() => ctrl.abort(), timeoutMs);
+
+      const res = await fetch(url, {
+        ...options,
+        signal: ctrl.signal
+      });
+      clearTimeout(tid);
+
+      if (res.ok) {
+        activeBaseUrl = base;
+        companionOnline = true;
+        lastCheckTime = Date.now();
+        return res;
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP ${res.status}`);
+      }
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error("Serveur compagnon injoignable.");
 };
 
 /**
  * Fetch all extraction tasks metadata (sorted newest first)
  */
 export const getExtractionTasks = async () => {
-  const isLocal = await isCompanionAvailable();
-  if (isLocal) {
-    try {
-      const res = await fetch(COMPANION_URL);
-      if (res.ok) {
-        return await res.json();
-      }
-    } catch (err) {
-      console.warn('[ExtractionTaskService] Companion fetch error, falling back:', err);
+  try {
+    const res = await fetchWithFailover('/api/extraction-tasks', { method: 'GET', timeout: 6000 });
+    if (res && res.ok) {
+      return await res.json();
     }
+  } catch (err) {
+    console.warn('[ExtractionTaskService] Companion fetch error, falling back:', err.message);
   }
 
   // Fallback: Supabase DB if enabled
@@ -90,16 +157,13 @@ export const getExtractionTasks = async () => {
  * Fetch full detail of a task including extracted JSON result
  */
 export const getExtractionTaskById = async (id) => {
-  const isLocal = await isCompanionAvailable();
-  if (isLocal) {
-    try {
-      const res = await fetch(`${COMPANION_URL}?id=${encodeURIComponent(id)}`);
-      if (res.ok) {
-        return await res.json();
-      }
-    } catch (err) {
-      console.warn('[ExtractionTaskService] Companion getById error:', err);
+  try {
+    const res = await fetchWithFailover(`/api/extraction-tasks?id=${encodeURIComponent(id)}`, { method: 'GET', timeout: 8000 });
+    if (res && res.ok) {
+      return await res.json();
     }
+  } catch (err) {
+    console.warn('[ExtractionTaskService] Companion getById error:', err.message);
   }
 
   if (supabase) {
@@ -138,70 +202,59 @@ export const getExtractionTaskById = async (id) => {
 };
 
 /**
- * Create a new extraction task
+ * Create a new extraction task (with automatic failover across endpoints)
  */
 export const createExtractionTask = async (taskPayload) => {
-  const isLocal = await isCompanionAvailable();
-  if (isLocal) {
-    const res = await fetch(COMPANION_URL, {
+  try {
+    const res = await fetchWithFailover('/api/extraction-tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(taskPayload)
+      body: JSON.stringify(taskPayload),
+      timeout: 15000
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `Erreur lors de la création de la tâche (HTTP ${res.status})`);
-    }
     const data = await res.json();
     return data.task;
+  } catch (err) {
+    console.error('[ExtractionTaskService] Failed to create task:', err);
+    throw new Error(
+      "Le serveur compagnon local (port 5002) est indisponible pour exécuter la tâche d'arrière-plan.\n" +
+      "Veuillez vérifier que le serveur est bien démarré (start-companion.js ou start-all.bat)."
+    );
   }
-
-  throw new Error(
-    "Le serveur compagnon local (port 5002) est indisponible pour exécuter la tâche d'arrière-plan. " +
-    "Veuillez démarrer start-all.bat ou start-companion.js."
-  );
 };
 
 /**
  * Retry a failed task
  */
 export const retryExtractionTask = async (id, newApiKey = null) => {
-  const isLocal = await isCompanionAvailable();
-  if (isLocal) {
-    const res = await fetch(`${COMPANION_URL}?action=retry&id=${encodeURIComponent(id)}`, {
+  try {
+    const res = await fetchWithFailover(`/api/extraction-tasks?action=retry&id=${encodeURIComponent(id)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, apiKey: newApiKey })
+      body: JSON.stringify({ id, apiKey: newApiKey }),
+      timeout: 10000
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `Erreur lors de la relance (HTTP ${res.status})`);
-    }
     const data = await res.json();
     return data.task;
+  } catch (err) {
+    throw new Error(`Erreur lors de la relance : ${err.message}`);
   }
-
-  throw new Error("Serveur d'arrière-plan indisponible pour relancer la tâche.");
 };
 
 /**
  * Delete a task
  */
 export const deleteExtractionTask = async (id) => {
-  const isLocal = await isCompanionAvailable();
-  if (isLocal) {
-    const res = await fetch(`${COMPANION_URL}?id=${encodeURIComponent(id)}`, {
-      method: 'DELETE'
+  try {
+    const res = await fetchWithFailover(`/api/extraction-tasks?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      timeout: 8000
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `Erreur de suppression`);
+    return res.ok;
+  } catch (err) {
+    if (supabase) {
+      await supabase.from('extraction_tasks').delete().eq('id', id);
     }
     return true;
   }
-
-  if (supabase) {
-    await supabase.from('extraction_tasks').delete().eq('id', id);
-  }
-  return true;
 };
