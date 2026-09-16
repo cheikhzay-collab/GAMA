@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
 import initialUsersData from '../../data/users.json';
+import { neonSaveProfile } from '../lib/neon';
 
 const STORAGE_KEY = 'lconq_users_db';
 
@@ -106,7 +107,16 @@ export const createUserDoc = async (uid, userData) => {
   currentUsers.unshift(profile);
   saveLocalStorageUsers(currentUsers);
 
-  // 2. Supabase
+  // 2. Sync to Neon PostgreSQL
+  try {
+    neonSaveProfile({
+      id: uid,
+      ...mapProfileToDB(userData),
+      updated_at: now,
+    }).catch(err => console.warn('[Neon] Error syncing createUserDoc:', err.message));
+  } catch (_) {}
+
+  // 3. Supabase
   if (supabase) {
     try {
       const { error } = await supabase
@@ -231,6 +241,13 @@ export const updateUserDoc = async (uid, updates) => {
       if (updates.crm !== undefined) dbUpdates.crm = updates.crm;
       if (classId !== undefined) dbUpdates.class_id = classId;
       dbUpdates.updated_at = now;
+
+      // Sync to Neon PostgreSQL
+      try {
+        neonSaveProfile({ id: uid, ...dbUpdates }).catch(err =>
+          console.warn('[Neon] Error syncing updateUserDoc:', err.message)
+        );
+      } catch (_) {}
 
       const { error } = await supabase
         .from('profiles')

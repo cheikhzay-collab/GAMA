@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
 import { mapLegacySchoolToLevel } from '../utils/levelHelpers';
+import { neonSaveExam, neonDeleteExam } from '../lib/neon';
 
 const STORAGE_KEY = 'lconq_exams_db';
 
@@ -265,6 +266,13 @@ export const addExam = async (examData) => {
     console.warn('[LocalDB] Could not sync addExam to Companion server:', err.message);
   }
 
+  // 3. Sync to Neon PostgreSQL
+  try {
+    await neonSaveExam({ id, ...mapExamToDB({ ...examData, level: determinedLevel }) });
+  } catch (err) {
+    console.warn('[Neon] Could not sync addExam to Neon:', err.message);
+  }
+
   // 4. Sync to Supabase
   if (supabase) {
     try {
@@ -339,9 +347,33 @@ export const updateExam = async (examId, updates) => {
       if (updates.isArchived !== undefined) dbUpdates.is_archived = updates.isArchived;
       dbUpdates.updated_at = now;
 
+      // Sync to Neon PostgreSQL
+      try {
+        await neonSaveExam({ id: examId, ...dbUpdates });
+      } catch (err) {
+        console.warn('[Neon] Could not sync updateExam to Neon:', err.message);
+      }
+
       await supabase.from('exams').update(dbUpdates).eq('id', examId);
     } catch (err) {
       console.warn('[Supabase] Could not sync updateExam to Supabase:', err.message);
+    }
+  } else {
+    // Supabase absent, still sync to Neon
+    try {
+      const dbUpdates = { updated_at: now };
+      if (updates.name !== undefined) dbUpdates.name = updates.name;
+      if (updates.school !== undefined) dbUpdates.school = updates.school;
+      if (updates.level !== undefined) dbUpdates.level = updates.level;
+      if (updates.year !== undefined) dbUpdates.year = updates.year;
+      if (updates.tier !== undefined) dbUpdates.tier = updates.tier;
+      if (updates.questions !== undefined) dbUpdates.questions = updates.questions;
+      if (updates.pdfUrl !== undefined) dbUpdates.pdf_url = updates.pdfUrl;
+      if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
+      if (updates.isArchived !== undefined) dbUpdates.is_archived = updates.isArchived;
+      await neonSaveExam({ id: examId, ...dbUpdates });
+    } catch (err) {
+      console.warn('[Neon] Could not sync updateExam to Neon:', err.message);
     }
   }
 };
@@ -377,6 +409,13 @@ export const deleteExam = async (examId) => {
     await localDb.delete('/exams', examId);
   } catch (err) {
     console.warn('[LocalDB] Could not sync deleteExam to Companion server:', err.message);
+  }
+
+  // Sync delete to Neon PostgreSQL
+  try {
+    await neonDeleteExam(examId);
+  } catch (err) {
+    console.warn('[Neon] Could not sync deleteExam to Neon:', err.message);
   }
 
   // 3. Sync delete to Supabase

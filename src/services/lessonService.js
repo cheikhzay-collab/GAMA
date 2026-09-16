@@ -5,6 +5,7 @@
 import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
+import { neonSaveLesson, neonDeleteLesson } from '../lib/neon';
 
 const STORAGE_KEY = 'lconq_lessons_db';
 
@@ -324,6 +325,14 @@ export const addLesson = async (lessonData) => {
     doc_type: lessonData.docType || lessonData.content?.doc_type || 'course',
     created_at: now 
   };
+
+  // Sync to Neon PostgreSQL
+  try {
+    await neonSaveLesson(dbLesson);
+  } catch (err) {
+    console.warn('[Neon] Error syncing addLesson:', err);
+  }
+
   try {
     await localDb.post('/lessons', dbLesson);
   } catch (err) {
@@ -395,6 +404,13 @@ export const updateLesson = async (lessonId, updates) => {
       level:    updates.level    || updates.content?.level    || null,
       doc_type: updates.docType  || updates.content?.doc_type || null
     };
+  }
+
+  // Sync to Neon PostgreSQL
+  try {
+    await neonSaveLesson({ id: lessonId, ...dbUpdates });
+  } catch (err) {
+    console.warn('[Neon] Error syncing updateLesson:', err);
   }
 
   // 4. Companion API (awaited, with fallback to insert if missing)
@@ -493,6 +509,13 @@ export const deleteLesson = async (lessonId) => {
     await localDb.delete('/lessons', lessonId);
   } catch (err) {
     console.warn('[LocalDB] Could not sync deleteLesson:', err.message);
+  }
+
+  // Sync delete to Neon PostgreSQL
+  try {
+    await neonDeleteLesson(lessonId);
+  } catch (err) {
+    console.warn('[Neon] Error syncing deleteLesson:', err);
   }
 
   // 4. Supabase

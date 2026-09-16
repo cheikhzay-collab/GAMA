@@ -5,6 +5,7 @@
 import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
+import { neonSaveConfig, neonGetConfig } from '../lib/neon';
 
 const DEFAULT_SCHOOLS = [
   '2bac_sm',
@@ -65,6 +66,13 @@ export const getSchoolsConfig = async (options = {}) => {
  */
 export const saveSchoolsConfig = async (schools, branding) => {
   queryCache.invalidate('config_schools');
+
+  // 1. Sync to Neon PostgreSQL
+  try {
+    await neonSaveConfig('schools', { schools, branding });
+  } catch (err) {
+    console.warn('[Neon] Error saving schools config:', err);
+  }
 
   if (supabase) {
     try {
@@ -130,6 +138,13 @@ export const getBrandingConfig = async (options = {}) => {
 export const saveBrandingConfig = async (branding) => {
   queryCache.invalidate('config_branding');
 
+  // 1. Sync to Neon PostgreSQL
+  try {
+    await neonSaveConfig('branding', branding);
+  } catch (err) {
+    console.warn('[Neon] Error saving branding config:', err);
+  }
+
   if (supabase) {
     try {
       const { error } = await supabase
@@ -193,6 +208,13 @@ export const getFlashcardSettingsConfig = async (options = {}) => {
  */
 export const saveFlashcardSettingsConfig = async (settings) => {
   queryCache.invalidate('config_flashcard_settings');
+
+  // 1. Sync to Neon PostgreSQL
+  try {
+    await neonSaveConfig('flashcard_settings', settings);
+  } catch (err) {
+    console.warn('[Neon] Error saving flashcard settings:', err);
+  }
 
   if (supabase) {
     try {
@@ -258,6 +280,13 @@ export const getPdfSettingsConfig = async (options = {}) => {
 export const savePdfSettingsConfig = async (settings) => {
   queryCache.invalidate('config_pdf_settings');
 
+  // 1. Sync to Neon PostgreSQL
+  try {
+    await neonSaveConfig('pdf_settings', settings);
+  } catch (err) {
+    console.warn('[Neon] Error saving PDF settings:', err);
+  }
+
   if (supabase) {
     try {
       const { error } = await supabase
@@ -322,6 +351,13 @@ export const getOmrScannerSettingsConfig = async (options = {}) => {
 export const saveOmrScannerSettingsConfig = async (settings) => {
   queryCache.invalidate('config_omr_scanner_settings');
 
+  // 1. Sync to Neon PostgreSQL
+  try {
+    await neonSaveConfig('omr_scanner_settings', settings);
+  } catch (err) {
+    console.warn('[Neon] Error saving OMR scanner settings:', err);
+  }
+
   if (supabase) {
     try {
       const { error } = await supabase
@@ -385,6 +421,13 @@ export const getWhatsAppSettingsConfig = async (options = {}) => {
  */
 export const saveWhatsAppSettingsConfig = async (settings) => {
   queryCache.invalidate('config_whatsapp_settings');
+
+  // 1. Sync to Neon PostgreSQL
+  try {
+    await neonSaveConfig('whatsapp_settings', settings);
+  } catch (err) {
+    console.warn('[Neon] Error saving WhatsApp settings:', err);
+  }
 
   if (supabase) {
     try {
@@ -452,6 +495,13 @@ export const getPlans = getPlansConfig;
 export const savePlansConfig = async (plans) => {
   queryCache.invalidate('config_plans');
 
+  // 1. Sync to Neon PostgreSQL
+  try {
+    await neonSaveConfig('plans', plans);
+  } catch (err) {
+    console.warn('[Neon] Error saving plans config:', err);
+  }
+
   if (supabase) {
     try {
       const { error } = await supabase
@@ -518,6 +568,13 @@ export const getLandingArConfig = async (options = {}) => {
 export const saveLandingArConfig = async (landingConfig) => {
   queryCache.invalidate('config_landing_ar');
 
+  // 1. Sync to Neon PostgreSQL
+  try {
+    await neonSaveConfig('landing_ar_settings', landingConfig);
+  } catch (err) {
+    console.warn('[Neon] Error saving landing AR config:', err);
+  }
+
   if (supabase) {
     try {
       const { error } = await supabase
@@ -581,6 +638,13 @@ export const getAiSettingsConfig = async (options = {}) => {
  */
 export const saveAiSettingsConfig = async (settings) => {
   queryCache.invalidate('config_ai_settings');
+
+  // 1. Sync to Neon PostgreSQL
+  try {
+    await neonSaveConfig('ai_settings', settings);
+  } catch (err) {
+    console.warn('[Neon] Error saving AI settings:', err);
+  }
 
   if (supabase) {
     try {

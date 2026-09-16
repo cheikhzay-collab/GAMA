@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
 import initialClassesData from '../../data/classes.json';
+import { neonSaveClass, neonDeleteClass } from '../lib/neon';
 
 const STORAGE_KEY = 'lconq_classes_db';
 
@@ -217,6 +218,24 @@ export const addClass = async (classData) => {
     console.warn('[LocalDB] Could not sync addClass to Companion server:', err.message);
   });
 
+  // Sync to Neon PostgreSQL
+  neonSaveClass({
+    id,
+    name: classData.name,
+    level: classData.level,
+    student_count: newClass.studentCount,
+    students: newClass.students,
+    competitions: newClass.competitions,
+    competition_grades: newClass.competitionGrades,
+    controls: newClass.controls,
+    grades: newClass.grades,
+    homework: newClass.homework,
+    language: newClass.language,
+    program: newClass.program,
+    created_at: now,
+    updated_at: now
+  }).catch(err => console.warn('[Neon] Could not sync addClass to Neon:', err.message));
+
   // 4. Supabase (fire-and-forget)
   if (supabase) {
     supabase.from('classes').upsert({
@@ -287,6 +306,14 @@ export const updateClass = async (classId, updates) => {
     localDb.post('/classes', merged).catch(err => {
       console.warn('[LocalDB] Could not sync updateClass to Companion server:', err.message);
     });
+
+    // Sync to Neon PostgreSQL
+    neonSaveClass({
+      id: classId,
+      ...merged,
+      student_count: studentCount,
+      updated_at: now
+    }).catch(err => console.warn('[Neon] Could not sync updateClass to Neon:', err.message));
   }).catch(err => {
     console.warn('[LocalDB] Could not sync updateClass to Companion server:', err.message);
   });
@@ -381,6 +408,11 @@ export const deleteClass = async (classId) => {
   // 3. Companion API (fire-and-forget)
   localDb.delete('/classes', classId).catch(err => {
     console.warn('[LocalDB] Could not sync deleteClass to Companion server:', err.message);
+  });
+
+  // Sync delete to Neon PostgreSQL
+  neonDeleteClass(classId).catch(err => {
+    console.warn('[Neon] Could not sync deleteClass to Neon:', err.message);
   });
 
   // 4. Supabase (fire-and-forget)
