@@ -688,6 +688,17 @@ export function AuthProvider({ children }) {
           // If the session is missing, check if we have a locally cached user
           if (sessionErr.message === 'Auth session missing!') {
             if (active) {
+              // FIX: If we have a Neon token, don't clear the user state.
+              // The user is authenticated via Neon, not Supabase.
+              const neonToken = localStorage.getItem('gama_auth_token');
+              if (neonToken) {
+                console.log('[Auth] Supabase session missing but Neon token exists — preserving Neon auth state.');
+                const cached = localStorage.getItem('user');
+                if (cached) {
+                  try { setUser(JSON.parse(cached)); } catch { /* ignore */ }
+                }
+                return;
+              }
               const cached = localStorage.getItem('user');
               if (cached && !navigator.onLine) {
                 try {
@@ -713,6 +724,17 @@ export function AuthProvider({ children }) {
                               sessionErr.message?.includes('session');
           
           if (isAuthError) {
+            // FIX: Only clear session if there is no Neon token.
+            // Supabase JWT/session errors should NOT affect Neon-authenticated users.
+            const neonToken = localStorage.getItem('gama_auth_token');
+            if (neonToken) {
+              console.warn('[Auth] Supabase auth error ignored — user has Neon token. Preserving session.', sessionErr.message);
+              const cached = localStorage.getItem('user');
+              if (cached && active) {
+                try { setUser(JSON.parse(cached)); } catch { /* ignore */ }
+              }
+              return;
+            }
             console.warn('[Auth] Expired or invalid session detected on startup. Clearing stale user cache:', sessionErr.message);
             if (active) {
               clearLocalSessionData();
@@ -1102,6 +1124,13 @@ export function AuthProvider({ children }) {
   // Handle global 401 Unauthorized events from Supabase client fetch wrapper
   useEffect(() => {
     const handleUnauthorized = () => {
+      // FIX: Don't logout if user is authenticated via Neon token.
+      // Supabase 401s are expected when using Neon-only auth.
+      const neonToken = localStorage.getItem('gama_auth_token');
+      if (neonToken) {
+        console.warn('[Auth] Supabase 401 ignored — user is authenticated via Neon token.');
+        return;
+      }
       console.warn('[Auth] Received unauthorized event from Supabase client. Logging out...');
       logout();
     };
@@ -1267,18 +1296,22 @@ export function AuthProvider({ children }) {
       if (neonUser) {
         setUser(neonUser);
         safeSetItem('user', JSON.stringify(neonUser));
+        // FIX: Return early — do NOT fall through to Supabase login.
+        // Neon auth succeeded; running Supabase login would call the same
+        // endpoint again and could overwrite the Neon token or fail silently.
         return neonUser;
       }
     } catch (neonErr) {
-      // If Neon specifically rejected credentials, throw or try fallback
+      // If Neon specifically rejected credentials, throw — no fallback to Supabase
+      // because they share the same loginWithEmail function and would produce
+      // the same error (wrong credentials).
       console.warn('[Neon Auth] login failed:', neonErr.message);
-      if (!SUPABASE_ENABLED) {
-        throw neonErr;
-      }
+      throw neonErr;
     }
 
-    // 2. Try Supabase Auth as secondary fallback
-    if (SUPABASE_ENABLED) {
+    // This path is only reached if neonUser was null/undefined (should not happen normally)
+    // Kept as a safety net.
+    if (SUPABASE_ENABLED && !localStorage.getItem('gama_auth_token')) {
       try {
         const sbUser = await loginWithEmail(email, password);
         setUser(sbUser);

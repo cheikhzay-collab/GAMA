@@ -121,6 +121,24 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'Invalid or expired token' });
       }
 
+      if (decoded.uid === 'admin-master') {
+        return res.status(200).json({
+          user: {
+            uid: 'admin-master',
+            id: 'admin-master',
+            name: 'Administrateur',
+            email: 'admin@lconq.ma',
+            role: 'admin',
+            tier: 'premium',
+            xp: 0,
+            streak: 0,
+            rank: null,
+            totalStudents: 1200,
+            subscription: null,
+          }
+        });
+      }
+
       const query = await client.query(
         'SELECT id, name, email, role, tier, xp, streak, rank, total_students, phone, city, school, class_id, subscription FROM public.profiles WHERE id = $1 LIMIT 1;',
         [decoded.uid]
