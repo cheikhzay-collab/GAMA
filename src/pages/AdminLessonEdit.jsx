@@ -1110,6 +1110,7 @@ export default function AdminLessonEdit() {
           <button
             type="button"
             onClick={() => setIsGeneralInfoExpanded(prev => !prev)}
+            className="lesson-general-info-toggle"
             style={{
               background: 'transparent',
               border: '1px solid var(--border)',
@@ -1545,7 +1546,7 @@ export default function AdminLessonEdit() {
                   </td>
                 </tr>
                 {/* Objectives 2 columns */}
-                <tr>
+                <tr className="lesson-ped-table-row">
                   <td style={{ width: '50%', padding: '0.5rem', borderRight: '1.5px solid #005086', borderBottom: '1.5px solid #005086', verticalAlign: 'top' }}>
                     <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#005086', marginBottom: '0.25rem', textTransform: 'uppercase' }}>
                       {cfg.col1Title}
@@ -1556,6 +1557,7 @@ export default function AdminLessonEdit() {
                       onFocus={() => setActiveFieldTarget({ field: 'capacites' })}
                       placeholder={cfg.col1Placeholder}
                       rows={2}
+                      className="lesson-section-textarea"
                       style={{ width: '100%', border: '1px dashed #cbd5e1', borderRadius: '4px', padding: '0.35rem', fontSize: '0.8rem', resize: 'vertical', outline: 'none', fontFamily: 'inherit' }}
                     />
                   </td>
@@ -1569,6 +1571,7 @@ export default function AdminLessonEdit() {
                       onFocus={() => setActiveFieldTarget({ field: 'contenus' })}
                       placeholder={cfg.col2Placeholder}
                       rows={2}
+                      className="lesson-section-textarea"
                       style={{ width: '100%', border: '1px dashed #cbd5e1', borderRadius: '4px', padding: '0.35rem', fontSize: '0.8rem', resize: 'vertical', outline: 'none', fontFamily: 'inherit' }}
                     />
                   </td>
@@ -1598,13 +1601,13 @@ export default function AdminLessonEdit() {
             return (
               <div
                 key={sec.id || secIdx}
-                className="word-section-block"
+                className="word-section-block lesson-section-block"
                 style={{
                   border: `1.5px solid ${currentStyle.border}45`,
                   borderInlineStart: `5px solid ${currentStyle.border}`,
                   borderRadius: '10px',
                   background: sec.bgColor && sec.bgColor !== 'transparent' ? sec.bgColor : currentStyle.bg,
-                  padding: isMobile ? '1rem' : '1.35rem',
+                  padding: isMobile ? '0.85rem' : '1.35rem',
                   position: 'relative',
                   transition: 'background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease',
                   boxShadow: '0 3px 12px rgba(0,0,0,0.04)'
@@ -2599,7 +2602,7 @@ export default function AdminLessonEdit() {
   const ModeIcon = currentModeInfo.icon;
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '1440px', margin: '0 auto', paddingBottom: '6rem' }}>
+    <div className="animate-fade-in" style={{ maxWidth: '1440px', margin: '0 auto', paddingBottom: '6rem', padding: isMobile ? '0 0.5rem 7rem' : '0 0 6rem' }}>
       
       {/* ── Scoped Ergonomic CSS for Office Ribbon and Mobile Responsiveness ── */}
       <style>{`
@@ -2621,19 +2624,164 @@ export default function AdminLessonEdit() {
           transform: translateY(-1px);
           filter: brightness(1.06);
         }
+
+        /* ── Mobile Responsive Overrides ── */
         @media (max-width: 768px) {
+
+          /* Main canvas */
           .word-paper-canvas {
-            padding: 1rem 0.85rem !important;
-            border-radius: 6px !important;
+            padding: 1rem 0.75rem !important;
+            border-radius: 8px !important;
+            min-height: unset !important;
           }
+
+          /* Floating save pill → full-width bottom bar */
           .floating-save-pill {
-            left: 1rem !important;
-            right: 1rem !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            border-radius: 0 !important;
+            border-left: none !important;
+            border-right: none !important;
+            border-bottom: none !important;
+            padding: 0.65rem 1rem !important;
             justify-content: space-between !important;
-            bottom: 1rem !important;
+            background: rgba(10, 15, 30, 0.97) !important;
+            backdrop-filter: blur(20px) !important;
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.35) !important;
+          }
+          .floating-save-pill button {
+            flex: 1;
+            justify-content: center;
+            padding: 0.65rem 1rem !important;
+            font-size: 0.9rem !important;
+          }
+
+          /* Ribbon tabs: icon-only on mobile */
+          .office-ribbon-tabs button span { display: none; }
+          .office-ribbon-tabs button {
+            padding: 0.75rem 0.85rem !important;
+            min-width: 48px;
+            justify-content: center;
+          }
+          .office-ribbon-tabs button svg { width: 18px !important; height: 18px !important; }
+
+          /* Ribbon content: horizontal scroll on mobile */
+          .word-ribbon-container > div:last-child {
+            overflow-x: auto;
+            flex-wrap: nowrap !important;
+            padding: 0.65rem 0.75rem !important;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          /* Header: stack vertically */
+          .lesson-edit-header-top {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 0.75rem !important;
+          }
+          .lesson-edit-header-top > div:last-child {
+            width: 100%;
+            justify-content: flex-end;
+          }
+
+          /* Mode switcher: horizontal scroll */
+          .lesson-mode-row {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 0.5rem !important;
+          }
+          .lesson-mode-pills {
+            overflow-x: auto !important;
+            flex-wrap: nowrap !important;
+            width: 100%;
+            padding-bottom: 0.25rem;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          /* Pedagogical table: stack columns on mobile */
+          .lesson-ped-table-row td {
+            display: block !important;
+            width: 100% !important;
+            border-right: none !important;
+          }
+          .lesson-ped-table-row td:first-child {
+            border-bottom: 1.5px solid #005086;
+          }
+
+          /* Section blocks: full padding */
+          .lesson-section-block {
+            padding: 0.75rem !important;
+          }
+
+          /* Input text in paper header: compact */
+          .word-paper-canvas input[type=text] {
+            font-size: 0.78rem !important;
+          }
+
+          /* Section textarea: bigger on mobile */
+          .lesson-section-textarea {
+            min-height: 120px !important;
+            font-size: 0.9rem !important;
+            line-height: 1.6 !important;
+          }
+
+          /* Title h1: smaller */
+          .lesson-edit-title h1 {
+            font-size: 1rem !important;
+            max-width: 60vw;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          /* Quick action buttons: icon only on very small screens */
+          @media (max-width: 480px) {
+            .lesson-action-btn span { display: none; }
+            .lesson-action-btn { padding: 0.55rem 0.65rem !important; }
+          }
+
+          /* Status alerts: compact */
+          .lesson-status-alert {
+            padding: 0.65rem 0.9rem !important;
+            font-size: 0.82rem !important;
+          }
+
+          /* General info panel collapsible: touch-friendly toggle */
+          .lesson-general-info-toggle {
+            min-height: 48px;
+          }
+
+          /* Workspace max-width: full on mobile */
+          .lesson-edit-workspace {
+            max-width: 100% !important;
+            padding: 0 0 5rem 0 !important;
           }
         }
+
+        /* Touch devices: larger tap targets */
+        @media (hover: none) and (pointer: coarse) {
+          .mode-pill-btn {
+            min-height: 44px;
+          }
+          .ribbon-action-chip {
+            min-height: 44px;
+            min-width: 44px;
+          }
+          .lesson-section-btn {
+            min-height: 44px;
+          }
+        }
+
+        /* Smooth scroll on iOS */
+        .office-ribbon-tabs,
+        .lesson-mode-pills,
+        .word-ribbon-container > div:last-child {
+          -webkit-overflow-scrolling: touch;
+          scroll-behavior: smooth;
+        }
       `}</style>
+
 
       {/* ── Top Header Bar with Dynamic Mode Status & Quick Mode Switcher ── */}
       <header style={{
@@ -2646,7 +2794,7 @@ export default function AdminLessonEdit() {
       }}>
         
         {/* Upper row: Navigation + Mode Switcher + Action buttons */}
-        <div style={{
+        <div className="lesson-edit-header-top" style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -2655,7 +2803,7 @@ export default function AdminLessonEdit() {
         }}>
           
           {/* Back & Document Title */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+          <div className="lesson-edit-title" style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
             <button
               onClick={goBack}
               className="btn-outline"
@@ -2718,7 +2866,7 @@ export default function AdminLessonEdit() {
                 type="button"
                 onClick={handleAiSolveAllExercises}
                 disabled={solvingAll || saving}
-                className="btn-outline mode-pill-btn"
+                className="btn-outline mode-pill-btn lesson-action-btn"
                 style={{
                   padding: '0.55rem 1rem',
                   fontSize: '0.84rem',
@@ -2756,7 +2904,7 @@ export default function AdminLessonEdit() {
               type="button"
               onClick={handleSaveLesson}
               disabled={saving || solvingAll}
-              className="btn-primary mode-pill-btn"
+              className="btn-primary mode-pill-btn lesson-action-btn"
               style={{
                 padding: '0.55rem 1.3rem',
                 fontSize: '0.86rem',
@@ -2786,8 +2934,8 @@ export default function AdminLessonEdit() {
           borderRadius: '12px',
           padding: '0.5rem 0.85rem'
         }}>
-          {/* Quick Mode Switcher Pills */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
+        {/* Quick Mode Switcher Pills */}
+          <div className="lesson-mode-pills" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', marginInlineEnd: '0.35rem' }}>
               {isArMode ? 'وضع التعديل :' : 'Mode d\'édition :'}
             </span>
@@ -2898,14 +3046,14 @@ export default function AdminLessonEdit() {
 
       {/* ── Status Alerts ── */}
       {error && (
-        <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid var(--danger)', borderRadius: '12px', padding: '0.85rem 1.25rem', color: 'var(--danger)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="lesson-status-alert" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid var(--danger)', borderRadius: '12px', padding: '0.85rem 1.25rem', color: 'var(--danger)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <AlertCircle size={20} />
           <p style={{ margin: 0, fontWeight: 700, fontSize: '0.88rem' }}>{error}</p>
         </div>
       )}
 
       {success && (
-        <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid var(--emerald)', borderRadius: '12px', padding: '0.85rem 1.25rem', color: 'var(--emerald)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="lesson-status-alert" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid var(--emerald)', borderRadius: '12px', padding: '0.85rem 1.25rem', color: 'var(--emerald)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <CheckCircle size={20} />
           <p style={{ margin: 0, fontWeight: 700, fontSize: '0.88rem' }}>{success}</p>
         </div>
@@ -3249,7 +3397,7 @@ export default function AdminLessonEdit() {
 
       {/* ── MAIN WORKSPACE CONTENT (Live Document Canvas) ── */}
       <ImageDropZone onImageInsert={(dataUrl, alt) => handleDirectImageInsert(dataUrl, alt)}>
-        <div style={{ maxWidth: '1050px', margin: '0 auto' }}>
+        <div className="lesson-edit-workspace" style={{ maxWidth: '1050px', margin: '0 auto' }}>
           {/* General Info Panel in Word Mode */}
           {renderGeneralInfoPanel(true)}
           {renderLiveWordDocument()}
