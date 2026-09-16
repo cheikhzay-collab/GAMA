@@ -19824,5 +19824,422 @@
     "created_at": "2026-09-13T22:28:22.944Z",
     "createdAt": "2026-09-13T22:28:23.239Z",
     "updatedAt": "2026-09-13T22:36:30.607Z"
+  },
+  {
+    "id": "MOCK-L-HQB2YZ8BH",
+    "title": "Ensemble \\mathbb{N} et notion d'arithmétiques",
+    "subject": "Mathématiques",
+    "chapter_number": "",
+    "teacher": "Prof : Zayani Mohammed",
+    "phone": "",
+    "schools": [],
+    "content": {
+      "level": "common_core_sci",
+      "doc_type": "exercises",
+      "columns_count": 2,
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "Série corrigée : Ensemble \\mathbb{N} et notion d'arithmétiques",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Ensemble \\mathbb{N} et notion d'arithmétiques",
+        "chapter_number": "",
+        "teacher": "Prof : Zayani Mohammed",
+        "phone": "",
+        "capacites_attendues": "",
+        "contenus": "",
+        "le_contenu": ""
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "On pose $a = 6n + 11$ et $b = 2n + 4$ ; $n \\in \\mathbb{N}$.",
+              "type": "text"
+            },
+            {
+              "text": "**1.** Étudier la parité des nombres $a$ et $b$.",
+              "type": "bullet"
+            },
+            {
+              "text": "**2.** En déduire la parité du nombre : $c = (6n + 11)(-1)^b + (2n + 3)(-1)^a$.",
+              "type": "bullet"
+            },
+            {
+              "text": "**3.** Montrer que le nombre $(a + 1)^2 + b^2$ est un multiple de 40.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 01 :**",
+          "points": 0,
+          "content": "On pose $a = 6n + 11$ et $b = 2n + 4$ ; $n \\in \\mathbb{N}$.\n**1.** Étudier la parité des nombres $a$ et $b$.\n**2.** En déduire la parité du nombre : $c = (6n + 11)(-1)^b + (2n + 3)(-1)^a$.\n**3.** Montrer que le nombre $(a + 1)^2 + b^2$ est un multiple de 40.",
+          "language": "fr",
+          "solution": "**1. Parité de $a$ et $b$ :**\n• Pour $a = 6n + 11 = 2(3n + 5) + 1$ avec $3n + 5 \\in \\mathbb{N}$. Donc $a$ est impair.\n• Pour $b = 2n + 4 = 2(n + 2)$ avec $n + 2 \\in \\mathbb{N}$. Donc $b$ est pair.\n\n**2. Parité de $c$ :**\\nPuisque $b$ est pair, $(-1)^b = 1$.\\nPuisque $a$ est impair, $(-1)^a = -1$.\\nDonc $c = (6n + 11)(1) + (2n + 3)(-1) = 6n + 11 - 2n - 3 = 4n + 8 = 2(2n + 4)$.\\nPar conséquent, $c$ est un nombre pair.\n\n**3. Montrons que $(a + 1)^2 + b^2$ est un multiple de 40 :**\\nOn a $a + 1 = 6n + 12 = 6(n + 2)$ et $b = 2(n + 2)$.\\nCalculons :\n$(a + 1)^2 + b^2 = [6(n + 2)]^2 + [2(n + 2)]^2 = 36(n + 2)^2 + 4(n + 2)^2 = 40(n + 2)^2$.\\nPuisque $(n + 2)^2 \\in \\mathbb{N}$, le nombre $(a + 1)^2 + b^2$ est bien un multiple de 40.",
+          "section_header": "Série d'exercices : Ensemble \\mathbb{N} et notion d'arithmétiques",
+          "section_number": "1",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.75",
+          "line_height": "1.75"
+        },
+        {
+          "id": "ex-2",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "**1.** Étudier la parité de l'entier : $n^2 + 3n + 4$.",
+              "type": "bullet"
+            },
+            {
+              "text": "**2.** Développer et réduire l'expression suivante : $(n^2 + n)(n^2 + 3n + 4)$ ; $n \\in \\mathbb{N}$.",
+              "type": "bullet"
+            },
+            {
+              "text": "**3.** En déduire que $n^4 + 4n^3 + 7n^2 + 4n$ est un multiple de 4.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 02 :**",
+          "points": 0,
+          "content": "**1.** Étudier la parité de l'entier : $n^2 + 3n + 4$.\n**2.** Développer et réduire l'expression suivante : $(n^2 + n)(n^2 + 3n + 4)$ ; $n \\in \\mathbb{N}$.\n**3.** En déduire que $n^4 + 4n^3 + 7n^2 + 4n$ est un multiple de 4.",
+          "language": "fr",
+          "solution": "**1. Parité de $n^2 + 3n + 4$ :**\\nOn peut écrire $n^2 + 3n + 4 = n(n + 3) + 4$.\n• Si $n$ est pair, $n + 3$ est impair, donc le produit $n(n + 3)$ est pair.\n• Si $n$ est impair, $n + 3$ est pair, donc le produit $n(n + 3)$ est pair.\\nDans les deux cas, $n(n + 3)$ est pair.\\nAinsi, $n(n + 3) + 4$ est la somme de deux nombres pairs, donc $n^2 + 3n + 4$ est pair.\n\n**2. Développement et réduction :**\n$(n^2 + n)(n^2 + 3n + 4) = n^4 + 3n^3 + 4n^2 + n^3 + 3n^2 + 4n = n^4 + 4n^3 + 7n^2 + 4n$.\n\n**3. Montrons que l'expression est un multiple de 4 :**\\nOn a $n^2 + n = n(n + 1)$, qui est le produit de deux entiers consécutifs, donc $n^2 + n$ est pair (s'écrit $2k$).\\nD'après la question 1, $n^2 + 3n + 4$ est également pair (s'écrit $2k'$).\\nPar suite :\n$n^4 + 4n^3 + 7n^2 + 4n = (n^2 + n)(n^2 + 3n + 4) = (2k)(2k') = 4kk'$.\\nComme $kk' \\in \\mathbb{N}$, l'expression $n^4 + 4n^3 + 7n^2 + 4n$ est un multiple de 4.",
+          "section_header": "Série d'exercices : Ensemble \\mathbb{N} et notion d'arithmétiques",
+          "section_number": "2",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.75",
+          "line_height": "1.75"
+        },
+        {
+          "id": "ex-3",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "**1.** Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $n(n + 1)(n + 2)(n + 3)$ est un multiple de 4.",
+              "type": "bullet"
+            },
+            {
+              "text": "**2.** Est-ce qu'il existe un entier naturel $n$ tel que : $n(n + 1)(n + 2)(n + 3) = 2010$ ?",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 03 :**",
+          "points": 0,
+          "content": "**1.** Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $n(n + 1)(n + 2)(n + 3)$ est un multiple de 4.\n**2.** Est-ce qu'il existe un entier naturel $n$ tel que : $n(n + 1)(n + 2)(n + 3) = 2010$ ?",
+          "language": "fr",
+          "solution": "**1. Divisibilité par 4 :**\\nParmi quatre entiers consécutifs $n, n + 1, n + 2, n + 3$, il y a exactement deux entiers pairs et deux entiers impairs.\\nParmi ces deux entiers pairs consécutifs, l'un est un multiple de 2 (s'écrit $2k$) et l'autre est un multiple de 4 (s'écrit $4k'$), ou au minimum chacun apporte au moins un facteur 2 dans le produit.\\nDe manière explicite :\n• Si $n$ est pair : $n = 2k$, alors $n + 2 = 2k + 2 = 2(k + 1)$. Le produit $n(n + 2) = 4k(k + 1)$, donc divisible par 4.\n• Si $n$ est impair : $n + 1$ et $n + 3$ sont deux entiers pairs consécutifs, donc $(n + 1)(n + 3)$ est divisible par 4.\\nDans tous les cas, $n(n + 1)(n + 2)(n + 3)$ est un multiple de 4.\n\n**2. Existence de $n$ tel que le produit vaut 2010 :**\\nLe nombre 2010 n'est pas divisible par 4 (car $2010 = 4 \\times 502 + 2$).\\nComme $n(n + 1)(n + 2)(n + 3)$ est toujours un multiple de 4 pour tout $n \\in \\mathbb{N}$, il est impossible d'avoir $n(n + 1)(n + 2)(n + 3) = 2010$.\\nConclusion : Il n'existe aucun entier naturel $n$ satisfaisant cette égalité.",
+          "section_header": "Série d'exercices : Ensemble \\mathbb{N} et notion d'arithmétiques",
+          "section_number": "3",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.75",
+          "line_height": "1.75"
+        },
+        {
+          "id": "ex-4",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "**1.a)** Montrer que $n^2 - 1$ est divisible par 8.",
+              "type": "bullet"
+            },
+            {
+              "text": "**1.b)** En déduire que 16 divise $n^4 - 1$.",
+              "type": "bullet"
+            },
+            {
+              "text": "**2.** Soient $a$ et $b$ deux entiers naturels impairs. Montrer que 16 divise $a^4 + b^4 - 2$.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 04 :**",
+          "points": 0,
+          "content": "**1.** Soit $n$ un entier naturel impair.\n  a) Montrer que $n^2 - 1$ est divisible par 8.\n  b) En déduire que 16 divise $n^4 - 1$.\n**2.** Soient $a$ et $b$ deux entiers naturels impairs. Montrer que 16 divise $a^4 + b^4 - 2$.",
+          "language": "fr",
+          "solution": "**1.a) Divisibilité de $n^2 - 1$ par 8 :**\\nPuisque $n$ est impair, $n = 2k + 1$ avec $k \\in \\mathbb{N}$.\n$n^2 - 1 = (2k + 1)^2 - 1 = 4k^2 + 4k = 4k(k + 1)$.\\nLe produit $k(k + 1)$ de deux entiers consécutifs est toujours pair, donc $k(k + 1) = 2k'$ avec $k' \\in \\mathbb{N}$.\\nAinsi, $n^2 - 1 = 4(2k') = 8k'$. Donc $n^2 - 1$ est divisible par 8.\n\n**1.b) Divisibilité de $n^4 - 1$ par 16 :**\\nOn factorise $n^4 - 1 = (n^2 - 1)(n^2 + 1)$.\n• D'après 1.a, $n^2 - 1$ est divisible par 8, donc $n^2 - 1 = 8k'$.\n• Comme $n$ est impair, $n^2$ est impair, donc $n^2 + 1$ est pair, c'est-à-dire $n^2 + 1 = 2p$.\\nPar conséquent, $n^4 - 1 = (8k')(2p) = 16k'p$, ce qui prouve que 16 divise $n^4 - 1$.\n\n**2. Divisibilité de $a^4 + b^4 - 2$ par 16 :**\\nOn peut écrire $a^4 + b^4 - 2 = (a^4 - 1) + (b^4 - 1)$.\\nPuisque $a$ et $b$ sont deux entiers impairs, d'après la question 1.b, 16 divise $(a^4 - 1)$ et 16 divise $(b^4 - 1)$.\\nPar somme, 16 divise $a^4 + b^4 - 2$.",
+          "section_header": "Série d'exercices : Ensemble \\mathbb{N} et notion d'arithmétiques",
+          "section_number": "4",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.75",
+          "line_height": "1.75"
+        },
+        {
+          "id": "ex-5",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "**1.** Vérifier que 337 est premier.",
+              "type": "bullet"
+            },
+            {
+              "text": "**2.** Décomposer les nombres $a = 240$ et $b = 2022$ en produit de facteurs premiers.",
+              "type": "bullet"
+            },
+            {
+              "text": "**3.** En déduire $\\text{pgcd}(a; b)$ et $\\text{ppcm}(a; b)$.",
+              "type": "bullet"
+            },
+            {
+              "text": "**4.** Simplifier $\\sqrt{240 \\times 2022}$.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 05 :**",
+          "points": 0,
+          "content": "**1.** Vérifier que 337 est premier.\n**2.** Décomposer les nombres $a = 240$ et $b = 2022$ en produit de facteurs premiers.\n**3.** En déduire $\\text{pgcd}(a; b)$ et $\\text{ppcm}(a; b)$.\n**4.** Simplifier $\\sqrt{240 \\times 2022}$.",
+          "language": "fr",
+          "solution": "**1. Test de primalité de 337 :**\\nOn a $\\sqrt{337} \\approx 18.35$. Les nombres premiers inférieurs ou égaux à 18 sont : 2, 3, 5, 7, 11, 13, 17.\\nTestons la divisibilité de 337 par chacun de ces nombres :\n• Non divisible par 2 (dernier chiffre 7).\n• Non divisible par 3 ($3 + 3 + 7 = 13$).\n• Non divisible par 5 (ne se termine ni par 0 ni par 5).\n• $337 = 7 \\times 48 + 1$.\n• $337 = 11 \\times 30 + 7$.\n• $337 = 13 \\times 25 + 12$.\n• $337 = 17 \\times 19 + 14$.\\nAinsi, 337 est un nombre premier.\n\n**2. Décomposition en facteurs premiers :**\n• $a = 240 = 2^4 \\times 3 \\times 5$\n• $b = 2022 = 2 \\times 3 \\times 337$\n\n**3. Calcul du PGCD et PPCM :**\n• $\\text{pgcd}(240; 2022) = 2^1 \\times 3^1 = 6$\n• $\\text{ppcm}(240; 2022) = 2^4 \\times 3 \\times 5 \\times 337 = 16 \\times 15 \\times 337 = 80880$\n\n**4. Simplification de $\\sqrt{240 \\times 2022}$ :**\n$\\sqrt{240 \\times 2022} = \\sqrt{(2^4 \\times 3 \\times 5) \\times (2 \\times 3 \\times 337)} = \\sqrt{2^5 \\times 3^2 \\times 5 \\times 337} = 2^2 \\times 3 \\times \\sqrt{2 \\times 5 \\times 337} = 12\\sqrt{3370}$.",
+          "section_header": "Série d'exercices : Ensemble \\mathbb{N} et notion d'arithmétiques",
+          "section_number": "5",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.75",
+          "line_height": "1.75"
+        },
+        {
+          "id": "ex-6",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "On pose $a = 2160$ et $b = 4860$.",
+              "type": "text"
+            },
+            {
+              "text": "**1.** Décomposer en produit de facteurs premiers les deux nombres $a$ et $b$.",
+              "type": "bullet"
+            },
+            {
+              "text": "**2.** En déduire $\\text{pgcd}(a; b)$ et $\\text{ppcm}(a; b)$.",
+              "type": "bullet"
+            },
+            {
+              "text": "**3.** Déterminer la décomposition en produit de facteurs premiers de $a^3 \\times b^2$.",
+              "type": "bullet"
+            },
+            {
+              "text": "**4.** Montrer que $\\sqrt{a \\times b}$ est un entier naturel.",
+              "type": "bullet"
+            },
+            {
+              "text": "**5.** Écrire $\\frac{b}{a}$ sous forme de fraction irréductible.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 06 :**",
+          "points": 0,
+          "content": "On pose $a = 2160$ et $b = 4860$.\n**1.** Décomposer en produit de facteurs premiers les deux nombres $a$ et $b$.\n**2.** En déduire $\\text{pgcd}(a; b)$ et $\\text{ppcm}(a; b)$.\n**3.** Déterminer la décomposition en produit de facteurs premiers de $a^3 \\times b^2$.\n**4.** Montrer que $\\sqrt{a \\times b}$ est un entier naturel.\n**5.** Écrire $\\frac{b}{a}$ sous forme de fraction irréductible.",
+          "language": "fr",
+          "solution": "**1. Décomposition en facteurs premiers :**\n• $a = 2160 = 216 \\times 10 = 6^3 \\times 10 = (2 \\times 3)^3 \\times (2 \\times 5) = 2^4 \\times 3^3 \\times 5$\n• $b = 4860 = 486 \\times 10 = (2 \\times 243) \\times 10 = 2 \\times 3^5 \\times 2 \\times 5 = 2^2 \\times 3^5 \\times 5$\n\n**2. pgcd(a; b) et ppcm(a; b) :**\n• $\\text{pgcd}(a; b) = 2^2 \\times 3^3 \\times 5 = 4 \\times 27 \\times 5 = 540$\n• $\\text{ppcm}(a; b) = 2^4 \\times 3^5 \\times 5 = 16 \\times 243 \\times 5 = 19440$\n\n**3. Décomposition de $a^3 \\times b^2$ :**\n$a^3 \\times b^2 = (2^4 \\times 3^3 \\times 5)^3 \\times (2^2 \\times 3^5 \\times 5)^2 = (2^{12} \\times 3^9 \\times 5^3) \\times (2^4 \\times 3^{10} \\times 5^2) = 2^{16} \\times 3^{19} \\times 5^5$\n\n**4. Nature de $\\sqrt{a \\times b}$ :**\n$a \\times b = (2^4 \\times 3^3 \\times 5) \\times (2^2 \\times 3^5 \\times 5) = 2^6 \\times 3^8 \\times 5^2$\n$\\sqrt{a \\times b} = \\sqrt{2^6 \\times 3^8 \\times 5^2} = 2^3 \\times 3^4 \\times 5 = 8 \\times 81 \\times 5 = 3240 \\in \\mathbb{N}$\\nDonc $\\sqrt{a \\times b}$ est bien un entier naturel.\n\n**5. Fraction irréductible $\\frac{b}{a}$ :**\n$\\frac{b}{a} = \\frac{b / \\text{pgcd}(a;b)}{a / \\text{pgcd}(a;b)} = \\frac{2^2 \\times 3^5 \\times 5}{2^4 \\times 3^3 \\times 5} = \\frac{3^2}{2^2} = \\frac{9}{4}$.",
+          "section_header": "Série d'exercices : Ensemble \\mathbb{N} et notion d'arithmétiques",
+          "section_number": "6",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.75",
+          "line_height": "1.75"
+        },
+        {
+          "id": "ex-7",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "On pose pour tout $n \\in \\mathbb{N}$ : $a = 7^{n+2} - 7^n$ et $b = 3 \\cdot 7^{n+1} + 5 \\cdot 7^n$.",
+              "type": "text"
+            },
+            {
+              "text": "**1.** Montrer que $a$ est un multiple de 3 et $b$ un multiple de 13.",
+              "type": "bullet"
+            },
+            {
+              "text": "**2.** Décomposer en produit de facteurs premiers les deux nombres $a$ et $b$.",
+              "type": "bullet"
+            },
+            {
+              "text": "**3.** En déduire $\\text{pgcd}(a; b)$ et $\\text{ppcm}(a; b)$.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 07 :**",
+          "points": 0,
+          "content": "On pose pour tout $n \\in \\mathbb{N}$ : $a = 7^{n+2} - 7^n$ et $b = 3 \\cdot 7^{n+1} + 5 \\cdot 7^n$.\n**1.** Montrer que $a$ est un multiple de 3 et $b$ un multiple de 13.\n**2.** Décomposer en produit de facteurs premiers les deux nombres $a$ et $b$.\n**3.** En déduire $\\text{pgcd}(a; b)$ et $\\text{ppcm}(a; b)$.",
+          "language": "fr",
+          "solution": "**1. Multiples de 3 et 13 :**\n• $a = 7^{n+2} - 7^n = 7^n(7^2 - 1) = 7^n(49 - 1) = 48 \\cdot 7^n = 3 \\times (16 \\cdot 7^n)$. Donc $a$ est un multiple de 3.\n• $b = 3 \\cdot 7^{n+1} + 5 \\cdot 7^n = 7^n(3 \\cdot 7 + 5) = 7^n(21 + 5) = 26 \\cdot 7^n = 13 \\times (2 \\cdot 7^n)$. Donc $b$ est un multiple de 13.\n\n**2. Décomposition en facteurs premiers :**\n• $a = 48 \\cdot 7^n = (2^4 \\times 3) \\times 7^n = 2^4 \\times 3 \\times 7^n$\n• $b = 26 \\cdot 7^n = (2 \\times 13) \\times 7^n = 2 \\times 7^n \\times 13$\n\n**3. PGCD et PPCM :**\n• $\\text{pgcd}(a; b) = 2^1 \\times 7^n = 2 \\cdot 7^n$\n• $\\text{ppcm}(a; b) = 2^4 \\times 3 \\times 7^n \\times 13 = 624 \\cdot 7^n$.",
+          "section_header": "Série d'exercices : Ensemble \\mathbb{N} et notion d'arithmétiques",
+          "section_number": "7",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.75",
+          "line_height": "1.75"
+        },
+        {
+          "id": "ex-8",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit $n$ un entier naturel.",
+              "type": "text"
+            },
+            {
+              "text": "**1.** Vérifier que : $\\frac{n+7}{n+1} = 1 + \\frac{6}{n+1}$.",
+              "type": "bullet"
+            },
+            {
+              "text": "**2.** Déterminer les valeurs de l'entier naturel $n$ pour lesquelles : $\\frac{n+7}{n+1} \\in \\mathbb{N}$.",
+              "type": "bullet"
+            },
+            {
+              "text": "**3.** Déterminer les valeurs de l'entier naturel $n$ pour lesquelles : $\\frac{3n+28}{n+4} \\in \\mathbb{N}$.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 08 :**",
+          "points": 0,
+          "content": "Soit $n$ un entier naturel.\n**1.** Vérifier que : $\\frac{n+7}{n+1} = 1 + \\frac{6}{n+1}$.\n**2.** Déterminer les valeurs de l'entier naturel $n$ pour lesquelles : $\\frac{n+7}{n+1} \\in \\mathbb{N}$.\n**3.** Déterminer les valeurs de l'entier naturel $n$ pour lesquelles : $\\frac{3n+28}{n+4} \\in \\mathbb{N}$.",
+          "language": "fr",
+          "solution": "**1. Vérification :**\n$1 + \\frac{6}{n+1} = \\frac{n+1+6}{n+1} = \\frac{n+7}{n+1}$.\n\n**2. Recherche des entiers $n$ tels que $\\frac{n+7}{n+1} \\in \\mathbb{N}$ :**\n$\\frac{n+7}{n+1} \\in \\mathbb{N} \\iff 1 + \\frac{6}{n+1} \\in \\mathbb{N} \\iff (n+1)$ divise 6.\\nLes diviseurs de 6 dans $\\mathbb{N}$ sont : 1, 2, 3, 6.\n• $n + 1 = 1 \\implies n = 0$\n• $n + 1 = 2 \\implies n = 1$\n• $n + 1 = 3 \\implies n = 2$\n• $n + 1 = 6 \\implies n = 5$\\nLes valeurs de $n$ sont : $S = \\{0, 1, 2, 5\\}$.\n\n**3. Recherche des entiers $n$ tels que $\\frac{3n+28}{n+4} \\in \\mathbb{N}$ :**\\nOn effectue la division polynomiale :\n$\\frac{3n+28}{n+4} = \\frac{3(n+4)+16}{n+4} = 3 + \\frac{16}{n+4}$.\\nAinsi, $\\frac{3n+28}{n+4} \\in \\mathbb{N} \\iff (n+4)$ divise 16.\\nLes diviseurs de 16 dans $\\mathbb{N}$ sont : 1, 2, 4, 8, 16.\\nPuisque $n \\in \\mathbb{N}$, $n + 4 \\ge 4$ :\n• $n + 4 = 4 \\implies n = 0$\n• $n + 4 = 8 \\implies n = 4$\n• $n + 4 = 16 \\implies n = 12$\\nLes valeurs de $n$ sont : $S = \\{0, 4, 12\\}$.",
+          "section_header": "Série d'exercices : Ensemble \\mathbb{N} et notion d'arithmétiques",
+          "section_number": "8",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.75",
+          "line_height": "1.75"
+        },
+        {
+          "id": "ex-9",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "**1.** Soient $x$ et $y$ deux entiers tels que $x > y$. Montrer que $x+y$ et $x-y$ sont de même parité.",
+              "type": "bullet"
+            },
+            {
+              "text": "**2.** Déterminer les diviseurs de 28.",
+              "type": "bullet"
+            },
+            {
+              "text": "**3.** Déterminer tous les couples $(x; y)$ d'entiers naturels vérifiant : $(E) : x^2 - y^2 = 28$.",
+              "type": "bullet"
+            },
+            {
+              "text": "**4.** Déterminer tous les couples $(m; n)$ d'entiers naturels tels que : $mn + 3m + 2n = 28$.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 09 :**",
+          "points": 0,
+          "content": "**1.** Soient $x$ et $y$ deux entiers tels que $x > y$. Montrer que $x+y$ et $x-y$ sont de même parité.\n**2.** Déterminer les diviseurs de 28.\n**3.** Déterminer tous les couples $(x; y)$ d'entiers naturels vérifiant : $(E) : x^2 - y^2 = 28$.\n**4.** Déterminer tous les couples $(m; n)$ d'entiers naturels tels que : $mn + 3m + 2n = 28$.",
+          "language": "fr",
+          "solution": "**1. Même parité de $x+y$ et $x-y$ :**\\nCalculons la différence : $(x+y) - (x-y) = 2y$.\\nComme la différence entre $x+y$ et $x-y$ est un nombre pair ($2y$), les deux termes $x+y$ et $x-y$ ont la même parité.\n\n**2. Diviseurs de 28 dans $\\mathbb{N}$ :**\n$D_{28} = \\{1, 2, 4, 7, 14, 28\\}$.\n\n**3. Résolution de $x^2 - y^2 = 28$ dans $\\mathbb{N}^2$ :**\n$x^2 - y^2 = 28 \\iff (x-y)(x+y) = 28$.\\nComme $x, y \\in \\mathbb{N}$ et $x > y$, on a $0 \\le x-y < x+y$.\\nDe plus, $x-y$ et $x+y$ sont de même parité et leur produit est 28 (qui est pair), donc les deux facteurs doivent être pairs.\\nLes couples de diviseurs pairs $(x-y, x+y)$ dont le produit fait 28 sont :\n• $x-y = 2$ et $x+y = 14$.\\nEn résolvant le système :\n\n\n$$\\begin{cases} x - y = 2 \\\\ x + y = 14 \\end{cases}$$\n\n \\implies 2x = 16 \\implies x = 8 \\quad \\text{et} \\quad y = 6$$\\nLe seul couple d'entiers naturels solution est : $S = \\{(8, 6)\\}$.\n\n**4. Résolution de $mn + 3m + 2n = 28$ dans $\\mathbb{N}^2$ :**\\nOn factorise l'expression :\n$mn + 3m + 2n + 6 = 28 + 6 \\iff m(n+3) + 2(n+3) = 34 \\iff (m+2)(n+3) = 34$.\\nPuisque $m, n \\in \\mathbb{N}$, on a $m+2 \\ge 2$ et $n+3 \\ge 3$.\\nLes diviseurs de 34 sont : 1, 2, 17, 34.\\nLes possibilités pour $(m+2, n+3)$ respectant les contraintes sont :\n1. $m+2 = 2$ et $n+3 = 17 \\implies m = 0$ et $n = 14$.\n2. $m+2 = 17$ et $n+3 = 2 \\implies n = -1 \\notin \\mathbb{N}$ (exclu).\\nLes autres possibilités redonnent des valeurs hors du domaine.\\nL'unique couple solution dans $\\mathbb{N}^2$ est : $S = \\{(0, 14)\\}$.",
+          "section_header": "Série d'exercices : Ensemble \\mathbb{N} et notion d'arithmétiques",
+          "section_number": "9",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.75",
+          "line_height": "1.75"
+        },
+        {
+          "id": "ex-10",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "**1.** Déterminer les entiers naturels $x$ et $y$ vérifiant $(E) : x^2 - y^2 = 51$.",
+              "type": "bullet"
+            },
+            {
+              "text": "**2.** Déterminer tous les couples $(a; b)$ d'entiers naturels tels que : $a^2 - b^2 = 7344$ et $a \\wedge b = 12$.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 10 :**",
+          "points": 0,
+          "content": "**1.** Déterminer les entiers naturels $x$ et $y$ vérifiant $(E) : x^2 - y^2 = 51$.\n**2.** Déterminer tous les couples $(a; b)$ d'entiers naturels tels que : $a^2 - b^2 = 7344$ et $a \\wedge b = 12$.",
+          "language": "fr",
+          "solution": "**1. Résolution de $x^2 - y^2 = 51$ dans $\\mathbb{N}^2$ :**\n$(x-y)(x+y) = 51$. Comme $x, y \\in \\mathbb{N}$, on a $0 \\le x-y < x+y$.\\nLes diviseurs de 51 sont : 1, 3, 17, 51.\\nDeux cas se présentent :\n• Cas 1 : \n\n$$\\begin{cases} x - y = 1 \\\\ x + y = 51 \\end{cases}$$\n\n \\implies 2x = 52 \\implies x = 26 \\quad \\text{et} \\quad y = 25$.\n• Cas 2 : \n\n$$\\begin{cases} x - y = 3 \\\\ x + y = 17 \\end{cases}$$\n\n \\implies 2x = 20 \\implies x = 10 \\quad \\text{et} \\quad y = 7$.\\nLes couples d'entiers naturels sont : $S = \\{(26, 25), (10, 7)\\}$.\n\n**2. Résolution du système $a^2 - b^2 = 7344$ et $a \\wedge b = 12$ :**\\nPuisque $a \\wedge b = 12$, il existe $a', b' \\in \\mathbb{N}$ tels que $a = 12a'$, $b = 12b'$ avec $a' \\wedge b' = 1$.\\nL'équation devient :\n$(12a')^2 - (12b')^2 = 7344 \\iff 144(a'^2 - b'^2) = 7344 \\iff a'^2 - b'^2 = \\frac{7344}{144} = 51 \\iff (a'-b')(a'+b') = 51$.\\nD'après la question 1, les solutions pour $(a', b')$ dans $\\mathbb{N}^2$ sont $(26, 25)$ et $(10, 7)$.\\nVérifions si $a' \\wedge b' = 1$ :\n• $26 \\wedge 25 = 1$ (vrai)\n• $10 \\wedge 7 = 1$ (vrai)\\nAinsi, en multipliant par 12 :\n• Pour $(26, 25)$ : $a = 12 \\times 26 = 312$ et $b = 12 \\times 25 = 300$.\n• Pour $(10, 7)$ : $a = 12 \\times 10 = 120$ et $b = 12 \\times 7 = 84$.\\nLes couples solutions sont : $S = \\{(312, 300), (120, 84)\\}$.",
+          "section_header": "Série d'exercices : Ensemble \\mathbb{N} et notion d'arithmétiques",
+          "section_number": "10",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.75",
+          "line_height": "1.75"
+        },
+        {
+          "id": "ex-11",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Pour tout $n \\in \\mathbb{N}^*$ on pose : $S_n = 1 + 2 + 3 + \\dots + (n - 1) + n$.",
+              "type": "text"
+            },
+            {
+              "text": "**1.** Calculer $S_2$ et $S_3$.",
+              "type": "bullet"
+            },
+            {
+              "text": "**2.** Calculer $2S_n$ en fonction de $n$ puis déduire que pour tout $n \\in \\mathbb{N}^*$ : $S_n = \\frac{n(n + 1)}{2}$.",
+              "type": "bullet"
+            },
+            {
+              "text": "**3.** En déduire que $n(n + 1)$ est pair.",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 11 :**",
+          "points": 0,
+          "content": "Pour tout $n \\in \\mathbb{N}^*$ on pose : $S_n = 1 + 2 + 3 + \\dots + (n - 1) + n$.\n**1.** Calculer $S_2$ et $S_3$.\n**2.** Calculer $2S_n$ en fonction de $n$ puis déduire que pour tout $n \\in \\mathbb{N}^*$ : $S_n = \\frac{n(n + 1)}{2}$.\n**3.** En déduire que $n(n + 1)$ est pair.",
+          "language": "fr",
+          "solution": "**1. Calcul de $S_2$ et $S_3$ :**\n• $S_2 = 1 + 2 = 3$\n• $S_3 = 1 + 2 + 3 = 6$\n\n**2. Calcul de $2S_n$ et formule de $S_n$ :**\\nOn écrit la somme dans les deux sens :\n$S_n = 1 + 2 + 3 + \\dots + (n-1) + n$\n$S_n = n + (n-1) + (n-2) + \\dots + 2 + 1$\\nEn additionnant membre à membre les deux égalités :\n$2S_n = (1+n) + (2+n-1) + (3+n-2) + \\dots + (n+1)$\\nChaque terme de la somme vaut $(n+1)$, et il y a exactement $n$ termes.\\nDonc $2S_n = n(n+1)$, d'où : $S_n = \\frac{n(n+1)}{2}$.\n\n**3. Déduction que $n(n+1)$ est pair :**\\nPuisque $S_n = 1 + 2 + \\dots + n$ est une somme d'entiers naturels, $S_n \\in \\mathbb{N}$.\\nDe l'égalité $n(n+1) = 2S_n$, il vient directement que $n(n+1)$ s'écrit sous la forme $2k$ (avec $k = S_n \\in \\mathbb{N}$).\\nPar conséquent, pour tout $n \\in \\mathbb{N}^*$, le nombre $n(n+1)$ est pair.",
+          "section_header": "Série d'exercices : Ensemble \\mathbb{N} et notion d'arithmétiques",
+          "section_number": "11",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.75",
+          "line_height": "1.75"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-13T23:04:24.839Z",
+    "level": "common_core_sci",
+    "doc_type": "exercises",
+    "created_at": "2026-09-13T19:36:36.229+00:00",
+    "createdAt": "2026-09-13T23:04:25.725Z"
   }
 ]

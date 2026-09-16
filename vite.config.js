@@ -2,10 +2,53 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+function neonDevApiPlugin() {
+  return {
+    name: 'neon-dev-api',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (req.url && req.url.startsWith('/api/neon')) {
+          try {
+            const { default: handler } = await import('./api/neon.js');
+            let body = '';
+            req.on('data', chunk => { body += chunk; });
+            req.on('end', async () => {
+              if (body) {
+                try { req.body = JSON.parse(body); } catch (_) { req.body = {}; }
+              }
+              const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+              req.query = Object.fromEntries(urlObj.searchParams.entries());
+              
+              res.status = (code) => {
+                res.statusCode = code;
+                return res;
+              };
+              res.json = (data) => {
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify(data));
+                return res;
+              };
+
+              await handler(req, res);
+            });
+          } catch (err) {
+            console.error('[Vite Neon Dev API Error]:', err);
+            res.statusCode = 500;
+            res.end(JSON.stringify({ error: err.message }));
+          }
+        } else {
+          next();
+        }
+      });
+    },
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
+    neonDevApiPlugin(),
     VitePWA({
       selfDestroying: true,
       strategies: 'injectManifest',
