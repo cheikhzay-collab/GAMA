@@ -326,58 +326,87 @@ export const setUserSubscription = async (uid, subscription, tier = 'premium') =
 
 /**
  * Save/update a single question's SRS progress.
+ * Neon-first with Supabase fallback.
  */
 export const saveQuestionProgress = async (uid, questionId, progressData) => {
+  const row = {
+    user_id: uid,
+    question_id: questionId,
+    difficulty: progressData.difficulty,
+    stability: progressData.stability,
+    repetitions: progressData.repetitions,
+    ease_factor: progressData.easeFactor,
+    last_review_date: progressData.lastReviewDate,
+    next_review_date: progressData.nextReviewDate,
+    updated_at: new Date().toISOString(),
+  };
+
+  // 1. Neon via raw SQL upsert (conflict on user_id + question_id)
+  try {
+    await neonUpsert('progress', { ...row, id: `${uid}_${questionId}` }, 'id');
+    return;
+  } catch (neonErr) {
+    console.warn('[Neon] saveQuestionProgress error:', neonErr.message);
+  }
+
+  // 2. Supabase fallback
   if (!supabase) return;
   try {
     const { error } = await supabase
       .from('progress')
-      .upsert({
-        user_id: uid,
-        question_id: questionId,
-        difficulty: progressData.difficulty,
-        stability: progressData.stability,
-        repetitions: progressData.repetitions,
-        ease_factor: progressData.easeFactor,
-        last_review_date: progressData.lastReviewDate,
-        next_review_date: progressData.nextReviewDate,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id,question_id' });
-
-    if (error) {
-      console.warn('[Supabase] Failed to save question progress:', error.message || error);
-    }
+      .upsert(row, { onConflict: 'user_id,question_id' });
+    if (error) console.warn('[Supabase] Failed to save question progress:', error.message || error);
   } catch (err) {
     console.warn('[Supabase] Network error during saveQuestionProgress:', err.message || err);
   }
 };
 
 /**
- * Fetch all progress cards.
+ * Fetch all progress cards for a user.
+ * Neon-first with Supabase fallback.
  */
 export const getAllProgress = async (uid) => {
+  const mapRow = (row) => ({
+    difficulty: row.difficulty,
+    stability: row.stability,
+    repetitions: row.repetitions,
+    easeFactor: row.ease_factor,
+    lastReviewDate: row.last_review_date,
+    nextReviewDate: row.next_review_date,
+  });
+
+  // 1. Try Neon
+  try {
+    const { rows } = await (await fetch(`/api/neon?table=progress&user_id_filter=${encodeURIComponent(uid)}&limit=2000`)).json().catch(() => ({ rows: [] }));
+    // Fallback: use raw SQL via neonUpsert is write-only, so query via POST with raw sql
+    const res = await fetch('/api/neon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'query',
+        sql: 'SELECT * FROM public.progress WHERE user_id = $1',
+        params: [uid]
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.rows) && data.rows.length > 0) {
+        const result = {};
+        data.rows.forEach(row => { result[row.question_id] = mapRow(row); });
+        return result;
+      }
+    }
+  } catch (neonErr) {
+    console.warn('[Neon] getAllProgress error:', neonErr.message);
+  }
+
+  // 2. Supabase fallback
   if (!supabase) return {};
   try {
-    const { data, error } = await supabase
-      .from('progress')
-      .select('*')
-      .eq('user_id', uid);
-
-    if (error || !data) {
-      return {};
-    }
-
+    const { data, error } = await supabase.from('progress').select('*').eq('user_id', uid);
+    if (error || !data) return {};
     const result = {};
-    data.forEach((row) => {
-      result[row.question_id] = {
-        difficulty: row.difficulty,
-        stability: row.stability,
-        repetitions: row.repetitions,
-        easeFactor: row.ease_factor,
-        lastReviewDate: row.last_review_date,
-        nextReviewDate: row.next_review_date,
-      };
-    });
+    data.forEach(row => { result[row.question_id] = mapRow(row); });
     return result;
   } catch (err) {
     console.warn('[Supabase] Network error during getAllProgress:', err.message || err);
@@ -389,65 +418,90 @@ export const getAllProgress = async (uid) => {
 
 /**
  * Save a mock exam result.
+ * Neon-first with Supabase fallback.
  */
 export const saveMockResult = async (uid, result) => {
+  const id = `mh_${uid}_${Date.now()}`;
+  const row = {
+    id,
+    user_id: uid,
+    exam_id: result.examId,
+    exam_name: result.examName,
+    school: result.school,
+    score: result.score,
+    max_score: result.maxScore,
+    pct: result.pct,
+    correct_count: result.correctCount,
+    wrong_count: result.wrongCount,
+    empty_count: result.emptyCount,
+    mode: result.mode,
+    date: result.date || new Date().toISOString(),
+  };
+
+  // 1. Try Neon
+  try {
+    await neonUpsert('mock_history', row, 'id');
+    return;
+  } catch (neonErr) {
+    console.warn('[Neon] saveMockResult error:', neonErr.message);
+  }
+
+  // 2. Supabase fallback
   if (!supabase) return;
   try {
-    const { error } = await supabase
-      .from('mock_history')
-      .insert({
-        user_id: uid,
-        exam_id: result.examId,
-        exam_name: result.examName,
-        school: result.school,
-        score: result.score,
-        max_score: result.maxScore,
-        pct: result.pct,
-        correct_count: result.correctCount,
-        wrong_count: result.wrongCount,
-        empty_count: result.emptyCount,
-        mode: result.mode,
-        date: result.date || new Date().toISOString(),
-      });
-
-    if (error) {
-      console.warn('[Supabase] Failed to save mock result:', error.message || error);
-    }
+    const { error } = await supabase.from('mock_history').insert(row);
+    if (error) console.warn('[Supabase] Failed to save mock result:', error.message || error);
   } catch (err) {
     console.warn('[Supabase] Network error during saveMockResult:', err.message || err);
   }
 };
 
 /**
- * Fetch all mock exam history.
+ * Fetch all mock exam history for a user.
+ * Neon-first with Supabase fallback.
  */
 export const getMockHistory = async (uid) => {
+  const mapRow = (row) => ({
+    id: row.id,
+    examId: row.exam_id,
+    examName: row.exam_name,
+    school: row.school,
+    score: row.score,
+    maxScore: row.max_score,
+    pct: row.pct,
+    correctCount: row.correct_count,
+    wrongCount: row.wrong_count,
+    emptyCount: row.empty_count,
+    mode: row.mode,
+    date: row.date,
+  });
+
+  // 1. Try Neon
+  try {
+    const res = await fetch('/api/neon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'query',
+        sql: 'SELECT * FROM public.mock_history WHERE user_id = $1 ORDER BY date DESC',
+        params: [uid]
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.rows)) return data.rows.map(mapRow);
+    }
+  } catch (neonErr) {
+    console.warn('[Neon] getMockHistory error:', neonErr.message);
+  }
+
+  // 2. Supabase fallback
   if (!supabase) return [];
   try {
     const { data, error } = await supabase
-      .from('mock_history')
-      .select('*')
-      .eq('user_id', uid)
-      .order('date', { ascending: false });
-
-    if (error || !data) {
-      return [];
-    }
-
-    return data.map((row) => ({
-      id: row.id,
-      examId: row.exam_id,
-      examName: row.exam_name,
-      school: row.school,
-      score: row.score,
-      maxScore: row.max_score,
-      pct: row.pct,
-      correctCount: row.correct_count,
-      wrongCount: row.wrong_count,
-      emptyCount: row.empty_count,
-      mode: row.mode,
-      date: row.date,
-    }));
+      .from('mock_history').select('*').eq('user_id', uid).order('date', { ascending: false });
+    if (error || !data) return [];
+    return data.map(mapRow);
   } catch (err) {
     console.warn('[Supabase] Network error during getMockHistory:', err.message || err);
     return [];
@@ -458,37 +512,43 @@ export const getMockHistory = async (uid) => {
 
 /**
  * Increment the daily activity counter.
+ * Neon-first with Supabase fallback.
  */
 export const incrementDailyActivity = async (uid) => {
-  if (!supabase) return;
   const today = new Date().toISOString().split('T')[0];
+  const id = `${uid}_${today}`;
 
+  // 1. Try Neon — read current count then upsert
   try {
-    const { data, error } = await supabase
-      .from('activity')
-      .select('count')
-      .eq('user_id', uid)
-      .eq('date', today)
-      .maybeSingle();
-
-    if (error) {
-      console.warn('[Supabase] Failed to fetch daily activity count:', error.message || error);
+    const res = await fetch('/api/neon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'query',
+        sql: 'SELECT count FROM public.activity WHERE user_id = $1 AND date = $2 LIMIT 1',
+        params: [uid, today]
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const currentCount = data.rows?.[0]?.count || 0;
+      await neonUpsert('activity', { id, user_id: uid, date: today, count: currentCount + 1 }, 'id');
       return;
     }
+  } catch (neonErr) {
+    console.warn('[Neon] incrementDailyActivity error:', neonErr.message);
+  }
 
+  // 2. Supabase fallback
+  if (!supabase) return;
+  try {
+    const { data, error } = await supabase
+      .from('activity').select('count').eq('user_id', uid).eq('date', today).maybeSingle();
+    if (error) { console.warn('[Supabase] Failed to fetch daily activity:', error.message); return; }
     const count = data ? (data.count || 0) + 1 : 1;
-
     const { error: upsertError } = await supabase
-      .from('activity')
-      .upsert({
-        user_id: uid,
-        date: today,
-        count,
-      }, { onConflict: 'user_id,date' });
-
-    if (upsertError) {
-      console.warn('[Supabase] Failed to increment daily activity:', upsertError.message || upsertError);
-    }
+      .from('activity').upsert({ user_id: uid, date: today, count }, { onConflict: 'user_id,date' });
+    if (upsertError) console.warn('[Supabase] Failed to increment daily activity:', upsertError.message);
   } catch (err) {
     console.warn('[Supabase] Network error during incrementDailyActivity:', err.message || err);
   }
@@ -496,28 +556,44 @@ export const incrementDailyActivity = async (uid) => {
 
 /**
  * Fetch the last N days of activity.
+ * Neon-first with Supabase fallback.
  */
 export const getRecentActivity = async (uid, days = 90) => {
-  if (!supabase) return {};
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - days);
   const cutoffStr = cutoffDate.toISOString().split('T')[0];
 
+  // 1. Try Neon
+  try {
+    const res = await fetch('/api/neon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'query',
+        sql: 'SELECT date, count FROM public.activity WHERE user_id = $1 AND date >= $2',
+        params: [uid, cutoffStr]
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.rows) && data.rows.length >= 0) {
+        const result = {};
+        data.rows.forEach(row => { result[row.date] = row.count || 0; });
+        return result;
+      }
+    }
+  } catch (neonErr) {
+    console.warn('[Neon] getRecentActivity error:', neonErr.message);
+  }
+
+  // 2. Supabase fallback
+  if (!supabase) return {};
   try {
     const { data, error } = await supabase
-      .from('activity')
-      .select('*')
-      .eq('user_id', uid)
-      .gte('date', cutoffStr);
-
-    if (error || !data) {
-      return {};
-    }
-
+      .from('activity').select('*').eq('user_id', uid).gte('date', cutoffStr);
+    if (error || !data) return {};
     const result = {};
-    data.forEach((row) => {
-      result[row.date] = row.count || 0;
-    });
+    data.forEach(row => { result[row.date] = row.count || 0; });
     return result;
   } catch (err) {
     console.warn('[Supabase] Network error during getRecentActivity:', err.message || err);
@@ -538,18 +614,30 @@ export const deleteUser = async (uid) => {
   const filtered = currentUsers.filter(u => u.id !== uid && u.uid !== uid);
   saveLocalStorageUsers(filtered);
 
-  // 2. Supabase
+  // 2. Neon delete
+  try {
+    const res = await fetch('/api/neon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', table: 'profiles', id: uid, keyField: 'id' })
+    });
+    if (res.ok) return true;
+  } catch (neonErr) {
+    console.warn('[Neon] deleteUser error:', neonErr.message);
+  }
+
+  // 3. Supabase fallback
   if (supabase) {
     try {
       const { error } = await supabase.rpc('delete_user', { uid });
       if (!error) return true;
-      console.warn('[Supabase] RPC delete_user failed, trying local delete:', error.message || error);
+      console.warn('[Supabase] RPC delete_user failed:', error.message || error);
     } catch (err) {
       console.warn('[Supabase] Network error during deleteUser:', err.message || err);
     }
   }
 
-  // 3. Local Companion
+  // 4. Local Companion
   try {
     await localDb.delete('/users', uid);
     return true;
@@ -687,19 +775,22 @@ export const getLeaderboard = async (options = {}) => {
 
 /**
  * Log a user login.
+ * Neon-first with Supabase fallback.
  */
 export const addLoginLog = async (uid) => {
+  const id = `ll_${uid}_${Date.now()}`;
+  // 1. Try Neon
+  try {
+    await neonUpsert('login_logs', { id, user_id: uid, logged_at: new Date().toISOString() }, 'id');
+    return;
+  } catch (neonErr) {
+    console.warn('[Neon] addLoginLog error:', neonErr.message);
+  }
+  // 2. Supabase fallback
   if (!supabase) return;
   try {
-    const { error } = await supabase
-      .from('login_logs')
-      .insert({
-        user_id: uid,
-        logged_at: new Date().toISOString()
-      });
-    if (error) {
-      console.warn('[Supabase] Failed to log user login:', error.message || error);
-    }
+    const { error } = await supabase.from('login_logs').insert({ user_id: uid, logged_at: new Date().toISOString() });
+    if (error) console.warn('[Supabase] Failed to log user login:', error.message || error);
   } catch (err) {
     console.warn('[Supabase] Network error during addLoginLog:', err.message || err);
   }
@@ -707,24 +798,35 @@ export const addLoginLog = async (uid) => {
 
 /**
  * Fetch login logs for a user.
+ * Neon-first with Supabase fallback.
  */
 export const getLoginLogs = async (uid) => {
+  const mapRow = row => ({ id: row.id, userId: row.user_id, loggedAt: row.logged_at });
+  // 1. Try Neon
+  try {
+    const res = await fetch('/api/neon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'query',
+        sql: 'SELECT * FROM public.login_logs WHERE user_id = $1 ORDER BY logged_at DESC LIMIT 100',
+        params: [uid]
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.rows)) return data.rows.map(mapRow);
+    }
+  } catch (neonErr) {
+    console.warn('[Neon] getLoginLogs error:', neonErr.message);
+  }
+  // 2. Supabase fallback
   if (!supabase) return [];
   try {
     const { data, error } = await supabase
-      .from('login_logs')
-      .select('*')
-      .eq('user_id', uid)
-      .order('logged_at', { ascending: false });
-
-    if (error || !data) {
-      return [];
-    }
-    return data.map(row => ({
-      id: row.id,
-      userId: row.user_id,
-      loggedAt: row.logged_at
-    }));
+      .from('login_logs').select('*').eq('user_id', uid).order('logged_at', { ascending: false });
+    if (error || !data) return [];
+    return data.map(mapRow);
   } catch (err) {
     console.warn('[Supabase] Network error during getLoginLogs:', err.message || err);
     return [];
@@ -732,38 +834,52 @@ export const getLoginLogs = async (uid) => {
 };
 
 /**
- * Fetch progress cards deltas.
+ * Fetch progress cards deltas since a timestamp.
+ * Neon-first with Supabase fallback.
  */
 export const getProgressDeltas = async (uid, sinceTimestamp) => {
-  if (!supabase) return {};
+  const mapRow = row => ({
+    difficulty: row.difficulty,
+    stability: row.stability,
+    repetitions: row.repetitions,
+    easeFactor: row.ease_factor,
+    lastReviewDate: row.last_review_date,
+    nextReviewDate: row.next_review_date,
+    updatedAt: row.updated_at
+  });
 
+  // 1. Try Neon
   try {
-    let query = supabase
-      .from('progress')
-      .select('*')
-      .eq('user_id', uid);
-
-    if (sinceTimestamp) {
-      query = query.gt('updated_at', sinceTimestamp);
-    }
-
-    const { data, error } = await query;
-    if (error || !data) {
-      return null;
-    }
-
-    const result = {};
-    data.forEach((row) => {
-      result[row.question_id] = {
-        difficulty: row.difficulty,
-        stability: row.stability,
-        repetitions: row.repetitions,
-        easeFactor: row.ease_factor,
-        lastReviewDate: row.last_review_date,
-        nextReviewDate: row.next_review_date,
-        updatedAt: row.updated_at
-      };
+    const sql = sinceTimestamp
+      ? 'SELECT * FROM public.progress WHERE user_id = $1 AND updated_at > $2'
+      : 'SELECT * FROM public.progress WHERE user_id = $1';
+    const params = sinceTimestamp ? [uid, sinceTimestamp] : [uid];
+    const res = await fetch('/api/neon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'query', sql, params })
     });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.rows)) {
+        const result = {};
+        data.rows.forEach(row => { result[row.question_id] = mapRow(row); });
+        return result;
+      }
+    }
+  } catch (neonErr) {
+    console.warn('[Neon] getProgressDeltas error:', neonErr.message);
+  }
+
+  // 2. Supabase fallback
+  if (!supabase) return {};
+  try {
+    let query = supabase.from('progress').select('*').eq('user_id', uid);
+    if (sinceTimestamp) query = query.gt('updated_at', sinceTimestamp);
+    const { data, error } = await query;
+    if (error || !data) return null;
+    const result = {};
+    data.forEach(row => { result[row.question_id] = mapRow(row); });
     return result;
   } catch (err) {
     console.warn('[Supabase] Network error during getProgressDeltas:', err.message || err);
@@ -772,10 +888,12 @@ export const getProgressDeltas = async (uid, sinceTimestamp) => {
 };
 
 /**
- * Synchronize missing auth users (Admin only).
+ * Synchronize missing auth users with Neon profiles (Admin only).
+ * Falls back to Supabase RPC if Neon doesn't have an equivalent.
  */
 export const syncStudentsWithSupabase = async () => {
-  if (!supabase) return { success: false, synchronized_count: 0 };
+  // Neon doesn't have an RPC equivalent — this is a Supabase-specific migration tool.
+  if (!supabase) return { success: true, synchronized_count: 0, note: 'Neon-native — no sync needed' };
   try {
     const { data, error } = await supabase.rpc('sync_auth_users_to_profiles');
     if (error) {
@@ -791,38 +909,44 @@ export const syncStudentsWithSupabase = async () => {
 
 /**
  * Log a document/report download.
+ * Neon-first with Supabase fallback.
  */
 export const logUserDownload = async (uid, downloadData) => {
+  // 1. Try Neon — read current downloads then upsert
+  try {
+    const res = await fetch('/api/neon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'query',
+        sql: 'SELECT downloads FROM public.profiles WHERE id = $1 LIMIT 1',
+        params: [uid]
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const currentDownloads = Array.isArray(data.rows?.[0]?.downloads) ? data.rows[0].downloads : [];
+      const newEntry = { ...downloadData, downloadedAt: new Date().toISOString() };
+      const updatedDownloads = [newEntry, ...currentDownloads].slice(0, 100);
+      await neonSaveProfile({ id: uid, downloads: updatedDownloads });
+      return;
+    }
+  } catch (neonErr) {
+    console.warn('[Neon] logUserDownload error:', neonErr.message);
+  }
+
+  // 2. Supabase fallback
   if (!supabase) return;
   try {
     const { data, error: fetchErr } = await supabase
-      .from('profiles')
-      .select('downloads')
-      .eq('id', uid)
-      .maybeSingle();
-
-    if (fetchErr) {
-      console.warn('[Supabase] Failed to fetch downloads:', fetchErr.message || fetchErr);
-      return;
-    }
-
+      .from('profiles').select('downloads').eq('id', uid).maybeSingle();
+    if (fetchErr) { console.warn('[Supabase] Failed to fetch downloads:', fetchErr.message); return; }
     const currentDownloads = Array.isArray(data?.downloads) ? data.downloads : [];
-
-    const newEntry = {
-      ...downloadData,
-      downloadedAt: new Date().toISOString()
-    };
-
+    const newEntry = { ...downloadData, downloadedAt: new Date().toISOString() };
     const updatedDownloads = [newEntry, ...currentDownloads].slice(0, 100);
-
     const { error: updateErr } = await supabase
-      .from('profiles')
-      .update({ downloads: updatedDownloads })
-      .eq('id', uid);
-
-    if (updateErr) {
-      console.warn('[Supabase] Failed to log download:', updateErr.message || updateErr);
-    }
+      .from('profiles').update({ downloads: updatedDownloads }).eq('id', uid);
+    if (updateErr) console.warn('[Supabase] Failed to log download:', updateErr.message);
   } catch (err) {
     console.warn('[Supabase] Exception logging download:', err.message || err);
   }

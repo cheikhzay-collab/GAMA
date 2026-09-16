@@ -13,7 +13,8 @@ const ALLOWED_TABLES = [
   'progress',
   'mock_history',
   'activity',
-  'extraction_tasks'
+  'extraction_tasks',
+  'login_logs',
 ];
 
 export default async function handler(req, res) {
