@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
 import initialClassesData from '../../data/classes.json';
-import { neonSaveClass, neonDeleteClass } from '../lib/neon';
+import { neonSaveClass, neonDeleteClass, neonList } from '../lib/neon';
 
 const STORAGE_KEY = 'lconq_classes_db';
 
@@ -93,7 +93,19 @@ export const getAllClasses = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('classes_all', async () => {
-    // 1. Try Supabase first
+    // 1. Try Neon first
+    try {
+      const neonRes = await neonList('classes', 500);
+      if (Array.isArray(neonRes.data) && neonRes.data.length > 0) {
+        const mapped = neonRes.data.map(normalizeClass);
+        saveLocalStorageClasses(mapped);
+        return mapped;
+      }
+    } catch (neonErr) {
+      console.warn('[Neon] getAllClasses error:', neonErr.message);
+    }
+
+    // 2. Try Supabase
     if (supabase) {
       try {
         const { data, error } = await supabase

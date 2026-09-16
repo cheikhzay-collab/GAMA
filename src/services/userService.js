@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
 import initialUsersData from '../../data/users.json';
-import { neonSaveProfile } from '../lib/neon';
+import { neonSaveProfile, neonGet, neonList, neonUpsert } from '../lib/neon';
 
 const STORAGE_KEY = 'lconq_users_db';
 
@@ -158,6 +158,16 @@ export const getUserDoc = async (uid, options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache(`user_doc_${uid}`, async () => {
+    // 1. Try Neon PostgreSQL
+    try {
+      const neonRes = await neonGet('profiles', uid, 'id');
+      if (neonRes.data) {
+        return mapDBToProfile(neonRes.data);
+      }
+    } catch (neonErr) {
+      console.warn('[Neon] getUserDoc error:', neonErr.message);
+    }
+
     if (supabase) {
       try {
         const { data, error } = await supabase
@@ -555,6 +565,18 @@ export const getAllUsers = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('users_all', async () => {
+    // 1. Try Neon PostgreSQL
+    try {
+      const neonRes = await neonList('profiles', 1000);
+      if (Array.isArray(neonRes.data) && neonRes.data.length > 0) {
+        const mapped = neonRes.data.map(mapDBToProfile);
+        saveLocalStorageUsers(mapped);
+        return mapped;
+      }
+    } catch (neonErr) {
+      console.warn('[Neon] getAllUsers error:', neonErr.message);
+    }
+
     if (supabase) {
       try {
         const { data: rpcData, error: rpcError } = await supabase.rpc('get_all_profiles');

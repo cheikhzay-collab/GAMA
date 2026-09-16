@@ -1,38 +1,46 @@
 // src/services/storageService.js
-// Supabase Storage service for uploading logos and question figures.
-// Gracefully falls back to Object URLs in local-only mode.
-
-import { supabase } from '../lib/supabase';
+// Direct image/asset storage connected to Neon PostgreSQL via /api/assets.
+// Gracefully handles data URLs and file conversions without Supabase.
 
 /**
- * Uploads a file to the 'gima-assets' bucket in Supabase Storage.
+ * Uploads an asset (file/blob) to Neon /api/assets.
  * @param {File|Blob} file - The file to upload.
- * @param {string} path - The destination path in the bucket (e.g. 'logos/fac_med.png').
- * @returns {Promise<string>} - The public URL of the uploaded file.
+ * @param {string} path - The destination path (e.g. 'questions/exam1/fig1.png').
+ * @returns {Promise<string>} - The public URL of the stored asset.
  */
 export const uploadAsset = async (file, path) => {
-  if (!supabase) {
-    console.warn('[Storage] Supabase not initialized — returning local Object URL fallback.');
-    return URL.createObjectURL(file);
-  }
+  if (!file) throw new Error('No file provided');
 
-  // Upload file to 'gima-assets' bucket
-  const { error } = await supabase.storage
-    .from('gima-assets')
-    .upload(path, file, {
-      cacheControl: '3600',
-      upsert: true,
+  // Convert File/Blob to Base64
+  const base64Data = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+  const mimeType = file.type || 'image/png';
+
+  try {
+    const response = await fetch('/api/assets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        path,
+        data: base64Data,
+        mimeType,
+      }),
     });
 
-  if (error) {
-    console.error('[Supabase Storage] Failed to upload asset:', error);
-    throw error;
+    if (!response.ok) {
+      const errJson = await response.json().catch(() => ({}));
+      throw new Error(errJson.error || 'Failed to upload asset');
+    }
+
+    const json = await response.json();
+    return json.publicUrl || base64Data;
+  } catch (err) {
+    console.warn('[Storage] Remote asset upload failed, falling back to base64 data URL:', err.message);
+    return base64Data;
   }
-
-  // Retrieve public URL
-  const { data: { publicUrl } } = supabase.storage
-    .from('gima-assets')
-    .getPublicUrl(path);
-
-  return publicUrl;
 };

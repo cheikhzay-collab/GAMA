@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { neonGet } from '../lib/neon';
 import { generateSubjectHTML, generateCorrectionHTML } from '../utils/generateExamPDF';
 
 export default function PrintView() {
@@ -47,18 +48,26 @@ export default function PrintView() {
     const fetchAndPrintRemote = async () => {
       try {
         setStatus('Connexion à la base de données...');
-        if (!supabase) throw new Error('Supabase client not initialized');
-
         setStatus('Téléchargement des données de l\'examen...');
-        const { data, error } = await supabase
-          .from('exams')
-          .select('*')
-          .eq('id', examId)
-          .maybeSingle();
+        let examData = null;
+        try {
+          const res = await neonGet('exams', examId, 'id');
+          if (res.data) examData = res.data;
+        } catch (_) {}
 
-        if (error || !data) {
-          throw new Error(error?.message || 'Examen introuvable');
+        if (!examData && supabase) {
+          const { data } = await supabase
+            .from('exams')
+            .select('*')
+            .eq('id', examId)
+            .maybeSingle();
+          if (data) examData = data;
         }
+
+        if (!examData) {
+          throw new Error('Examen introuvable');
+        }
+        const data = examData;
 
         setStatus('Compilation du document PDF...');
         

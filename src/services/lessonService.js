@@ -5,7 +5,7 @@
 import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
-import { neonSaveLesson, neonDeleteLesson } from '../lib/neon';
+import { neonSaveLesson, neonDeleteLesson, neonList, neonGet } from '../lib/neon';
 
 const STORAGE_KEY = 'lconq_lessons_db';
 
@@ -172,7 +172,19 @@ export const getAllLessons = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('lessons_all', async () => {
-    // 1. Try Supabase metadata view (ultra-fast projection, excludes heavy content jsonb)
+    // 1. Try Neon PostgreSQL
+    try {
+      const neonRes = await neonList('lessons', 500);
+      if (Array.isArray(neonRes.data) && neonRes.data.length > 0) {
+        const mapped = neonRes.data.map(mapDBToLesson);
+        saveLocalStorageLessons(mapped);
+        return mapped;
+      }
+    } catch (neonErr) {
+      console.warn('[Neon] getAllLessons error:', neonErr.message);
+    }
+
+    // 2. Try Supabase metadata view (ultra-fast projection, excludes heavy content jsonb)
     if (supabase) {
       try {
         let { data, error } = await supabase
@@ -245,7 +257,17 @@ export const getLessonById = async (lessonId, options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache(`lesson_detail_${lessonId}`, async () => {
-    // 1. Try direct Supabase single query
+    // 1. Try direct Neon single query
+    try {
+      const neonRes = await neonGet('lessons', lessonId, 'id');
+      if (neonRes.data) {
+        return mapDBToLesson(neonRes.data);
+      }
+    } catch (neonErr) {
+      console.warn(`[Neon] Failed to fetch single lesson ${lessonId}:`, neonErr.message);
+    }
+
+    // 2. Try direct Supabase single query
     if (supabase) {
       try {
         const { data, error } = await supabase

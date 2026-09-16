@@ -1,0 +1,90 @@
+// api/assets.js
+// Storage endpoint for image & document assets using Neon PostgreSQL
+// Handles uploads and serving of question figures, logos, and files
+import { Client } from '@neondatabase/serverless';
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+};
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
+  );
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    return res.status(500).json({ error: 'NEON_DATABASE_URL is not configured' });
+  }
+
+  const client = new Client(databaseUrl);
+  try {
+    await client.connect();
+
+    // ── 1. GET /api/assets?path=... (Serve image) ───────────────────────────
+    if (req.method === 'GET') {
+      const { path } = req.query || {};
+      if (!path) return res.status(400).json({ error: 'Missing path' });
+
+      const result = await client.query('SELECT data, mime_type FROM public.assets WHERE path = $1 LIMIT 1;', [path]);
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Asset not found' });
+      }
+
+      const { data, mime_type } = result.rows[0];
+      const base64Content = data.includes(',') ? data.split(',')[1] : data;
+      const buffer = Buffer.from(base64Content, 'base64');
+
+      res.setHeader('Content-Type', mime_type || 'image/png');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      return res.status(200).send(buffer);
+    }
+
+    // ── 2. POST /api/assets (Upload image) ──────────────────────────────────
+    if (req.method === 'POST') {
+      const { path, data, mimeType = 'image/png' } = req.body || {};
+      if (!path || !data) {
+        return res.status(400).json({ error: 'Missing path or data payload' });
+      }
+
+      const id = 'asset_' + Math.random().toString(36).substring(2, 11);
+      const size = Buffer.byteLength(data, 'utf8');
+
+      const sql = `
+        INSERT INTO public.assets (id, path, data, mime_type, size, updated_at)
+        VALUES ($1, $2, $3, $4, $5, NOW())
+        ON CONFLICT (path) DO UPDATE SET
+          data = EXCLUDED.data,
+          mime_type = EXCLUDED.mime_type,
+          size = EXCLUDED.size,
+          updated_at = NOW()
+        RETURNING path;
+      `;
+
+      await client.query(sql, [id, path, data, mimeType, size]);
+      const publicUrl = `/api/assets?path=${encodeURIComponent(path)}`;
+
+      return res.status(200).json({ success: true, publicUrl });
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' });
+  } catch (err) {
+    console.error('[Neon Assets Error]:', err);
+    return res.status(500).json({ error: err.message || 'Asset storage error' });
+  } finally {
+    await client.end().catch(() => {});
+  }
+}

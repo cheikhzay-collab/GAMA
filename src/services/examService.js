@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
 import { mapLegacySchoolToLevel } from '../utils/levelHelpers';
-import { neonSaveExam, neonDeleteExam } from '../lib/neon';
+import { neonSaveExam, neonDeleteExam, neonList, neonGet } from '../lib/neon';
 
 const STORAGE_KEY = 'lconq_exams_db';
 
@@ -104,7 +104,19 @@ export const getAllExams = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('exams_all', async () => {
-    // 1. Supabase attempt (Try metadata view first, fallback to lightweight projection)
+    // 1. Neon attempt
+    try {
+      const neonRes = await neonList('exams', 500);
+      if (Array.isArray(neonRes.data) && neonRes.data.length > 0) {
+        const mapped = neonRes.data.map(mapDBToExam);
+        saveLocalStorageExams(mapped);
+        return mapped;
+      }
+    } catch (neonErr) {
+      console.warn('[Neon] getAllExams error:', neonErr.message);
+    }
+
+    // 2. Supabase attempt (Try metadata view first, fallback to lightweight projection)
     if (supabase) {
       try {
         let { data, error } = await supabase
@@ -177,7 +189,17 @@ export const getExamById = async (examId, options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache(`exam_detail_${examId}`, async () => {
-    // 1. Fetch exact single record from Supabase
+    // 1. Fetch exact single record from Neon
+    try {
+      const neonRes = await neonGet('exams', examId, 'id');
+      if (neonRes.data) {
+        return mapDBToExam(neonRes.data);
+      }
+    } catch (neonErr) {
+      console.warn(`[Neon] Failed to fetch single exam ${examId}:`, neonErr.message);
+    }
+
+    // 2. Fallback to Supabase
     if (supabase) {
       try {
         const { data, error } = await supabase

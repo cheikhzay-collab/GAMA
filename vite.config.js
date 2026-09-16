@@ -7,9 +7,19 @@ function neonDevApiPlugin() {
     name: 'neon-dev-api',
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
-        if (req.url && req.url.startsWith('/api/neon')) {
+        const url = req.url || '';
+        if (url.startsWith('/api/neon') || url.startsWith('/api/auth') || url.startsWith('/api/assets')) {
           try {
-            const { default: handler } = await import('./api/neon.js');
+            let handlerModule;
+            if (url.startsWith('/api/auth')) {
+              handlerModule = await import('./api/auth.js');
+            } else if (url.startsWith('/api/assets')) {
+              handlerModule = await import('./api/assets.js');
+            } else {
+              handlerModule = await import('./api/neon.js');
+            }
+
+            const handler = handlerModule.default;
             let body = '';
             req.on('data', chunk => { body += chunk; });
             req.on('end', async () => {
@@ -26,6 +36,10 @@ function neonDevApiPlugin() {
               res.json = (data) => {
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify(data));
+                return res;
+              };
+              res.send = (data) => {
+                res.end(data);
                 return res;
               };
 

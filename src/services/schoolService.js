@@ -24,6 +24,20 @@ export const getSchoolsConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_schools', async () => {
+    // 1. Try Neon
+    try {
+      const neonVal = await neonGetConfig('schools');
+      if (neonVal) {
+        return {
+          schools: neonVal.schools || DEFAULT_SCHOOLS,
+          branding: neonVal.branding || {},
+        };
+      }
+    } catch (neonErr) {
+      console.warn('[Neon] getSchoolsConfig error:', neonErr.message);
+    }
+
+    // 2. Try Supabase
     if (supabase) {
       try {
         const { data, error } = await supabase
@@ -105,6 +119,15 @@ export const getBrandingConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_branding', async () => {
+    // 1. Try Neon
+    try {
+      const neonVal = await neonGetConfig('branding');
+      if (neonVal) return neonVal;
+    } catch (neonErr) {
+      console.warn('[Neon] getBrandingConfig error:', neonErr.message);
+    }
+
+    // 2. Try Supabase
     if (supabase) {
       try {
         const { data, error } = await supabase

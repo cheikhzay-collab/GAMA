@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
-import { onAuthChange, loginWithEmail, logoutUser, registerStudent, loginWithGoogle } from '../services/authService';
+import { onAuthChange, loginWithEmail, logoutUser, registerStudent, loginWithGoogle, getCurrentSessionUser } from '../services/authService';
 import { getUserDoc, createUserDoc, updateUserDoc, saveQuestionProgress, getProgressDeltas, saveMockResult, getMockHistory, incrementDailyActivity, getRecentActivity, getAllUsers, setUserSubscription, getLeaderboard, addLoginLog, syncStudentsWithSupabase, logUserDownload } from '../services/userService';
 import { getAllExams, addExam as dbAddExam, updateExam as dbUpdateExam, deleteExam as dbDeleteExam, toggleExamStatus as dbToggleExamStatus, toggleArchiveExam as dbToggleArchiveExam, getExamQuestionsOnly } from '../services/examService';
 import { getSchoolsConfig, saveSchoolsConfig, getBrandingConfig, saveBrandingConfig, getFlashcardSettingsConfig, saveFlashcardSettingsConfig, getPdfSettingsConfig, savePdfSettingsConfig, getOmrScannerSettingsConfig, saveOmrScannerSettingsConfig, getWhatsAppSettingsConfig, saveWhatsAppSettingsConfig, getPlansConfig, savePlansConfig } from '../services/schoolService';
@@ -668,14 +668,20 @@ export function AuthProvider({ children }) {
 
     const initializeAuthAndListen = async () => {
       try {
+        // 1. Check Native Neon Auth Session first
+        const neonUser = await getCurrentSessionUser();
+        if (neonUser && active) {
+          setUser(neonUser);
+          setLoading(false);
+          return;
+        }
+
         if (!supabase) {
           if (active) setLoading(false);
           return;
         }
 
-        // 1. Verify session with the server using getUser() — more reliable than
-        //    getSession() which only reads from storage without server validation.
-        //    This prevents using expired/corrupted tokens from cache.
+        // 2. Fallback to Supabase if present
         const { data: { user: serverUser }, error: sessionErr } = await supabase.auth.getUser();
         
         if (sessionErr) {
@@ -1255,14 +1261,34 @@ export function AuthProvider({ children }) {
   }, [users, user]);
 
   const login = async (email, password) => {
-    // ── Supabase Auth login ───────────────────────────────────────────────────
-    if (SUPABASE_ENABLED) {
-      const sbUser = await loginWithEmail(email, password);
-      setUser(sbUser);
-      return sbUser;
+    // 1. Try Native Neon Auth first
+    try {
+      const neonUser = await loginWithEmail(email, password);
+      if (neonUser) {
+        setUser(neonUser);
+        safeSetItem('user', JSON.stringify(neonUser));
+        return neonUser;
+      }
+    } catch (neonErr) {
+      // If Neon specifically rejected credentials, throw or try fallback
+      console.warn('[Neon Auth] login failed:', neonErr.message);
+      if (!SUPABASE_ENABLED) {
+        throw neonErr;
+      }
     }
 
-    // ── Fallback when Supabase is disabled ────────────────────────────────────
+    // 2. Try Supabase Auth as secondary fallback
+    if (SUPABASE_ENABLED) {
+      try {
+        const sbUser = await loginWithEmail(email, password);
+        setUser(sbUser);
+        return sbUser;
+      } catch (sbErr) {
+        throw sbErr;
+      }
+    }
+
+    // 3. Fallback when remote services are offline
     if (email === 'admin@lconq.ma' && password === 'admin123') {
       const mockAdmin = {
         id: 'local-admin-id',
@@ -1293,25 +1319,23 @@ export function AuthProvider({ children }) {
       return mockStudent;
     }
 
-    throw new Error('Identifiants incorrects pour le mode hors-ligne. Utilisez admin@lconq.ma / admin123 ou student@lconq.ma / student123.');
+    throw new Error('Identifiants incorrects.');
   };
 
   const loginGoogle = async () => {
     if (SUPABASE_ENABLED) {
       return await loginWithGoogle();
     } else {
-      throw new Error('Supabase integration is required. Please check your environment variables configuration.');
+      throw new Error('Connexion Google non disponible actuellement.');
     }
   };
 
-  // ── Supabase registration ────────────────────────────────────────────────
+  // ── Registration directly in Neon ──────────────────────────────────────────
   const register = async (name, email, password) => {
-    if (!SUPABASE_ENABLED) {
-      throw new Error('Supabase is not configured. Add your .env.local file.');
-    }
     const newUser = await registerStudent(name, email, password);
-    if (!newUser.needsConfirmation) {
+    if (newUser) {
       setUser(newUser);
+      safeSetItem('user', JSON.stringify(newUser));
     }
     return newUser;
   };
