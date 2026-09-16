@@ -339,16 +339,11 @@ export const addLesson = async (lessonData) => {
     console.warn('[LocalDB] Could not sync addLesson to companion:', err.message);
   }
 
-  // 4. Supabase (Awaited with error logging)
+  // 4. Supabase (Legacy non-blocking background sync)
   if (supabase) {
-    try {
-      const { error } = await supabase.from('lessons').insert(dbLesson);
-      if (error) {
-        console.warn('[Supabase] Could not insert lesson into DB:', error.message);
-      }
-    } catch (err) {
-      console.warn('[Supabase] addLesson network error:', err.message);
-    }
+    supabase.from('lessons').insert(dbLesson).catch(err => {
+      console.warn('[Supabase legacy network notice]:', err.message);
+    });
   }
 
   return id;
@@ -407,13 +402,28 @@ export const updateLesson = async (lessonId, updates) => {
   }
 
   // Sync to Neon PostgreSQL
+  // 3. Sync to Neon PostgreSQL (Primary Cloud Database)
   try {
-    await neonSaveLesson({ id: lessonId, ...dbUpdates });
+    const fullLesson = updatedRecord || updates;
+    await neonSaveLesson({
+      id: lessonId,
+      title: fullLesson.title || updates.title || 'Document',
+      subject: fullLesson.subject || updates.subject || '',
+      chapter_number: fullLesson.chapterNumber || updates.chapterNumber || '',
+      teacher: fullLesson.teacher || updates.teacher || '',
+      phone: fullLesson.phone || updates.phone || '',
+      schools: fullLesson.schools || updates.schools || [],
+      level: fullLesson.level || updates.level || null,
+      doc_type: fullLesson.docType || updates.docType || 'course',
+      content: fullLesson.content || dbUpdates.content || {},
+      is_active: fullLesson.isActive !== undefined ? fullLesson.isActive : true,
+      updated_at: now
+    });
   } catch (err) {
-    console.warn('[Neon] Error syncing updateLesson:', err);
+    console.warn('[Neon] Error syncing updateLesson:', err.message || err);
   }
 
-  // 4. Companion API (awaited, with fallback to insert if missing)
+  // 4. Companion API (non-blocking fallback)
   try {
     const list = await localDb.get('/lessons');
     if (Array.isArray(list)) {
@@ -436,50 +446,18 @@ export const updateLesson = async (lessonId, updates) => {
     console.warn('[LocalDB] Could not sync updateLesson:', err.message);
   }
 
-  // 5. Supabase (AWAITED, with fallback to insert if record did not exist in DB yet)
+  // 5. Supabase (Legacy non-blocking background sync)
   if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('lessons')
-        .update(dbUpdates)
-        .eq('id', lessonId)
-        .select('id');
-
-      if (error) {
-        console.error('[Supabase] Could not update lesson in DB:', error.message);
-        throw new Error(`Erreur Supabase: ${error.message}`);
-      } else if (!data || data.length === 0) {
-        // La ligne n'existait pas encore dans Supabase -> Insérer la fiche complète
-        const fullLesson = updatedRecord || updates;
-        const insertPayload = {
-          id: lessonId,
-          title: fullLesson.title || updates.title || 'Document',
-          subject: fullLesson.subject || updates.subject || null,
-          chapter_number: fullLesson.chapterNumber || updates.chapterNumber || null,
-          teacher: fullLesson.teacher || updates.teacher || null,
-          phone: fullLesson.phone || updates.phone || null,
-          schools: fullLesson.schools || updates.schools || [],
-          level: fullLesson.level || updates.level || null,
-          doc_type: fullLesson.docType || updates.docType || 'course',
-          content: fullLesson.content || dbUpdates.content || {},
-          is_active: fullLesson.isActive !== undefined ? fullLesson.isActive : true,
-          created_at: fullLesson.createdAt || now,
-          updated_at: now
-        };
-        const { error: insertErr } = await supabase.from('lessons').insert(insertPayload);
-        if (insertErr) {
-          console.error('[Supabase] Could not insert missing lesson into DB:', insertErr.message);
-          throw new Error(`Erreur insertion Supabase: ${insertErr.message}`);
-        } else {
-          console.log('[Supabase] Missing lesson inserted into DB successfully:', lessonId);
-        }
-      } else {
-        console.log('[Supabase] Lesson updated successfully in DB:', lessonId);
-      }
-    } catch (err) {
-      console.error('[Supabase] Error syncing updateLesson:', err.message);
-      throw err;
-    }
+    supabase
+      .from('lessons')
+      .update(dbUpdates)
+      .eq('id', lessonId)
+      .then(({ error }) => {
+        if (error) console.warn('[Supabase legacy sync notice]:', error.message);
+      })
+      .catch(err => {
+        console.warn('[Supabase legacy network notice]:', err.message);
+      });
   }
 
   return { success: true, id: lessonId };
