@@ -425,7 +425,7 @@ export const generateCourseSummaryHTML = (data, qrDataUrl = '') => {
   // Avoid school name (e.g. Lycée ...) leaking into educational level
   const candidateLevel = meta.level_name || data?.level_name || data?.level || data?.content?.level || header.level || header.niveau;
   const isSchoolName = (str) => /lyc[ée]e|coll[èe]ge|[ée]cole|direction|acad[ée]mie/i.test(str || '');
-  const rawLevel = candidateLevel || (!isSchoolName(header.prep_title) ? header.prep_title : null) || (isArabic ? 'الجذع المشترك العلمي' : 'Tronc Commun Scientifique');
+  const rawLevel = candidateLevel || (!isSchoolName(header?.prep_title) ? header?.prep_title : null) || (isArabic ? 'الجذع المشترك العلمي' : 'Tronc Commun Scientifique');
   const levelParts = splitLevelTitle(rawLevel, isArabic);
 
   const hasManualColumns = rawSections.some(sec => sec.column || sec.col);

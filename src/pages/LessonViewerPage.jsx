@@ -1160,10 +1160,35 @@ export default function LessonViewerPage() {
     );
   }
 
-  const { content } = lesson;
-  const { header, sections } = content;
-  const theorySections = sections?.filter(s => s.type !== 'exercise') || [];
-  const exerciseSections = sections?.filter(s => s.type === 'exercise') || [];
+  const rawContent = lesson?.content;
+  let parsedContent = rawContent;
+  if (typeof rawContent === 'string') {
+    try {
+      parsedContent = JSON.parse(rawContent);
+    } catch {
+      parsedContent = {};
+    }
+  }
+
+  const content = (parsedContent && typeof parsedContent === 'object' && !Array.isArray(parsedContent))
+    ? parsedContent
+    : { sections: Array.isArray(parsedContent) ? parsedContent : [] };
+
+  const rawHeader = content?.header || lesson?.header;
+  const header = (rawHeader && typeof rawHeader === 'object' && !Array.isArray(rawHeader))
+    ? rawHeader
+    : {
+        fiche_title: lesson?.title || '',
+        subject: lesson?.subject || 'Mathématiques',
+        prep_title: '',
+        schools: lesson?.schools || [],
+        teacher: lesson?.teacher || '',
+        phone: lesson?.phone || ''
+      };
+
+  const sections = Array.isArray(content?.sections) ? content.sections : (Array.isArray(parsedContent) ? parsedContent : []);
+  const theorySections = sections?.filter(s => s?.type !== 'exercise') || [];
+  const exerciseSections = sections?.filter(s => s?.type === 'exercise') || [];
 
   // دعم RTL للنسخ المترجمة للعربية
   const checkArabicText = () => {
@@ -2520,16 +2545,16 @@ export default function LessonViewerPage() {
           paddingBottom: '0.75rem',
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem', fontSize: '0.75rem', color: '#1a202c', fontWeight: 700 }}>
-            <span>{header.prep_title}</span>
-            <span style={{ color: '#005086' }}>{header.schools?.join(' - ')}</span>
+            <span>{header?.prep_title || ''}</span>
+            <span style={{ color: '#005086' }}>{header?.schools?.join(' - ') || ''}</span>
           </div>
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.15rem', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.7rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{header.subject}</span>
-            <span style={{ fontWeight: 900, fontSize: '1rem', color: '#b91c1c', textDecoration: 'underline' }}>{renderWithMath(header.fiche_title)}</span>
+            <span style={{ fontSize: '0.7rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{header?.subject || lesson?.subject || ''}</span>
+            <span style={{ fontWeight: 900, fontSize: '1rem', color: '#b91c1c', textDecoration: 'underline' }}>{renderWithMath(header?.fiche_title || lesson?.title || '')}</span>
           </div>
           <div style={{ textAlign: 'right', fontSize: '0.75rem', color: '#1a202c', fontWeight: 700, display: 'flex', flexDirection: 'column', gap: '0.1rem', alignItems: 'flex-end' }}>
-            <span>{header.teacher || profName}</span>
-            {(header.phone || profPhone) && <span style={{ color: '#4b5563' }}>{header.phone || profPhone}</span>}
+            <span>{header?.teacher || profName || ''}</span>
+            {(header?.phone || profPhone) && <span style={{ color: '#4b5563' }}>{header?.phone || profPhone}</span>}
           </div>
         </header>
 
