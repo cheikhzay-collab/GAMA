@@ -692,10 +692,9 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 // Verified high-performing models per provider
 const FALLBACK_MODELS = {
   gemini: [
-    'gemini-2.0-flash',
     'gemini-2.5-flash',
-    'gemini-1.5-flash',
-    'gemini-2.0-flash-lite',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash-lite',
     'gemini-2.5-pro'
   ],
   claude: [
@@ -716,8 +715,8 @@ const resolveModelCascade = (provider, userPreferredModel) => {
 
   // Normalize aliases and deprecated models
   if (provider === 'gemini') {
-    if (['gemini-1.5-pro', '3.7', 'gemini-3.7', 'gemini-3.7-flash', 'gemini-3.7-pro', '3.5', 'gemini-3.5', 'gemini-3.5-flash'].includes(cleanUser)) {
-      cleanUser = 'gemini-2.0-flash';
+    if (['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', '3.7', 'gemini-3.7', 'gemini-3.7-flash', 'gemini-3.7-pro', '3.5', 'gemini-3.5', 'gemini-3.5-flash'].includes(cleanUser)) {
+      cleanUser = 'gemini-2.5-flash';
     }
   }
 

@@ -92,30 +92,216 @@ Extrais tout le document et retourne un JSON avec la structure :
 }`;
 }
 
-// Resilient JSON parser
-function parseJsonWithResilience(rawText) {
-  let clean = rawText.trim();
-  if (clean.includes('</think>')) clean = clean.split('</think>').pop().trim();
-  if (clean.startsWith('```json')) clean = clean.slice(7);
-  else if (clean.startsWith('```')) clean = clean.slice(3);
-  if (clean.endsWith('```')) clean = clean.slice(0, -3);
-  clean = clean.trim();
+// ─── JSON Repair & Sanitization Pipeline ──────────────────────────────────────
 
-  try {
-    return JSON.parse(clean);
-  } catch (_) {
-    const firstBrace = clean.indexOf('{');
-    const lastBrace = clean.lastIndexOf('}');
-    if (firstBrace !== -1 && lastBrace > firstBrace) {
-      return JSON.parse(clean.substring(firstBrace, lastBrace + 1));
-    }
-    throw new Error("Impossible de parser le JSON retourné par l'IA.");
+const repairTruncatedJson = (str) => {
+  if (!str) return str;
+  let s = str.trim();
+  s = s.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+
+  const firstBrace = s.indexOf('{');
+  const firstBracket = s.indexOf('[');
+  let start = -1;
+  if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+    start = firstBrace;
+  } else if (firstBracket !== -1) {
+    start = firstBracket;
   }
+  if (start > 0) s = s.slice(start);
+
+  const stack = [];
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (escaped) { escaped = false; continue; }
+    if (c === '\\') { escaped = true; continue; }
+    if (c === '"') { inString = !inString; continue; }
+    if (!inString) {
+      if (c === '{') stack.push('}');
+      else if (c === '[') stack.push(']');
+      else if (c === '}' || c === ']') {
+        if (stack.length > 0 && stack[stack.length - 1] === c) {
+          stack.pop();
+        }
+      }
+    }
+  }
+
+  if (inString) s += '"';
+  s = s.replace(/,\s*$/, '');
+  s = s.replace(/:\s*$/, ': ""');
+
+  while (stack.length > 0) {
+    s += stack.pop();
+  }
+  return s;
+};
+
+const sanitizeLatexJson = (str) => {
+  if (!str) return str;
+  let result = '';
+  let i = 0;
+  while (i < str.length) {
+    if (str[i] === '\\') {
+      const next = str[i + 1];
+      if (next === '"') {
+        result += '\\"';
+        i += 2;
+      } else if (next === '\\') {
+        result += '\\\\';
+        i += 2;
+      } else if (next === 'n') {
+        const afterN = str[i + 2];
+        const isLetterAfterN = afterN && /[a-zA-Z]/.test(afterN);
+        if (isLetterAfterN) {
+          result += '\\\\';
+          i += 1;
+        } else {
+          result += '\\n';
+          i += 2;
+        }
+      } else {
+        result += '\\\\';
+        i += 1;
+      }
+    } else {
+      result += str[i];
+      i += 1;
+    }
+  }
+  return result;
+};
+
+const escapeLiteralNewlinesInJson = (str) => {
+  let inString = false;
+  let escaped = false;
+  let result = '';
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+    if (escaped) {
+      result += char;
+      escaped = false;
+      continue;
+    }
+    if (char === '\\') {
+      result += char;
+      escaped = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      result += char;
+      continue;
+    }
+    if (inString && (char === '\n' || char === '\r')) {
+      if (char === '\n') result += '\\n';
+      continue;
+    }
+    result += char;
+  }
+  return result;
+};
+
+const escapeUnescapedQuotesInJson = (str) => {
+  if (!str) return str;
+  let inString = false;
+  let escaped = false;
+  let result = '';
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+    if (escaped) {
+      result += char;
+      escaped = false;
+      continue;
+    }
+    if (char === '\\') {
+      result += char;
+      escaped = true;
+      continue;
+    }
+    if (char === '"') {
+      if (!inString) {
+        inString = true;
+        result += char;
+      } else {
+        let isClosing = false;
+        let j = i + 1;
+        while (j < str.length && /\s/.test(str[j])) j++;
+        if (j < str.length) {
+          const nextChar = str[j];
+          if (nextChar === ',' || nextChar === '}' || nextChar === ']' || nextChar === ':') {
+            isClosing = true;
+          }
+        } else {
+          isClosing = true;
+        }
+        if (isClosing) {
+          inString = false;
+          result += char;
+        } else {
+          result += '\\"';
+        }
+      }
+      continue;
+    }
+    result += char;
+  }
+  return result;
+};
+
+const extractJsonFromText = (str) => {
+  if (!str) return str;
+  let s = str.trim();
+  s = s.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+  const firstBrace = s.indexOf('{');
+  const firstBracket = s.indexOf('[');
+  let start = -1;
+  if (firstBrace === -1 && firstBracket === -1) return s;
+  if (firstBrace === -1) start = firstBracket;
+  else if (firstBracket === -1) start = firstBrace;
+  else start = Math.min(firstBrace, firstBracket);
+
+  const lastBrace = s.lastIndexOf('}');
+  const lastBracket = s.lastIndexOf(']');
+  const end = Math.max(lastBrace, lastBracket);
+
+  if (start !== -1 && end !== -1 && end > start) {
+    return s.slice(start, end + 1);
+  }
+  return start !== -1 ? s.slice(start) : s;
+};
+
+// Resilient 5-tier JSON parser for LaTeX formulas and strings
+function parseJsonWithResilience(rawText) {
+  let cleanText = rawText.trim();
+  if (cleanText.includes('</think>')) {
+    cleanText = cleanText.split('</think>').pop().trim();
+  }
+  cleanText = sanitizeLatexJson(cleanText);
+
+  const strategies = [
+    (t) => JSON.parse(extractJsonFromText(t)),
+    (t) => JSON.parse(escapeLiteralNewlinesInJson(extractJsonFromText(t))),
+    (t) => JSON.parse(escapeUnescapedQuotesInJson(escapeLiteralNewlinesInJson(extractJsonFromText(t)))),
+    (t) => JSON.parse(repairTruncatedJson(escapeUnescapedQuotesInJson(escapeLiteralNewlinesInJson(extractJsonFromText(t))))),
+    (t) => JSON.parse(repairTruncatedJson(escapeUnescapedQuotesInJson(escapeLiteralNewlinesInJson(sanitizeLatexJson(extractJsonFromText(t))))))
+  ];
+
+  let lastError = null;
+  for (let i = 0; i < strategies.length; i++) {
+    try {
+      return strategies[i](cleanText);
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw new Error(`Échec d'analyse du JSON produit par l'IA : ${lastError?.message || 'JSON invalide'}`);
 }
 
 // Serverless extraction execution using Gemini
-async function executeGeminiExtraction({ base64Data, fileType, pageCount, apiKey, model, solveSolutions, preExtractedPdfText }) {
-  const isPdf = (fileType && fileType.includes('pdf'));
+async function executeGeminiExtraction({ base64Data, fileType, pageCount, apiKey, model, solveSolutions = true, preExtractedPdfText = '' }) {
+  const isPdf = fileType && fileType.includes('pdf');
   const safeMime = isPdf ? 'application/pdf' : (fileType && fileType.includes('/') ? fileType : 'image/jpeg');
 
   const systemContent = solveSolutions
@@ -125,17 +311,17 @@ async function executeGeminiExtraction({ base64Data, fileType, pageCount, apiKey
   const userText = buildExtractionUserPrompt(pageCount, solveSolutions, preExtractedPdfText);
 
   let userPref = (model || '').trim();
-  // Map deprecated / nonexistent aliases to robust modern defaults
-  if (['gemini-1.5-pro', 'gemini-3.7', 'gemini-3.7-flash', 'gemini-3.7-pro', '3.7', 'gemini-3.5', 'gemini-3.5-flash', '3.5'].includes(userPref)) {
-    userPref = 'gemini-2.0-flash';
+  // Map retired / nonexistent models to active ones
+  if (['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', '3.7', 'gemini-3.7', 'gemini-3.7-pro', '3.5'].includes(userPref)) {
+    userPref = 'gemini-2.5-flash';
   }
 
-  // Verified working Google Gemini models in priority order
+  // Active production models recommended by Google
   const defaultCascade = [
-    'gemini-2.0-flash',
     'gemini-2.5-flash',
-    'gemini-1.5-flash',
-    'gemini-2.0-flash-lite'
+    'gemini-3.6-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-2.5-pro'
   ];
   const cascade = Array.from(new Set([userPref, ...defaultCascade].filter(Boolean)));
 
