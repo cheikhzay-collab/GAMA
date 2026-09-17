@@ -473,6 +473,7 @@ export default function AdminSettings() {
   const [logbookColorChapter, setLogbookColorChapter] = useState(() => localStorage.getItem('logbook_color_chapter') || '#0f172a');
   const [logbookColorAxis, setLogbookColorAxis] = useState(() => localStorage.getItem('logbook_color_axis') || '#2563eb');
   const [logbookColorExercise, setLogbookColorExercise] = useState(() => localStorage.getItem('logbook_color_exercise') || '#d97706');
+  const [logbookSubTab, setLogbookSubTab] = useState('timetable');
 
   // Holiday form
   const [newHolLabel, setNewHolLabel] = useState('');
