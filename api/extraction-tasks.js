@@ -125,9 +125,9 @@ async function executeGeminiExtraction({ base64Data, fileType, pageCount, apiKey
   const userText = buildExtractionUserPrompt(pageCount, solveSolutions, preExtractedPdfText);
 
   let userPref = (model || '').trim();
-  if (userPref === '3.7' || userPref === 'gemini-3.7') userPref = 'gemini-2.5-flash';
-  if (userPref === '3.5' || userPref === 'gemini-3.5') userPref = 'gemini-2.5-flash';
-  const defaultCascade = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+  if (userPref === '3.7' || userPref === 'gemini-3.7' || userPref === 'gemini-3.7-flash') userPref = 'gemini-2.0-flash';
+  if (userPref === '3.5' || userPref === 'gemini-3.5' || userPref === 'gemini-3.5-flash') userPref = 'gemini-2.0-flash';
+  const defaultCascade = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
   const cascade = Array.from(new Set([userPref, ...defaultCascade].filter(Boolean)));
 
   let lastErr = null;
@@ -362,13 +362,14 @@ export default async function handler(req, res) {
       }
     }
 
-    // (C) Create Task in Queue (Non-blocking: creates task and returns immediately)
+    // (C) Create Task & Execute Server-Side AI Extraction
     const taskId = body.id || `TASK-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
     const fileName = body.fileName || 'document.pdf';
     const fileType = body.fileType || 'application/pdf';
     const pageCount = body.pageCount || 1;
     const provider = body.provider || 'gemini';
     const model = body.model || '';
+    const apiKey = body.apiKey || process.env.GEMINI_API_KEY || '';
 
     try {
       await sql.query(
@@ -377,28 +378,93 @@ export default async function handler(req, res) {
            progress_percent, progress_message, attempts, max_attempts, 
            created_at, updated_at
          ) VALUES (
-           $1, $2, $3, $4, $5, $6, 'pending', 0, 
-           'En attente dans la file...', 0, 3, NOW(), NOW()
+           $1, $2, $3, $4, $5, $6, 'processing', 20, 
+           'Extraction par IA en cours sur le serveur...', 1, 3, NOW(), NOW()
          )
          ON CONFLICT (id) DO UPDATE SET
-           status = 'pending', progress_percent = 0, 
-           progress_message = 'En attente dans la file...', updated_at = NOW()`,
+           status = 'processing', progress_percent = 20, 
+           progress_message = 'Extraction par IA en cours sur le serveur...', updated_at = NOW()`,
         [taskId, fileName, fileType, pageCount, provider, model]
       );
 
+      // Execute AI extraction on the server
+      if (apiKey && (body.base64Data || body.preExtractedPdfText)) {
+        try {
+          const { parsed, usedModel } = await executeGeminiExtraction({
+            base64Data: body.base64Data,
+            fileType,
+            pageCount,
+            apiKey,
+            model,
+            solveSolutions: body.solveSolutions !== false,
+            preExtractedPdfText: body.preExtractedPdfText
+          });
+
+          const header = parsed?.header || {};
+          const sections = parsed?.sections || parsed?.items || parsed?.exercises || [];
+          const headerSummary = {
+            ficheTitle: header.fiche_title || header.title || fileName,
+            subject: header.subject || 'Mathématiques',
+            detectedLevel: header.detected_level || '2bac_pc_svt',
+            docType: header.doc_type || 'course',
+            sectionsCount: sections.length,
+            extractedWithModel: usedModel
+          };
+
+          await sql.query(
+            `UPDATE public.extraction_tasks 
+             SET status = 'completed', progress_percent = 100, 
+                 progress_message = 'Fiche extraite avec succès !', 
+                 result_json = $1, header_summary = $2, 
+                 completed_at = NOW(), updated_at = NOW() 
+             WHERE id = $3`,
+            [JSON.stringify(parsed), JSON.stringify(headerSummary), taskId]
+          );
+
+          return res.status(201).json({
+            success: true,
+            task: {
+              id: taskId,
+              fileName,
+              status: 'completed',
+              progressPercent: 100,
+              progressMessage: 'Fiche extraite avec succès !',
+              headerSummary,
+              hasResult: true
+            }
+          });
+        } catch (extractErr) {
+          console.error('[Server Extraction Error]:', extractErr.message);
+          await sql.query(
+            `UPDATE public.extraction_tasks 
+             SET status = 'failed', progress_percent = 0, 
+                 error_message = $1, progress_message = 'Échec de l''extraction', 
+                 updated_at = NOW() 
+             WHERE id = $2`,
+            [extractErr.message, taskId]
+          );
+
+          return res.status(201).json({
+            success: true,
+            task: {
+              id: taskId,
+              fileName,
+              status: 'failed',
+              error: extractErr.message
+            }
+          });
+        }
+      }
+
+      // Fallback if no apiKey or data provided
       return res.status(201).json({
         success: true,
         task: {
           id: taskId,
           fileName,
-          fileType,
-          pageCount,
-          provider,
-          model,
           status: 'pending',
           progressPercent: 0,
-          progressMessage: 'En attente dans la file...',
-          createdAt: new Date().toISOString()
+          progressMessage: 'En attente dans la file...'
         }
       });
     } catch (err) {
