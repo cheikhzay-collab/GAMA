@@ -210,14 +210,15 @@ export const createExtractionTask = async (taskPayload) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(taskPayload),
-      timeout: 15000
+      timeout: 60000
     });
     const data = await res.json();
     return data.task;
   } catch (err) {
     console.error('[ExtractionTaskService] Failed to create task:', err);
+    const detail = err.message ? ` (${err.message})` : '';
     throw new Error(
-      "Le serveur compagnon local (port 5002) est indisponible pour exécuter la tâche d'arrière-plan.\n" +
+      `Le serveur compagnon local (port 5002) est indisponible pour exécuter la tâche d'arrière-plan${detail}.\n` +
       "Veuillez vérifier que le serveur est bien démarré (start-companion.js ou start-all.bat)."
     );
   }

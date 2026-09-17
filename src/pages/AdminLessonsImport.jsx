@@ -841,7 +841,7 @@ export default function AdminLessonsImport({ onBack }) {
   const [submittingTasks, setSubmittingTasks] = useState(false);
   const [loadingTaskDetails, setLoadingTaskDetails] = useState(null);
   const [taskUnderReview, setTaskUnderReview] = useState(null);
-  const [isCompanionOnline, setIsCompanionOnline] = useState(true);
+  const [isCompanionOnline, setIsCompanionOnline] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
   // Form State for editing the parsed result
