@@ -8,13 +8,15 @@ function neonDevApiPlugin() {
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const url = req.url || '';
-        if (url.startsWith('/api/neon') || url.startsWith('/api/auth') || url.startsWith('/api/assets')) {
+        if (url.startsWith('/api/neon') || url.startsWith('/api/auth') || url.startsWith('/api/assets') || url.startsWith('/api/extraction-tasks')) {
           try {
             let handlerModule;
             if (url.startsWith('/api/auth')) {
               handlerModule = await import('./api/auth.js');
             } else if (url.startsWith('/api/assets')) {
               handlerModule = await import('./api/assets.js');
+            } else if (url.startsWith('/api/extraction-tasks')) {
+              handlerModule = await import('./api/extraction-tasks.js');
             } else {
               handlerModule = await import('./api/neon.js');
             }

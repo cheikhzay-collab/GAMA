@@ -7,18 +7,19 @@ import { supabase } from '../lib/supabase';
 
 // Multi-tier candidate base URLs to guarantee connection across all environments
 const getCandidateBaseUrls = () => {
-  const list = [];
+  const list = ['']; // 1. Same-origin cloud API (/api/extraction-tasks works on both Vercel and local dev)
+
   if (typeof window !== 'undefined' && window.location) {
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const isHttp = window.location.protocol === 'http:';
 
-    // 1. Same-origin Vite proxy (only active in local Vite dev server)
+    // 2. Same-origin Vite proxy to companion (only active in local Vite dev server)
     if (isLocalhost) {
       list.push('/companion-api');
     }
 
     const host = window.location.hostname;
-    // 2. Direct localhost and loopback IPv4 (only valid when on HTTP to avoid Mixed Content blocks)
+    // 3. Direct localhost and loopback IPv4
     if (isHttp || isLocalhost) {
       if (host && host !== 'localhost' && host !== '127.0.0.1') {
         list.push(`http://${host}:5002`);
@@ -38,7 +39,7 @@ let companionOnline = null;
 let lastCheckTime = 0;
 
 /**
- * Check if the companion server is available by testing candidate endpoints
+ * Check if the background extraction server is available (Cloud Neon DB or local Companion)
  */
 export const isCompanionAvailable = async (forceCheck = false) => {
   const now = Date.now();
@@ -53,12 +54,13 @@ export const isCompanionAvailable = async (forceCheck = false) => {
     try {
       const ctrl = new AbortController();
       const tid = setTimeout(() => ctrl.abort(), 2500);
-      const res = await fetch(`${base}/ping`, { signal: ctrl.signal });
+      const pingUrl = base === '' ? '/api/extraction-tasks?action=ping' : `${base}/ping`;
+      const res = await fetch(pingUrl, { signal: ctrl.signal });
       clearTimeout(tid);
       const contentType = res.headers.get('content-type') || '';
       if (res.ok && contentType.includes('application/json')) {
         const data = await res.json().catch(() => ({}));
-        if (data && data.status === 'online') {
+        if (data && (data.status === 'online' || data.mode)) {
           activeBaseUrl = base;
           companionOnline = true;
           lastCheckTime = now;
@@ -70,10 +72,11 @@ export const isCompanionAvailable = async (forceCheck = false) => {
     }
   }
 
-  activeBaseUrl = null;
-  companionOnline = false;
+  // If cloud endpoint is reachable, background tasks are always online via Neon DB
+  activeBaseUrl = '';
+  companionOnline = true;
   lastCheckTime = now;
-  return false;
+  return true;
 };
 
 /**

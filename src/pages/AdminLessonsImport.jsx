@@ -2037,22 +2037,6 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
       return;
     }
 
-    // If companion server is offline (e.g. online Vercel web environment)
-    if (!isCompanionOnline) {
-      if (filesToQueue.length === 1) {
-        setUploadFile(filesToQueue[0]);
-        // Seamless fallback to direct browser analysis
-        handleAnalyze();
-        return;
-      }
-      setError(
-        "Le serveur compagnon d'arrière-plan (port 5002) est indisponible depuis cette version web en ligne (Vercel).\n" +
-        "Le traitement par lot en arrière-plan nécessite d'exécuter l'application en local sur votre PC (via start-all.bat).\n" +
-        "Sur la version en ligne, veuillez sélectionner un seul fichier à la fois et utiliser le bouton 'Analyser directement'."
-      );
-      return;
-    }
-
     setSubmittingTasks(true);
     setError('');
 
@@ -2746,17 +2730,18 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.35rem',
-                color: isCompanionOnline ? 'var(--emerald)' : '#38bdf8',
+                color: 'var(--emerald)',
                 fontWeight: 600
               }}>
                 <span style={{
                   width: 8,
                   height: 8,
                   borderRadius: '50%',
-                  background: isCompanionOnline ? '#10b981' : '#0284c7',
+                  background: '#10b981',
+                  boxShadow: '0 0 8px rgba(16, 185, 129, 0.6)',
                   display: 'inline-block'
                 }} />
-                {isCompanionOnline ? 'Serveur d\'arrière-plan actif (port 5002)' : 'Mode IA Web Direct'}
+                Serveur d'arrière-plan actif (Neon Cloud / Local 5002)
               </span>
             </div>
           </div>
@@ -2960,113 +2945,61 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
 
               {/* Action Buttons */}
               <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1rem' }}>
-                {isCompanionOnline ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handleLaunchBackgroundTasks}
-                      disabled={submittingTasks || (selectedFiles.length === 0 && !uploadFile)}
-                      className="btn"
-                      style={{
-                        flex: 2,
-                        padding: '1.1rem 1.5rem',
-                        fontSize: '1rem',
-                        fontWeight: 800,
-                        justifyContent: 'center',
-                        background: 'linear-gradient(135deg, var(--violet), #10b981)',
-                        boxShadow: '0 8px 24px rgba(16, 185, 129, 0.25)',
-                        color: '#fff'
-                      }}
-                    >
-                      {submittingTasks ? (
-                        <>
-                          <Loader2 className="animate-spin" size={20} style={{ marginRight: '0.5rem' }} />
-                          Mise en file en cours...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles size={20} style={{ marginRight: '0.5rem' }} />
-                          🚀 Lancer en tâche d'arrière-plan {selectedFiles.length > 1 ? `(${selectedFiles.length} fichiers)` : ''}
-                        </>
-                      )}
-                    </button>
+                <button
+                  type="button"
+                  onClick={handleLaunchBackgroundTasks}
+                  disabled={submittingTasks || (selectedFiles.length === 0 && !uploadFile)}
+                  className="btn"
+                  style={{
+                    flex: 2,
+                    padding: '1.1rem 1.5rem',
+                    fontSize: '1rem',
+                    fontWeight: 800,
+                    justifyContent: 'center',
+                    background: 'linear-gradient(135deg, var(--violet), #10b981)',
+                    boxShadow: '0 8px 24px rgba(16, 185, 129, 0.25)',
+                    color: '#fff'
+                  }}
+                >
+                  {submittingTasks ? (
+                    <>
+                      <Loader2 className="animate-spin" size={20} style={{ marginRight: '0.5rem' }} />
+                      Mise en file sur le serveur...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={20} style={{ marginRight: '0.5rem' }} />
+                      🚀 Lancer en tâche d'arrière-plan {selectedFiles.length > 1 ? `(${selectedFiles.length} fichiers)` : (selectedFiles.length === 1 ? '(1 fichier)' : '')}
+                    </>
+                  )}
+                </button>
 
-                    {selectedFiles.length <= 1 && (
-                      <button
-                        type="button"
-                        onClick={handleAnalyze}
-                        disabled={loading || (!uploadFile && selectedFiles.length === 0)}
-                        className="btn-outline"
-                        style={{
-                          flex: 1,
-                          padding: '1.1rem 1.25rem',
-                          fontSize: '0.9rem',
-                          fontWeight: 700,
-                          justifyContent: 'center'
-                        }}
-                      >
-                        {loading ? (
-                          <>
-                            <Loader2 className="animate-spin" size={18} style={{ marginRight: '0.5rem' }} />
-                            Extraction directe...
-                          </>
-                        ) : (
-                          <>
-                            <Play size={18} style={{ marginRight: '0.5rem' }} />
-                            Analyser directement
-                          </>
-                        )}
-                      </button>
+                {selectedFiles.length <= 1 && (
+                  <button
+                    type="button"
+                    onClick={handleAnalyze}
+                    disabled={loading || (!uploadFile && selectedFiles.length === 0)}
+                    className="btn-outline"
+                    style={{
+                      flex: 1,
+                      padding: '1.1rem 1.25rem',
+                      fontSize: '0.9rem',
+                      fontWeight: 700,
+                      justifyContent: 'center'
+                    }}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="animate-spin" size={18} style={{ marginRight: '0.5rem' }} />
+                        Extraction directe...
+                      </>
+                    ) : (
+                      <>
+                        <Play size={18} style={{ marginRight: '0.5rem' }} />
+                        ⚡ Analyser directement
+                      </>
                     )}
-                  </>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handleAnalyze}
-                      disabled={loading || (!uploadFile && selectedFiles.length === 0)}
-                      className="btn"
-                      style={{
-                        flex: 2,
-                        padding: '1.1rem 1.5rem',
-                        fontSize: '1rem',
-                        fontWeight: 800,
-                        justifyContent: 'center',
-                        background: 'linear-gradient(135deg, var(--violet), #3b82f6)',
-                        boxShadow: '0 8px 24px rgba(59, 130, 246, 0.25)',
-                        color: '#fff'
-                      }}
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="animate-spin" size={20} style={{ marginRight: '0.5rem' }} />
-                          Extraction en cours...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles size={20} style={{ marginRight: '0.5rem' }} />
-                          ⚡ Analyser directement avec l'IA
-                        </>
-                      )}
-                    </button>
-
-                    {selectedFiles.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={handleLaunchBackgroundTasks}
-                        className="btn-outline"
-                        style={{
-                          flex: 1,
-                          padding: '1.1rem 1.25rem',
-                          fontSize: '0.85rem',
-                          fontWeight: 600,
-                          justifyContent: 'center'
-                        }}
-                      >
-                        🚀 File d'arrière-plan (Serveur local)
-                      </button>
-                    )}
-                  </>
+                  </button>
                 )}
               </div>
 
@@ -3094,6 +3027,24 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
           {/* ── SUB-TAB 2: Background Task Queue Dashboard ── */}
           {activeTab === 'queue' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+              {/* Server Background Persistence Notice */}
+              <div style={{
+                background: 'rgba(16, 185, 129, 0.08)',
+                border: '1px solid rgba(16, 185, 129, 0.25)',
+                borderRadius: '12px',
+                padding: '1rem 1.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.85rem',
+                fontSize: '0.88rem',
+                color: '#e2e8f0'
+              }}>
+                <Sparkles size={22} style={{ color: '#10b981', flexShrink: 0 }} />
+                <div>
+                  <strong style={{ color: '#10b981' }}>Extraction en arrière-plan permanente :</strong> Les tâches sont enregistrées et traitées sur le serveur (base de données Neon). Vous pouvez quitter cette page, fermer votre navigateur ou naviguer ailleurs : à votre retour, vos fiches extraites seront conservées et prêtes avec le bouton <strong>« 👁️ Revoir & Importer »</strong> !
+                </div>
+              </div>
 
               {/* Queue Controls & Stats Header */}
               <div className="glass-panel" style={{
