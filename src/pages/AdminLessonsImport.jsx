@@ -1455,9 +1455,13 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
       setError('Clé API DeepSeek manquante. Veuillez la configurer.');
       return;
     }
-    if (!uploadFile) {
+    const activeFile = uploadFile || selectedFiles[0];
+    if (!activeFile) {
       setError('Veuillez sélectionner un fichier PDF ou une image.');
       return;
+    }
+    if (!uploadFile) {
+      setUploadFile(activeFile);
     }
 
     setLoading(true);
@@ -1484,10 +1488,10 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
 
     try {
       let pageCount = pdfTotalPages || 1;
-      const isPdfFile = uploadFile.type === 'application/pdf' || uploadFile.name?.toLowerCase().endsWith('.pdf');
+      const isPdfFile = activeFile.type === 'application/pdf' || activeFile.name?.toLowerCase().endsWith('.pdf');
       if (isPdfFile) {
         try {
-          const buf = await uploadFile.arrayBuffer();
+          const buf = await activeFile.arrayBuffer();
           const d = await pdfjsLib.getDocument({ data: buf }).promise;
           pageCount = d.numPages;
           setPdfTotalPages(d.numPages);
@@ -1499,21 +1503,21 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
       let rawText = '';
       
       if (provider === 'claude') {
-        const base64Data = await fileToBase64(uploadFile);
+        const base64Data = await fileToBase64(activeFile);
         setProgress(`Envoi du document (${pageCount} page(s)) à Anthropic Claude...`);
-        rawText = await streamClaudeWithPdf(base64Data, uploadFile.type, pageCount);
+        rawText = await streamClaudeWithPdf(base64Data, activeFile.type, pageCount);
       } else if (provider === 'deepseek') {
         if (!isPdfFile) {
           throw new Error("DeepSeek ne prend en charge que les fichiers textuels (PDF). Veuillez utiliser Gemini ou Claude pour les images.");
         }
         setProgress(`Extraction du texte du PDF (${pageCount} page(s))...`);
-        const pdfText = await extractTextFromPdf(uploadFile);
+        const pdfText = await extractTextFromPdf(activeFile);
         setProgress('Envoi du texte à DeepSeek...');
         rawText = await fetchDeepSeekWithText(pdfText, pageCount);
       } else {
-        const base64Data = await fileToBase64(uploadFile);
+        const base64Data = await fileToBase64(activeFile);
         setProgress(`Envoi du fichier (${pageCount} page(s)) à Google Gemini...`);
-        rawText = await fetchGeminiWithPdf(base64Data, uploadFile.type, pageCount);
+        rawText = await fetchGeminiWithPdf(base64Data, activeFile.type, pageCount);
       }
 
       if (!rawText) {
@@ -2030,6 +2034,22 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
     }
     if (provider === 'deepseek' && !deepseekKey) {
       setError('Clé API DeepSeek requise. Veuillez la renseigner.');
+      return;
+    }
+
+    // If companion server is offline (e.g. online Vercel web environment)
+    if (!isCompanionOnline) {
+      if (filesToQueue.length === 1) {
+        setUploadFile(filesToQueue[0]);
+        // Seamless fallback to direct browser analysis
+        handleAnalyze();
+        return;
+      }
+      setError(
+        "Le serveur compagnon d'arrière-plan (port 5002) est indisponible depuis cette version web en ligne (Vercel).\n" +
+        "Le traitement par lot en arrière-plan nécessite d'exécuter l'application en local sur votre PC (via start-all.bat).\n" +
+        "Sur la version en ligne, veuillez sélectionner un seul fichier à la fois et utiliser le bouton 'Analyser directement'."
+      );
       return;
     }
 
@@ -2726,17 +2746,17 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.35rem',
-                color: isCompanionOnline ? 'var(--emerald)' : 'var(--warning)',
+                color: isCompanionOnline ? 'var(--emerald)' : '#38bdf8',
                 fontWeight: 600
               }}>
                 <span style={{
                   width: 8,
                   height: 8,
                   borderRadius: '50%',
-                  background: isCompanionOnline ? '#10b981' : '#f59e0b',
+                  background: isCompanionOnline ? '#10b981' : '#0284c7',
                   display: 'inline-block'
                 }} />
-                {isCompanionOnline ? 'Serveur d\'arrière-plan actif (port 5002)' : 'Mode local'}
+                {isCompanionOnline ? 'Serveur d\'arrière-plan actif (port 5002)' : 'Mode IA Web Direct'}
               </span>
             </div>
           </div>
@@ -2940,61 +2960,113 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
 
               {/* Action Buttons */}
               <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1rem' }}>
-                <button
-                  type="button"
-                  onClick={handleLaunchBackgroundTasks}
-                  disabled={submittingTasks || (selectedFiles.length === 0 && !uploadFile)}
-                  className="btn"
-                  style={{
-                    flex: 2,
-                    padding: '1.1rem 1.5rem',
-                    fontSize: '1rem',
-                    fontWeight: 800,
-                    justifyContent: 'center',
-                    background: 'linear-gradient(135deg, var(--violet), #10b981)',
-                    boxShadow: '0 8px 24px rgba(16, 185, 129, 0.25)',
-                    color: '#fff'
-                  }}
-                >
-                  {submittingTasks ? (
-                    <>
-                      <Loader2 className="animate-spin" size={20} style={{ marginRight: '0.5rem' }} />
-                      Mise en file en cours...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles size={20} style={{ marginRight: '0.5rem' }} />
-                      🚀 Lancer en tâche d'arrière-plan {selectedFiles.length > 1 ? `(${selectedFiles.length} fichiers)` : ''}
-                    </>
-                  )}
-                </button>
+                {isCompanionOnline ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleLaunchBackgroundTasks}
+                      disabled={submittingTasks || (selectedFiles.length === 0 && !uploadFile)}
+                      className="btn"
+                      style={{
+                        flex: 2,
+                        padding: '1.1rem 1.5rem',
+                        fontSize: '1rem',
+                        fontWeight: 800,
+                        justifyContent: 'center',
+                        background: 'linear-gradient(135deg, var(--violet), #10b981)',
+                        boxShadow: '0 8px 24px rgba(16, 185, 129, 0.25)',
+                        color: '#fff'
+                      }}
+                    >
+                      {submittingTasks ? (
+                        <>
+                          <Loader2 className="animate-spin" size={20} style={{ marginRight: '0.5rem' }} />
+                          Mise en file en cours...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles size={20} style={{ marginRight: '0.5rem' }} />
+                          🚀 Lancer en tâche d'arrière-plan {selectedFiles.length > 1 ? `(${selectedFiles.length} fichiers)` : ''}
+                        </>
+                      )}
+                    </button>
 
-                {selectedFiles.length <= 1 && (
-                  <button
-                    type="button"
-                    onClick={handleAnalyze}
-                    disabled={loading || (!uploadFile && selectedFiles.length === 0)}
-                    className="btn-outline"
-                    style={{
-                      flex: 1,
-                      padding: '1.1rem 1.25rem',
-                      fontSize: '0.9rem',
-                      fontWeight: 700,
-                      justifyContent: 'center'
-                    }}
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="animate-spin" size={18} style={{ marginRight: '0.5rem' }} />
-                        Extraction directe...
-                      </>
-                    ) : (
-                      <>
-                        <Play size={18} style={{ marginRight: '0.5rem' }} />
-                        Analyser directement
-                      </>
+                    {selectedFiles.length <= 1 && (
+                      <button
+                        type="button"
+                        onClick={handleAnalyze}
+                        disabled={loading || (!uploadFile && selectedFiles.length === 0)}
+                        className="btn-outline"
+                        style={{
+                          flex: 1,
+                          padding: '1.1rem 1.25rem',
+                          fontSize: '0.9rem',
+                          fontWeight: 700,
+                          justifyContent: 'center'
+                        }}
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="animate-spin" size={18} style={{ marginRight: '0.5rem' }} />
+                            Extraction directe...
+                          </>
+                        ) : (
+                          <>
+                            <Play size={18} style={{ marginRight: '0.5rem' }} />
+                            Analyser directement
+                          </>
+                        )}
+                      </button>
                     )}
-                  </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleAnalyze}
+                      disabled={loading || (!uploadFile && selectedFiles.length === 0)}
+                      className="btn"
+                      style={{
+                        flex: 2,
+                        padding: '1.1rem 1.5rem',
+                        fontSize: '1rem',
+                        fontWeight: 800,
+                        justifyContent: 'center',
+                        background: 'linear-gradient(135deg, var(--violet), #3b82f6)',
+                        boxShadow: '0 8px 24px rgba(59, 130, 246, 0.25)',
+                        color: '#fff'
+                      }}
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="animate-spin" size={20} style={{ marginRight: '0.5rem' }} />
+                          Extraction en cours...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles size={20} style={{ marginRight: '0.5rem' }} />
+                          ⚡ Analyser directement avec l'IA
+                        </>
+                      )}
+                    </button>
+
+                    {selectedFiles.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={handleLaunchBackgroundTasks}
+                        className="btn-outline"
+                        style={{
+                          flex: 1,
+                          padding: '1.1rem 1.25rem',
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                          justifyContent: 'center'
+                        }}
+                      >
+                        🚀 File d'arrière-plan (Serveur local)
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
 

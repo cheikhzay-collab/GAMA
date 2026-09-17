@@ -9,17 +9,27 @@ import { supabase } from '../lib/supabase';
 const getCandidateBaseUrls = () => {
   const list = [];
   if (typeof window !== 'undefined' && window.location) {
-    // 1. Same-origin Vite proxy (zero CORS, zero IPv4/IPv6 mismatch)
-    list.push('/companion-api');
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const isHttp = window.location.protocol === 'http:';
+
+    // 1. Same-origin Vite proxy (only active in local Vite dev server)
+    if (isLocalhost) {
+      list.push('/companion-api');
+    }
 
     const host = window.location.hostname;
-    if (host && host !== 'localhost' && host !== '127.0.0.1') {
-      list.push(`http://${host}:5002`);
+    // 2. Direct localhost and loopback IPv4 (only valid when on HTTP to avoid Mixed Content blocks)
+    if (isHttp || isLocalhost) {
+      if (host && host !== 'localhost' && host !== '127.0.0.1') {
+        list.push(`http://${host}:5002`);
+      }
+      list.push('http://localhost:5002');
+      list.push('http://127.0.0.1:5002');
     }
+  } else {
+    list.push('http://localhost:5002');
+    list.push('http://127.0.0.1:5002');
   }
-  // 2. Direct localhost and loopback IPv4
-  list.push('http://localhost:5002');
-  list.push('http://127.0.0.1:5002');
   return Array.from(new Set(list));
 };
 
@@ -42,20 +52,25 @@ export const isCompanionAvailable = async (forceCheck = false) => {
   for (const base of uniqueBases) {
     try {
       const ctrl = new AbortController();
-      const tid = setTimeout(() => ctrl.abort(), 3000);
+      const tid = setTimeout(() => ctrl.abort(), 2500);
       const res = await fetch(`${base}/ping`, { signal: ctrl.signal });
       clearTimeout(tid);
-      if (res.ok) {
-        activeBaseUrl = base;
-        companionOnline = true;
-        lastCheckTime = now;
-        return true;
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
+        const data = await res.json().catch(() => ({}));
+        if (data && data.status === 'online') {
+          activeBaseUrl = base;
+          companionOnline = true;
+          lastCheckTime = now;
+          return true;
+        }
       }
     } catch {
       // try next candidate
     }
   }
 
+  activeBaseUrl = null;
   companionOnline = false;
   lastCheckTime = now;
   return false;
@@ -81,6 +96,11 @@ const fetchWithFailover = async (endpointPath, options = {}) => {
         signal: ctrl.signal
       });
       clearTimeout(tid);
+
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('text/html')) {
+        throw new Error("L'endpoint a renvoyé du HTML au lieu d'une API JSON.");
+      }
 
       if (res.ok) {
         activeBaseUrl = base;
