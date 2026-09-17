@@ -164,8 +164,8 @@ ${JSON.stringify(lesson.content, null, 2)}
 /**
  * استدعاء Gemini API
  */
-async function callGemini(prompt, geminiKey, model = 'gemini-3.7-flash') {
-  const cleanModel = (model === '3.7' || model === 'gemini-3.7') ? 'gemini-3.7-flash' : (model === '3.5' || model === 'gemini-3.5') ? 'gemini-3.5-flash' : (model || 'gemini-3.7-flash');
+async function callGemini(prompt, geminiKey, model = 'gemini-2.0-flash') {
+  const cleanModel = (model === '3.7' || model === 'gemini-3.7' || model === 'gemini-1.5-pro' || !model) ? 'gemini-2.0-flash' : (model === '3.5' || model === 'gemini-3.5') ? 'gemini-2.0-flash' : model;
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${geminiKey}`;
 
   const response = await fetch(endpoint, {
@@ -177,7 +177,7 @@ async function callGemini(prompt, geminiKey, model = 'gemini-3.7-flash') {
         temperature: 0.1,
         topK: 40,
         topP: 0.95,
-        maxOutputTokens: 65536,
+        maxOutputTokens: 8192,
         responseMimeType: "application/json"
       },
       safetySettings: [

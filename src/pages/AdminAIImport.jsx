@@ -893,9 +893,10 @@ Pour le champ 'astuce', extrais/résume l'explication officielle fournie dans le
       userPromptText = `${pageNote}Extrais TOUTES les questions QCM de ce document de la première à la toute dernière sans exception, sans aucune omission ni troncature, et retourne le JSON demandé.`;
     }
 
-    let rawModel = (geminiModel || 'gemini-3.7-flash').trim();
-    if (rawModel === '3.7' || rawModel === 'gemini-3.7') rawModel = 'gemini-3.7-flash';
-    if (rawModel === '3.5' || rawModel === 'gemini-3.5') rawModel = 'gemini-3.5-flash';
+    let rawModel = (geminiModel || 'gemini-2.0-flash').trim();
+    if (['gemini-1.5-pro', '3.7', 'gemini-3.7', 'gemini-3.7-flash', 'gemini-3.7-pro', '3.5', 'gemini-3.5', 'gemini-3.5-flash'].includes(rawModel)) {
+      rawModel = 'gemini-2.0-flash';
+    }
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${rawModel}:generateContent?key=${geminiKey}`;
     
     // Create fresh AbortController for this request
@@ -926,7 +927,7 @@ Pour le champ 'astuce', extrais/résume l'explication officielle fournie dans le
       },
       generationConfig: {
         responseMimeType: "application/json",
-        maxOutputTokens: 65536,
+        maxOutputTokens: 8192,
         temperature: 0.1,
         responseSchema: {
           type: "ARRAY",

@@ -1170,9 +1170,10 @@ Pour chaque exercice, activité ou application résolue dans le champ "solution"
 
     // Dynamic model cascade for Gemini with automatic failover & quota resilience
     let userPref = (geminiModel || '').trim();
-    if (userPref === '3.7' || userPref === 'gemini-3.7') userPref = 'gemini-3.7-flash';
-    if (userPref === '3.5' || userPref === 'gemini-3.5') userPref = 'gemini-3.5-flash';
-    const defaultCascade = ['gemini-3.7-flash', 'gemini-3.5-flash', 'gemini-3.7-pro', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-pro', 'gemini-1.5-pro', 'gemini-1.5-flash'];
+    if (['gemini-1.5-pro', 'gemini-3.7', 'gemini-3.7-flash', 'gemini-3.7-pro', '3.7', 'gemini-3.5', 'gemini-3.5-flash', '3.5'].includes(userPref)) {
+      userPref = 'gemini-2.0-flash';
+    }
+    const defaultCascade = ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash-lite'];
     const cascade = Array.from(new Set([userPref, ...defaultCascade].filter(Boolean)));
 
     let lastErr = null;
@@ -1203,7 +1204,7 @@ Pour chaque exercice, activité ou application résolue dans le champ "solution"
         },
         generationConfig: {
           responseMimeType: "application/json",
-          maxOutputTokens: 65536,
+          maxOutputTokens: 8192,
           temperature: 0.1
         }
       };
@@ -1219,7 +1220,7 @@ Pour chaque exercice, activité ou application résolue dans le champ "solution"
           const err = await res.json().catch(() => ({}));
           const msg = err?.error?.message || `Erreur HTTP ${res.status}`;
           const isQuota = (res.status === 429 || /quota|resource_exhausted/i.test(msg));
-          const isNotFound = (res.status === 404);
+          const isNotFound = (res.status === 404 || /not found|not supported/i.test(msg));
 
           if (isNotFound) {
             console.warn(`[Gemini Direct] Model ${modelToUse} not found (404). Trying next fallback...`);
@@ -1264,7 +1265,7 @@ Pour chaque exercice, activité ou application résolue dans le champ "solution"
         lastErr = err;
         console.warn(`[Gemini Direct] Model ${modelToUse} failed:`, err.message);
         if (i < cascade.length - 1) {
-          setProgress(`Bascule automatique du modèle vers le secours suivant...`);
+          setProgress(`Incident sur [${modelToUse}]. Bascule automatique vers le secours suivant...`);
           await new Promise(r => setTimeout(r, 1500));
         }
       }
@@ -2879,14 +2880,11 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
                       value={geminiModel}
                       onChange={e => { setGeminiModel(e.target.value); localStorage.setItem('geminiModel', e.target.value); }}
                     >
-                      <option value="gemini-3.7-flash">Gemini 3.7 Flash (Nouveau - Haute Performance & Vitesse)</option>
-                      <option value="gemini-3.5-flash">Gemini 3.5 Flash (Ultra Rapide & Contexte Large)</option>
-                      <option value="gemini-3.7-pro">Gemini 3.7 Pro (Raisonnement Complexe & Concours)</option>
-                      <option value="gemini-2.5-flash">Gemini 2.5 Flash (Éprouvé - Vitesse & Précision)</option>
-                      <option value="gemini-2.0-flash">Gemini 2.0 Flash (Ultra Rapide)</option>
-                      <option value="gemini-2.5-pro">Gemini 2.5 Pro (Raisonnement approfondi)</option>
-                      <option value="gemini-1.5-pro">Gemini 1.5 Pro (Précision Maximale)</option>
+                      <option value="gemini-2.0-flash">Gemini 2.0 Flash (Recommandé - Ultra Rapide & Précis)</option>
+                      <option value="gemini-2.5-flash">Gemini 2.5 Flash (Haute Performance)</option>
                       <option value="gemini-1.5-flash">Gemini 1.5 Flash (Économique & Léger)</option>
+                      <option value="gemini-2.0-flash-lite">Gemini 2.0 Flash-Lite (Ultra Économique)</option>
+                      <option value="gemini-2.5-pro">Gemini 2.5 Pro (Raisonnement Approfondi)</option>
                     </select>
                   )}
                 </div>

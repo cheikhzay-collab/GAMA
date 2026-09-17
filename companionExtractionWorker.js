@@ -689,16 +689,14 @@ const parseJsonWithResilience = (rawText) => {
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Verified high-performing models per provider (including next-gen 3.7 and 3.5)
+// Verified high-performing models per provider
 const FALLBACK_MODELS = {
   gemini: [
-    'gemini-2.5-flash',
     'gemini-2.0-flash',
+    'gemini-2.5-flash',
     'gemini-1.5-flash',
-    'gemini-1.5-pro',
-    'gemini-2.5-pro',
-    'gemini-3.7-flash',
-    'gemini-3.5-flash'
+    'gemini-2.0-flash-lite',
+    'gemini-2.5-pro'
   ],
   claude: [
     'claude-3-7-sonnet-20250219',
@@ -716,10 +714,11 @@ const resolveModelCascade = (provider, userPreferredModel) => {
   const defaults = FALLBACK_MODELS[provider] || FALLBACK_MODELS.gemini;
   let cleanUser = (userPreferredModel || '').trim();
 
-  // Normalize shorthand aliases for 3.7 and 3.5
+  // Normalize aliases and deprecated models
   if (provider === 'gemini') {
-    if (cleanUser === '3.7' || cleanUser === 'gemini-3.7') cleanUser = 'gemini-3.7-flash';
-    if (cleanUser === '3.5' || cleanUser === 'gemini-3.5') cleanUser = 'gemini-3.5-flash';
+    if (['gemini-1.5-pro', '3.7', 'gemini-3.7', 'gemini-3.7-flash', 'gemini-3.7-pro', '3.5', 'gemini-3.5', 'gemini-3.5-flash'].includes(cleanUser)) {
+      cleanUser = 'gemini-2.0-flash';
+    }
   }
 
   const cascade = [];
@@ -928,7 +927,7 @@ const callGeminiSingleAttempt = async ({ model, base64Data, safeMime, userText, 
     },
     generationConfig: {
       responseMimeType: "application/json",
-      maxOutputTokens: 65536,
+      maxOutputTokens: 8192,
       temperature: 0.1
     }
   };

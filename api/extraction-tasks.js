@@ -125,14 +125,25 @@ async function executeGeminiExtraction({ base64Data, fileType, pageCount, apiKey
   const userText = buildExtractionUserPrompt(pageCount, solveSolutions, preExtractedPdfText);
 
   let userPref = (model || '').trim();
-  if (userPref === '3.7' || userPref === 'gemini-3.7' || userPref === 'gemini-3.7-flash') userPref = 'gemini-2.0-flash';
-  if (userPref === '3.5' || userPref === 'gemini-3.5' || userPref === 'gemini-3.5-flash') userPref = 'gemini-2.0-flash';
-  const defaultCascade = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+  // Map deprecated / nonexistent aliases to robust modern defaults
+  if (['gemini-1.5-pro', 'gemini-3.7', 'gemini-3.7-flash', 'gemini-3.7-pro', '3.7', 'gemini-3.5', 'gemini-3.5-flash', '3.5'].includes(userPref)) {
+    userPref = 'gemini-2.0-flash';
+  }
+
+  // Verified working Google Gemini models in priority order
+  const defaultCascade = [
+    'gemini-2.0-flash',
+    'gemini-2.5-flash',
+    'gemini-1.5-flash',
+    'gemini-2.0-flash-lite'
+  ];
   const cascade = Array.from(new Set([userPref, ...defaultCascade].filter(Boolean)));
 
-  let lastErr = null;
-  for (const modelToUse of cascade) {
+  const failureLog = [];
+  for (let i = 0; i < cascade.length; i++) {
+    const modelToUse = cascade[i];
     try {
+      console.log(`[Server Extraction] Trying model [${modelToUse}] (${i + 1}/${cascade.length})...`);
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${apiKey}`;
       const payload = {
         contents: [
@@ -151,7 +162,7 @@ async function executeGeminiExtraction({ base64Data, fileType, pageCount, apiKey
         systemInstruction: { parts: [{ text: systemContent }] },
         generationConfig: {
           responseMimeType: "application/json",
-          maxOutputTokens: 65536,
+          maxOutputTokens: 8192,
           temperature: 0.1
         }
       };
@@ -164,7 +175,8 @@ async function executeGeminiExtraction({ base64Data, fileType, pageCount, apiKey
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err?.error?.message || `HTTP ${res.status}`);
+        const msg = err?.error?.message || `HTTP ${res.status}`;
+        throw new Error(`[${modelToUse}] ${msg}`);
       }
 
       const data = await res.json();
@@ -174,16 +186,19 @@ async function executeGeminiExtraction({ base64Data, fileType, pageCount, apiKey
         .map(p => p.text || '')
         .join('');
 
-      if (!textParts.trim()) throw new Error('Réponse vide.');
+      if (!textParts.trim()) throw new Error(`Réponse vide retournée par [${modelToUse}].`);
 
       const parsed = parseJsonWithResilience(textParts);
+      console.log(`[Server Extraction] Success with model [${modelToUse}]!`);
       return { parsed, usedModel: modelToUse };
     } catch (err) {
-      lastErr = err;
+      console.warn(`[Server Extraction] Model [${modelToUse}] failed:`, err.message);
+      failureLog.push(err.message);
+      // Automatically proceed to next model in cascade
     }
   }
 
-  throw lastErr || new Error("Tous les modèles ont échoué.");
+  throw new Error(`Tous les modèles de secours ont échoué : ${failureLog.join(' | ')}`);
 }
 
 export default async function handler(req, res) {
