@@ -2,7 +2,16 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Plus, Trash2, Settings, School, KeyRound, Eye, EyeOff, CheckCircle2, Sparkles, RefreshCw, Layers, MousePointerClick, Crown, Download, Sliders, FileText, Camera, MessageCircle, Volume2, BookOpen, Calendar, Palmtree, Pencil, Upload, ExternalLink, ShieldCheck, Cpu, Zap, Globe } from 'lucide-react';
 import { getAllClasses } from '../services/classService';
-import { getAiSettingsConfig, saveAiSettingsConfig } from '../services/schoolService';
+import { 
+  getAiSettingsConfig, 
+  saveAiSettingsConfig,
+  getSchoolHolidaysConfig, 
+  saveSchoolHolidaysConfig, 
+  getTeacherScheduleConfig, 
+  saveTeacherScheduleConfig, 
+  getLogbookStyleConfig, 
+  saveLogbookStyleConfig 
+} from '../services/schoolService';
 import { decodeHtmlEntities } from '../utils/security';
 
 const getSoftColorForClass = (className) => {
@@ -476,12 +485,38 @@ export default function AdminSettings() {
   const [editingHolStart, setEditingHolStart] = useState('');
   const [editingHolEnd, setEditingHolEnd] = useState('');
 
-  const [logbookSaved, setLogbookSaved] = useState(false);
-  const [logbookSubTab, setLogbookSubTab] = useState('timetable'); // 'timetable' | 'holidays' | 'style'
+  // Fetch remote schedule, holidays, and style configuration from cloud on mount
+  useEffect(() => {
+    getSchoolHolidaysConfig().then(cloudHols => {
+      if (Array.isArray(cloudHols) && cloudHols.length > 0) {
+        setLogbookHolidays(cloudHols);
+      }
+    }).catch(() => {});
 
-  // Auto-save holidays to localStorage on state changes
+    getTeacherScheduleConfig().then(cloudSched => {
+      if (cloudSched && typeof cloudSched === 'object' && Object.keys(cloudSched).length > 0) {
+        setLogbookSchedule(cloudSched);
+      }
+    }).catch(() => {});
+
+    getLogbookStyleConfig().then(cloudStyle => {
+      if (cloudStyle && typeof cloudStyle === 'object') {
+        if (cloudStyle.arFont) setLogbookArFont(cloudStyle.arFont);
+        if (cloudStyle.frFont) setLogbookFrFont(cloudStyle.frFont);
+        if (cloudStyle.fontSize) setLogbookFontSize(cloudStyle.fontSize);
+        if (cloudStyle.lineHeight) setLogbookLineHeight(cloudStyle.lineHeight);
+        if (cloudStyle.colorInk) setLogbookColorInk(cloudStyle.colorInk);
+        if (cloudStyle.colorChapter) setLogbookColorChapter(cloudStyle.colorChapter);
+        if (cloudStyle.colorAxis) setLogbookColorAxis(cloudStyle.colorAxis);
+        if (cloudStyle.colorExercise) setLogbookColorExercise(cloudStyle.colorExercise);
+      }
+    }).catch(() => {});
+  }, []);
+
+  // Auto-save holidays to localStorage and Cloud DB on state changes
   useEffect(() => {
     localStorage.setItem('school_holidays', JSON.stringify(logbookHolidays));
+    saveSchoolHolidaysConfig(logbookHolidays).catch(err => console.warn('[AdminSettings] Error syncing holidays:', err));
   }, [logbookHolidays]);
 
   const handleLogbookScheduleChange = (slotKey, field, value) => {
@@ -643,6 +678,21 @@ export default function AdminSettings() {
     localStorage.setItem('logbook_color_chapter', logbookColorChapter);
     localStorage.setItem('logbook_color_axis', logbookColorAxis);
     localStorage.setItem('logbook_color_exercise', logbookColorExercise);
+
+    // Persist to Cloud Database (Neon PostgreSQL & Supabase)
+    saveTeacherScheduleConfig(logbookSchedule).catch(e => console.warn('[AdminSettings] saveTeacherScheduleConfig error:', e));
+    saveSchoolHolidaysConfig(logbookHolidays).catch(e => console.warn('[AdminSettings] saveSchoolHolidaysConfig error:', e));
+    saveLogbookStyleConfig({
+      arFont: logbookArFont,
+      frFont: logbookFrFont,
+      fontSize: logbookFontSize,
+      lineHeight: logbookLineHeight,
+      colorInk: logbookColorInk,
+      colorChapter: logbookColorChapter,
+      colorAxis: logbookColorAxis,
+      colorExercise: logbookColorExercise
+    }).catch(e => console.warn('[AdminSettings] saveLogbookStyleConfig error:', e));
+
     setLogbookSaved(true);
     setTimeout(() => setLogbookSaved(false), 2500);
   };

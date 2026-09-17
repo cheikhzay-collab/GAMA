@@ -12,6 +12,16 @@ import { getAllExams } from '../services/examService';
 import { 
   getLogbookEntries, addLogbookEntry, updateLogbookEntry, deleteLogbookEntry 
 } from '../services/logbookService';
+import { 
+  getSchoolHolidaysConfig, 
+  saveSchoolHolidaysConfig, 
+  getTeacherAbsencesConfig, 
+  saveTeacherAbsencesConfig, 
+  getTeacherScheduleConfig, 
+  saveTeacherScheduleConfig, 
+  getLogbookStyleConfig, 
+  saveLogbookStyleConfig 
+} from '../services/schoolService';
 import { renderWithMath } from '../utils/mathRenderer';
 import { openLogbookPrintWindow } from '../utils/generateLogbookPDF';
 import { normalizeLevel, getLevelDisplayName } from '../utils/levelHelpers';
@@ -357,8 +367,23 @@ export default function AdminLogbook() {
       localStorage.setItem('logbook_color_exercise', tempColorExercise);
       setColorExercise(tempColorExercise);
 
+      // Persist to Cloud Database (Neon PostgreSQL & Supabase)
+      saveTeacherScheduleConfig(tempSchedule).catch(e => console.warn('[Logbook] saveTeacherScheduleConfig error:', e));
+      saveSchoolHolidaysConfig(tempHolidays).catch(e => console.warn('[Logbook] saveSchoolHolidaysConfig error:', e));
+      saveTeacherAbsencesConfig(tempAbsences).catch(e => console.warn('[Logbook] saveTeacherAbsencesConfig error:', e));
+      saveLogbookStyleConfig({
+        arFont: tempArFont,
+        frFont: tempFrFont,
+        fontSize: tempBaseFontSize,
+        lineHeight: tempGridLineHeight,
+        colorInk: tempColorInk,
+        colorChapter: tempColorChapter,
+        colorAxis: tempColorAxis,
+        colorExercise: tempColorExercise
+      }).catch(e => console.warn('[Logbook] saveLogbookStyleConfig error:', e));
+
       setSettingsModalOpen(false);
-      setSuccess(isArMode ? 'تم تحديث الإعدادات والجدول بنجاح!' : 'Paramètres mis à jour avec succès !');
+      setSuccess(isArMode ? 'تم تحديث الإعدادات والجدول بنجاح وحفظها سحابياً!' : 'Paramètres enregistrés avec succès dans le cloud !');
       setTimeout(() => setSuccess(''), 3000);
       
       scanMissingSessions();
@@ -495,7 +520,7 @@ export default function AdminLogbook() {
     initData();
   }, []);
 
-  // Initialize configurations from localStorage on mount
+  // Initialize configurations from local cache and sync with Cloud DB on mount
   useEffect(() => {
     try {
       const sched = localStorage.getItem('teacher_schedule_current');
@@ -516,8 +541,43 @@ export default function AdminLogbook() {
       setColorAxis(localStorage.getItem('logbook_color_axis') || '#2563eb');
       setColorExercise(localStorage.getItem('logbook_color_exercise') || '#d97706');
     } catch (e) {
-      console.error("Error loading schedule settings:", e);
+      console.error("Error loading schedule settings from cache:", e);
     }
+
+    // Fetch latest data from Cloud Database (Neon / Supabase)
+    const syncFromCloud = async () => {
+      try {
+        const [cloudSched, cloudHols, cloudAbs, cloudStyle] = await Promise.all([
+          getTeacherScheduleConfig(),
+          getSchoolHolidaysConfig(),
+          getTeacherAbsencesConfig(),
+          getLogbookStyleConfig()
+        ]);
+
+        if (cloudSched && typeof cloudSched === 'object' && Object.keys(cloudSched).length > 0) {
+          setSchedule(cloudSched);
+        }
+        if (Array.isArray(cloudHols) && cloudHols.length > 0) {
+          setHolidays(cloudHols);
+        }
+        if (Array.isArray(cloudAbs) && cloudAbs.length > 0) {
+          setAbsences(cloudAbs);
+        }
+        if (cloudStyle && typeof cloudStyle === 'object') {
+          if (cloudStyle.arFont) setArFont(cloudStyle.arFont);
+          if (cloudStyle.frFont) setFrFont(cloudStyle.frFont);
+          if (cloudStyle.fontSize) setBaseFontSize(cloudStyle.fontSize);
+          if (cloudStyle.lineHeight) setGridLineHeight(cloudStyle.lineHeight);
+          if (cloudStyle.colorInk) setColorInk(cloudStyle.colorInk);
+          if (cloudStyle.colorChapter) setColorChapter(cloudStyle.colorChapter);
+          if (cloudStyle.colorAxis) setColorAxis(cloudStyle.colorAxis);
+          if (cloudStyle.colorExercise) setColorExercise(cloudStyle.colorExercise);
+        }
+      } catch (err) {
+        console.warn('[AdminLogbook] Cloud config fetch warning:', err);
+      }
+    };
+    syncFromCloud();
   }, []);
 
   // Sync temp states when settings modal opens
