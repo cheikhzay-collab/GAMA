@@ -62,25 +62,376 @@ Ton objectif UNIQUE est de produire un JSON structuré représentant FIDÈLEMENT
      • "2bac_arts"        : 2ème Bac Lettres & Sciences Humaines (الثانية باك آداب)
 
 2. DÉTECTION RIGOUREUSE DU TYPE DE DOCUMENT ET DE L'ARCHITECTURE ("header.doc_type" & "header.is_national_exam") :
-   • 'exercises' : (سلسلة تمارين / Travaux Dirigés TD / Fiche d'exercices / Exercices d'application)
-   • 'national'  : (الامتحان الوطني الموحد الرسمي للبكالوريا - Sujet Officiel d'Examen National)
-   • 'homework'  : (فرض محروس / فرض منزلي / مراقبة مستمرة - Devoir Surveillé DS / Devoir Maison DM)
-   • 'summary'   : (ملخص شامل / ملخص درس / بطاقة ملخص / Résumé de cours / Synthèse de cours)
-   • 'course'    : (درس كامل / بطاقة درس - Fiche de cours)
-   • 'concours'  : (مباراة ولوج الكليات والمدارس العليا - Épreuve de Concours)
+   Tu DOIS IDENTIFIER AVEC PRÉCISION la nature exacte du document parmi ces 5 architectures distinctes :
+
+   • 'exercises' : (سلسلة تمارين / Travaux Dirigés TD / Fiche d'exercices / Exercices d'application / Révision)
+     - Tout document contenant les termes "سلسلة تمارين", "سلسلة رقم", "Série d'exercices", "TD", "Travaux dirigés", "Fiche d'exercices", "تمارين داعمة".
+     - ⚠️ RÈGLE ABSOLUE & CRUCIALE : Même si la série de تمارين porte un titre mentionnant le Baccalauréat ou les examens nationaux (ex: "سلسلة تمارين مقتطفة من الامتحانات الوطنية" ou "Série Préparation Examen National"), son "header.doc_type" EST IMPÉRATIVEMENT 'exercises' et "header.is_national_exam" DOIT ÊTRE false !
+
+   • 'national' : (الامتحان الوطني الموحد الرسمي للبكالوريا - Sujet Officiel d'Examen National)
+     - ⚠️ CETTE ARCHITECTURE EST STRICTEMENT RÉSERVÉE AU SUJET OFFICIEL DE L'EXAMEN NATIONAL DU BACCALAURÉAT imprimé par le Ministère de l'Éducation Nationale (comportant l'en-tête officiel du Royaume du Maroc, le cadre d'examen avec durée, coefficient, code NS/NR, la case triangulaire du sujet, et les consignes officielles).
+     - Dans ce cas UNIQUEMENT : définis "header.doc_type": "national" et "header.is_national_exam": true.
+
+   • 'homework' : (فرض محروس / فرض منزلي / مراقبة مستمرة - Devoir Surveillé DS / Devoir Maison DM / Contrôle Continu)
+     - Tout document de contrôle : "Devoir Surveillé", "DS N°", "فرض محروس", "فرض منزلي", "Contrôle continu".
+     - Définis "header.doc_type": "homework", "header.is_national_exam": false, "header.total_points": 20.
+
+   • 'summary' : (ملخص شامل / ملخص درس / بطاقة ملخص / Résumé de cours / Synthèse de cours)
+     - Tout document condensé récapitulant les définitions, règles, propriétés et exemples d'un cours (ex: "Résumé de cours", "ملخص", "ملخص درس", "Fiche mémo", "Synthèse").
+     - Définis "header.doc_type": "summary" et "header.is_summary": true.
+     - Extrais l'objet "header.summary_meta" avec les informations d'en-tête :
+       - "prof": Nom du professeur avec titre (ex: "Prof : Fayssal el boutkhili")
+       - "website": Site web, lien ou contact (ex: "www.elboutkhili.jimdofree.com")
+       - "title": Titre du résumé (ex: "Résumé de cours 1 : Ensemble ℕ et notion d'arithmétique")
+       - "level_name": Niveau ou filière (ex: "Tronc commun science")
+       - "school": Nom de l'établissement ou lycée (ex: "Lycée ABDE EL MOUMENE")
+     - Organisation en 3 colonnes (Modèle Fiche Résumé) :
+       - Pour chaque section, indique le champ "column" (1, 2, ou 3) pour répartir harmonieusement les notions sur les 3 colonnes du gabarit.
+       - "title": Titre de la notion (ex: "Définitions et notations", "Nombres pairs et impairs", "Multiples d'un entier naturel", etc.).
+       - "content": Texte explicatif, définitions et règles avec formules en LaTeX ($...$).
+       - Les exemples d'application, calculs types, propriétés remarquables et contre-exemples doivent être marqués avec "type": "example" ou "type": "highlight_box" pour être affichés dans les encadrés jaunes signature du modèle.
+
+   • 'course' : (درس كامل / بطاقة درس - Fiche de cours)
+     - Document comportant du cours théorique développé, définitions, théorèmes, activités et démonstrations.
+     - Définis "header.doc_type": "course", "header.is_national_exam": false.
+
+   • 'concours' : (مباراة ولوج الكليات والمدارس العليا - Épreuve de Concours)
+     - Épreuves de concours d'accès (Médecine FMP/FMD, ENSA, ENSAM, CNC, APESA, etc.).
+     - Définis "header.doc_type": "concours", "header.is_national_exam": false.
 
 3. EXTRACTION DU BARÈME DE NOTATION ET DES POINTS ("points" & "header.total_points") :
-   - Dans le "header", indique "total_points": 20 (ou total calculé).
-   - Pour CHAQUE exercice : extrais le nombre numérique de points attribués dans le champ "points".
+   - Si le document est un devoir / contrôle / examen ou s'il contient des mentions de points (ex: (1.5 pts), (2 pts), (0.75 pt), [3 pts], (1,5 ن), (2 ن), (0,75 نقطة)) :
+     • Dans le "header", indique "total_points": 20 (ou la somme totale des points calculée).
+     • Pour CHAQUE exercice ou section (type 'exercise' ou 'activity') :
+       - Extrais le nombre numérique de points attribués dans le champ "points" (ex: 3.5, 2, 1.5, 0.75).
+       - Conserve aussi les mentions de points des sous-questions dans le texte de l'énoncé (ex: "**1.a.** (0.75 pt) Montrer que...").
 
-4. RÈGLE ABSOLUE DE LANGUE — CONSERVATION RIGOUREUSE DE LA LANGUE D'ORIGINE :
-   - Si le fichier est en ARABE : TOUT LE JSON DOIT ÊTRE EN ARABE ! Ne traduis JAMAIS vers le français.
-   - Si le fichier source est en FRANÇAIS : extrais l'intégralité en français.
+4. DÉTAILS DE L'EXAMEN NATIONAL MAROCAIN (UNIQUEMENT SI doc_type === 'national') :
+   - Extrais l'objet "header.national_exam_meta" avec les champs exacts :
+     - "year": Année de l'examen (ex: "2026")
+     - "session": Nom de la session (ex: "الدورة العادية 2026")
+     - "subject": Nom de la matière (ex: "الرياضيات")
+     - "branch": Branche et filière (ex: "مسلك علوم الحياة والأرض ومسلك العلوم الفيزيائية (خيار فرنسية)")
+     - "code": Code du sujet (ex: "NS 22F")
+     - "subject_number": Numéro du sujet dans la case triangulaire (ex: "3")
+     - "duration": Durée de l'épreuve (ex: "3س")
+     - "coefficient": Coefficient de la matière (ex: "7")
+     - "total_pages": Nombre total de pages (ex: 8)
+     - "general_instructions": Tableau des consignes générales (ex: ["L'utilisation d'une calculatrice non programmable est autorisée ;", ...])
+     - "subject_components": Tableau des composantes du sujet [{"name": "Exercice 1", "topic": "Géométrie dans l'espace", "points": "3 points"}, ...]
+     - "notations": Tableau des notations officielles figurant sur la page de garde.
+     - Pour CHAQUE sous-question de chaque exercice, indique les points attribués ("0.5 pt", "0.25 pt", etc.) et conserve les formules mathématiques en LaTeX ($ ... $).
 
-5. LATEX STRICT :
-   - Encadre CHAQUE symbole et formule par $...$ ou $$...$$.
-   - Pas de \\cline (utiliser \\hline).
-   - Utilise \\boxed{...} pour les résultats finaux.
+5. DÉTECTION ET CAPTURE AUTOMATIQUE DES FIGURES GÉOMÉTRIQUES ET COURBES ("figure_bbox") :
+   - Si un exercice, une question ou une partie de cours est accompagné d'une figure géométrique, d'une courbe $(C_f)$, d'un tableau graphique, d'un schéma ou d'un dessin :
+     • Tu DOIS INSÉRER un élément de type "image" dans le tableau "items" à l'emplacement exact où se trouve la figure.
+     • Définis l'objet "figure_bbox" avec les coordonnées de délimitation normalisées sur la page correspondante (échelle 0 à 1000) :
+       {
+         "type": "image",
+         "alt": "Figure : Courbe représentative de la fonction f(x)",
+         "figure_bbox": {
+           "page": 1,        // Numéro de page (1-indexé)
+           "ymin": 250,      // Coordonnée Y supérieure (0-1000)
+           "xmin": 520,      // Coordonnée X gauche (0-1000)
+           "ymax": 680,      // Coordonnée Y inférieure (0-1000)
+           "xmax": 950       // Coordonnée X droite (0-1000)
+         },
+         "width_pct": 80,
+         "align": "center"
+       }
+
+6. 📊 DÉTECTION ET EXTRACTION HAUTE-PRÉCISION DES TABLEAUX & TABLEAUX DE VARIATIONS ("table") :
+   - Si un cours, une activité ou un exercice contient un tableau (Tableau de valeurs, Tableau statistique, Tableau de vérité, Tableau de signes, Tableau de variation de fonction $f(x)$) :
+     • Tu DOIS INSÉRER un élément de type "table" dans le tableau "items" avec la structure JSON exacte :
+       {
+         "type": "table",
+         "title": "Tableau de variation de f(x)",
+         "table_data": {
+           "headers": ["x", "-\\infty", "0", "1", "+\\infty"],
+           "rows": [
+             ["f'(x)", "", "-", "0", "+"],
+             ["f(x)", "+\\infty", "\\searrow", "-2", "\\nearrow"]
+           ]
+         }
+       }
+     • Pour les flèches de variation : utilise impérativement "\\nearrow" (croissante) et "\\searrow" (décroissante).
+     • Pour les valeurs interdites / discontinuités : utilise "||" (double barre).
+     • Pour les zéros sous la dérivée : écris "0".
+     • Chaque cellule doit contenir du LaTeX propre sans balises $ imbriquées.
+
+⚠️ DÉCOUPAGE RIGOUREUX ET EXTRACTION INTÉGRALE DES EXERCICES & SÉRIES DE TEMARINE ("content" & "items") :
+- Il est STRICTEMENT INTERDIT de n'extraire que la première phrase d'un exercice ou d'omettre les questions !
+- Tu DOIS extraire L'ÉNONCÉ INTÉGRAL DE CHAQUE EXERCICE : le texte introductif ET ABSOLUMENT TOUTES LES QUESTIONS ET SOUS-QUESTIONS (1., 2.a., 2.b., 3.a., 3.b., 4., etc.) du début à la fin.
+- Pour CHAQUE exercice (Exercice 1, Exercice 2, etc.) ou section d'exercice / activité :
+  • Le champ "content" DOIT CONTENIR L'ÉNONCÉ COMPLET MULTI-LIGNES avec TOUTES les questions (chacune sur une ligne avec son barème, ex: "**1.a.** (0.5 pt) Montrer que...").
+  • Le tableau "items" DOIT CONTENIR TOUTES LES QUESTIONS ET SOUS-QUESTIONS sous forme d'objets distincts :
+    - { "type": "text", "text": "Préambule/Contexte de l'exercice..." }
+    - { "type": "bullet", "text": "**1.a.** (0.5 pt) Énoncé de la question en LaTeX..." }
+    - { "type": "bullet", "text": "**1.b.** (0.75 pt) ..." }
+    ... et ainsi de suite pour 100% des questions du document.
+
+════════════════════════════════════════════════════════════
+RÈGLE ABSOLUE DE LANGUE — CONSERVATION RIGOUREUSE DE LA LANGUE D'ORIGINE
+════════════════════════════════════════════════════════════
+⚠️ INSTRUCTION DE LANGUE OBLIGATOIRE ET PRIORITAIRE :
+- Tu DOIS CONSERVER STRICTEMENT ET RIGOUREUSEMENT LA LANGUE ORIGINALE DU DOCUMENT SOURCE.
+- Si le fichier / PDF / image est rédigé en ARABE (titres, cours, définitions, théorèmes, activités, questions, exercices, remarques), TOUT LE JSON PRODUIT (titres, sous-titres, texte des items, solutions, remarques) DOIT ÊTRE EN ARABE ! Ne traduis JAMAIS un document arabe en français.
+- Si le fichier source est en FRANÇAIS, extrais l'intégralité en français.
+- Détermine la langue principale du document et indique-la dans le champ "language" du header/metadata JSON ("ar" ou "fr").
+- Ne traduis AUCUN mot, titre, définition ou énoncé d'une langue vers une autre. Le résultat doit respecter à 100% la langue d'origine du fichier importé !
+
+════════════════════════════════════════════════════════════
+✨ EXIGENCES D'EXTRACTION INTELLIGENTE : TENSIIQ, NUMÉROTATION ET CORRECTION LINGUISTIQUE
+════════════════════════════════════════════════════════════
+
+1. ✍️ CORRECTION LINGUISTIQUE, SPELLING ET ERREURS OCR (إصلاح الأخطاء اللغوية والنحوية) :
+   - Tu DOIS corriger AUTOMATIQUEMENT toutes les fautes d'orthographe, de grammaire, de frappe et d'extraction OCR dans le texte source (en arabe ET en français).
+   - En ARABE (العربية) : Corriger les fautes d'orthographe et de frappe (الهمزات: أ/إ/آ/ء, التاء المربوطة والهاء: ة/ه, الألف المقصورة: ى/ي), réparer les mots collés ou tronqués par l'OCR (ex: "الامتحان" au lieu de "ألإمتحان" ou "الامتحـان"), et assurer une syntaxe et une grammaire impeccables.
+   - En FRANÇAIS : Corriger les fautes de frappe, d'accords, de ponctuation et les accents manquants (é, è, à, ç, etc.) provoqués par la numérisation.
+   - Préservation absolue du sens scientifique et mathématique originel.
+
+2. 🔢 NUMÉROTATION INTELLIGENTE ET HARMONIEUSE DES QUESTIONS ET EXERCICES (ترقيم الأسئلة والتمارين) :
+   - Numérote clairement et méthodiquement tous les exercices (Exercice 1, Exercice 2...), toutes les activités (Activité 1, Activité 2...), et toutes les sous-questions (1.a., 1.b., 2.a., 2.b...).
+   - Restitue la hiérarchie exacte des questions et sous-questions de manière ordonnée et sans aucune omission ni numéros manquants.
+
+3. 🎨 TENSIIQ ET FORMATAGE INTELLIGENT DU CONTENU (التنسيق الذكي) :
+   - Applique la syntaxe LaTeX \`$ ... $\` pour TOUT symbole, variable ($x$, $n$, $u_n$, $f(x)$) et expression mathématique inline, et \`$$ ... $$\` pour les équations en bloc.
+   - Structure chaque section pédagogique avec une aération optimale, des titres clairs en gras (\`**...**\`), et des encadrés appropriés pour les définitions et théorèmes.
+
+════════════════════════════════════════════════════════════
+MODÈLE DE COURS MAROCAIN — STRUCTURE HIÉRARCHIQUE OBLIGATOIRE
+════════════════════════════════════════════════════════════
+
+Tout cours de mathématiques marocain suit cette hiérarchie exacte. Tu DOIS la respecter :
+
+┌──────────────────────────────────────────────────────────┐
+│  TITRE DU CHAPITRE (ex: "Barycentre")                    │  → header.fiche_title
+│                                                          │
+│  I. Grand Titre (chiffres romains)                       │  → section_header
+│     ┌────────────────────────────────────────┐           │
+│     │  1. Définition / Sous-titre            │  → title  │
+│     │     ┌──────────────────────────┐       │           │
+│     │     │ ✦ Activité ① / ② / ③   │  section distincte │
+│     │     │ ✦ Définitions :          │  section distincte │
+│     │     │ ✦ Exemple :              │  section distincte │
+│     │     │ ✦ Remarques :            │  section distincte │
+│     │     │ ✦ Propriété :            │  section distincte │
+│     │     │ ✦ Application ① / ② :  │  section distincte │
+│     │     │ ✦ Exercice :             │  section distincte │
+│     │     └──────────────────────────┘                   │
+│     └────────────────────────────────────────┘           │
+│  II. Grand Titre suivant                                 │
+│  III. ...                                                │
+└──────────────────────────────────────────────────────────┘
+
+════════════════════════════════════════════════════════════
+RÈGLES DE MAPPING — CHAQUE BLOC PÉDAGOGIQUE = UNE SECTION
+════════════════════════════════════════════════════════════
+
+▸ ACTIVITÉ (Activité ①, Activité ②, Activité de soutien des prérequis...) :
+  - title: "**Activité ① :** Titre de l'activité" (ou ②, ③, etc.)
+  - type: "activity"
+  - items: tableau d'items "text" ou "bullet" avec TOUTES les sous-questions numérotées (1., 2., a., b., etc.)
+  - Chaque question sur un item séparé. Les sous-questions "a." et "b." sont des items "bullet".
+  - Le texte introductif (ex: "Soient A et B deux points...") est le premier item de type "text".
+  - Inclure l'accent_text pour les phrases mises en évidence (fond orangé dans le manuel).
+
+▸ DÉFINITIONS / DÉFINITION :
+  - title: "**Définitions :**" ou "**Définition :** Nom de la définition"
+  - type: "definition"
+  - items: le contenu va dans un item de type "highlight_box" (fond grisé / encadré dans le manuel).
+  - Respecte les symboles mathématiques officiels : $bar\\{(A;a),(B;b)\\}$, $\\overrightarrow{GA}$, etc.
+  - Les sous-points (•) sont des items "bullet" APRÈS le highlight_box principal.
+
+▸ PROPRIÉTÉ / PROPRIÉTÉS :
+  - title: "**Propriété :** Nom de la propriété" ou "**Propriétés :**"
+  - type: "property"
+  - items: le contenu va dans un item "highlight_box" (encadré dans le manuel).
+  - Si la propriété a un nom (ex: "conservation du barycentre"), l'inclure dans le title.
+
+▸ THÉORÈME :
+  - title: "**Théorème :** Nom du théorème"
+  - type: "theorem"
+  - items: item "highlight_box" pour l'énoncé.
+
+▸ EXEMPLE :
+  - title: "**Exemple :**" ou "**Exemple :** Bref titre"
+  - type: "example"
+  - items: items "text" ou "bullet" avec l'exemple détaillé.
+  - Le texte "O Exemple :" dans le manuel = exactement ce type de section.
+
+▸ REMARQUES / REMARQUE :
+  - title: "**Remarques :**" ou "**Remarque :**"
+  - type: "remark"
+  - items: chaque point "•" est un item "bullet" distinct. Le texte introductif est un item "text".
+
+▸ APPLICATION (Application ①, Application ②...) :
+  - title: "**Application ① :**" (ou ②, ③, etc.)
+  - type: "activity"
+  - content: TOUT le texte de l'application avec les questions numérotées (une par ligne).
+  - solution: résolution détaillée si mode résolution activé, sinon "".
+  - interactive_answers: [] (tableau vide sauf si réponses numériques simples extraites).
+
+▸ EXERCICE (Exercice 1, Exercice 2, Série d'exercices, Devoir, TD) :
+  - title: "**Exercice 1 :**" (ou Exercice 2, Exercice N° X, etc.)
+  - type: "exercise"
+  - points: barème numérique si présent (ex: 3.5), sinon 0
+  - content: L'ÉNONCÉ TOTAL MULTI-LIGNES de l'exercice incluant TOUTES LES QUESTIONS ET SOUS-QUESTIONS (1., 2.a., 2.b., 3., etc.). Ne coupe JAMAIS après la première phrase !
+  - items: Tableau d'items contenant le préambule ("text") ET CHAQUE question numérotée ("bullet") avec son énoncé et son barème.
+  - solution: Résolution détaillée si disponible, sinon "".
+
+▸ TECHNIQUE DE CONSTRUCTION / MÉTHODE :
+  - title: "**Technique de construction :**" ou "**Méthode :**"
+  - type: "content"
+  - items: items "text" décrivant les étapes.
+
+════════════════════════════════════════════════════════════
+EXEMPLE CONCRET — COURS "BARYCENTRE"
+════════════════════════════════════════════════════════════
+
+JSON attendu (extrait) :
+[
+  {
+    "id": "sec-1",
+    "section_header": "I. Barycentre de deux points pondérés",
+    "title": "1. Définition",
+    "type": "content",
+    "section_number": "I",
+    "accent_text": "",
+    "items": [
+      { "type": "text", "text": "Introduction optionnelle si présente dans le document." }
+    ]
+  },
+  {
+    "id": "sec-2",
+    "section_header": "I. Barycentre de deux points pondérés",
+    "title": "**Activité ① :** Soutien des prérequis",
+    "type": "activity",
+    "section_number": "I",
+    "accent_text": "",
+    "items": [
+      { "type": "text", "text": "$ABC$ est un triangle. Soient $I$, $J$ et $K$ trois points du plan tels que $\\\\overrightarrow{AI} = \\\\frac{1}{2}\\\\overrightarrow{AB}$ et $\\\\overrightarrow{AJ} = \\\\frac{2}{5}\\\\overrightarrow{AC}$." },
+      { "type": "bullet", "text": "**1.** Placer les points $I$, $J$ et $K$." }
+    ]
+  },
+  {
+    "id": "ex-1",
+    "section_header": "Exercice 1 : Calcul de limites & Étude de fonction",
+    "title": "**Exercice 1 :** (4 pts)",
+    "type": "exercise",
+    "points": 4,
+    "section_number": "1",
+    "content": "Soit $f$ la fonction numérique définie par $f(x) = \\dfrac{2x^2+x+3}{x-1}$.\\n**1.a.** (1 pt) Déterminer le domaine de définition $D_f$.\\n**1.b.** (1 pt) Calculer $\\lim_{x \\to +\\infty} f(x)$.",
+    "items": [
+      { "type": "text", "text": "Soit $f$ la fonction numérique définie par $f(x) = \\dfrac{2x^2+x+3}{x-1}$." },
+      { "type": "bullet", "text": "**1.a.** (1 pt) Déterminer le domaine de définition $D_f$." },
+      { "type": "bullet", "text": "**1.b.** (1 pt) Calculer $\\lim_{x \\to +\\infty} f(x)$." }
+    ],
+    "solution": "Solution détaillée si disponible, sinon \"\"",
+    "interactive_answers": []
+  }
+]
+
+════════════════════════════════════════════════════════════
+🎯 DIRECTIVES EXIGENCES LATEX HAUTE QUALITÉ & SYMBOLISME RIGOUREUX
+════════════════════════════════════════════════════════════
+
+1. INTÉGRALES & CALCUL INTÉGRAL :
+   - Intégrale définie : $\\int_{a}^{b} f(x) \\, \\mathrm{d}x$ (espace '\\,' et différentielle '\\mathrm{d}x')
+   - Crochet d'intégration : $\\left[ F(x) \\right]_{a}^{b} = F(b) - F(a)$
+
+2. LIMITES & ASYMPTOTES :
+   - Forme canonique : $\\lim_{x \\to a} f(x) = L$ et $\\lim_{x \\to \\pm\\infty} \\frac{f(x)}{x} = l$
+   - Flèches de limite : toujours $\\to$ (jamais -> ou \\rightarrow)
+
+3. VECTEURS, NORMES & GÉOMÉTRIE (MAROC) :
+   - Flèche complète : $\\overrightarrow{AB}$, $\\overrightarrow{u}$ (jamais \\vec{})
+   - Produit vectoriel officiel : $\\overrightarrow{u} \\wedge \\overrightarrow{v}$ (symbole \\wedge)
+   - Produit scalaire : $\\overrightarrow{u} \\cdot \\overrightarrow{v}$ ou $\\overrightarrow{AB} \\cdot \\overrightarrow{AC}$
+   - Norme : $\\left\\| \\overrightarrow{AB} \\right\\|$
+
+4. FRACTIONS ET PARENTHÈSES AUTOSIZE :
+   - Utiliser $\\left( \\dfrac{a}{b} \\right)$, $\\left[ ... \\right]$, $\\left\\{ ... \\right\\}$.
+   - Utiliser $\\dfrac{a}{b}$ pour les fractions principales en mode ligne.
+
+5. ENSEMBLES ET NOTATIONS :
+   - Ensembles officiels : $\\mathbb{R}$, $\\mathbb{N}$, $\\mathbb{Z}$, $\\mathbb{C}$, $\\mathbb{Q}$, $\\mathbb{R}^*$, $\\mathbb{R}_+^*$
+   - Intervalles : $[a; b]$, $]a; b[$, $[a; +\\infty[$ (avec point-virgule)
+   - Systèmes d'équations : $\\begin{cases} ax + by = c \\\\ dx + ey = f \\end{cases}$
+
+6. DOUBLE BACKSLASH DANS LE JSON :
+   - Dans toutes les chaînes JSON, échapper CHAQUE antislash LaTeX avec un double antislash (ex: \\frac → \\\\frac, \\overrightarrow → \\\\overrightarrow, \\neq → \\\\neq).
+   - Formules en ligne: $...$ — Formules en bloc: $$...$$
+
+════════════════════════════════════════════════════════════
+RÈGLE CRITIQUE — EXTRACTION INTÉGRALE DE TOUTES LES PAGES SANS OMISSION
+════════════════════════════════════════════════════════════
+
+⚠️ OBLIGATION D'EXHAUSTIVITÉ ABSOLUE :
+✅ Tu DOIS extraire L'INTÉGRALITÉ ABSOLUE du document du premier mot de la page 1 jusqu'au dernier mot de la toute dernière page.
+✅ Il est STRICTEMENT INTERDIT de t'arrêter au milieu du document, après la première page, ou d'omettre des chapitres ou exercices !
+✅ COURS THÉORIQUES (الدروس) : Extrais CHAQUE définition, théorème, corollaire, propriété, remarque, exemple, démonstration, activité et application sans en omettre aucun.
+✅ SÉRIES D'EXERCICES ET DEVOIRS (سلاسل التمارين والفروض) : Extrais TOUS les exercices sans exception (Exercice 1, Exercice 2, Exercice 3...). Pour chaque exercice, extrais TOUTES les questions et sous-questions (1., 2.a., 2.b., 3., etc.) dans "content" et dans "items".
+✅ Ne résume PAS : copie FIDÈLEMENT tout le texte, formule par formule, ligne par ligne.
+✅ Retourne UNIQUEMENT le JSON brut. Zéro texte avant ou après. Pas de bloc \`\`\`json.
+
+════════════════════════════════════════════════════════════
+SCHÉMA JSON OBLIGATOIRE (STRUCTURE EXACTE ATTENDUE)
+════════════════════════════════════════════════════════════
+
+{
+  "header": {
+    "prep_title": "Titre de la série ou de la préparation si présent, sinon \"\"",
+    "subject": "Matière (ex: Mathématiques)",
+    "fiche_title": "Titre du chapitre ou du devoir (ex: Devoir Surveillé N°1 ou Barycentre)",
+    "teacher": "Nom du professeur si présent, sinon \"\"",
+    "phone": "Téléphone si présent, sinon \"\"",
+    "doc_type": "'course' | 'homework' | 'exercises' | 'concours' | 'national' | 'summary'",
+    "detected_level": "'common_core_sci' | 'common_core_arts' | '1bac_sci' | '1bac_arts' | '2bac_sm' | '2bac_pc_svt' | '2bac_arts'",
+    "total_points": 20
+  },
+  "sections": [
+    {
+      "id": "sec-1",
+      "section_header": "I. Grand titre (chiffres romains)",
+      "title": "1. Sous-titre OU **Activité ① :** titre OU **Définitions :** OU ...",
+      "type": "content | definition | property | theorem | corollary | example | remark | activity",
+      "section_number": "I",
+      "accent_text": "Texte mis en évidence (fond coloré) si présent, sinon \"\"",
+      "items": [
+        { "type": "text", "text": "Paragraphe ou introduction." },
+        { "type": "highlight_box", "text": "Contenu encadré (définition, propriété, théorème)." },
+        { "type": "bullet", "text": "• Point de liste ou sous-question." },
+        {
+          "type": "image",
+          "url": "",
+          "alt": "Légende de la figure",
+          "align": "center",
+          "width_pct": 70
+        }
+      ]
+    },
+    {
+      "id": "ex-1",
+      "section_header": "Exercice 1",
+      "title": "**Exercice 1 :** (4 pts)",
+      "type": "exercise",
+      "points": 4,
+      "section_number": "1",
+      "content": "Énoncé complet multi-lignes de l'exercice avec toutes ses questions.",
+      "items": [
+        { "type": "text", "text": "Contexte de l'exercice..." },
+        { "type": "bullet", "text": "**1.a.** (1 pt) Question..." }
+      ],
+      "solution": "Solution détaillée si disponible, sinon \"\"",
+      "interactive_answers": []
+    }
+  ]
+}
+
+NOTE CRITIQUE SUR LES IMAGES ET FIGURES :
+Si le document contient une figure géométrique, un graphique ou un schéma :
+- Insère un item "image" dans "items" avec figure_bbox { page, xmin, ymin, xmax, ymax } (coordonnées 0 à 1000).
 `;
 
 const MOROCCAN_SOLVE_ADDENDUM = `
@@ -341,14 +692,13 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 // Verified high-performing models per provider (including next-gen 3.7 and 3.5)
 const FALLBACK_MODELS = {
   gemini: [
-    'gemini-3.7-flash',
-    'gemini-3.5-flash',
-    'gemini-3.7-pro',
     'gemini-2.5-flash',
     'gemini-2.0-flash',
-    'gemini-2.5-pro',
+    'gemini-1.5-flash',
     'gemini-1.5-pro',
-    'gemini-1.5-flash'
+    'gemini-2.5-pro',
+    'gemini-3.7-flash',
+    'gemini-3.5-flash'
   ],
   claude: [
     'claude-3-7-sonnet-20250219',
@@ -396,7 +746,7 @@ const waitForQuotaRegeneration = async (seconds, modelName, onProgress) => {
   }
 };
 
-// Strict Document Validation: Ensure output is NOT an empty shell
+// Strict Document Validation & Normalization: Ensure output is structured and non-empty
 const validateExtractedDocument = (parsed) => {
   if (!parsed || typeof parsed !== 'object') {
     throw new Error("Format JSON invalide : aucun objet structuré trouvé.");
@@ -440,7 +790,7 @@ const validateExtractedDocument = (parsed) => {
 
   // Fallback if parsed is directly a single section object
   if (rawSections.length === 0) {
-    if (parsed.content || parsed.questions || parsed.exercice || parsed.title) {
+    if (parsed.content || parsed.questions || parsed.exercice || parsed.title || parsed.enonce) {
       rawSections = [parsed];
     }
   }
@@ -449,17 +799,86 @@ const validateExtractedDocument = (parsed) => {
     throw new Error("Document vide : aucune section ni exercice n'a été extrait par le modèle.");
   }
 
-  // Ensure at least one section has substantial content (not a blank/empty placeholder)
-  const hasSubstantiveContent = rawSections.some(sec => {
-    if (!sec) return false;
-    if (typeof sec === 'string') return sec.trim().length > 15;
-    if (typeof sec !== 'object') return false;
+  // Normalize each section with comprehensive fallbacks for any LLM schema variations
+  const normalizedSections = rawSections.map((sec, idx) => {
+    if (typeof sec === 'string') {
+      return {
+        id: `sec-${idx + 1}`,
+        title: '',
+        content: sec,
+        items: [{ type: 'text', text: sec }],
+        type: 'content',
+        points: '',
+        solution: ''
+      };
+    }
+    if (!sec || typeof sec !== 'object') {
+      return { id: `sec-${idx + 1}`, title: '', content: '', items: [], type: 'content' };
+    }
 
-    const title = (sec.title || sec.section_title || sec.titre || '').trim();
+    const title = sec.title || sec.section_title || sec.titre || sec.name || '';
+    let content = typeof sec.content === 'string' ? sec.content : (
+      typeof sec.enonce === 'string' ? sec.enonce : (
+        typeof sec.body === 'string' ? sec.body : (
+          typeof sec.text === 'string' ? sec.text : (
+            typeof sec.description === 'string' ? sec.description : ''
+          )
+        )
+      )
+    );
+
+    let rawItems = Array.isArray(sec.items) ? sec.items : (Array.isArray(sec.questions) ? sec.questions : []);
+    if (rawItems.length === 0 && Array.isArray(sec.sub_questions)) rawItems = sec.sub_questions;
+
+    const items = rawItems.map(it => {
+      if (typeof it === 'string') return { type: 'text', text: it };
+      if (it && typeof it === 'object') {
+        if (!it.text && it.enonce) return { ...it, text: it.enonce };
+        if (!it.text && it.question) return { ...it, text: it.question };
+        return it;
+      }
+      return { type: 'text', text: String(it || '') };
+    });
+
+    if (items.length > 0 && (!content || content.trim().length < 20)) {
+      content = items.map(it => it.text || (typeof it === 'string' ? it : '')).filter(Boolean).join('\n');
+    } else if (items.length === 0 && content.trim()) {
+      const lines = content.split('\n').map(l => l.trim()).filter(Boolean);
+      items.push(...lines.map(line => {
+        const isBullet = /^(\d+|[a-zA-Z])[.)]|\*\*(\d+|[a-zA-Z])/.test(line);
+        return { type: isBullet ? 'bullet' : 'text', text: line };
+      }));
+    }
+
+    const solution = typeof sec.solution === 'string' ? sec.solution : (
+      typeof sec.corrigé === 'string' ? sec.corrigé : (
+        typeof sec.corrige === 'string' ? sec.corrige : (
+          typeof sec.answer === 'string' ? sec.answer : ''
+        )
+      )
+    );
+
+    const points = sec.points !== undefined && sec.points !== null ? sec.points : (sec.bareme || '');
+
+    return {
+      ...sec,
+      id: sec.id || `sec-${idx + 1}`,
+      title,
+      content,
+      items,
+      type: sec.type || (points ? 'exercise' : 'content'),
+      points,
+      solution
+    };
+  });
+
+  // Ensure at least one section has substantial content
+  const hasSubstantiveContent = normalizedSections.some(sec => {
+    if (!sec) return false;
+    const title = (sec.title || '').trim();
     const content = (typeof sec.content === 'string' ? sec.content : '').trim();
     const solution = (typeof sec.solution === 'string' ? sec.solution : '').trim();
     const items = Array.isArray(sec.items) ? sec.items : [];
-    const questions = Array.isArray(sec.questions) ? sec.questions : [];
 
     const hasItemText = items.some(it => {
       if (!it) return false;
@@ -467,18 +886,21 @@ const validateExtractedDocument = (parsed) => {
       return (it.text && it.text.trim().length > 5) || it.url || it.type === 'table' || it.table_data;
     });
 
-    return title.length > 3 || content.length > 15 || solution.length > 15 || hasItemText || questions.length > 0;
+    return title.length > 3 || content.length > 10 || solution.length > 10 || hasItemText;
   });
 
   if (!hasSubstantiveContent) {
     throw new Error("Document vide : les sections retournées ne contiennent aucun texte, formule ou exercice exploitable.");
   }
 
-  const header = parsed.header || (typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {});
+  const rootMeta = (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {};
+  const nestedHeader = (parsed?.header && typeof parsed.header === 'object' && !Array.isArray(parsed.header)) ? parsed.header : {};
+  const header = { ...rootMeta, ...nestedHeader };
+
   return {
     ...parsed,
     header,
-    sections: rawSections
+    sections: normalizedSections
   };
 };
 

@@ -1827,7 +1827,10 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
   // Helper: Populate Phase 2 form with parsed extraction result
   const loadParsedLesson = (parsed, docName = '') => {
     if (!parsed) return;
-    const header = parsed?.header || (parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {});
+    const rootMeta = (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {};
+    const nestedHeader = (parsed?.header && typeof parsed.header === 'object' && !Array.isArray(parsed.header)) ? parsed.header : {};
+    const header = { ...rootMeta, ...nestedHeader };
+
     let rawSections = [];
     if (Array.isArray(parsed)) {
       rawSections = parsed;
@@ -1852,7 +1855,7 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
     }
 
     if (rawSections.length === 0) {
-      if (parsed.content || parsed.questions || parsed.exercice || parsed.title) {
+      if (parsed.content || parsed.questions || parsed.exercice || parsed.title || parsed.enonce) {
         rawSections = [parsed];
       }
     }
@@ -1906,9 +1909,27 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
     const detectedLvl = header.detected_level || header.level;
     if (detectedLvl) setSelectedLevel(normalizeLevel(detectedLvl));
 
-    let mappedSections = rawSections.map(sec => {
-      const rawItemsList = Array.isArray(sec.items) ? sec.items : [];
-      let content = typeof sec.content === 'string' ? sec.content : '';
+    let mappedSections = rawSections.map((sec, idx) => {
+      if (typeof sec === 'string') {
+        sec = { title: '', content: sec, items: [] };
+      } else if (!sec || typeof sec !== 'object') {
+        sec = { title: '', content: '', items: [] };
+      }
+
+      const title = sec.title || sec.section_title || sec.titre || sec.name || '';
+      let content = typeof sec.content === 'string' ? sec.content : (
+        typeof sec.enonce === 'string' ? sec.enonce : (
+          typeof sec.body === 'string' ? sec.body : (
+            typeof sec.text === 'string' ? sec.text : (
+              typeof sec.description === 'string' ? sec.description : ''
+            )
+          )
+        )
+      );
+
+      const rawItemsList = Array.isArray(sec.items)
+        ? sec.items
+        : (Array.isArray(sec.questions) ? sec.questions : (Array.isArray(sec.sub_questions) ? sec.sub_questions : []));
 
       const items = rawItemsList.map(it => {
         if (typeof it === 'string') {
@@ -1927,6 +1948,9 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
           return { type: 'text', text: it };
         }
         if (it && typeof it === 'object') {
+          if (!it.text && it.enonce) it = { ...it, text: it.enonce };
+          else if (!it.text && it.question) it = { ...it, text: it.question };
+
           if (it.type === 'table' || it.headers || it.table_data || (it.text && it.text.trim().startsWith('|') && it.text.trim().endsWith('|') && it.text.includes('\n'))) {
             const headers = it.table_data?.headers || it.headers || [];
             const rows = it.table_data?.rows || it.rows || [];
@@ -1944,7 +1968,7 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
         return it;
       });
 
-      if (items.length > 0 && (!content || content.trim().length < 30)) {
+      if (items.length > 0 && (!content || content.trim().length < 20)) {
         content = items.map(it => typeof it === 'string' ? it : (it.text || '')).filter(Boolean).join('\n');
       }
       let finalItems = items;
@@ -1956,12 +1980,26 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
         });
       }
 
-      const hasAr = /[\u0600-\u06FF]/.test((sec.title || '') + ' ' + content + ' ' + (sec.solution || '') + ' ' + finalItems.map(it => it.text || '').join(' '));
+      const solution = typeof sec.solution === 'string' ? sec.solution : (
+        typeof sec.corrigé === 'string' ? sec.corrigé : (
+          typeof sec.corrige === 'string' ? sec.corrige : (
+            typeof sec.answer === 'string' ? sec.answer : ''
+          )
+        )
+      );
+
+      const points = sec.points !== undefined && sec.points !== null ? sec.points : (sec.bareme || '');
+      const hasAr = /[\u0600-\u06FF]/.test(title + ' ' + content + ' ' + solution + ' ' + finalItems.map(it => it.text || '').join(' '));
+
       return {
         ...sec,
+        id: sec.id || `sec-${idx + 1}`,
+        title,
         content,
         items: finalItems,
-        points: sec.points !== undefined && sec.points !== null ? sec.points : '',
+        solution,
+        points,
+        type: sec.type || (points ? 'exercise' : 'content'),
         language: sec.language || (hasAr ? 'ar' : 'fr')
       };
     });
@@ -2060,8 +2098,18 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
       if (Array.isArray(secs) && secs.length === 0 && !res.content && !res.questions) {
         throw new Error("Le résultat extrait est vide (0 section). Aucune donnée exploitable à afficher.");
       }
+      const combinedResult = {
+        ...res,
+        header: {
+          fiche_title: fullTask.headerSummary?.ficheTitle,
+          subject: fullTask.headerSummary?.subject,
+          detected_level: fullTask.headerSummary?.detectedLevel,
+          doc_type: fullTask.headerSummary?.docType,
+          ...(res?.header || {})
+        }
+      };
       setTaskUnderReview(fullTask);
-      loadParsedLesson(fullTask.result, fullTask.fileName);
+      loadParsedLesson(combinedResult, fullTask.fileName);
     } catch (err) {
       setError(`Erreur lors du chargement de la fiche : ${err.message}`);
     } finally {
