@@ -388,9 +388,13 @@ export const addLesson = async (lessonData) => {
 
   // 4. Supabase (Legacy non-blocking background sync)
   if (supabase) {
-    supabase.from('lessons').insert(dbLesson).catch(err => {
-      console.warn('[Supabase legacy network notice]:', err.message);
-    });
+    try {
+      Promise.resolve(supabase.from('lessons').insert(dbLesson)).catch(err => {
+        console.warn('[Supabase legacy network notice]:', err?.message);
+      });
+    } catch (err) {
+      console.warn('[Supabase legacy sync notice]:', err?.message);
+    }
   }
 
   return id;
@@ -495,16 +499,17 @@ export const updateLesson = async (lessonId, updates) => {
 
   // 5. Supabase (Legacy non-blocking background sync)
   if (supabase) {
-    supabase
-      .from('lessons')
-      .update(dbUpdates)
-      .eq('id', lessonId)
-      .then(({ error }) => {
-        if (error) console.warn('[Supabase legacy sync notice]:', error.message);
-      })
-      .catch(err => {
-        console.warn('[Supabase legacy network notice]:', err.message);
-      });
+    try {
+      Promise.resolve(supabase.from('lessons').update(dbUpdates).eq('id', lessonId))
+        .then(({ error } = {}) => {
+          if (error) console.warn('[Supabase legacy sync notice]:', error.message);
+        })
+        .catch(err => {
+          console.warn('[Supabase legacy network notice]:', err?.message);
+        });
+    } catch (err) {
+      console.warn('[Supabase legacy sync notice]:', err?.message);
+    }
   }
 
   return { success: true, id: lessonId };
