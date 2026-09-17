@@ -14,6 +14,7 @@ import {
   getExtractionTasks,
   getExtractionTaskById,
   createExtractionTask,
+  updateExtractionTask,
   retryExtractionTask,
   deleteExtractionTask,
   isCompanionAvailable
@@ -2016,7 +2017,85 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
     setPhase(2);
   };
 
-  // Launch asynchronous background tasks for selected files
+
+  // Asynchronous queue processor for Web mode (when local port 5002 companion is offline)
+  const processWebQueueTask = async (task, file, base64Data, preExtractedPdfText, pageCount) => {
+    try {
+      await updateExtractionTask(task.id, {
+        status: 'processing',
+        progressPercent: 25,
+        progressMessage: 'Envoi du document à l\'IA et extraction...'
+      });
+      fetchTasksList();
+
+      let rawText = '';
+      if (provider === 'claude') {
+        rawText = await streamClaudeWithPdf(base64Data, file.type, pageCount);
+      } else if (provider === 'deepseek') {
+        rawText = await fetchDeepSeekWithText(preExtractedPdfText, pageCount);
+      } else {
+        rawText = await fetchGeminiWithPdf(base64Data, file.type, pageCount);
+      }
+
+      await updateExtractionTask(task.id, {
+        status: 'processing',
+        progressPercent: 80,
+        progressMessage: 'Traitement et validation des sections LaTeX...'
+      });
+      fetchTasksList();
+
+      let cleanText = rawText.trim();
+      if (cleanText.includes('</think>')) {
+        cleanText = cleanText.split('</think>').pop().trim();
+      }
+      cleanText = sanitizeLatexJson(cleanText);
+
+      let parsed = null;
+      try {
+        parsed = JSON.parse(extractJsonFromText(cleanText));
+      } catch {
+        try {
+          parsed = JSON.parse(escapeLiteralNewlinesInJson(extractJsonFromText(cleanText)));
+        } catch {
+          parsed = JSON.parse(repairTruncatedJson(escapeUnescapedQuotesInJson(escapeLiteralNewlinesInJson(cleanText))));
+        }
+      }
+
+      if (!parsed) {
+        throw new Error("Impossible de lire la structure JSON retournée par l'IA.");
+      }
+
+      const header = parsed.header || {};
+      const sections = parsed.sections || parsed.items || parsed.exercises || [];
+      const headerSummary = {
+        ficheTitle: header.fiche_title || header.title || file.name,
+        subject: header.subject || 'Mathématiques',
+        detectedLevel: header.detected_level || '2bac_pc_svt',
+        docType: header.doc_type || 'course',
+        sectionsCount: sections.length,
+        extractedWithModel: provider === 'gemini' ? geminiModel : (provider === 'claude' ? claudeModel : deepseekModel)
+      };
+
+      await updateExtractionTask(task.id, {
+        status: 'completed',
+        progressPercent: 100,
+        progressMessage: `Fiche extraite avec succès ! (${sections.length} sections détectées)`,
+        result: parsed,
+        headerSummary
+      });
+      fetchTasksList();
+    } catch (err) {
+      console.error(`[WebQueueTask] Error on task ${task.id}:`, err);
+      await updateExtractionTask(task.id, {
+        status: 'failed',
+        progressPercent: 0,
+        error: err.message,
+        progressMessage: `Échec : ${err.message}`
+      });
+      fetchTasksList();
+    }
+  };
+
   const handleLaunchBackgroundTasks = async () => {
     const filesToQueue = selectedFiles.length > 0 ? selectedFiles : (uploadFile ? [uploadFile] : []);
     if (filesToQueue.length === 0) {
@@ -2059,7 +2138,7 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
 
         const base64Data = await fileToBase64(file);
 
-        await createExtractionTask({
+        const createdTask = await createExtractionTask({
           fileName: file.name,
           fileType: file.type || (isPdf ? 'application/pdf' : 'image/jpeg'),
           pageCount,
@@ -2072,6 +2151,11 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
           deepseekUrl,
           solveSolutions: localStorage.getItem(`${provider}_solve_solutions`) !== 'false'
         });
+
+        // If local companion port 5002 is offline, process via the in-page asynchronous queue runner
+        if (!isCompanionOnline && createdTask && createdTask.id) {
+          processWebQueueTask(createdTask, file, base64Data, preExtractedPdfText, pageCount);
+        }
       }
 
       setSelectedFiles([]);
@@ -2730,18 +2814,18 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.35rem',
-                color: 'var(--emerald)',
+                color: isCompanionOnline ? 'var(--emerald)' : '#38bdf8',
                 fontWeight: 600
               }}>
                 <span style={{
                   width: 8,
                   height: 8,
                   borderRadius: '50%',
-                  background: '#10b981',
-                  boxShadow: '0 0 8px rgba(16, 185, 129, 0.6)',
+                  background: isCompanionOnline ? '#10b981' : '#0284c7',
+                  boxShadow: isCompanionOnline ? '0 0 8px rgba(16, 185, 129, 0.6)' : '0 0 8px rgba(2, 132, 199, 0.6)',
                   display: 'inline-block'
                 }} />
-                Serveur d'arrière-plan actif (Neon Cloud / Local 5002)
+                {isCompanionOnline ? 'Serveur Compagnon actif (port 5002)' : 'File d\'attente Cloud active (Neon DB)'}
               </span>
             </div>
           </div>

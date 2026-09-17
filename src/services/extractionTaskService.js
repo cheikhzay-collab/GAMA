@@ -39,7 +39,7 @@ let companionOnline = null;
 let lastCheckTime = 0;
 
 /**
- * Check if the background extraction server is available (Cloud Neon DB or local Companion)
+ * Check if the local companion server (port 5002) is running for detached offline extraction
  */
 export const isCompanionAvailable = async (forceCheck = false) => {
   const now = Date.now();
@@ -47,20 +47,28 @@ export const isCompanionAvailable = async (forceCheck = false) => {
     return companionOnline;
   }
 
-  const bases = activeBaseUrl ? [activeBaseUrl, ...getCandidateBaseUrls()] : getCandidateBaseUrls();
-  const uniqueBases = Array.from(new Set(bases));
+  const candidateBases = [];
+  if (typeof window !== 'undefined' && window.location) {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isLocalhost) {
+      candidateBases.push('/companion-api');
+    }
+    candidateBases.push('http://localhost:5002');
+    candidateBases.push('http://127.0.0.1:5002');
+  } else {
+    candidateBases.push('http://localhost:5002');
+  }
 
-  for (const base of uniqueBases) {
+  for (const base of candidateBases) {
     try {
       const ctrl = new AbortController();
-      const tid = setTimeout(() => ctrl.abort(), 2500);
-      const pingUrl = base === '' ? '/api/extraction-tasks?action=ping' : `${base}/ping`;
-      const res = await fetch(pingUrl, { signal: ctrl.signal });
+      const tid = setTimeout(() => ctrl.abort(), 1200);
+      const res = await fetch(`${base}/ping`, { signal: ctrl.signal });
       clearTimeout(tid);
       const contentType = res.headers.get('content-type') || '';
       if (res.ok && contentType.includes('application/json')) {
         const data = await res.json().catch(() => ({}));
-        if (data && (data.status === 'online' || data.mode)) {
+        if (data && data.status === 'online') {
           activeBaseUrl = base;
           companionOnline = true;
           lastCheckTime = now;
@@ -68,15 +76,14 @@ export const isCompanionAvailable = async (forceCheck = false) => {
         }
       }
     } catch {
-      // try next candidate
+      // continue
     }
   }
 
-  // If cloud endpoint is reachable, background tasks are always online via Neon DB
-  activeBaseUrl = '';
-  companionOnline = true;
+  activeBaseUrl = null;
+  companionOnline = false;
   lastCheckTime = now;
-  return true;
+  return false;
 };
 
 /**
@@ -239,11 +246,25 @@ export const createExtractionTask = async (taskPayload) => {
     return data.task;
   } catch (err) {
     console.error('[ExtractionTaskService] Failed to create task:', err);
-    const detail = err.message ? ` (${err.message})` : '';
-    throw new Error(
-      `Le serveur compagnon local (port 5002) est indisponible pour exécuter la tâche d'arrière-plan${detail}.\n` +
-      "Veuillez vérifier que le serveur est bien démarré (start-companion.js ou start-all.bat)."
-    );
+    throw err;
+  }
+};
+
+/**
+ * Update task progress and result directly in DB / Companion
+ */
+export const updateExtractionTask = async (id, updates = {}) => {
+  try {
+    const res = await fetchWithFailover(`/api/extraction-tasks?action=update_task&id=${encodeURIComponent(id)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, action: 'update_task', ...updates }),
+      timeout: 10000
+    });
+    return res.ok;
+  } catch (err) {
+    console.warn('[ExtractionTaskService] updateExtractionTask failed:', err.message);
+    return false;
   }
 };
 
