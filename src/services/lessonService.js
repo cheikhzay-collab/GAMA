@@ -143,21 +143,51 @@ const mapLessonToDB = (l) => ({
   updated_at: new Date().toISOString(),
 });
 
+// Helper to parse content JSON safely
+const parseContent = (content) => {
+  if (!content) return {};
+  if (typeof content === 'object') return content;
+  if (typeof content === 'string') {
+    try {
+      return JSON.parse(content);
+    } catch {
+      return {};
+    }
+  }
+  return {};
+};
+
+// Helper to parse schools safely
+const parseSchools = (schools) => {
+  if (Array.isArray(schools)) return schools;
+  if (typeof schools === 'string') {
+    try {
+      const parsed = JSON.parse(schools);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+};
+
 // Helper to map DB columns to lesson fields
 const mapDBToLesson = (row) => {
   if (!row) return null;
+  const parsedContent = parseContent(row.content);
   return {
     id: row.id,
-    title: row.title,
-    subject: row.subject,
-    chapterNumber: row.chapter_number !== undefined ? row.chapter_number : row.chapterNumber,
-    teacher: row.teacher,
-    phone: row.phone,
-    schools: row.schools || [],
-    content: row.content || {},
-    level: row.level || row.content?.level || null,
-    docType: row.docType || row.doc_type || row.content?.doc_type || 'course',
+    title: row.title || parsedContent?.header?.fiche_title || 'Document',
+    subject: row.subject || parsedContent?.header?.subject || '',
+    chapterNumber: row.chapter_number !== undefined ? row.chapter_number : (row.chapterNumber || ''),
+    teacher: row.teacher || parsedContent?.header?.teacher || '',
+    phone: row.phone || parsedContent?.header?.phone || '',
+    schools: parseSchools(row.schools || parsedContent?.header?.schools),
+    content: parsedContent,
+    level: row.level || parsedContent?.level || null,
+    docType: row.docType || row.doc_type || parsedContent?.doc_type || 'course',
     isActive: row.is_active !== undefined ? row.is_active : (row.isActive !== undefined ? row.isActive : true),
+    isArchived: row.is_archived !== undefined ? row.is_archived : (row.isArchived !== undefined ? row.isArchived : false),
     createdAt: row.created_at || row.createdAt,
     updatedAt: row.updated_at || row.updatedAt,
   };
@@ -176,7 +206,10 @@ export const getAllLessons = async (options = {}) => {
     try {
       const neonRes = await neonList('lessons', 500);
       if (Array.isArray(neonRes.data) && neonRes.data.length > 0) {
-        const mapped = neonRes.data.map(mapDBToLesson);
+        // Filter out any ghost/empty rows
+        const validRows = neonRes.data.filter(r => (r.title && r.title !== 'Document') || (r.content?.sections?.length > 0));
+        const listToUse = validRows.length > 0 ? validRows : neonRes.data;
+        const mapped = listToUse.map(mapDBToLesson);
         saveLocalStorageLessons(mapped);
         return mapped;
       }
@@ -212,8 +245,7 @@ export const getAllLessons = async (options = {}) => {
       }
     }
 
-    // 2. Try Local Companion DB API (port 5002)
-    // NOTE: localDb returns lessons in camelCase (as saved), so mapDBToLesson handles both.
+    // 3. Try Local Companion DB API (port 5002)
     try {
       const data = await localDb.get('/lessons');
       if (Array.isArray(data) && data.length > 0) {
@@ -225,13 +257,13 @@ export const getAllLessons = async (options = {}) => {
       console.warn('[LocalDB] Companion server offline, using local storage backup.');
     }
 
-    // 3. Try LocalStorage backup
+    // 4. Try LocalStorage backup
     const localCache = getLocalStorageLessons();
     if (localCache && localCache.length > 0) {
       return localCache.map(mapDBToLesson);
     }
 
-    // 4. Default Seed Fallback
+    // 5. Default Seed Fallback
     saveLocalStorageLessons(INITIAL_SEED_LESSONS);
     return INITIAL_SEED_LESSONS.map(mapDBToLesson);
   }, {
@@ -285,8 +317,29 @@ export const getLessonById = async (lessonId, options = {}) => {
     // 1. Try direct Neon single query
     try {
       const neonRes = await neonGet('lessons', lessonId, 'id');
-      if (neonRes.data) {
-        return mapDBToLesson(neonRes.data);
+      if (neonRes && neonRes.data) {
+        const mapped = mapDBToLesson(neonRes.data);
+        // If content has sections, return immediately
+        if (mapped && mapped.content?.sections && mapped.content.sections.length > 0) {
+          return mapped;
+        }
+        // If sections are missing or empty in Neon, check Supabase fallback to self-heal
+        if (supabase) {
+          try {
+            const { data: sbData } = await supabase
+              .from('lessons')
+              .select('*')
+              .eq('id', lessonId)
+              .maybeSingle();
+            if (sbData && sbData.content?.sections && sbData.content.sections.length > 0) {
+              const healed = mapDBToLesson(sbData);
+              // Background self-heal Neon
+              neonSaveLesson(mapLessonToDB({ ...healed, id: lessonId })).catch(() => {});
+              return healed;
+            }
+          } catch (_) {}
+        }
+        return mapped;
       }
     } catch (neonErr) {
       console.warn(`[Neon] Failed to fetch single lesson ${lessonId}:`, neonErr.message);
@@ -309,13 +362,13 @@ export const getLessonById = async (lessonId, options = {}) => {
       }
     }
 
-    // 2. Try Companion API
+    // 3. Try Companion API
     try {
       const data = await localDb.get(`/lessons/${lessonId}`);
       if (data) return mapDBToLesson(data);
     } catch {}
 
-    // 3. Fallback to cached list
+    // 4. Fallback to cached list
     const allLessons = await getAllLessons();
     const found = allLessons.find(l => l.id === lessonId);
     return found || null;
@@ -444,32 +497,22 @@ export const updateLesson = async (lessonId, updates) => {
   if (updates.level     !== undefined) dbUpdates.level          = updates.level;
   if (updates.docType   !== undefined) dbUpdates.doc_type       = updates.docType;
   if (updates.isActive  !== undefined) dbUpdates.is_active      = updates.isActive;
-  if (updates.content !== undefined || updates.level !== undefined || updates.docType !== undefined) {
+  if (updates.content !== undefined) {
     dbUpdates.content = {
       ...(updates.content || {}),
-      level:    updates.level    || updates.content?.level    || null,
-      doc_type: updates.docType  || updates.content?.doc_type || null
+      ...(updates.level ? { level: updates.level } : {}),
+      ...(updates.docType ? { doc_type: updates.docType } : {})
     };
   }
 
-  // Sync to Neon PostgreSQL
-  // 3. Sync to Neon PostgreSQL (Primary Cloud Database)
+  // 3. Sync ONLY the modified fields to Neon PostgreSQL (Primary Cloud Database)
+  // CRITICAL: Do NOT send placeholder defaults ('Document', {}) which would overwrite valid data!
   try {
-    const fullLesson = updatedRecord || updates;
-    await neonSaveLesson({
+    const { neonUpsert } = await import('../lib/neon');
+    await neonUpsert('lessons', {
       id: lessonId,
-      title: fullLesson.title || updates.title || 'Document',
-      subject: fullLesson.subject || updates.subject || '',
-      chapter_number: fullLesson.chapterNumber || updates.chapterNumber || '',
-      teacher: fullLesson.teacher || updates.teacher || '',
-      phone: fullLesson.phone || updates.phone || '',
-      schools: fullLesson.schools || updates.schools || [],
-      level: fullLesson.level || updates.level || null,
-      doc_type: fullLesson.docType || updates.docType || 'course',
-      content: fullLesson.content || dbUpdates.content || {},
-      is_active: fullLesson.isActive !== undefined ? fullLesson.isActive : true,
-      updated_at: now
-    });
+      ...dbUpdates
+    }, 'id');
   } catch (err) {
     console.warn('[Neon] Error syncing updateLesson:', err.message || err);
   }
