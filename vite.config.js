@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
@@ -59,10 +59,14 @@ function neonDevApiPlugin() {
 }
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [
-    react(),
-    neonDevApiPlugin(),
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  Object.assign(process.env, env);
+
+  return {
+    plugins: [
+      react(),
+      neonDevApiPlugin(),
     VitePWA({
       selfDestroying: true,
       strategies: 'injectManifest',
@@ -217,4 +221,5 @@ export default defineConfig({
       'xlsx',
     ],
   },
-})
+  };
+});

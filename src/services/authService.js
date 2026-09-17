@@ -22,6 +22,15 @@ export const setStoredToken = (token) => {
   } catch (_) {}
 };
 
+const parseJsonResponse = async (response) => {
+  try {
+    const text = await response.text();
+    return JSON.parse(text);
+  } catch (_) {
+    return { error: `Erreur serveur (${response.status})` };
+  }
+};
+
 /**
  * Register a new student account directly in Neon.
  */
@@ -37,7 +46,7 @@ export const registerStudent = async (name, email, password) => {
     }),
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
   if (!response.ok) {
     throw new Error(data.error || "Échec de l'inscription");
   }
@@ -66,7 +75,7 @@ export const loginWithEmail = async (email, password) => {
     }),
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
   if (!response.ok) {
     throw new Error(data.error || 'Échec de la connexion');
   }
@@ -100,7 +109,7 @@ export const getCurrentSessionUser = async () => {
       return null;
     }
 
-    const data = await response.json();
+    const data = await parseJsonResponse(response);
     return data.user || null;
   } catch (err) {
     console.warn('[Auth] Error verifying session:', err.message);

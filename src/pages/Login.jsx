@@ -54,6 +54,8 @@ export default function Login() {
         msg = 'Cette adresse email est déjà enregistrée. Essayez de vous connecter.';
       } else if (msg.includes('Password should be at least')) {
         msg = 'Le mot de passe doit contenir au moins 6 caractères.';
+      } else if (msg.includes('is not valid JSON') || msg.includes('Erreur serveur') || msg.includes('A server error')) {
+        msg = 'Impossible de joindre le serveur ou erreur interne. Veuillez réessayer dans quelques instants.';
       }
       setErrorMsg(msg);
     } finally {

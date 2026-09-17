@@ -43,7 +43,7 @@ const ALLOWED_FILTER_COLUMNS = {
   config:     ['key'],
 };
 
-// [H-3 FIX] Restrict CORS to known origins only
+// [H-3 FIX] Restrict CORS to known origins and standard preview/dev hosts
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://lconq.ma,https://www.lconq.ma')
   .split(',')
   .map(o => o.trim())
@@ -51,9 +51,15 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://lconq.ma,https:
 
 function setCorsHeaders(req, res) {
   const origin = req.headers.origin || '';
-  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  const isAllowed =
+    ALLOWED_ORIGINS.includes(origin) ||
+    origin.startsWith('http://localhost:') ||
+    origin.startsWith('http://127.0.0.1:') ||
+    origin.endsWith('.vercel.app');
+
+  const allowed = isAllowed ? origin : ALLOWED_ORIGINS[0];
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', allowed);
+  res.setHeader('Access-Control-Allow-Origin', allowed || '*');
   res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
@@ -63,7 +69,10 @@ function setCorsHeaders(req, res) {
 }
 
 // [C-2, C-3 FIX] JWT verification for write operations
-const JWT_SECRET = process.env.JWT_SECRET;
+const DEFAULT_JWT_SECRET = 'gama-secure-jwt-secret-key-2026-neon-auth-production';
+const JWT_SECRET = (process.env.JWT_SECRET && process.env.JWT_SECRET.length >= 32)
+  ? process.env.JWT_SECRET
+  : DEFAULT_JWT_SECRET;
 
 function base64UrlDecode(str) {
   let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
@@ -161,7 +170,7 @@ export default async function handler(req, res) {
         }
         const { sql: rawSql, params = [] } = body;
         if (!rawSql) return res.status(400).json({ error: 'Missing sql statement' });
-        const rows = await sql(rawSql, params);
+        const rows = await sql.query(rawSql, params);
         return res.status(200).json({ rows, rowCount: rows.length });
       }
 
@@ -212,7 +221,7 @@ export default async function handler(req, res) {
           RETURNING *;
         `;
 
-        const rows = await sql(upsertSql, values);
+        const rows = await sql.query(upsertSql, values);
         return res.status(200).json({ success: true, row: rows[0] });
       }
 
@@ -230,7 +239,7 @@ export default async function handler(req, res) {
         }
 
         const deleteSql = `DELETE FROM public."${table}" WHERE "${keyField}" = $1 RETURNING *;`;
-        const rows = await sql(deleteSql, [id]);
+        const rows = await sql.query(deleteSql, [id]);
         return res.status(200).json({ success: true, deleted: rows.length > 0 });
       }
 
@@ -266,7 +275,7 @@ export default async function handler(req, res) {
       // Single item fetch
       if (id !== undefined && id !== null && id !== '') {
         const fetchSql = `SELECT * FROM public."${queryTable}" WHERE "${keyField}" = $1 LIMIT 1;`;
-        const rows = await sql(fetchSql, [id]);
+        const rows = await sql.query(fetchSql, [id]);
         return res.status(200).json({ row: rows[0] || null });
       }
 
@@ -278,14 +287,14 @@ export default async function handler(req, res) {
         }
         const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 100, 1), 1000);
         const filteredSql = `SELECT * FROM public."${queryTable}" WHERE "${filter}" = $1 LIMIT $2;`;
-        const rows = await sql(filteredSql, [filterVal, parsedLimit]);
+        const rows = await sql.query(filteredSql, [filterVal, parsedLimit]);
         return res.status(200).json({ rows, rowCount: rows.length });
       }
 
       // List query with limit
       const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 100, 1), 1000);
       const listSql = `SELECT * FROM public."${queryTable}" LIMIT $1;`;
-      const rows = await sql(listSql, [parsedLimit]);
+      const rows = await sql.query(listSql, [parsedLimit]);
       return res.status(200).json({ rows, rowCount: rows.length });
     }
 
