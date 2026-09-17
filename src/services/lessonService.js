@@ -242,12 +242,37 @@ export const getAllLessons = async (options = {}) => {
 };
 
 /**
- * Fetch only active lessons (student view).
+ * Fetch only active lessons (student view) — uses server-side filtering.
+ * This avoids transferring archived/inactive lessons from the DB.
  */
 export const getActiveLessons = async (options = {}) => {
-  const allLessons = await getAllLessons(options);
-  return allLessons.filter(l => l.isActive === true);
+  const { forceRefresh = false } = options;
+
+  return queryCache.fetchWithCache('lessons_active', async () => {
+    // 1. Try Neon with server-side filter (fastest path — avoids full table scan return)
+    try {
+      const { neonListFiltered } = await import('../lib/neon');
+      const neonRes = await neonListFiltered('lessons', 'is_active', true, 500);
+      if (Array.isArray(neonRes.data) && neonRes.data.length > 0) {
+        const mapped = neonRes.data
+          .filter(r => !r.is_archived)
+          .map(mapDBToLesson);
+        return mapped;
+      }
+    } catch (neonErr) {
+      console.warn('[Neon] getActiveLessons filtered error:', neonErr.message);
+    }
+
+    // 2. Fallback: get all and filter
+    const allLessons = await getAllLessons(options);
+    return allLessons.filter(l => l.isActive === true);
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 3,
+    cacheTime: 1000 * 60 * 30,
+  });
 };
+
 
 /**
  * Fetch a single lesson by ID (Direct Single Lookup + Cached).

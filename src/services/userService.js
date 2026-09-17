@@ -10,6 +10,22 @@ import { neonSaveProfile, neonGet, neonList, neonUpsert } from '../lib/neon';
 
 const STORAGE_KEY = 'lconq_users_db';
 
+/**
+ * [C-2/C-3 FIX] Authenticated fetch wrapper for /api/neon POST requests.
+ * Automatically attaches the JWT from localStorage.
+ */
+async function neonAuthFetch(body) {
+  const token = localStorage.getItem('gama_auth_token') || sessionStorage.getItem('gama_auth_token') || '';
+  return fetch('/api/neon', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+}
+
 const getLocalStorageUsers = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -375,26 +391,14 @@ export const getAllProgress = async (uid) => {
     nextReviewDate: row.next_review_date,
   });
 
-  // 1. Try Neon
+  // 1. Try Neon — [M-5 FIX] single filtered GET request (removed useless double-fetch)
   try {
-    const { rows } = await (await fetch(`/api/neon?table=progress&user_id_filter=${encodeURIComponent(uid)}&limit=2000`)).json().catch(() => ({ rows: [] }));
-    // Fallback: use raw SQL via neonUpsert is write-only, so query via POST with raw sql
-    const res = await fetch('/api/neon', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'query',
-        sql: 'SELECT * FROM public.progress WHERE user_id = $1',
-        params: [uid]
-      })
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data.rows) && data.rows.length > 0) {
-        const result = {};
-        data.rows.forEach(row => { result[row.question_id] = mapRow(row); });
-        return result;
-      }
+    const { neonListFiltered } = await import('../lib/neon');
+    const neonRes = await neonListFiltered('progress', 'user_id', uid, 2000);
+    if (Array.isArray(neonRes.data) && neonRes.data.length > 0) {
+      const result = {};
+      neonRes.data.forEach(row => { result[row.question_id] = mapRow(row); });
+      return result;
     }
   } catch (neonErr) {
     console.warn('[Neon] getAllProgress error:', neonErr.message);

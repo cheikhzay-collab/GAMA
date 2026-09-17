@@ -20,7 +20,11 @@ function base64UrlDecode(str) {
   return Buffer.from(base64, 'base64').toString('utf8');
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'gama-secure-jwt-secret-key-2026-neon-auth';
+// [H-1 FIX] No fallback — fail loudly if not configured
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET.length < 32) {
+  throw new Error('FATAL: JWT_SECRET env var must be set and >= 32 characters long.');
+}
 
 function signJWT(payload, expiresInSeconds = 30 * 24 * 3600) {
   const header = { alg: 'HS256', typ: 'JWT' };
@@ -68,31 +72,80 @@ function verifyJWT(token) {
 }
 
 // Password hashing using native PBKDF2 (secure, standard, zero external packages)
+// [M-3 FIX] Raised iterations from 10,000 → 310,000 (NIST SP 800-132 recommendation for SHA-512)
+const PBKDF2_ITERATIONS = 310_000;
+
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString('hex');
-  const hash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+  const hash = crypto.pbkdf2Sync(password, salt, PBKDF2_ITERATIONS, 64, 'sha512').toString('hex');
   return `${salt}:${hash}`;
 }
 
 function verifyPassword(password, stored) {
   if (!stored) return false;
-  // If user has plain password or admin123 default
+  // [H-4 FIX] Removed plain-text comparison fallback — all passwords must be PBKDF2-hashed
   if (!stored.includes(':')) {
-    return password === stored;
+    // Account has legacy/unhashed password — force them to reset (deny login)
+    return false;
   }
-  const [salt, originalHash] = stored.split(':');
-  const hash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
-  return hash === originalHash;
+  const parts = stored.split(':');
+  if (parts.length !== 2) return false;
+  const [salt, originalHash] = parts;
+  // Support both old (10k) and new (310k) iteration counts by checking hash length
+  // Old hashes used 10000 iterations; detect by trying 310k first, fallback to 10k
+  const hashNew = crypto.pbkdf2Sync(password, salt, PBKDF2_ITERATIONS, 64, 'sha512').toString('hex');
+  if (crypto.timingSafeEqual(Buffer.from(hashNew), Buffer.from(originalHash.padEnd(hashNew.length, '0').slice(0, hashNew.length)))) {
+    // Try new iterations
+    return hashNew === originalHash;
+  }
+  // Fallback to legacy 10k iterations (for existing users, will be re-hashed on next login)
+  const hashLegacy = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+  return hashLegacy === originalHash;
 }
 
-export default async function handler(req, res) {
+// [H-5 FIX] Simple in-memory rate limiter for login endpoint
+// Tracks failed attempts per IP — resets after 15 minutes
+const loginAttempts = new Map();
+const RATE_LIMIT_MAX = 10;        // max failed attempts
+const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const entry = loginAttempts.get(ip);
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW) {
+    loginAttempts.set(ip, { count: 1, windowStart: now });
+    return false; // not limited
+  }
+  entry.count++;
+  if (entry.count > RATE_LIMIT_MAX) return true; // blocked
+  return false;
+}
+
+function resetRateLimit(ip) {
+  loginAttempts.delete(ip);
+}
+
+// [H-3 FIX] Restrict CORS to known origins only
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://lconq.ma,https://www.lconq.ma')
+  .split(',')
+  .map(o => o.trim())
+  .filter(Boolean);
+
+function setCorsHeaders(req, res) {
+  const origin = req.headers.origin || '';
+  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', allowed);
+  res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader(
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
   );
+}
+
+export default async function handler(req, res) {
+  setCorsHeaders(req, res);
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -185,8 +238,17 @@ export default async function handler(req, res) {
 
         const normalizedEmail = email.toLowerCase().trim();
 
-        // 1. Hardcoded admin emergency check
-        if (normalizedEmail === 'admin@lconq.ma' && password === 'admin123') {
+        // [H-5] Rate limit check
+        const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
+        if (checkRateLimit(clientIp)) {
+          return res.status(429).json({ error: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.' });
+        }
+
+        // [C-1 FIX] Admin emergency check via environment variables only
+        const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+        const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+        if (ADMIN_EMAIL && ADMIN_PASSWORD && normalizedEmail === ADMIN_EMAIL.toLowerCase() && password === ADMIN_PASSWORD) {
+          resetRateLimit(clientIp);
           const token = signJWT({ uid: 'admin-master', email: normalizedEmail, role: 'admin' });
           return res.status(200).json({
             token,
@@ -222,13 +284,27 @@ export default async function handler(req, res) {
         if (user.password_hash) {
           const isValid = verifyPassword(password, user.password_hash);
           if (!isValid) {
-            return res.status(400).json({ error: 'Mot de passe incorrect.' });
+            // [H-5] Count failed attempt
+            checkRateLimit(clientIp);
+            // [M-4 FIX] Generic error — don't reveal whether user exists or password is wrong
+            return res.status(400).json({ error: 'Identifiants invalides.' });
+          }
+          // Re-hash with new iteration count if using legacy 10k iterations
+          if (user.password_hash.split(':').length === 2) {
+            const legacyHash = crypto.pbkdf2Sync(password, user.password_hash.split(':')[0], 10000, 64, 'sha512').toString('hex');
+            if (legacyHash === user.password_hash.split(':')[1]) {
+              // Upgrade to new iterations silently
+              const upgraded = hashPassword(password);
+              client.query('UPDATE public.profiles SET password_hash = $1 WHERE id = $2;', [upgraded, user.id]).catch(() => {});
+            }
           }
         } else {
-          // If no password set yet, set current password as password_hash automatically
+          // If no password set yet, set current password as password_hash
           const hashed = hashPassword(password);
           await client.query('UPDATE public.profiles SET password_hash = $1 WHERE id = $2;', [hashed, user.id]);
         }
+        // [H-5] Successful login — reset rate limit
+        resetRateLimit(clientIp);
 
         const token = signJWT({ uid: user.id, email: user.email, role: user.role || 'student' });
         return res.status(200).json({
@@ -308,8 +384,9 @@ export default async function handler(req, res) {
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
+    // [M-4 FIX] Log full error server-side, return generic message to client
     console.error('[Neon Auth Error]:', err);
-    return res.status(500).json({ error: err.message || 'Authentication error' });
+    return res.status(500).json({ error: 'Une erreur interne est survenue. Réessayez plus tard.' });
   } finally {
     await client.end().catch(() => {});
   }

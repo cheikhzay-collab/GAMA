@@ -1,11 +1,22 @@
 // src/lib/neon.js
 // Client library for saving and loading data directly from Neon PostgreSQL
 // Runs safely through /api/neon (Serverless Function on Vercel or Vite Dev Middleware)
+// Uses Neon HTTP driver (connection pooling + no TCP overhead)
 
 const API_ENDPOINT = '/api/neon';
 
+/** Read the current session token from storage */
+function getToken() {
+  try {
+    return localStorage.getItem('gama_auth_token') || sessionStorage.getItem('gama_auth_token') || null;
+  } catch (_) {
+    return null;
+  }
+}
+
 /**
  * Low-level API call to /api/neon
+ * Automatically attaches Authorization header if a token is available.
  */
 async function callNeonApi(options = {}) {
   const { method = 'POST', body = null, query = null } = options;
@@ -20,12 +31,13 @@ async function callNeonApi(options = {}) {
     if (qStr) url += `?${qStr}`;
   }
 
-  const fetchOptions = {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  };
+  const headers = { 'Content-Type': 'application/json' };
+
+  // Attach token if available (required for write operations)
+  const token = getToken();
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const fetchOptions = { method, headers };
 
   if (body) {
     fetchOptions.body = JSON.stringify(body);
@@ -39,6 +51,7 @@ async function callNeonApi(options = {}) {
 
   return await response.json();
 }
+
 
 /**
  * Generic Upsert (Insert or Update on conflict) into any table on Neon
@@ -108,6 +121,42 @@ export async function neonList(table, limit = 200) {
     const result = await callNeonApi({
       method: 'GET',
       query: { table, limit },
+    });
+    return { data: result.rows || [], error: null };
+  } catch (err) {
+    return { data: [], error: err };
+  }
+}
+
+/**
+ * List table rows with server-side filtering (avoids fetching all rows)
+ * @param {string} table - Table name
+ * @param {string} filter - Column name to filter on
+ * @param {string|boolean} filterVal - Value to filter by
+ * @param {number} limit - Max rows to return
+ */
+export async function neonListFiltered(table, filter, filterVal, limit = 500) {
+  try {
+    const result = await callNeonApi({
+      method: 'GET',
+      query: { table, filter, filterVal: String(filterVal), limit },
+    });
+    return { data: result.rows || [], error: null };
+  } catch (err) {
+    return { data: [], error: err };
+  }
+}
+
+/**
+ * Execute a raw SQL query via the API (for complex queries)
+ * @param {string} sql - SQL statement with $1, $2... placeholders
+ * @param {Array} params - Query parameters
+ */
+export async function neonQuery(sql, params = []) {
+  try {
+    const result = await callNeonApi({
+      method: 'POST',
+      body: { action: 'query', sql, params },
     });
     return { data: result.rows || [], error: null };
   } catch (err) {
@@ -196,6 +245,8 @@ export default {
   neonDelete,
   neonGet,
   neonList,
+  neonListFiltered,
+  neonQuery,
   neonSaveConfig,
   neonGetConfig,
   neonSaveLesson,
