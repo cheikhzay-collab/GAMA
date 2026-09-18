@@ -3218,28 +3218,42 @@ html[dir="rtl"] .homework-content-cell {
     <span class="print-hint-icon">🖨️</span>
     <div class="print-hint-text">
       ${isArabic
-        ? '<strong style="color:#38bdf8">الملف جاهز للطباعة أو الحفظ كـ PDF</strong><br><span>اضغط على <b>Ctrl+P</b> للطباعة. يمكنك التبديل الفوري بين النموذج العصري والكلاسيكي أدناه.</span>'
-        : '<strong>Fiche prête pour impression / Export PDF</strong><br><span>Appuyez sur <b>Ctrl+P</b>. Vous pouvez basculer entre le style Moderne Pro et le style Classique à tout moment.</span>'
+        ? '<strong style="color:#38bdf8">الملف جاهز للطباعة أو الحفظ كـ PDF</strong><br><span>اضغط على <b>Ctrl+P</b> للطباعة.</span>'
+        : '<strong>Fiche prête pour impression / Export PDF</strong><br><span>Appuyez sur <b>Ctrl+P</b>. Les boutons ci-dessous modifient la mise en page en temps réel.</span>'
       }
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+  <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
     ${isExercises ? `
     <div class="style-toggle-container">
-      <span style="font-size:0.75rem;color:rgba(255,255,255,0.8);font-weight:700;">${isArabic ? 'الأعمدة:' : 'Colonnes:'}</span>
-      <button class="hint-style-btn ${columnsCount === 1 ? 'active' : ''}" onclick="setSeriesColumns(1)">1 ${isArabic ? 'عمود' : 'Col'}</button>
-      <button class="hint-style-btn ${columnsCount === 2 ? 'active' : ''}" onclick="setSeriesColumns(2)">2 ${isArabic ? 'عمودين' : 'Cols'}</button>
-      <button class="hint-style-btn ${columnsCount === 3 ? 'active' : ''}" onclick="setSeriesColumns(3)">3 ${isArabic ? 'أعمدة' : 'Cols'}</button>
+      <span style="font-size:0.72rem;color:rgba(255,255,255,0.85);font-weight:700;">${isArabic ? 'الأعمدة:' : 'Colonnes:'}</span>
+      <button id="colBtn1" class="hint-style-btn ${columnsCount === 1 ? 'active' : ''}" onclick="setSeriesColumns(1)">1 ${isArabic ? 'عمود' : 'Col'}</button>
+      <button id="colBtn2" class="hint-style-btn ${columnsCount === 2 ? 'active' : ''}" onclick="setSeriesColumns(2)">2 ${isArabic ? 'عمودين' : 'Cols'}</button>
+      <button id="colBtn3" class="hint-style-btn ${columnsCount === 3 ? 'active' : ''}" onclick="setSeriesColumns(3)">3 ${isArabic ? 'أعمدة' : 'Cols'}</button>
     </div>` : ''}
     <div class="style-toggle-container">
-      <span style="font-size:0.75rem;color:rgba(255,255,255,0.8);font-weight:700;">${isArabic ? 'الحلول:' : 'Solutions:'}</span>
+      <span style="font-size:0.72rem;color:rgba(255,255,255,0.85);font-weight:700;">${isArabic ? 'الحلول:' : 'Solutions:'}</span>
       <button id="btnSolAvec" class="hint-style-btn ${showSolutions ? 'active' : ''}" onclick="setSeriesSolutions(true)">${isArabic ? 'مع الحلول' : 'Avec'}</button>
       <button id="btnSolSans" class="hint-style-btn ${!showSolutions ? 'active' : ''}" onclick="setSeriesSolutions(false)">${isArabic ? 'بدون' : 'Sans'}</button>
     </div>
     <div class="style-toggle-container">
-      <span style="font-size:0.75rem;color:rgba(255,255,255,0.8);font-weight:700;">${isArabic ? 'النموذج:' : 'Style:'}</span>
-      <button class="hint-style-btn ${isModernPro ? 'active' : ''}" onclick="setSeriesStyle('modern_pro_2026')">✨ ${isArabic ? 'عصري برو' : 'Moderne Pro'}</button>
-      <button class="hint-style-btn ${!isModernPro ? 'active' : ''}" onclick="setSeriesStyle('classic_original')">🏛️ ${isArabic ? 'كلاسيكي أصلي' : 'Classique'}</button>
+      <span style="font-size:0.72rem;color:rgba(255,255,255,0.85);font-weight:700;">${isArabic ? 'النموذج:' : 'Style:'}</span>
+      <button id="btnStyleModern" class="hint-style-btn ${isModernPro ? 'active' : ''}" onclick="setSeriesStyle('modern_pro_2026')">✨ ${isArabic ? 'عصري' : 'Moderne Pro'}</button>
+      <button id="btnStyleClassic" class="hint-style-btn ${!isModernPro ? 'active' : ''}" onclick="setSeriesStyle('classic_original')">🏛️ ${isArabic ? 'كلاسيكي' : 'Classique'}</button>
+    </div>
+    <!-- Font size control -->
+    <div class="style-toggle-container" style="gap:0.35rem;">
+      <span style="font-size:0.72rem;color:rgba(255,255,255,0.85);font-weight:700;">${isArabic ? 'الخط:' : 'Police:'}</span>
+      <button class="hint-style-btn" onclick="adjustFontSize(-0.5)" title="Réduire la taille">A−</button>
+      <span id="fontSizeDisplay" style="font-size:0.72rem;color:#fff;min-width:2.5rem;text-align:center;font-weight:700;">10pt</span>
+      <button class="hint-style-btn" onclick="adjustFontSize(0.5)" title="Augmenter la taille">A+</button>
+    </div>
+    <!-- Line spacing control -->
+    <div class="style-toggle-container" style="gap:0.35rem;">
+      <span style="font-size:0.72rem;color:rgba(255,255,255,0.85);font-weight:700;">${isArabic ? 'الفراغ:' : 'Interligne:'}</span>
+      <button class="hint-style-btn" onclick="adjustLineHeight(-0.1)" title="Réduire l'interligne">↑↓−</button>
+      <span id="lineHeightDisplay" style="font-size:0.72rem;color:#fff;min-width:2.2rem;text-align:center;font-weight:700;">1.5</span>
+      <button class="hint-style-btn" onclick="adjustLineHeight(0.1)" title="Augmenter l'interligne">↑↓+</button>
     </div>
     <button class="hint-badge" onclick="printNow()">${isArabic ? '⚡ طباعة' : '⚡ Imprimer'}</button>
   </div>
@@ -3393,6 +3407,19 @@ html[dir="rtl"] .homework-content-cell {
 </div>
 
 <script>
+// ── State ────────────────────────────────────────────────────────────────────
+var _currentFontSize = parseFloat(localStorage.getItem('pdf_font_size_pt') || '10');
+var _currentLineHeight = parseFloat(localStorage.getItem('pdf_line_height') || '1.5');
+
+// ── Helper: toggle active class within a sibling group ──────────────────────
+function _setActiveBtn(activeId, groupIds) {
+  groupIds.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('active', id === activeId);
+  });
+}
+
+// ── Colonnes ─────────────────────────────────────────────────────────────────
 function setSeriesColumns(cols) {
   try {
     localStorage.setItem('pdf_series_columns', cols);
@@ -3403,59 +3430,69 @@ function setSeriesColumns(cols) {
       else if (cols === 3) container.classList.add('exercises-three-columns');
       else container.classList.add('exercises-two-columns');
     }
-    // Update button active states
-    var allBtns = document.querySelectorAll('#colBtn1,#colBtn2,#colBtn3');
-    allBtns.forEach(function(b){ b.classList.remove('active'); });
-    var activeBtn = document.getElementById('colBtn' + cols);
-    if (activeBtn) activeBtn.classList.add('active');
-  } catch (err) {
-    console.error(err);
-  }
+    _setActiveBtn('colBtn' + cols, ['colBtn1','colBtn2','colBtn3']);
+  } catch (err) { console.error(err); }
 }
+
+// ── Solutions ─────────────────────────────────────────────────────────────────
 function setSeriesSolutions(val) {
   try {
     localStorage.setItem('pdf_series_solutions', val);
-    if (val) {
-      document.body.classList.remove('hide-solutions');
-    } else {
-      document.body.classList.add('hide-solutions');
-    }
-    var bAvec = document.getElementById('btnSolAvec');
-    var bSans = document.getElementById('btnSolSans');
-    if (bAvec) bAvec.className = 'hint-style-btn ' + (val ? 'active' : '');
-    if (bSans) bSans.className = 'hint-style-btn ' + (!val ? 'active' : '');
-  } catch (err) {
-    console.error(err);
-  }
+    if (val) document.body.classList.remove('hide-solutions');
+    else document.body.classList.add('hide-solutions');
+    _setActiveBtn(val ? 'btnSolAvec' : 'btnSolSans', ['btnSolAvec','btnSolSans']);
+  } catch (err) { console.error(err); }
 }
+
+// ── Style (Modern Pro / Classique) ────────────────────────────────────────────
 function setSeriesStyle(style) {
   try {
     localStorage.setItem('pdf_series_style', style);
-    // [FIX] window.location.reload() on about:blank wipes the page.
-    // Re-generate by reading the stored HTML from parent or localStorage.
-    var stored = localStorage.getItem('print_html_series');
-    if (stored) {
-      document.open();
-      document.write(stored);
-      document.close();
-    } else if (window.opener && window.opener._regeneratePrintHTML) {
-      // Ask parent window to regenerate with new style
-      window.opener._regeneratePrintHTML(window, style);
-    } else {
-      // Fallback: toggle CSS class on page-content without reload
-      var pc = document.querySelector('.page-content');
-      if (pc) {
-        if (style === 'modern_pro_2026') {
-          pc.classList.add('modern-pro-layout');
-        } else {
-          pc.classList.remove('modern-pro-layout');
-        }
-      }
+    var pc = document.querySelector('.page-content');
+    if (pc) {
+      if (style === 'modern_pro_2026') pc.classList.add('modern-pro-layout');
+      else pc.classList.remove('modern-pro-layout');
     }
-  } catch (err) {
-    console.error(err);
-  }
+    // Toggle header visibility
+    var modernHeader = document.querySelector('.fiche-header-modern-pro');
+    var classicHeader = document.querySelector('.fiche-header');
+    if (modernHeader) modernHeader.style.display = (style === 'modern_pro_2026') ? '' : 'none';
+    if (classicHeader) classicHeader.style.display = (style === 'classic_original') ? '' : 'none';
+    // Modern footer
+    var modernFooter = document.querySelector('.fiche-footer-modern-pro');
+    var classicFooter = document.querySelector('.fiche-footer');
+    if (modernFooter) modernFooter.style.display = (style === 'modern_pro_2026') ? '' : 'none';
+    if (classicFooter) classicFooter.style.display = (style === 'classic_original') ? '' : 'none';
+    _setActiveBtn(style === 'modern_pro_2026' ? 'btnStyleModern' : 'btnStyleClassic', ['btnStyleModern','btnStyleClassic']);
+  } catch (err) { console.error(err); }
 }
+
+// ── Font Size ─────────────────────────────────────────────────────────────────
+function adjustFontSize(delta) {
+  try {
+    _currentFontSize = Math.max(7, Math.min(16, Math.round((_currentFontSize + delta) * 10) / 10));
+    localStorage.setItem('pdf_font_size_pt', _currentFontSize);
+    // Apply to page-content and all exercise/section text
+    var pc = document.querySelector('.page-content');
+    if (pc) pc.style.fontSize = _currentFontSize + 'pt';
+    var display = document.getElementById('fontSizeDisplay');
+    if (display) display.textContent = _currentFontSize + 'pt';
+  } catch (err) { console.error(err); }
+}
+
+// ── Line Height ───────────────────────────────────────────────────────────────
+function adjustLineHeight(delta) {
+  try {
+    _currentLineHeight = Math.max(1.0, Math.min(3.0, Math.round((_currentLineHeight + delta) * 10) / 10));
+    localStorage.setItem('pdf_line_height', _currentLineHeight);
+    var pc = document.querySelector('.page-content');
+    if (pc) pc.style.lineHeight = _currentLineHeight;
+    var display = document.getElementById('lineHeightDisplay');
+    if (display) display.textContent = _currentLineHeight.toFixed(1);
+  } catch (err) { console.error(err); }
+}
+
+// ── Print ─────────────────────────────────────────────────────────────────────
 async function printNow() {
   await document.fonts.ready;
   await new Promise(r => setTimeout(r, 600));
@@ -3464,6 +3501,20 @@ async function printNow() {
   window.print();
   if (hint) hint.style.display = 'flex';
 }
+
+// ── Init: restore saved font size & line height on page load ─────────────────
+(function init() {
+  var pc = document.querySelector('.page-content');
+  if (pc) {
+    pc.style.fontSize = _currentFontSize + 'pt';
+    pc.style.lineHeight = _currentLineHeight;
+  }
+  var fDisplay = document.getElementById('fontSizeDisplay');
+  if (fDisplay) fDisplay.textContent = _currentFontSize + 'pt';
+  var lDisplay = document.getElementById('lineHeightDisplay');
+  if (lDisplay) lDisplay.textContent = _currentLineHeight.toFixed(1);
+})();
+
 // Auto-print when ready
 printNow();
 </script>
