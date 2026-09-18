@@ -3403,12 +3403,11 @@ function setSeriesColumns(cols) {
       else if (cols === 3) container.classList.add('exercises-three-columns');
       else container.classList.add('exercises-two-columns');
     }
-    // Update button active states in hint bar
-    var buttons = document.querySelectorAll('.style-toggle-container button');
-    // If reload is supported, also reload
-    if (window.location && window.location.href && !window.location.href.startsWith('about:')) {
-      window.location.reload();
-    }
+    // Update button active states
+    var allBtns = document.querySelectorAll('#colBtn1,#colBtn2,#colBtn3');
+    allBtns.forEach(function(b){ b.classList.remove('active'); });
+    var activeBtn = document.getElementById('colBtn' + cols);
+    if (activeBtn) activeBtn.classList.add('active');
   } catch (err) {
     console.error(err);
   }
@@ -3432,7 +3431,27 @@ function setSeriesSolutions(val) {
 function setSeriesStyle(style) {
   try {
     localStorage.setItem('pdf_series_style', style);
-    window.location.reload();
+    // [FIX] window.location.reload() on about:blank wipes the page.
+    // Re-generate by reading the stored HTML from parent or localStorage.
+    var stored = localStorage.getItem('print_html_series');
+    if (stored) {
+      document.open();
+      document.write(stored);
+      document.close();
+    } else if (window.opener && window.opener._regeneratePrintHTML) {
+      // Ask parent window to regenerate with new style
+      window.opener._regeneratePrintHTML(window, style);
+    } else {
+      // Fallback: toggle CSS class on page-content without reload
+      var pc = document.querySelector('.page-content');
+      if (pc) {
+        if (style === 'modern_pro_2026') {
+          pc.classList.add('modern-pro-layout');
+        } else {
+          pc.classList.remove('modern-pro-layout');
+        }
+      }
+    }
   } catch (err) {
     console.error(err);
   }
@@ -3448,6 +3467,7 @@ async function printNow() {
 // Auto-print when ready
 printNow();
 </script>
+
 </body>
 </html>`;
 };
@@ -3502,6 +3522,19 @@ export const openLessonPrintWindow = (lesson, settings = {}) => {
     return;
   }
   try {
+    // [FIX] Store the HTML so the print window can re-write itself on style changes
+    // (window.location.reload() wipes about:blank pages that used document.write)
+    try { localStorage.setItem('print_html_series', html); } catch(_) {}
+
+    // Expose regeneration function so child window can request a new render
+    window._regeneratePrintHTML = (childWin, newStyle) => {
+      const newHtml = generateLessonHTML(lesson, { ...settings, style: newStyle });
+      try { localStorage.setItem('print_html_series', newHtml); } catch(_) {}
+      childWin.document.open();
+      childWin.document.write(newHtml);
+      childWin.document.close();
+    };
+
     win.document.open();
     win.document.write(html);
     win.document.close();
