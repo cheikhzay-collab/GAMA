@@ -3160,7 +3160,18 @@ html[dir="rtl"] .section-header-row {
     page-break-after: avoid !important;
     -webkit-column-break-after: avoid !important;
   }
-  .fiche-footer-modern-pro {
+  .exercises-one-column {
+    display: block !important;
+    column-count: 1 !important;
+    width: 100% !important;
+  }
+  .modern-pro-layout .fiche-header-modern-pro {
+    display: flex !important;
+  }
+  .modern-pro-layout .fiche-header {
+    display: none !important;
+  }
+  .modern-pro-layout .fiche-footer-modern-pro {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
@@ -3173,12 +3184,40 @@ html[dir="rtl"] .section-header-row {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
+  .modern-pro-layout .fiche-footer {
+    display: none !important;
+  }
+  .page-content:not(.modern-pro-layout) .fiche-header-modern-pro,
+  .page-content:not(.modern-pro-layout) .fiche-footer-modern-pro {
+    display: none !important;
+  }
+  .page-content:not(.modern-pro-layout) .fiche-header {
+    display: flex !important;
+  }
+  .page-content:not(.modern-pro-layout) .fiche-footer {
+    display: block !important;
+  }
   body.hide-solutions .solution-block,
   body.hide-solutions .homework-solution-row,
   body.hide-solutions .modern-solution-block {
     display: none !important;
   }
 }
+.exercises-one-column {
+  display: block !important;
+  column-count: 1 !important;
+  width: 100% !important;
+}
+.modern-pro-layout .fiche-header-modern-pro { display: flex !important; }
+.modern-pro-layout .fiche-header { display: none !important; }
+.modern-pro-layout .fiche-footer-modern-pro { display: flex !important; }
+.modern-pro-layout .fiche-footer { display: none !important; }
+
+.page-content:not(.modern-pro-layout) .fiche-header-modern-pro { display: none !important; }
+.page-content:not(.modern-pro-layout) .fiche-header { display: flex !important; }
+.page-content:not(.modern-pro-layout) .fiche-footer-modern-pro { display: none !important; }
+.page-content:not(.modern-pro-layout) .fiche-footer { display: block !important; }
+
 .homework-content-header {
   font-size: 1.02rem;
   display: flex;
@@ -3261,10 +3300,9 @@ html[dir="rtl"] .homework-content-cell {
 
 <div class="page-content ${isModernPro ? 'modern-pro-layout' : ''}">
   <!-- HEADER -->
-  ${(isExercises || isHomework) ? (
-    isModernPro ? `
+  ${(isExercises || isHomework) ? `
   <!-- MODERN PRO 2026 HEADER: exercises and homework -->
-  <div class="fiche-header-modern-pro" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>
+  <div class="fiche-header-modern-pro" style="${isModernPro ? 'display:flex;' : 'display:none;'} ${isArabic ? `font-family:${arabicFontFamily};` : ''}">
     <div class="modern-header-col modern-header-left">
       ${teacher ? `<div class="modern-header-row"><span class="modern-meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="modern-meta-label">${isArabic ? 'الأستاذ' : 'Prof'} :</span> <strong class="modern-meta-val">${esc(formatTeacherName(teacher))}</strong></div>` : ''}
       <div class="modern-header-row"><span class="modern-meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="modern-meta-label">${isArabic ? 'السنة الدراسية' : 'A.S'} :</span> <span class="modern-meta-val">${new Date().getFullYear() - 1}/${new Date().getFullYear()}</span></div>
@@ -3290,9 +3328,9 @@ html[dir="rtl"] .homework-content-cell {
       </a>
     </div>
   </div>
-  ` : `
+
   <!-- CLASSIC ORIGINAL HEADER: exercises and homework -->
-  <div class="fiche-header" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>
+  <div class="fiche-header" style="${!isModernPro ? 'display:flex;' : 'display:none;'} ${isArabic ? `font-family:${arabicFontFamily};` : ''}">
     <div class="hcell h-left">
       ${teacher ? `<div class="header-info-row"><span class="info-label">${isArabic ? 'الأستاذ' : 'Prof'} :</span><strong class="info-val">${esc(formatTeacherName(teacher))}</strong></div>` : ''}
       <div class="header-info-row"><span class="info-label">${isArabic ? 'السنة الدراسية' : 'A.S'} :</span><span class="info-val">${new Date().getFullYear() - 1}/${new Date().getFullYear()}</span></div>
@@ -3315,7 +3353,7 @@ html[dir="rtl"] .homework-content-cell {
       </a>
     </div>
   </div>
-  `) : `
+  ` : `
   <!-- CLASSIC HEADER: lessons / courses -->
   <table class="fiche-pedagogique-header">
     <tr>
@@ -3391,8 +3429,7 @@ html[dir="rtl"] .homework-content-cell {
   </div>
 
   <!-- FOOTER -->
-  ${isModernPro ? `
-  <div class="fiche-footer-modern-pro">
+  <div class="fiche-footer-modern-pro" style="${isModernPro ? 'display:flex;' : 'display:none;'}">
     <div class="footer-meta-left">
       <span>${esc(teacher || (isArabic ? 'الأستاذ' : 'L\'CONQ'))}</span>
       ${schools.length ? ` · <span>${esc(schools[0])}</span>` : ''}
@@ -3403,13 +3440,19 @@ html[dir="rtl"] .homework-content-cell {
     <div class="footer-meta-right">
       <span>${esc(levelText || "L'CONQ ACADÉMIE")}</span>
     </div>
-  </div>` : '<div class="fiche-footer" style="display:none"></div>'}
+  </div>
+  <div class="fiche-footer" style="${!isModernPro ? 'display:block;' : 'display:none;'}"></div>
 </div>
 
 <script>
 // ── State ────────────────────────────────────────────────────────────────────
 var _currentFontSize = parseFloat(localStorage.getItem('pdf_font_size_pt') || '10');
 var _currentLineHeight = parseFloat(localStorage.getItem('pdf_line_height') || '1.5');
+var _currentColumns = parseInt(localStorage.getItem('pdf_series_columns') || '${columnsCount}', 10) || ${columnsCount};
+var _currentShowSolutions = localStorage.getItem('pdf_series_solutions') !== null 
+  ? (localStorage.getItem('pdf_series_solutions') === 'true') 
+  : ${showSolutions ? 'true' : 'false'};
+var _currentStyle = localStorage.getItem('pdf_series_style') || '${isModernPro ? 'modern_pro_2026' : 'classic_original'}';
 
 // ── Helper: toggle active class within a sibling group ──────────────────────
 function _setActiveBtn(activeId, groupIds) {
@@ -3423,6 +3466,7 @@ function _setActiveBtn(activeId, groupIds) {
 function setSeriesColumns(cols) {
   try {
     localStorage.setItem('pdf_series_columns', cols);
+    _currentColumns = cols;
     var container = document.querySelector('.sections-container');
     if (container) {
       container.classList.remove('exercises-one-column', 'exercises-two-columns', 'exercises-three-columns');
@@ -3431,6 +3475,7 @@ function setSeriesColumns(cols) {
       else container.classList.add('exercises-two-columns');
     }
     _setActiveBtn('colBtn' + cols, ['colBtn1','colBtn2','colBtn3']);
+    _applyPrintStyles();
   } catch (err) { console.error(err); }
 }
 
@@ -3438,9 +3483,11 @@ function setSeriesColumns(cols) {
 function setSeriesSolutions(val) {
   try {
     localStorage.setItem('pdf_series_solutions', val);
+    _currentShowSolutions = val;
     if (val) document.body.classList.remove('hide-solutions');
     else document.body.classList.add('hide-solutions');
     _setActiveBtn(val ? 'btnSolAvec' : 'btnSolSans', ['btnSolAvec','btnSolSans']);
+    _applyPrintStyles();
   } catch (err) { console.error(err); }
 }
 
@@ -3448,6 +3495,7 @@ function setSeriesSolutions(val) {
 function setSeriesStyle(style) {
   try {
     localStorage.setItem('pdf_series_style', style);
+    _currentStyle = style;
     var pc = document.querySelector('.page-content');
     if (pc) {
       if (style === 'modern_pro_2026') pc.classList.add('modern-pro-layout');
@@ -3456,20 +3504,20 @@ function setSeriesStyle(style) {
     // Toggle header visibility
     var modernHeader = document.querySelector('.fiche-header-modern-pro');
     var classicHeader = document.querySelector('.fiche-header');
-    if (modernHeader) modernHeader.style.display = (style === 'modern_pro_2026') ? '' : 'none';
-    if (classicHeader) classicHeader.style.display = (style === 'classic_original') ? '' : 'none';
+    if (modernHeader) modernHeader.style.display = (style === 'modern_pro_2026') ? 'flex' : 'none';
+    if (classicHeader) classicHeader.style.display = (style === 'classic_original') ? 'flex' : 'none';
     // Modern footer
     var modernFooter = document.querySelector('.fiche-footer-modern-pro');
     var classicFooter = document.querySelector('.fiche-footer');
-    if (modernFooter) modernFooter.style.display = (style === 'modern_pro_2026') ? '' : 'none';
-    if (classicFooter) classicFooter.style.display = (style === 'classic_original') ? '' : 'none';
+    if (modernFooter) modernFooter.style.display = (style === 'modern_pro_2026') ? 'flex' : 'none';
+    if (classicFooter) classicFooter.style.display = (style === 'classic_original') ? 'block' : 'none';
     _setActiveBtn(style === 'modern_pro_2026' ? 'btnStyleModern' : 'btnStyleClassic', ['btnStyleModern','btnStyleClassic']);
+    _applyPrintStyles();
   } catch (err) { console.error(err); }
 }
 
 // ── Dynamic print style injector ─────────────────────────────────────────────
-// Inline styles are overridden by @media print CSS rules.
-// Solution: inject a <style> tag that is always applied, including during print.
+// Applies font size, line height, columns, and solutions both on screen and in @media print.
 function _applyPrintStyles() {
   var tag = document.getElementById('_dynamicPrintStyle');
   if (!tag) {
@@ -3477,18 +3525,73 @@ function _applyPrintStyles() {
     tag.id = '_dynamicPrintStyle';
     document.head.appendChild(tag);
   }
-  tag.textContent = [
-    '.sections-container, .sections-list-container {',
+
+  var contentSelectors = [
+    '.sections-container',
+    '.sections-list-container',
+    '.sections-container .exercise-body',
+    '.sections-container .modern-exercise-body',
+    '.sections-container .exercise-text-line',
+    '.sections-container .exercise-item-row',
+    '.sections-container .exercise-item-row span',
+    '.sections-container .exercise-item-row div',
+    '.sections-container .exercise-bullet-item',
+    '.sections-container .exercise-question-item',
+    '.sections-container .exercise-statement',
+    '.sections-container .list-item-row',
+    '.sections-container .homework-content-cell',
+    '.sections-container .homework-bareme-cell',
+    '.sections-container .solution-block',
+    '.sections-container .modern-solution-block',
+    '.sections-container .solution-content',
+    '.sections-container .markdown-table',
+    '.sections-container .markdown-table th',
+    '.sections-container .markdown-table td',
+    '.sections-container .sheet-table',
+    '.sections-container .sheet-table th',
+    '.sections-container .sheet-table td',
+    '.sections-container p',
+    '.sections-container li',
+    '.sections-container dd',
+    '.sections-container dt',
+    '.sections-container td',
+    '.sections-container blockquote'
+  ].join(',\\n');
+
+  var css = [
+    contentSelectors + ' {',
     '  font-size: ' + _currentFontSize + 'pt !important;',
     '  line-height: ' + _currentLineHeight + ' !important;',
     '}',
     '@media print {',
-    '  .sections-container, .sections-list-container {',
+    '  ' + contentSelectors + ' {',
     '    font-size: ' + _currentFontSize + 'pt !important;',
     '    line-height: ' + _currentLineHeight + ' !important;',
     '  }',
+    '}',
+    '.exercises-one-column { column-count: 1 !important; display: block !important; width: 100% !important; }',
+    '.exercises-two-columns { column-count: 2 !important; display: block !important; width: 100% !important; }',
+    '.exercises-three-columns { column-count: 3 !important; display: block !important; width: 100% !important; }',
+    '@media print {',
+    '  .exercises-one-column { column-count: 1 !important; display: block !important; width: 100% !important; }',
+    '  .exercises-two-columns { column-count: 2 !important; display: block !important; width: 100% !important; }',
+    '  .exercises-three-columns { column-count: 3 !important; display: block !important; width: 100% !important; }',
     '}'
-  ].join('\n');
+  ];
+
+  if (!_currentShowSolutions) {
+    css.push(
+      'body.hide-solutions .solution-block, body.hide-solutions .modern-solution-block, body.hide-solutions .homework-solution-row { display: none !important; }',
+      '@media print { body.hide-solutions .solution-block, body.hide-solutions .modern-solution-block, body.hide-solutions .homework-solution-row { display: none !important; } }'
+    );
+  } else {
+    css.push(
+      '.solution-block, .modern-solution-block, .homework-solution-row { display: block !important; }',
+      '@media print { .solution-block, .modern-solution-block, .homework-solution-row { display: block !important; } }'
+    );
+  }
+
+  tag.textContent = css.join('\\n');
 }
 
 // ── Font Size ─────────────────────────────────────────────────────────────────
@@ -3513,9 +3616,9 @@ function adjustLineHeight(delta) {
   } catch (err) { console.error(err); }
 }
 
-
 // ── Print ─────────────────────────────────────────────────────────────────────
 async function printNow() {
+  _applyPrintStyles();
   await document.fonts.ready;
   await new Promise(r => setTimeout(r, 600));
   var hint = document.getElementById('printHint');
@@ -3524,16 +3627,21 @@ async function printNow() {
   if (hint) hint.style.display = 'flex';
 }
 
-// ── Init: restore saved font size & line height on page load ─────────────────
+window.addEventListener('beforeprint', function() {
+  _applyPrintStyles();
+});
+
+// ── Init: restore saved state on page load ──────────────────────────────────
 (function init() {
-  // Use CSS injector so settings are respected in @media print too
+  if (_currentColumns) setSeriesColumns(_currentColumns);
+  setSeriesSolutions(_currentShowSolutions);
+  if (_currentStyle) setSeriesStyle(_currentStyle);
   _applyPrintStyles();
   var fDisplay = document.getElementById('fontSizeDisplay');
   if (fDisplay) fDisplay.textContent = _currentFontSize + 'pt';
   var lDisplay = document.getElementById('lineHeightDisplay');
   if (lDisplay) lDisplay.textContent = _currentLineHeight.toFixed(1);
 })();
-
 
 // Auto-print when ready
 printNow();
