@@ -35206,5 +35206,403 @@
     "is_archived": false,
     "created_at": "2026-09-16T06:44:43.208+00:00",
     "updated_at": "2026-09-16T13:46:14.177+00:00"
+  },
+  {
+    "id": "MOCK-L-042LQ1YSM",
+    "title": "Série - 1 : Continuité d'une fonction numérique",
+    "subject": "Mathématiques",
+    "chapter_number": "",
+    "teacher": "",
+    "phone": "",
+    "schools": [],
+    "content": {
+      "level": "2bac_pc_svt",
+      "doc_type": "exercises",
+      "columns_count": 2,
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "Préparation aux concours",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Série - 1 : Continuité d'une fonction numérique",
+        "chapter_number": "",
+        "teacher": "",
+        "phone": "",
+        "capacites_attendues": "",
+        "contenus": "",
+        "le_contenu": ""
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "1) Étudier la continuité de la fonction $f$ au point d'abscisse $x_0$ dans les cas suivants :\\na) \n\n\n\n$$\\begin{cases} f(x) = \\frac{x^3 - 1}{x - 1} \\text{ ; } x \\neq 1 \\\\ f(1) = 3 \\text{ et } x_0 = 1 \\end{cases}$$\n\n\n\n\\nb) \n\n\n\n$$\\begin{cases} f(x) = \\frac{\\sqrt{x+1} - 1}{x} \\text{ ; } x \\neq 0 \\\\ f(0) = -\\frac{1}{2} \\text{ et } x_0 = 0 \\end{cases}$$\n\n\n\n\\nc) \n\n\n\n$$\\begin{cases} f(x) = \\frac{x}{\\sqrt{x}} \\text{ ; } x > 0 \\\\ f(x) = \\frac{1 - \\cos(2x)}{x} \\text{ ; } x < 0 \\\\ f(0) = 0 \\text{ et } x_0 = 0 \\end{cases}$$\n\n\n\n",
+              "type": "bullet"
+            },
+            {
+              "text": "2) Déterminer les valeurs des réels $a$ et $b$ pour que la fonction $f$ soit continue en $x_0$ tel que :",
+              "type": "bullet"
+            },
+            {
+              "text": "\n\n\n\n$$\\begin{cases} f(x) = 2ax + a^2 + 1 \\\\ f(1) = 0 \\text{ et } x_0 = 1 \\end{cases}$$\n\n\n\n ; \n\n\n\n$$\\begin{cases} f(x) = ax + b \\text{ ; } x \\ge 2 \\\\ f(x) = x^2 - b - 3a \\text{ ; } x \\le 2 \\\\ f(2) = 0 \\text{ ; } x_0 = 2 \\end{cases}$$\n\n\n\n",
+              "type": "text"
+            },
+            {
+              "text": "3) Soit $f$ la fonction numérique définie par :",
+              "type": "bullet"
+            },
+            {
+              "text": "\n\n\n\n$$\\begin{cases} f(x) = \\frac{2x^2 + x - 1}{2x^2 - 3x + 1} \\text{ ; } x \\neq \\frac{1}{2} \\text{ et } x \\neq 1 \\\\ f\\left(\\frac{1}{2}\\right) = a \\end{cases}$$\n\n\n\n\\nDéterminer la valeur de $a$ sachant que $f$ est continue en $\\frac{1}{2}$.",
+              "type": "text"
+            }
+          ],
+          "title": "Exercice – 1 : continuité en un point",
+          "points": "",
+          "content": "1) Étudier la continuité de la fonction $f$ au point d'abscisse $x_0$ dans les cas suivants :\\na) \n\n\n\n$$\\begin{cases} f(x) = \\frac{x^3 - 1}{x - 1} \\text{ ; } x \\neq 1 \\\\ f(1) = 3 \\text{ et } x_0 = 1 \\end{cases}$$\n\n\n\n\\nb) \n\n\n\n$$\\begin{cases} f(x) = \\frac{\\sqrt{x+1} - 1}{x} \\text{ ; } x \\neq 0 \\\\ f(0) = -\\frac{1}{2} \\text{ et } x_0 = 0 \\end{cases}$$\n\n\n\n\\nc) \n\n\n\n$$\\begin{cases} f(x) = \\frac{x}{\\sqrt{x}} \\text{ ; } x > 0 \\\\ f(x) = \\frac{1 - \\cos(2x)}{x} \\text{ ; } x < 0 \\\\ f(0) = 0 \\text{ et } x_0 = 0 \\end{cases}$$\n\n\n\n\n\n2) Déterminer les valeurs des réels $a$ et $b$ pour que la fonction $f$ soit continue en $x_0$ tel que :\n\n\n\n\n$$\\begin{cases} f(x) = 2ax + a^2 + 1 \\\\ f(1) = 0 \\text{ et } x_0 = 1 \\end{cases}$$\n\n\n\n ; \n\n\n\n$$\\begin{cases} f(x) = ax + b \\text{ ; } x \\ge 2 \\\\ f(x) = x^2 - b - 3a \\text{ ; } x \\le 2 \\\\ f(2) = 0 \\text{ ; } x_0 = 2 \\end{cases}$$\n\n\n\n\n\n3) Soit $f$ la fonction numérique définie par :\n\n\n\n\n$$\\begin{cases} f(x) = \\frac{2x^2 + x - 1}{2x^2 - 3x + 1} \\text{ ; } x \\neq \\frac{1}{2} \\text{ et } x \\neq 1 \\\\ f\\left(\\frac{1}{2}\\right) = a \\end{cases}$$\n\n\n\n\\nDéterminer la valeur de $a$ sachant que $f$ est continue en $\\frac{1}{2}$.",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.3",
+          "line_height": "1.3"
+        },
+        {
+          "id": "ex-2",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "1) Étudier la continuité de la fonction $g$ sur $\\mathbb{R}$ telle que :",
+              "type": "bullet"
+            },
+            {
+              "text": "\n\n\n\n$$\\begin{cases} g(x) = x - \\sqrt{x - 2} \\text{ ; } x \\ge 2 \\\\ g(x) = \\frac{2\\sin(x - 2)}{x - 2} \\text{ ; } x < 2 \\end{cases}$$\n\n\n\n",
+              "type": "text"
+            },
+            {
+              "text": "2) Étudier la continuité de la fonction $f$ sur l'intervalle $I$ dans les cas suivants :\\na) $f(x) = 2x - 1 + \\sin(x)$ ; $I = \\mathbb{R}$\\nb) $f(x) = (x^3 + 2x)\\cos(x)$ ; $I = \\mathbb{R}^+$\\nc) $f(x) = \\frac{\\sin(x)}{x-1}$ ; $I = ]-\\infty ; 1[$\\nd) $f(x) = \\sqrt{x^2 + x + 1}$ ; $I = \\mathbb{R}$\\ne) $f(x) = \\cos(\\sin(x))$ ; $I = \\mathbb{R}$",
+              "type": "bullet"
+            }
+          ],
+          "title": "Exercice – 2 : continuité sur un intervalle",
+          "points": "",
+          "content": "1) Étudier la continuité de la fonction $g$ sur $\\mathbb{R}$ telle que :\n\n\n\n\n$$\\begin{cases} g(x) = x - \\sqrt{x - 2} \\text{ ; } x \\ge 2 \\\\ g(x) = \\frac{2\\sin(x - 2)}{x - 2} \\text{ ; } x < 2 \\end{cases}$$\n\n\n\n\n\n2) Étudier la continuité de la fonction $f$ sur l'intervalle $I$ dans les cas suivants :\\na) $f(x) = 2x - 1 + \\sin(x)$ ; $I = \\mathbb{R}$\\nb) $f(x) = (x^3 + 2x)\\cos(x)$ ; $I = \\mathbb{R}^+$\\nc) $f(x) = \\frac{\\sin(x)}{x-1}$ ; $I = ]-\\infty ; 1[$\\nd) $f(x) = \\sqrt{x^2 + x + 1}$ ; $I = \\mathbb{R}$\\ne) $f(x) = \\cos(\\sin(x))$ ; $I = \\mathbb{R}$",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.3",
+          "line_height": "1.3"
+        },
+        {
+          "id": "ex-3",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "1) Montrer que l'équation $f(x) = 0$ admet au moins une solution dans l'intervalle $I$ dans les cas suivants :",
+              "type": "bullet"
+            },
+            {
+              "text": "(a) $f(x) = 7x^3 - x - 1$ ; $I = [0 ; 1]$",
+              "type": "text"
+            },
+            {
+              "text": "(b) $f(x) = \\cos(x) - x$ ; $I = \\left[0 ; \\frac{\\pi}{2}\\right]$",
+              "type": "text"
+            },
+            {
+              "text": "(c) $f(x) = x\\sqrt{x + 2}$ ; $I = [-1 ; 2[$",
+              "type": "text"
+            },
+            {
+              "text": "2) Montrer que l'équation $f(x) = 0$ admet une solution unique $\\alpha \\in I$ telle que :",
+              "type": "bullet"
+            },
+            {
+              "text": "(a) $f(x) = 2x^3 - 3x^2 - 1$ ; $I = [1 ; 2]$",
+              "type": "text"
+            },
+            {
+              "text": "(b) $f(x) = x + \\cos(x)$ ; $I = \\left[-\\frac{\\pi}{2} ; 0\\right]$",
+              "type": "text"
+            },
+            {
+              "text": "(c) $f(x) = \\frac{1}{x} - x^3 - 1$ ; $I = ]0 ; +\\infty[$",
+              "type": "text"
+            },
+            {
+              "text": "3) Donner un encadrement d'amplitude $L = 0,25$ pour la solution $\\alpha \\in [1 ; 2]$ de l'équation : $2x^3 - 3x^2 - 1 = 0$",
+              "type": "bullet"
+            }
+          ],
+          "title": "Exercice – 3 : T.V.I",
+          "points": "",
+          "content": "1) Montrer que l'équation $f(x) = 0$ admet au moins une solution dans l'intervalle $I$ dans les cas suivants :\n(a) $f(x) = 7x^3 - x - 1$ ; $I = [0 ; 1]$\n(b) $f(x) = \\cos(x) - x$ ; $I = \\left[0 ; \\frac{\\pi}{2}\\right]$\n(c) $f(x) = x\\sqrt{x + 2}$ ; $I = [-1 ; 2[$\n\n2) Montrer que l'équation $f(x) = 0$ admet une solution unique $\\alpha \\in I$ telle que :\n(a) $f(x) = 2x^3 - 3x^2 - 1$ ; $I = [1 ; 2]$\n(b) $f(x) = x + \\cos(x)$ ; $I = \\left[-\\frac{\\pi}{2} ; 0\\right]$\n(c) $f(x) = \\frac{1}{x} - x^3 - 1$ ; $I = ]0 ; +\\infty[$\n\n3) Donner un encadrement d'amplitude $L = 0,25$ pour la solution $\\alpha \\in [1 ; 2]$ de l'équation : $2x^3 - 3x^2 - 1 = 0$",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.3",
+          "line_height": "1.3"
+        },
+        {
+          "id": "ex-4",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit $f$ la fonction numérique définie sur $\\mathbb{R}$ par :",
+              "type": "text"
+            },
+            {
+              "text": "$$f(x) = 3x^3 - 4x^2 + 4x - 1$$",
+              "type": "text"
+            },
+            {
+              "text": "1) Dresser le tableau de variations de $f$ sur $\\mathbb{R}$.",
+              "type": "bullet"
+            },
+            {
+              "text": "2) Montrer que l'équation $f(x) = 0$ admet une solution unique $\\alpha$ dans $\\mathbb{R}$.",
+              "type": "bullet"
+            },
+            {
+              "text": "3) Vérifier que $\\alpha \\in ]0 ; 1[$.",
+              "type": "bullet"
+            },
+            {
+              "text": "4) En utilisant la dichotomie, donner une valeur approchée de $\\alpha$ à une précision $10^{-2}$.",
+              "type": "bullet"
+            }
+          ],
+          "title": "Exercice – 4 : T.V.I et la dichotomie",
+          "points": "",
+          "content": "Soit $f$ la fonction numérique définie sur $\\mathbb{R}$ par :\n$$f(x) = 3x^3 - 4x^2 + 4x - 1$$\n1) Dresser le tableau de variations de $f$ sur $\\mathbb{R}$.\n2) Montrer que l'équation $f(x) = 0$ admet une solution unique $\\alpha$ dans $\\mathbb{R}$.\n3) Vérifier que $\\alpha \\in ]0 ; 1[$.\n4) En utilisant la dichotomie, donner une valeur approchée de $\\alpha$ à une précision $10^{-2}$.",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.3",
+          "line_height": "1.3"
+        },
+        {
+          "id": "ex-5",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit $f$ la fonction définie sur $\\mathbb{R}^+$ par : $f(x) = \\frac{x-1}{x+1}$",
+              "type": "text"
+            },
+            {
+              "text": "1) Étudier la continuité de $f$ sur $\\mathbb{R}^+$.",
+              "type": "bullet"
+            },
+            {
+              "text": "2) Dresser le tableau de variations de $f$.",
+              "type": "bullet"
+            },
+            {
+              "text": "3) Montrer que $f$ admet une fonction réciproque $f^{-1}$ sur un intervalle $J$ à déterminer.",
+              "type": "bullet"
+            },
+            {
+              "text": "4) Déterminer $f^{-1}(x)$ pour tout $x \\in J$.",
+              "type": "bullet"
+            }
+          ],
+          "title": "Exercice – 5 : la fonction réciproque",
+          "points": "",
+          "content": "Soit $f$ la fonction définie sur $\\mathbb{R}^+$ par : $f(x) = \\frac{x-1}{x+1}$\n1) Étudier la continuité de $f$ sur $\\mathbb{R}^+$.\n2) Dresser le tableau de variations de $f$.\n3) Montrer que $f$ admet une fonction réciproque $f^{-1}$ sur un intervalle $J$ à déterminer.\n4) Déterminer $f^{-1}(x)$ pour tout $x \\in J$.",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.3",
+          "line_height": "1.3"
+        },
+        {
+          "id": "ex-6",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit $f$ la fonction définie par : $f(x) = \\frac{1 + \\sqrt{x}}{1 - \\sqrt{x}}$",
+              "type": "text"
+            },
+            {
+              "text": "1) Déterminer le domaine de définition $D_f$.",
+              "type": "bullet"
+            },
+            {
+              "text": "2) Calculer les limites de $f$ aux bornes de $D_f$.",
+              "type": "bullet"
+            },
+            {
+              "text": "3) Déterminer les deux réels $a$ et $b$ tels que :",
+              "type": "bullet"
+            },
+            {
+              "text": "$$(\\forall x \\in D_f) : f(x) = a + \\frac{b}{1 - \\sqrt{x}}$$",
+              "type": "text"
+            },
+            {
+              "text": "4) Montrer que $f$ est strictement croissante sur $[0 ; 1[$.",
+              "type": "bullet"
+            },
+            {
+              "text": "5) Soit la fonction $g$ la restriction de $f$ sur $[0 ; 1[$.",
+              "type": "bullet"
+            },
+            {
+              "text": "(a) Montrer que $g$ admet une fonction réciproque $g^{-1}$ sur un intervalle $J$ à déterminer.",
+              "type": "text"
+            },
+            {
+              "text": "(b) Déterminer $g^{-1}(x)$, $\\forall x \\in J$.",
+              "type": "text"
+            }
+          ],
+          "title": "Exercice – 6",
+          "points": "",
+          "content": "Soit $f$ la fonction définie par : $f(x) = \\frac{1 + \\sqrt{x}}{1 - \\sqrt{x}}$\n1) Déterminer le domaine de définition $D_f$.\n2) Calculer les limites de $f$ aux bornes de $D_f$.\n3) Déterminer les deux réels $a$ et $b$ tels que :\n$$(\\forall x \\in D_f) : f(x) = a + \\frac{b}{1 - \\sqrt{x}}$$\n4) Montrer que $f$ est strictement croissante sur $[0 ; 1[$.\n5) Soit la fonction $g$ la restriction de $f$ sur $[0 ; 1[$.\n(a) Montrer que $g$ admet une fonction réciproque $g^{-1}$ sur un intervalle $J$ à déterminer.\n(b) Déterminer $g^{-1}(x)$, $\\forall x \\in J$.",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.3",
+          "line_height": "1.3"
+        },
+        {
+          "id": "ex-7",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "1) Simplifier les nombres suivants :",
+              "type": "bullet"
+            },
+            {
+              "text": "$$A = \\frac{\\sqrt[5]{2}\\times \\sqrt{8}}{\\sqrt[5]{128}} \\quad ; \\quad B = \\frac{1}{\\sqrt[3]{3} + 1} \\quad ; \\quad C = \\frac{\\sqrt[3]{4}\\times \\sqrt{8}\\times (\\sqrt{\\sqrt{2}})^2}{\\sqrt[3]{4}}$$",
+              "type": "text"
+            },
+            {
+              "text": "$$D = \\frac{1}{\\sqrt[3]{4} - \\sqrt[3]{3}} \\quad ; \\quad E = \\frac{\\sqrt[15]{3^5}\\times \\sqrt[3]{9}\\times (\\sqrt[5]{9})^3}{\\sqrt[5]{3}}$$",
+              "type": "text"
+            },
+            {
+              "text": "2) Résoudre dans $\\mathbb{R}$ les équations suivantes :",
+              "type": "bullet"
+            },
+            {
+              "text": "$\\sqrt[3]{x} + \\sqrt[6]{x} - 12 = 0$ ; $-2\\sqrt[10]{x} + \\sqrt[5]{x} + 1 = 0$ ; $x^3 + 27 = 0$",
+              "type": "text"
+            },
+            {
+              "text": "3) Mettre en ordre croissant les nombres suivants :",
+              "type": "bullet"
+            },
+            {
+              "text": "(a) $a = \\sqrt[3]{3}$, $b = \\sqrt{5}$ et $c = \\sqrt[6]{100}$",
+              "type": "text"
+            },
+            {
+              "text": "(b) $a = \\sqrt{5}$, $b = \\sqrt[6]{80}$ et $c = 3^{\\frac{2}{3}}$",
+              "type": "text"
+            },
+            {
+              "text": "4) Calculer les limites suivantes :",
+              "type": "bullet"
+            },
+            {
+              "text": "$\\lim_{x \\to +\\infty} \\sqrt[3]{x^3 + x^2 + 1} - x$ ;",
+              "type": "text"
+            },
+            {
+              "text": "$\\lim_{x \\to +\\infty} \\frac{\\sqrt[3]{x^3 + 2x^2 + 1}}{x}$ ;",
+              "type": "text"
+            },
+            {
+              "text": "$\\lim_{x \\to 8} \\frac{\\sqrt[3]{x} - 2}{x - 8}$ ;",
+              "type": "text"
+            },
+            {
+              "text": "$\\lim_{x \\to 27} \\frac{\\sqrt[3]{x} - 3}{x - 27}$ ;",
+              "type": "text"
+            },
+            {
+              "text": "$\\lim_{x \\to 0} \\frac{\\sqrt{x+1} - 1}{x}$ ;",
+              "type": "text"
+            },
+            {
+              "text": "$\\lim_{x \\to 1} \\frac{\\sqrt[3]{2x-1} - 1}{\\sqrt{x} - 1}$",
+              "type": "text"
+            }
+          ],
+          "title": "Exercice – 7 : racine n – ème",
+          "points": "",
+          "content": "1) Simplifier les nombres suivants :\n$$A = \\frac{\\sqrt[5]{2}\\times \\sqrt{8}}{\\sqrt[5]{128}} \\quad ; \\quad B = \\frac{1}{\\sqrt[3]{3} + 1} \\quad ; \\quad C = \\frac{\\sqrt[3]{4}\\times \\sqrt{8}\\times (\\sqrt{\\sqrt{2}})^2}{\\sqrt[3]{4}}$$\n$$D = \\frac{1}{\\sqrt[3]{4} - \\sqrt[3]{3}} \\quad ; \\quad E = \\frac{\\sqrt[15]{3^5}\\times \\sqrt[3]{9}\\times (\\sqrt[5]{9})^3}{\\sqrt[5]{3}}$$\n\n2) Résoudre dans $\\mathbb{R}$ les équations suivantes :\n$\\sqrt[3]{x} + \\sqrt[6]{x} - 12 = 0$ ; $-2\\sqrt[10]{x} + \\sqrt[5]{x} + 1 = 0$ ; $x^3 + 27 = 0$\n\n3) Mettre en ordre croissant les nombres suivants :\n(a) $a = \\sqrt[3]{3}$, $b = \\sqrt{5}$ et $c = \\sqrt[6]{100}$\n(b) $a = \\sqrt{5}$, $b = \\sqrt[6]{80}$ et $c = 3^{\\frac{2}{3}}$\n\n4) Calculer les limites suivantes :\n$\\lim_{x \\to +\\infty} \\sqrt[3]{x^3 + x^2 + 1} - x$ ;\n$\\lim_{x \\to +\\infty} \\frac{\\sqrt[3]{x^3 + 2x^2 + 1}}{x}$ ;\n$\\lim_{x \\to 8} \\frac{\\sqrt[3]{x} - 2}{x - 8}$ ;\n$\\lim_{x \\to 27} \\frac{\\sqrt[3]{x} - 3}{x - 27}$ ;\n$\\lim_{x \\to 0} \\frac{\\sqrt{x+1} - 1}{x}$ ;\n$\\lim_{x \\to 1} \\frac{\\sqrt[3]{2x-1} - 1}{\\sqrt{x} - 1}$",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.3",
+          "line_height": "1.3"
+        },
+        {
+          "id": "ex-8",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "On pose $f(x) = \\frac{1 - \\sqrt{x^3} + \\sqrt{x}}{x - 1}$ pour tout $x \\in ]1 ; +\\infty[$.",
+              "type": "text"
+            },
+            {
+              "text": "1) Vérifier que : $f(x) = -\\sqrt{x} + \\frac{1}{x - 1}$.",
+              "type": "bullet"
+            },
+            {
+              "text": "2) Montrer que l'équation : $\\sqrt{x} = \\frac{1}{x - 1}$ admet une seule solution $\\alpha \\in ]1 ; 2[$.",
+              "type": "bullet"
+            },
+            {
+              "text": "3) Montrer que : $\\alpha^2 (\\alpha - 2) = 1 - \\alpha$.",
+              "type": "bullet"
+            }
+          ],
+          "title": "Exercice – 8",
+          "points": "",
+          "content": "On pose $f(x) = \\frac{1 - \\sqrt{x^3} + \\sqrt{x}}{x - 1}$ pour tout $x \\in ]1 ; +\\infty[$.\n1) Vérifier que : $f(x) = -\\sqrt{x} + \\frac{1}{x - 1}$.\n2) Montrer que l'équation : $\\sqrt{x} = \\frac{1}{x - 1}$ admet une seule solution $\\alpha \\in ]1 ; 2[$.\n3) Montrer que : $\\alpha^2 (\\alpha - 2) = 1 - \\alpha$.",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "font_size": "11pt",
+          "lineHeight": "1.3",
+          "line_height": "1.3"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-18T08:18:14.048Z",
+    "level": "2bac_pc_svt",
+    "doc_type": "exercises",
+    "created_at": "2026-09-18T08:16:57.162Z",
+    "createdAt": "2026-09-18T08:16:58.247Z",
+    "updatedAt": "2026-09-18T08:18:14.894Z"
   }
 ]

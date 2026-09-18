@@ -1,12 +1,13 @@
 // src/pages/AdminLogbook.jsx
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   Plus, Trash2, Edit, Printer, Calendar, BookOpen, Clock, Tag, AlertCircle,
   User, ArrowLeft, FileText, CheckCircle2, ClipboardList, X, Check, Save, Sparkles,
-  Eye, EyeOff, Settings
+  Eye, EyeOff, Settings, ListOrdered
 } from 'lucide-react';
-import { getAllClasses } from '../services/classService';
+import { getAllClasses, updateClass } from '../services/classService';
 import { getActiveLessons } from '../services/lessonService';
 import { getAllExams } from '../services/examService';
 import { 
@@ -25,6 +26,72 @@ import {
 import { renderWithMath } from '../utils/mathRenderer';
 import { openLogbookPrintWindow } from '../utils/generateLogbookPDF';
 import { normalizeLevel, getLevelDisplayName } from '../utils/levelHelpers';
+
+// Standard Curriculum Templates for Moroccan High School levels
+const STANDARD_CURRICULA = {
+  common_core_arts: [
+    { id: 'prog_tcl_01', type: 'course', title: 'التقويم التشخيصي والدعم الاستدراكي', matchKeywords: ['diagnostique', 'تشخيصي'] },
+    { id: 'prog_tcl_02', type: 'course', title: 'الحساب العددي والعمليات في المجموعة IR', matchKeywords: ['révision', 'calcul numérique', 'حساب'] },
+    { id: 'prog_tcl_03', type: 'exercises', title: 'سلسلة تمارين: الحساب العددي وقوى الأعداد', matchKeywords: ['série', 'exercices', 'تمارين'] },
+    { id: 'prog_tcl_04', type: 'course', title: 'الترتيب في IR والمعادلات والمتراجحات من الدرجة الأولى', matchKeywords: ['ordre', 'équations', 'ترتيب'] },
+    { id: 'prog_tcl_05', type: 'exercises', title: 'سلسلة تمارين: المعادلات والمتراجحات وحل المسائل', matchKeywords: ['inéquations', 'متراجحات'] },
+    { id: 'prog_tcl_06', type: 'homework', title: 'الفرض المحروس رقم 1 (الدورة الأولى)', matchKeywords: ['devoir 1', 'فرض 1'] },
+    { id: 'prog_tcl_07', type: 'course', title: 'الإحصاء: الجداول، الترددات والتمثيلات المبيانية', matchKeywords: ['statistique', 'إحصاء'] },
+    { id: 'prog_tcl_08', type: 'exercises', title: 'تطبيقات إحصائية ومميزات الموضع والتشتت', matchKeywords: ['statistiques', 'تشتت'] },
+    { id: 'prog_tcl_09', type: 'course', title: 'الهندسة الفضائية: المستقيمات والمستويات وحساب الحجوم', matchKeywords: ['géométrie', 'espace', 'هندسة'] },
+    { id: 'prog_tcl_10', type: 'homework', title: 'الفرض المحروس رقم 2 (الدورة الأولى)', matchKeywords: ['devoir 2', 'فرض 2'] },
+    { id: 'prog_tcl_11', type: 'homework', title: 'دعم الحصيلة وتقويم نهاية الأسدس الأول', matchKeywords: ['bilan', 'حصيلة'] }
+  ],
+  common_core_sci: [
+    { id: 'prog_tcs_01', type: 'course', title: 'التقويم التشخيصي والدعم الاستدراكي', matchKeywords: ['diagnostique', 'mise à niveau', 'révision'] },
+    { id: 'prog_tcs_02', type: 'course', title: 'مبادئ في الحسابيات في المجموعة IN', matchKeywords: ['arithmétique', 'حسابيات', 'ensemble n'] },
+    { id: 'prog_tcs_03', type: 'exercises', title: 'سلسلة تمارين: الحسابيات في IN', matchKeywords: ['série', 'arithmétique', 'notion d\'arithmétiques'] },
+    { id: 'prog_tcs_04', type: 'course', title: 'الحساب المتجهي في المستوى', matchKeywords: ['vecteurs', 'متجهي', 'متجهات'] },
+    { id: 'prog_tcs_05', type: 'homework', title: 'الفرض المحروس رقم 1 (الدورة الأولى)', matchKeywords: ['devoir surveillé n°1', 'فرض 1'] },
+    { id: 'prog_tcs_06', type: 'course', title: 'مجموعات الأعداد والحساب العددي في IR', matchKeywords: ['ensembles', 'calcul numérique'] },
+    { id: 'prog_tcs_07', type: 'course', title: 'الإسقاط في المستوى', matchKeywords: ['projection', 'إسقاط'] },
+    { id: 'prog_tcs_08', type: 'course', title: 'الترتيب في IR ومجالاته', matchKeywords: ['ordre dans r', 'ordre', 'ترتيب'] },
+    { id: 'prog_tcs_09', type: 'homework', title: 'الفرض المحروس رقم 2 (الدورة الأولى)', matchKeywords: ['devoir surveillé n°2', 'فرض 2'] },
+    { id: 'prog_tcs_10', type: 'course', title: 'المستقيم في المستوى والحدوديات والدوال', matchKeywords: ['droite', 'polynômes', 'fonctions'] },
+    { id: 'prog_tcs_11', type: 'homework', title: 'الفرض المحروس رقم 3 (الدورة الأولى)', matchKeywords: ['devoir 3', 'فرض 3'] }
+  ],
+  '1bac_sci': [
+    { id: 'prog_1bs_01', type: 'course', title: 'التقويم التشخيصي وأنشطة التذكير', matchKeywords: ['diagnostique', 'révision'] },
+    { id: 'prog_1bs_02', type: 'course', title: 'مبادئ في المنطق الرياضي', matchKeywords: ['logique', 'منطق'] },
+    { id: 'prog_1bs_03', type: 'course', title: 'عموميات حول الدوال العددية', matchKeywords: ['généralités', 'fonctions', 'دوال'] },
+    { id: 'prog_1bs_04', type: 'homework', title: 'الفرض المحروس رقم 1 (الدورة الأولى)', matchKeywords: ['devoir 1', 'فرض 1'] },
+    { id: 'prog_1bs_05', type: 'course', title: 'المتتاليات العددية', matchKeywords: ['suites', 'متتاليات'] },
+    { id: 'prog_1bs_06', type: 'course', title: 'المرجح في المستوى', matchKeywords: ['barycentre', 'مرجح'] },
+    { id: 'prog_1bs_07', type: 'homework', title: 'الفرض المحروس رقم 2 (الدورة الأولى)', matchKeywords: ['devoir 2', 'فرض 2'] },
+    { id: 'prog_1bs_08', type: 'course', title: 'الجداء السلمي وتطبيقاته والحساب المثلثي', matchKeywords: ['produit scalaire', 'trigonométrie'] },
+    { id: 'prog_1bs_09', type: 'homework', title: 'الفرض المحروس رقم 3 (الدورة الأولى)', matchKeywords: ['devoir 3', 'فرض 3'] }
+  ],
+  '2bac_pc_svt': [
+    { id: 'prog_2b_01', type: 'course', title: 'التقويم التشخيصي والتذكير بالمكتسبات', matchKeywords: ['diagnostique', 'révision', 'mise à niveau'] },
+    { id: 'prog_2b_02', type: 'course', title: 'الاتصال والنهايات', matchKeywords: ['continuité', 'limites', 'اتصال', 'نهايات'] },
+    { id: 'prog_2b_03', type: 'exercises', title: 'سلسلة تمارين: الاتصال وحساب النهايات', matchKeywords: ['série', 'continuité', 'limites'] },
+    { id: 'prog_2b_04', type: 'course', title: 'المتتاليات العددية', matchKeywords: ['suites', 'متتاليات'] },
+    { id: 'prog_2b_05', type: 'homework', title: 'الفرض المحروس رقم 1 (الدورة الأولى)', matchKeywords: ['devoir surveillé n° 1', 'فرض 1'] },
+    { id: 'prog_2b_06', type: 'course', title: 'الاشتقاق ودراسة الدوال والفروع اللانهائية', matchKeywords: ['dérivation', 'اشتقاق', 'branches infinies'] },
+    { id: 'prog_2b_07', type: 'course', title: 'الدوال اللوغاريتمية (Ln)', matchKeywords: ['logarithme', 'ln', 'لوغاريتم'] },
+    { id: 'prog_2b_08', type: 'homework', title: 'الفرض المحروس رقم 2 (الدورة الأولى)', matchKeywords: ['devoir surveillé n° 2', 'فرض 2'] },
+    { id: 'prog_2b_09', type: 'course', title: 'الأعداد العقدية (الجزء الأول)', matchKeywords: ['complexes', 'عقدية'] },
+    { id: 'prog_2b_10', type: 'course', title: 'الدوال الأسية (Exp)', matchKeywords: ['exponentielle', 'exp', 'أسية'] },
+    { id: 'prog_2b_11', type: 'homework', title: 'الفرض المحروس رقم 3 (الدورة الأولى)', matchKeywords: ['devoir 3', 'فرض 3'] }
+  ],
+  '2bac_sm': [
+    { id: 'prog_2bsm_01', type: 'course', title: 'التقويم التشخيصي والمكتسبات السابقة', matchKeywords: ['diagnostique', 'révision'] },
+    { id: 'prog_2bsm_02', type: 'course', title: 'الاتصال وحساب النهايات', matchKeywords: ['continuité', 'limites'] },
+    { id: 'prog_2bsm_03', type: 'course', title: 'المتتاليات العددية', matchKeywords: ['suites', 'متتاليات'] },
+    { id: 'prog_2bsm_04', type: 'homework', title: 'الفرض المحروس رقم 1', matchKeywords: ['devoir 1', 'فرض 1'] },
+    { id: 'prog_2bsm_05', type: 'course', title: 'الاشتقاق ودراسة الدوال', matchKeywords: ['dérivation', 'fonctions'] },
+    { id: 'prog_2bsm_06', type: 'course', title: 'الدوال الأسية واللوغاريتمية', matchKeywords: ['exponentielle', 'logarithme'] },
+    { id: 'prog_2bsm_07', type: 'homework', title: 'الفرض المحروس رقم 2', matchKeywords: ['devoir 2', 'فرض 2'] },
+    { id: 'prog_2bsm_08', type: 'course', title: 'الحسابيات في Z', matchKeywords: ['arithmétique', 'حسابيات'] },
+    { id: 'prog_2bsm_09', type: 'homework', title: 'الفرض المحروس رقم 3', matchKeywords: ['devoir 3', 'فرض 3'] }
+  ]
+};
+
 
 
 // Convert **bold** markdown to React strong elements
@@ -420,6 +487,7 @@ export default function AdminLogbook() {
   }, [missingSessions, selectedClass, missingDaysFilter]);
   const [missingPanelOpen, setMissingPanelOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [programDrawerOpen, setProgramDrawerOpen] = useState(false);
   const [previewSections, setPreviewSections] = useState({});
 
   const toggleSectionPreview = (sectionId) => {
@@ -940,18 +1008,52 @@ export default function AdminLogbook() {
 
   // Handle lesson select in form: load sections for checkbox selection
   const handleLessonChange = (val) => {
-    if (val.startsWith('custom_prog_')) {
-      const itemId = val.replace('custom_prog_', '');
-      const progItem = selectedClass.program.find(item => item.id === itemId);
+    if (val.startsWith('prog_item_') || val.startsWith('custom_prog_')) {
+      const itemId = val.replace('prog_item_', '').replace('custom_prog_', '');
+      const progItem = selectedClass?.program?.find(item => item.id === itemId);
       if (progItem) {
+        let comp = 'Cours';
+        if (progItem.type === 'exercises') comp = 'Exercices';
+        if (progItem.type === 'homework' || progItem.type === 'exam' || progItem.title.includes('فرض') || progItem.title.toUpperCase().includes('CONTRÔLE')) comp = 'Contrôle';
+
+        let customContent = '';
+        let isHeader = false;
+        let suggestedSections = [];
+
+        if (progItem.lessonId) {
+          const lesson = lessons.find(l => l.id === progItem.lessonId);
+          const coveredSections = new Set();
+          entries.forEach(e => {
+            if (e.selectedSections && Array.isArray(e.selectedSections)) {
+              e.selectedSections.forEach(s => coveredSections.add(s));
+            }
+          });
+          const allSections = lesson?.content?.sections || [];
+          const uncovered = allSections.filter(s => !coveredSections.has(s.title));
+          if (uncovered.length > 0) {
+            suggestedSections = [uncovered[0].title];
+            customContent = `• ${uncovered[0].title}`;
+            if (uncovered.length === allSections.length) {
+              isHeader = true;
+              customContent = `=== ${lesson.title.toUpperCase()} ===\n` + customContent;
+            }
+          } else {
+            isHeader = true;
+            customContent = `=== ${lesson?.title?.toUpperCase() || progItem.title} ===\n`;
+          }
+        } else {
+          isHeader = true;
+          customContent = `=== ${progItem.title.toUpperCase()} ===\n`;
+        }
+
         setFormData(prev => ({
           ...prev,
-          lessonId: '',
+          lessonId: progItem.lessonId || '',
           selectedProgramItemId: itemId,
-          selectedSections: [],
-          customContent: `=== ${progItem.title.toUpperCase()} ===\n`,
-          component: (progItem.title.toUpperCase().includes('CONTRÔLE') || progItem.title.includes('فرض')) ? 'Contrôle' : prev.component,
-          isHeaderSéance: true
+          selectedSections: suggestedSections,
+          customContent: customContent,
+          component: comp,
+          isHeaderSéance: isHeader
         }));
       }
     } else {
@@ -959,7 +1061,7 @@ export default function AdminLogbook() {
         ...prev,
         lessonId: val,
         selectedProgramItemId: '',
-        selectedSections: [] // Reset selection tags for the new dropdown list
+        selectedSections: []
       }));
     }
   };
@@ -1014,27 +1116,10 @@ export default function AdminLogbook() {
     });
   };
 
-  const handleOpenAddModal = () => {
-    setEditingEntry(null);
-    setFormData({
-      date: formatLocalDate(),
-      time: '08:00 - 10:00',
-      component: 'Cours',
-      subject: 'Mathématiques',
-      lessonId: '',
-      selectedProgramItemId: '',
-      selectedSections: [],
-      customContent: '',
-      isHeaderSéance: false
-    });
-    setModalOpen(true);
-  };
-
-  // Get the first uncompleted planned item in the program
-  const getNextPlannedItem = () => {
-    if (!selectedClass || !selectedClass.program || selectedClass.program.length === 0) return null;
+  // Get status details of a specific program item
+  const getProgramItemStatus = (item) => {
+    if (!item) return { label: 'Non commencé', color: 'var(--text-muted)', bg: 'rgba(255,255,255,0.03)', isDone: false, pct: 0 };
     
-    // Get all covered sections from logbook entries
     const coveredSections = new Set();
     entries.forEach(e => {
       if (e.selectedSections && Array.isArray(e.selectedSections)) {
@@ -1042,17 +1127,109 @@ export default function AdminLogbook() {
       }
     });
 
-    // Check each program item
+    if (item.type === 'custom' || !item.lessonId) {
+      const isLogged = entries.some(e => 
+        (e.selectedProgramItemId && e.selectedProgramItemId === item.id) ||
+        (e.customContent && e.customContent.includes(item.title)) ||
+        (e.component === 'Contrôle' && item.title.toUpperCase().includes('CONTRÔLE')) ||
+        (e.component === 'Contrôle' && item.title.includes('فرض'))
+      );
+      return isLogged 
+        ? { label: isArMode ? 'مكتمل' : 'Terminé', color: 'var(--emerald)', bg: 'rgba(16, 185, 129, 0.08)', isDone: true, pct: 100 } 
+        : { label: isArMode ? 'لم يبدأ' : 'Non commencé', color: 'var(--text-muted)', bg: 'rgba(255,255,255,0.03)', isDone: false, pct: 0 };
+    }
+
+    const lesson = lessons.find(l => l.id === item.lessonId);
+    if (!lesson) {
+      const isLogged = entries.some(e => e.selectedProgramItemId === item.id || e.lessonId === item.lessonId);
+      return isLogged
+        ? { label: isArMode ? 'مكتمل' : 'Terminé', color: 'var(--emerald)', bg: 'rgba(16, 185, 129, 0.08)', isDone: true, pct: 100 }
+        : { label: isArMode ? 'لم يبدأ' : 'Non commencé', color: 'var(--text-muted)', bg: 'rgba(255,255,255,0.03)', isDone: false, pct: 0 };
+    }
+
+    const sections = lesson.content?.sections || [];
+    if (sections.length === 0) {
+      const isLogged = entries.some(e => e.selectedProgramItemId === item.id || e.lessonId === item.lessonId);
+      return isLogged
+        ? { label: isArMode ? 'مكتمل' : 'Terminé', color: 'var(--emerald)', bg: 'rgba(16, 185, 129, 0.08)', isDone: true, pct: 100 }
+        : { label: isArMode ? 'لم يبدأ' : 'Non commencé', color: 'var(--text-muted)', bg: 'rgba(255,255,255,0.03)', isDone: false, pct: 0 };
+    }
+
+    const completedCount = sections.filter(sec => coveredSections.has(sec.title)).length;
+    const pct = Math.round((completedCount / sections.length) * 100);
+    if (completedCount === sections.length) {
+      return { label: isArMode ? 'مكتمل' : 'Terminé', color: 'var(--emerald)', bg: 'rgba(16, 185, 129, 0.08)', isDone: true, count: completedCount, total: sections.length, pct: 100 };
+    } else if (completedCount > 0) {
+      return { label: isArMode ? `قيد الإنجاز (${completedCount}/${sections.length})` : `En cours (${completedCount}/${sections.length})`, color: 'var(--violet)', bg: 'rgba(99, 102, 241, 0.1)', isDone: false, count: completedCount, total: sections.length, pct };
+    } else {
+      return { label: isArMode ? 'لم يبدأ' : 'Non commencé', color: 'var(--text-muted)', bg: 'rgba(255,255,255,0.03)', isDone: false, count: 0, total: sections.length, pct: 0 };
+    }
+  };
+
+  // Auto-generate standard Moroccan curriculum program for the selected class
+  const handleAutoGenerateProgram = async () => {
+    if (!selectedClass) return;
+    const normLevel = normalizeLevel(selectedClass.level);
+    const template = STANDARD_CURRICULA[normLevel] || STANDARD_CURRICULA['common_core_arts'];
+    
+    // Match each item with available levelLessons if found
+    const generated = template.map(t => {
+      const foundLesson = levelLessons.find(l => {
+        const title = (l.title || '').toLowerCase();
+        return t.matchKeywords.some(kw => title.includes(kw.toLowerCase()));
+      });
+      return {
+        id: t.id + '_' + Date.now().toString(36),
+        type: t.type,
+        title: isArMode ? t.title : (foundLesson?.title || t.title),
+        lessonId: foundLesson ? foundLesson.id : null
+      };
+    });
+
+    try {
+      await updateClass(selectedClass.id, { program: generated });
+      const updatedCls = { ...selectedClass, program: generated };
+      setSelectedClass(updatedCls);
+      setClasses(prev => prev.map(c => c.id === selectedClass.id ? updatedCls : c));
+      setSuccess(isArMode ? 'تم توليد برنامج القسم بنجاح وتعيينه لدفتر النصوص!' : 'Programme de la classe généré avec succès !');
+      setTimeout(() => setSuccess(''), 3500);
+    } catch (err) {
+      console.error(err);
+      setError(isArMode ? 'حدث خطأ أثناء توليد البرنامج.' : 'Erreur lors de la génération du programme.');
+      setTimeout(() => setError(''), 3500);
+    }
+  };
+
+  // Get the first uncompleted planned item in the program
+  const getNextPlannedItem = () => {
+    if (!selectedClass || !selectedClass.program || selectedClass.program.length === 0) return null;
+    
+    // Get all covered sections and program item ids from logbook entries
+    const coveredSections = new Set();
+    const completedProgItemIds = new Set();
+    entries.forEach(e => {
+      if (e.selectedProgramItemId) {
+        completedProgItemIds.add(e.selectedProgramItemId);
+      }
+      if (e.selectedSections && Array.isArray(e.selectedSections)) {
+        e.selectedSections.forEach(s => coveredSections.add(s));
+      }
+    });
+
     for (const item of selectedClass.program) {
-      if (item.type === 'custom') {
-        const isLogged = entries.some(e => 
+      if (item.type === 'custom' || !item.lessonId) {
+        const isLogged = completedProgItemIds.has(item.id) || entries.some(e => 
           (e.customContent && e.customContent.includes(item.title)) || 
-          (e.component === 'Contrôle' && item.title.toUpperCase().includes('CONTRÔLE'))
+          (e.component === 'Contrôle' && item.title.toUpperCase().includes('CONTRÔLE')) ||
+          (e.component === 'Contrôle' && item.title.includes('فرض'))
         );
         if (!isLogged) return item;
       } else if (item.lessonId) {
         const lesson = lessons.find(l => l.id === item.lessonId);
-        if (!lesson) continue;
+        if (!lesson) {
+          if (!completedProgItemIds.has(item.id)) return item;
+          continue;
+        }
         const sections = lesson.content?.sections || [];
         const completedCount = sections.filter(sec => coveredSections.has(sec.title)).length;
         if (completedCount < sections.length) {
@@ -1068,58 +1245,102 @@ export default function AdminLogbook() {
     return null; // All completed
   };
 
-  // Open "Add Séance" modal pre-filled with the next planned item
-  const handleOpenAddFromProgram = () => {
-    const nextItem = getNextPlannedItem();
-    if (!nextItem) {
-      alert(isArMode ? "لقد تم إنجاز جميع دروس البرنامج!" : "Tous les éléments du programme ont été complétés !");
-      handleOpenAddModal();
-      return;
-    }
-
+  // Open "Add Séance" modal pre-filled with a specific program item
+  const handleOpenAddSpecificProgramItem = (item) => {
     setEditingEntry(null);
-    
     let docTypeComponent = 'Cours';
-    if (nextItem.type === 'exercises') docTypeComponent = 'Exercices';
-    if (nextItem.type === 'homework' || nextItem.type === 'exam') docTypeComponent = 'Contrôle';
+    if (item.type === 'exercises') docTypeComponent = 'Exercices';
+    if (item.type === 'homework' || item.type === 'exam' || item.title.includes('فرض') || item.title.toUpperCase().includes('CONTRÔLE')) docTypeComponent = 'Contrôle';
 
     let suggestedSections = [];
     let customContent = '';
     let isHeaderSéance = false;
 
-    if (nextItem.lesson) {
-      // Suggest the first uncovered section
-      const firstUncovered = nextItem.uncoveredSections[0];
-      if (firstUncovered) {
-        suggestedSections = [firstUncovered.title];
-        customContent = `• ${firstUncovered.title}`;
-        
-        // If this is the very first section of the lesson, make it a Header Séance
-        const allSections = nextItem.lesson.content?.sections || [];
-        if (nextItem.uncoveredSections.length === allSections.length) {
-          isHeaderSéance = true;
-          customContent = `=== ${nextItem.lesson.title.toUpperCase()} ===\n` + customContent;
+    if (item.lessonId) {
+      const lesson = lessons.find(l => l.id === item.lessonId);
+      const coveredSections = new Set();
+      entries.forEach(e => {
+        if (e.selectedSections && Array.isArray(e.selectedSections)) {
+          e.selectedSections.forEach(s => coveredSections.add(s));
         }
+      });
+      const allSections = lesson?.content?.sections || [];
+      const uncovered = allSections.filter(s => !coveredSections.has(s.title));
+      if (uncovered.length > 0) {
+        suggestedSections = [uncovered[0].title];
+        customContent = `• ${uncovered[0].title}`;
+        if (uncovered.length === allSections.length) {
+          isHeaderSéance = true;
+          customContent = `=== ${lesson.title.toUpperCase()} ===\n` + customContent;
+        }
+      } else {
+        customContent = `=== ${lesson?.title?.toUpperCase() || item.title} ===\n`;
+        isHeaderSéance = true;
       }
     } else {
-      // Custom item
-      customContent = nextItem.title;
-      if (nextItem.title.toUpperCase().includes('CONTRÔLE') || nextItem.title.includes('فرض')) {
+      customContent = item.title;
+      if (item.title.toUpperCase().includes('CONTRÔLE') || item.title.includes('فرض')) {
         isHeaderSéance = true;
-        customContent = `=== ${nextItem.title.toUpperCase()} ===\n`;
+        customContent = `=== ${item.title.toUpperCase()} ===\n`;
       }
     }
 
     setFormData({
       date: formatLocalDate(),
-      time: '08:00 - 10:00', // default slot
+      time: '08:00 - 10:00',
       component: docTypeComponent,
-      subject: nextItem.lesson?.subject || 'Mathématiques',
-      lessonId: nextItem.lessonId || '',
-      selectedProgramItemId: nextItem.lessonId ? '' : nextItem.id,
+      subject: 'Mathématiques',
+      lessonId: item.lessonId || '',
+      selectedProgramItemId: item.id,
       selectedSections: suggestedSections,
       customContent: customContent,
       isHeaderSéance: isHeaderSéance
+    });
+    setProgramDrawerOpen(false);
+    setModalOpen(true);
+  };
+
+  // Open "Add Séance" modal pre-filled with the next planned item
+  const handleOpenAddFromProgram = () => {
+    const nextItem = getNextPlannedItem();
+    if (!nextItem) {
+      alert(isArMode ? "لقد تم إنجاز جميع دروس البرنامج المعتمد للقسم!" : "Tous les éléments du programme ont été complétés !");
+      setEditingEntry(null);
+      setFormData({
+        date: formatLocalDate(),
+        time: '08:00 - 10:00',
+        component: 'Cours',
+        subject: 'Mathématiques',
+        lessonId: '',
+        selectedProgramItemId: '',
+        selectedSections: [],
+        customContent: '',
+        isHeaderSéance: false
+      });
+      setModalOpen(true);
+      return;
+    }
+
+    handleOpenAddSpecificProgramItem(nextItem);
+  };
+
+  // Primary Add Séance handler (defaults to next program item if program is set)
+  const handleOpenAddModal = () => {
+    if (selectedClass && selectedClass.program && selectedClass.program.length > 0) {
+      handleOpenAddFromProgram();
+      return;
+    }
+    setEditingEntry(null);
+    setFormData({
+      date: formatLocalDate(),
+      time: '08:00 - 10:00',
+      component: 'Cours',
+      subject: 'Mathématiques',
+      lessonId: '',
+      selectedProgramItemId: '',
+      selectedSections: [],
+      customContent: '',
+      isHeaderSéance: false
     });
     setModalOpen(true);
   };
@@ -1177,6 +1398,7 @@ export default function AdminLogbook() {
       component: formData.component,
       subject: formData.subject,
       lessonId: formData.lessonId,
+      selectedProgramItemId: formData.selectedProgramItemId || null,
       selectedSections: formData.selectedSections,
       customContent: formData.customContent,
       isHeaderSéance: formData.isHeaderSéance,
@@ -1667,7 +1889,11 @@ export default function AdminLogbook() {
             </div>
             <h1 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>Cahier de Textes</h1>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>Remplissez le journal de classe à partir des titres des fiches de cours.</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>
+            {isArMode 
+              ? 'ملء دفتر النصوص يتم من خلال البرنامج المخصص للقسم المعني.' 
+              : 'Le remplissage du cahier de textes se fait à partir du programme officiel attribué à la classe.'}
+          </p>
         </div>
 
         {/* Class Selection Dropdown */}
@@ -1683,11 +1909,14 @@ export default function AdminLogbook() {
             style={{ width: '220px', fontWeight: 700 }}
           >
             <option value="">-- Choisir une classe --</option>
-            {classes.map(c => (
-              <option key={c.id} value={c.id}>
-                {c.name} ({c.language === 'ar' ? 'Arabe' : 'Français'})
-              </option>
-            ))}
+            {classes.map(c => {
+              const isArClass = c.language === 'ar' || c.level?.includes('arts');
+              return (
+                <option key={c.id} value={c.id}>
+                  {c.name} ({isArClass ? 'Arabe' : 'Français'})
+                </option>
+              );
+            })}
           </select>
         </div>
       </header>
@@ -1973,6 +2202,67 @@ export default function AdminLogbook() {
           
           {/* Left / Main column: Table & Headers */}
           <div>
+
+          {/* Missing Program Notice Banner */}
+          {selectedClass && (!selectedClass.program || selectedClass.program.length === 0) && (
+            <div className="no-print" style={{ 
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.12) 100%)', 
+              border: '1.5px solid rgba(245, 158, 11, 0.35)', 
+              borderRadius: '16px', 
+              padding: '1.25rem 1.5rem', 
+              marginBottom: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '1rem',
+              direction: isArMode ? 'rtl' : 'ltr'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, minWidth: '280px' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Sparkles size={22} color="#d97706" />
+                </div>
+                <div>
+                  <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '1rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                    {isArMode ? 'تنبيه: لم يتم بعد تعيين برنامج هذا القسم (Programme)' : 'Programme de la classe non configuré'}
+                  </h4>
+                  <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                    {isArMode 
+                      ? 'ملء وتتبع دفتر النصوص يتم انطلاقاً من البرنامج المخصص للقسم. يمكنك توليد البرنامج الرسمي للمستوى تلقائياً، أو ضبطه يدوياً.' 
+                      : 'Le remplissage du cahier de textes se base sur le programme de la classe. Vous pouvez initialiser le programme type du niveau ou le personnaliser.'}
+                  </p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={handleAutoGenerateProgram}
+                  className="btn"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.45rem',
+                    fontSize: '0.84rem', padding: '0.55rem 1.15rem', borderRadius: '10px',
+                    background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                    border: 'none', color: 'white', fontWeight: 700
+                  }}
+                >
+                  <Sparkles size={15} />
+                  {isArMode ? 'توليد برنامج القسم تلقائياً' : 'Générer le programme du niveau'}
+                </button>
+                <Link
+                  to={`/admin/classes/${selectedClass.id}?tab=program`}
+                  className="btn-outline"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.45rem',
+                    fontSize: '0.84rem', padding: '0.55rem 1.15rem', borderRadius: '10px',
+                    color: 'var(--text-main)', borderColor: 'var(--border)'
+                  }}
+                >
+                  <Settings size={15} />
+                  {isArMode ? 'إعداد وتخصيص البرنامج' : 'Gérer le programme'}
+                </Link>
+              </div>
+            </div>
+          )}
           
           {/* ── Class Header Block (Dotted print style at top) ── */}
           <div className="glass-panel" style={{ padding: '1.5rem 2rem', borderRadius: '20px', marginBottom: '2rem', border: '1px solid var(--border)' }}>
@@ -2000,18 +2290,32 @@ export default function AdminLogbook() {
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                {selectedClass && selectedClass.program && selectedClass.program.length > 0 && (
+                  <button
+                    onClick={() => setProgramDrawerOpen(true)}
+                    className="btn-outline"
+                    style={{ 
+                      display: 'flex', alignItems: 'center', gap: '0.4rem', 
+                      fontSize: '0.85rem', padding: '0.6rem 1.15rem', borderRadius: '10px', 
+                      background: 'rgba(99, 102, 241, 0.08)', borderColor: 'var(--violet)', color: 'var(--violet)',
+                      fontWeight: 700
+                    }}
+                  >
+                    <ListOrdered size={16} /> {isArMode ? `برنامج القسم (${selectedClass.program.length})` : `Programme (${selectedClass.program.length})`}
+                  </button>
+                )}
                 <button
                   onClick={() => setDrawerOpen(true)}
                   className="btn-outline"
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.88rem', padding: '0.6rem 1.25rem', borderRadius: '10px', background: 'transparent', borderColor: 'var(--emerald)', color: 'var(--emerald)' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', padding: '0.6rem 1.15rem', borderRadius: '10px', background: 'transparent', borderColor: 'var(--emerald)', color: 'var(--emerald)' }}
                 >
                   <CheckCircle2 size={16} /> {isArMode ? 'مؤشر التقدم' : 'Progression'}
                 </button>
                 <button
                   onClick={triggerPrint}
                   className="btn-outline"
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.88rem', padding: '0.6rem 1.25rem', borderRadius: '10px', background: 'transparent' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', padding: '0.6rem 1.15rem', borderRadius: '10px', background: 'transparent' }}
                 >
                   <Printer size={16} /> Imprimer le cahier
                 </button>
@@ -2021,9 +2325,10 @@ export default function AdminLogbook() {
                     className="btn"
                     style={{ 
                       display: 'flex', alignItems: 'center', gap: '0.4rem', 
-                      fontSize: '0.88rem', padding: '0.6rem 1.25rem', borderRadius: '10px',
+                      fontSize: '0.85rem', padding: '0.6rem 1.25rem', borderRadius: '10px',
                       background: 'linear-gradient(135deg, var(--emerald) 0%, #059669 100%)',
-                      border: 'none', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)'
+                      border: 'none', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)',
+                      fontWeight: 800
                     }}
                   >
                     <Sparkles size={16} /> {isArMode ? 'تعبئة من البرنامج' : 'Remplir depuis le Programme'}
@@ -2032,9 +2337,9 @@ export default function AdminLogbook() {
                 <button
                   onClick={handleOpenAddModal}
                   className="btn"
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.88rem', padding: '0.6rem 1.25rem', borderRadius: '10px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', padding: '0.6rem 1.25rem', borderRadius: '10px' }}
                 >
-                  <Plus size={16} /> Ajouter une séance
+                  <Plus size={16} /> {isArMode ? 'إضافة حصة' : 'Ajouter une séance'}
                 </button>
               </div>
             </div>
@@ -2445,9 +2750,57 @@ export default function AdminLogbook() {
 
             {/* Drawer Content */}
             <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {levelLessons.length === 0 ? (
+              {selectedClass && selectedClass.program && selectedClass.program.length > 0 ? (
+                selectedClass.program.map((item, pIdx) => {
+                  const status = getProgramItemStatus(item);
+                  return (
+                    <div key={item.id} style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '1rem', borderRadius: '16px', border: '1px solid var(--border)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
+                        <span style={{ fontWeight: 800, color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '210px' }} title={item.title}>
+                          {pIdx + 1}. {item.title}
+                        </span>
+                        <span style={{ fontWeight: 800, color: status.isDone ? 'var(--emerald)' : 'var(--violet)' }}>
+                          {status.pct || (status.isDone ? 100 : 0)}%
+                        </span>
+                      </div>
+                      
+                      <div style={{ width: '100%', height: '8px', borderRadius: '4px', background: 'rgba(255, 255, 255, 0.05)', overflow: 'hidden', marginBottom: '0.4rem' }}>
+                        <div style={{ 
+                          width: `${status.pct || (status.isDone ? 100 : 0)}%`, 
+                          height: '100%', 
+                          borderRadius: '4px',
+                          background: status.isDone 
+                            ? 'linear-gradient(90deg, var(--emerald) 0%, #34d399 100%)' 
+                            : 'linear-gradient(90deg, var(--violet) 0%, #8b5cf6 100%)',
+                          transition: 'width 0.4s ease'
+                        }} />
+                      </div>
+
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.25rem' }}>
+                        <span>{status.total ? `${status.count} / ${status.total} ${isArMode ? 'فقرات منجزة' : 'sections'}` : status.label}</span>
+                        {!status.isDone ? (
+                          <button
+                            onClick={() => {
+                              setDrawerOpen(false);
+                              handleOpenAddSpecificProgramItem(item);
+                            }}
+                            className="btn"
+                            style={{ padding: '0.2rem 0.6rem', fontSize: '0.68rem', borderRadius: '6px' }}
+                          >
+                            ⚡ {isArMode ? 'تعبئة' : 'Saisir'}
+                          </button>
+                        ) : (
+                          <span style={{ color: 'var(--emerald)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.15rem' }}>
+                            <Check size={12} strokeWidth={3} /> {isArMode ? 'مكتمل' : 'Complété'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : levelLessons.length === 0 ? (
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  {isArMode ? 'لا توجد دروس محملة لهذا المستوى حالياً.' : 'Aucune fiche de cours chargée pour ce niveau.'}
+                  {isArMode ? 'لا توجد دروس أو عناصر مبرمجة لهذا القسم حالياً.' : 'Aucun élément de programme pour cette classe.'}
                 </p>
               ) : (
                 levelLessons.map(lesson => {
@@ -2512,6 +2865,138 @@ export default function AdminLogbook() {
               to { transform: translateX(0); }
             }
           `}} />
+        </>
+      )}
+
+      {/* ── Programme de la classe Drawer ── */}
+      {programDrawerOpen && (
+        <>
+          <div 
+            onClick={() => setProgramDrawerOpen(false)}
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)',
+              zIndex: 9999, animation: 'fadeInLogbook 0.2s ease-out'
+            }}
+          />
+          <div 
+            className="no-print"
+            style={{
+              position: 'fixed', top: 0, right: isArMode ? 'auto' : 0, left: isArMode ? 0 : 'auto', bottom: 0,
+              width: '420px', maxWidth: '92vw', background: 'var(--bg-card)',
+              borderLeft: isArMode ? 'none' : '1px solid var(--border)',
+              borderRight: isArMode ? '1px solid var(--border)' : 'none',
+              boxShadow: '0 0 35px rgba(0,0,0,0.4)', zIndex: 10000,
+              padding: '2rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem',
+              direction: isArMode ? 'rtl' : 'ltr', animation: 'slideInRightLogbook 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-main)', margin: '0 0 0.2rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <ListOrdered size={20} color="var(--violet)" />
+                  {isArMode ? 'البرنامج المعتمد للقسم' : 'Programme officiel de la classe'}
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  {selectedClass ? `${selectedClass.name} • ${selectedClass.program?.length || 0} ${isArMode ? 'عناصر مقررة' : 'activités'}` : ''}
+                </p>
+              </div>
+              <button 
+                onClick={() => setProgramDrawerOpen(false)}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.25rem' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingRight: '0.25rem' }}>
+              {(!selectedClass?.program || selectedClass.program.length === 0) ? (
+                <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  <p style={{ fontWeight: 700 }}>{isArMode ? 'لم يتم تحديد برنامج لهذا القسم بعد.' : 'Aucun programme défini.'}</p>
+                  <button onClick={handleAutoGenerateProgram} className="btn" style={{ marginTop: '0.75rem', fontSize: '0.8rem' }}>
+                    ⚡ {isArMode ? 'توليد البرنامج تلقائياً' : 'Générer le programme'}
+                  </button>
+                </div>
+              ) : (
+                selectedClass.program.map((item, pIdx) => {
+                  const status = getProgramItemStatus(item);
+                  return (
+                    <div 
+                      key={item.id} 
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.02)',
+                        border: status.isDone ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid var(--border)',
+                        borderRadius: '12px', padding: '0.85rem 1rem',
+                        display: 'flex', flexDirection: 'column', gap: '0.5rem'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0, flex: 1 }}>
+                          <span style={{
+                            width: '24px', height: '24px', borderRadius: '50%',
+                            background: 'var(--bg-glass)', border: '1px solid var(--border)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', flexShrink: 0
+                          }}>
+                            {pIdx + 1}
+                          </span>
+                          <span style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {item.title}
+                          </span>
+                        </div>
+                        <span style={{
+                          fontSize: '0.68rem', fontWeight: 800,
+                          color: status.color, background: status.bg,
+                          padding: '0.15rem 0.45rem', borderRadius: '4px', flexShrink: 0
+                        }}>
+                          {status.label}
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '0.4rem' }}>
+                        <span style={{
+                          fontSize: '0.65rem', fontWeight: 700,
+                          color: item.type === 'homework' ? 'var(--danger)' : item.type === 'exercises' ? 'var(--warning)' : 'var(--violet)',
+                          textTransform: 'uppercase'
+                        }}>
+                          {item.type === 'homework' ? (isArMode ? 'فرض محروس' : 'devoir') : item.type === 'exercises' ? (isArMode ? 'تمارين' : 'série') : (isArMode ? 'درس' : 'cours')}
+                        </span>
+                        {!status.isDone ? (
+                          <button
+                            type="button"
+                            onClick={() => handleOpenAddSpecificProgramItem(item)}
+                            className="btn"
+                            style={{
+                              padding: '0.25rem 0.75rem', fontSize: '0.72rem', borderRadius: '8px',
+                              background: 'linear-gradient(135deg, var(--violet) 0%, #4338ca 100%)',
+                              border: 'none', fontWeight: 700
+                            }}
+                          >
+                            ⚡ {isArMode ? 'تعبئة في دفتر النصوص' : 'Saisir cette séance'}
+                          </button>
+                        ) : (
+                          <span style={{ fontSize: '0.72rem', color: 'var(--emerald)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                            <Check size={13} strokeWidth={3} /> {isArMode ? 'منجز' : 'Validé'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {selectedClass && (
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem', textAlign: 'center' }}>
+                <Link
+                  to={`/admin/classes/${selectedClass.id}?tab=program`}
+                  className="btn-outline"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', padding: '0.5rem 1rem', borderRadius: '8px' }}
+                >
+                  <Settings size={14} /> {isArMode ? 'إعداد وترتيب برنامج القسم' : 'Modifier le programme'}
+                </Link>
+              </div>
+            )}
+          </div>
         </>
       )}
 
@@ -2745,32 +3230,42 @@ export default function AdminLogbook() {
                 </div>
               </div>
 
-              {/* Lesson Selection (Fiche de Cours) */}
+              {/* Programme / Lesson Selection */}
               <div className="input-group">
-                <label style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)', display: 'block', marginBottom: '0.45rem' }}>
-                  {isArMode ? 'درس / مقرر المستوى الحرقف' : 'Fiche de Cours Correspondante'}
-                </label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)' }}>
+                    {isArMode ? 'عنصر من برنامج القسم المعتمد (Programme) :' : 'Élément du programme officiel de la classe :'}
+                  </label>
+                  {selectedClass && selectedClass.program && selectedClass.program.length > 0 && (
+                    <span style={{ fontSize: '0.72rem', color: 'var(--violet)', fontWeight: 700 }}>
+                      ⭐ {selectedClass.program.length} {isArMode ? 'عناصر مقررة' : 'éléments planifiés'}
+                    </span>
+                  )}
+                </div>
                 <select
                   className="modal-input"
-                  value={formData.lessonId || (formData.selectedProgramItemId ? `custom_prog_${formData.selectedProgramItemId}` : '')}
+                  value={formData.selectedProgramItemId ? `prog_item_${formData.selectedProgramItemId}` : formData.lessonId}
                   onChange={e => handleLessonChange(e.target.value)}
                 >
-                  <option value="">{isArMode ? '-- اختر درساً أو دليلاً من القائمة --' : '-- Sélectionner un cours / série --'}</option>
+                  <option value="">{isArMode ? '-- اختر عنصراً من برنامج القسم --' : '-- Sélectionner un élément du programme --'}</option>
                   
-                  {/* Custom Program Items if any */}
+                  {/* 1. Class Program Items (First Priority) */}
                   {selectedClass && selectedClass.program && selectedClass.program.length > 0 && (
-                    <optgroup label={isArMode ? 'برنامج القسم الخاص' : 'Programme spécifique de la classe'}>
-                      {selectedClass.program.map(item => (
-                        <option key={`prog_${item.id}`} value={item.lessonId || `custom_prog_${item.id}`}>
-                          ★ {item.title}
-                        </option>
-                      ))}
+                    <optgroup label={isArMode ? '⭐ برنامج القسم المعتمد (مرتب حسب التدرج)' : '⭐ Programme officiel de la classe'}>
+                      {selectedClass.program.map((item, pIdx) => {
+                        const status = getProgramItemStatus(item);
+                        return (
+                          <option key={`prog_${item.id}`} value={`prog_item_${item.id}`}>
+                            {pIdx + 1}. {item.title} {status.isDone ? '✓ (منجز)' : ''}
+                          </option>
+                        );
+                      })}
                     </optgroup>
                   )}
 
-                  {/* 1. Courses / الدروس */}
+                  {/* 2. Courses / الدروس */}
                   {levelLessons.filter(l => l.docType === 'course' || (!l.docType && !l.isExam)).length > 0 && (
-                    <optgroup label={isArMode ? '📖 الدروس والمقررات' : '📖 Cours & Chapitres du programme'}>
+                    <optgroup label={isArMode ? '📖 دروس وفصول إضافية' : '📖 Fiches de cours'}>
                       {levelLessons.filter(l => l.docType === 'course' || (!l.docType && !l.isExam)).map(l => (
                         <option key={l.id} value={l.id}>
                           📖 {l.title} {l.subject ? `(${l.subject})` : ''}
@@ -2779,9 +3274,9 @@ export default function AdminLogbook() {
                     </optgroup>
                   )}
 
-                  {/* 2. Series & Exercises / سلاسل التمارين */}
+                  {/* 3. Series & Exercises / سلاسل التمارين */}
                   {levelLessons.filter(l => l.docType === 'exercises' || l.docType === 'series').length > 0 && (
-                    <optgroup label={isArMode ? '📝 سلاسل التمارين والأعمال التوجيهية' : '📝 Séries d\'exercices & Fiches TD'}>
+                    <optgroup label={isArMode ? '📝 سلاسل تمارين إضافية' : '📝 Séries d\'exercices'}>
                       {levelLessons.filter(l => l.docType === 'exercises' || l.docType === 'series').map(l => (
                         <option key={l.id} value={l.id}>
                           📝 {l.title} {l.subject ? `(${l.subject})` : ''}
@@ -2790,9 +3285,9 @@ export default function AdminLogbook() {
                     </optgroup>
                   )}
 
-                  {/* 3. Homeworks & Controls / الفروض والامتحانات */}
+                  {/* 4. Homeworks & Controls / الفروض والامتحانات */}
                   {levelLessons.filter(l => l.docType === 'homework' || l.docType === 'exam' || l.docType === 'control' || l.isExam).length > 0 && (
-                    <optgroup label={isArMode ? '📑 الفروض المحروسة والمنزلية والامتحانات' : '📑 Devoirs surveillés & Contrôles'}>
+                    <optgroup label={isArMode ? '📑 فروض وامتحانات إضافية' : '📑 Devoirs & Contrôles'}>
                       {levelLessons.filter(l => l.docType === 'homework' || l.docType === 'exam' || l.docType === 'control' || l.isExam).map(l => (
                         <option key={l.id} value={l.id}>
                           📑 {l.title} {l.subject ? `(${l.subject})` : ''}
@@ -2802,7 +3297,9 @@ export default function AdminLogbook() {
                   )}
                 </select>
                 <p style={{ marginTop: '0.4rem', fontSize: '0.72rem', color: 'var(--text-subtle)', margin: '0.35rem 0 0 0' }}>
-                  Choisissez une fiche de cours pour extraire les titres de ses sections.
+                  {isArMode 
+                    ? 'يتم استخراج عنوان الحصة والفقرات المنجزة تلقائياً من برنامج القسم المعني.' 
+                    : 'Les titres et sections sont extraits automatiquement à partir du programme de la classe.'}
                 </p>
               </div>
 

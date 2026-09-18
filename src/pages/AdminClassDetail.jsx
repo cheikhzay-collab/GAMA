@@ -1,6 +1,6 @@
 // src/pages/AdminClassDetail.jsx
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getClassById, updateClass, removeCompetitionFromClass, updateCompetitionGrade } from '../services/classService';
 import { getAllUsers, createUserDoc, updateUserDoc } from '../services/userService';
@@ -35,7 +35,18 @@ export default function AdminClassDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { user, refreshAdminData } = useAuth();
+
+  // Guard: Must be admin
+  if (user && user.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  const getLevelLabel = (lvlId) => {
+    const found = SYSTEM_LEVELS.find(l => l.id === lvlId);
+    return found ? found.label : (lvlId || 'Niveau indéterminé');
+  };
 
   const goBack = () => {
     if (location.state?.from) {
@@ -53,7 +64,15 @@ export default function AdminClassDetail() {
   const [classObj, setClassObj] = useState(null);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('students'); // 'students', 'homework', 'grades'
+  const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'students'); // 'students', 'homework', 'grades', 'program'
+  
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl && ['students', 'homework', 'grades', 'program', 'competitions'].includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
