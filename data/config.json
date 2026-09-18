@@ -115,5 +115,13 @@
     "message": "Bonjour, j'ai une question concernant la plateforme Gima.",
     "position": "right",
     "tooltipText": "Besoin d'aide ?"
-  }
+  },
+  "school_holidays": [
+    {
+      "id": "hol-1789139374176",
+      "label": "شثش\"",
+      "endDate": "2026-09-22",
+      "startDate": "2026-09-21"
+    }
+  ]
 }
