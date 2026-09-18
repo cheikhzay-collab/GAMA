@@ -110,16 +110,45 @@ const getLocalStorageLessons = () => {
 };
 
 const saveLocalStorageLessons = (lessons) => {
+  if (!Array.isArray(lessons)) return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lessons));
+    // Store lightweight metadata for all lessons to prevent quota exceeded errors
+    const lightweight = lessons.map(l => ({
+      id: l.id,
+      title: l.title,
+      subject: l.subject,
+      chapterNumber: l.chapterNumber || l.chapter_number,
+      teacher: l.teacher,
+      phone: l.phone,
+      schools: l.schools,
+      level: l.level || l.content?.level,
+      docType: l.docType || l.doc_type || l.content?.doc_type,
+      isActive: l.isActive !== undefined ? l.isActive : l.is_active,
+      createdAt: l.createdAt || l.created_at,
+      updatedAt: l.updatedAt || l.updated_at
+    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(lightweight));
   } catch (e) {
-    console.warn('[LocalStorage] Failed to save lessons — quota exceeded, storing trimmed copy.');
     try {
-      if (Array.isArray(lessons) && lessons.length > 5) {
-        const trimmed = lessons.slice(0, 5);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
-      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(lessons.slice(0, 20)));
     } catch (_) {}
+  }
+};
+
+export const saveSingleLessonToLocalStorage = (lesson) => {
+  if (!lesson?.id) return;
+  try {
+    localStorage.setItem(`lconq_lesson_${lesson.id}`, JSON.stringify(lesson));
+  } catch (_) {}
+};
+
+export const getSingleLessonFromLocalStorage = (lessonId) => {
+  if (!lessonId) return null;
+  try {
+    const raw = localStorage.getItem(`lconq_lesson_${lessonId}`);
+    return raw ? JSON.parse(raw) : null;
+  } catch (_) {
+    return null;
   }
 };
 
@@ -324,27 +353,25 @@ export const getLessonById = async (lessonId, options = {}) => {
       const neonRes = await neonGet('lessons', lessonId, 'id');
       if (neonRes && neonRes.data) {
         const mapped = mapDBToLesson(neonRes.data);
-        // If content has sections, return immediately
-        if (mapped && mapped.content?.sections && mapped.content.sections.length > 0) {
+        if (mapped) {
+          // If sections are missing or empty in Neon, check Supabase fallback to self-heal
+          if ((!mapped.content?.sections || mapped.content.sections.length === 0) && supabase) {
+            try {
+              const { data: sbData } = await supabase
+                .from('lessons')
+                .select('*')
+                .eq('id', lessonId)
+                .maybeSingle();
+              if (sbData && sbData.content?.sections && sbData.content.sections.length > 0) {
+                const healed = mapDBToLesson(sbData);
+                // Background self-heal Neon
+                neonSaveLesson(mapLessonToDB({ ...healed, id: lessonId })).catch(() => {});
+                return healed;
+              }
+            } catch (_) {}
+          }
           return mapped;
         }
-        // If sections are missing or empty in Neon, check Supabase fallback to self-heal
-        if (supabase) {
-          try {
-            const { data: sbData } = await supabase
-              .from('lessons')
-              .select('*')
-              .eq('id', lessonId)
-              .maybeSingle();
-            if (sbData && sbData.content?.sections && sbData.content.sections.length > 0) {
-              const healed = mapDBToLesson(sbData);
-              // Background self-heal Neon
-              neonSaveLesson(mapLessonToDB({ ...healed, id: lessonId })).catch(() => {});
-              return healed;
-            }
-          } catch (_) {}
-        }
-        return mapped;
       }
     } catch (neonErr) {
       console.warn(`[Neon] Failed to fetch single lesson ${lessonId}:`, neonErr.message);
@@ -485,6 +512,27 @@ export const updateLesson = async (lessonId, updates) => {
     };
     rawLessons[idx] = updatedRecord;
     saveLocalStorageLessons(rawLessons);
+  } else {
+    // If not in cache yet, create cached entry
+    updatedRecord = {
+      id: lessonId,
+      ...updates,
+      content: {
+        ...(updates.content || {}),
+        level: updates.level || updates.content?.level,
+        doc_type: updates.docType || updates.content?.doc_type || 'course'
+      },
+      level: updates.level || updates.content?.level,
+      docType: updates.docType || updates.content?.doc_type || 'course',
+      updatedAt: now
+    };
+    rawLessons.unshift(updatedRecord);
+    saveLocalStorageLessons(rawLessons);
+  }
+
+  // Save full single lesson to dedicated localStorage key
+  if (updatedRecord) {
+    saveSingleLessonToLocalStorage(updatedRecord);
   }
 
   // 2. Invalidate cache after write
@@ -511,36 +559,44 @@ export const updateLesson = async (lessonId, updates) => {
   }
 
   // 3. Sync ONLY the modified fields to Neon PostgreSQL (Primary Cloud Database)
-  // CRITICAL: Do NOT send placeholder defaults ('Document', {}) which would overwrite valid data!
+  // CRITICAL: Ensure title is always present to satisfy Postgres NOT NULL constraints on conflict insert
+  let neonSuccess = false;
+  let neonError = null;
   try {
     const { neonUpsert } = await import('../lib/neon');
-    await neonUpsert('lessons', {
+    const neonPayload = {
       id: lessonId,
       ...dbUpdates
-    }, 'id');
+    };
+    if (!neonPayload.title && updatedRecord?.title) {
+      neonPayload.title = updatedRecord.title;
+    }
+    const neonRes = await neonUpsert('lessons', neonPayload, 'id');
+    if (neonRes && neonRes.error) {
+      neonError = neonRes.error?.message || String(neonRes.error);
+      console.warn('[Neon] Error syncing updateLesson:', neonRes.error);
+    } else {
+      neonSuccess = true;
+    }
   } catch (err) {
+    neonError = err?.message || String(err);
     console.warn('[Neon] Error syncing updateLesson:', err.message || err);
   }
 
-  // 4. Companion API (non-blocking fallback)
+  // 4. Companion API (fast local persistence)
+  let localDbSuccess = false;
   try {
-    const list = await localDb.get('/lessons');
-    if (Array.isArray(list)) {
-      const lesson = list.find(l => l.id === lessonId);
-      if (lesson) {
-        const merged = { ...lesson, ...dbUpdates, content: { ...(lesson.content || {}), ...(dbUpdates.content || {}) } };
-        await localDb.post('/lessons', merged);
-      } else {
-        const fullLesson = updatedRecord || updates;
-        const newRecord = {
-          id: lessonId,
-          ...mapLessonToDB(fullLesson),
-          ...dbUpdates,
-          created_at: fullLesson.createdAt || now
-        };
-        await localDb.post('/lessons', newRecord);
+    const fullPayload = {
+      id: lessonId,
+      ...(updatedRecord ? mapLessonToDB(updatedRecord) : {}),
+      ...dbUpdates,
+      content: {
+        ...((updatedRecord && updatedRecord.content) || {}),
+        ...(dbUpdates.content || {})
       }
-    }
+    };
+    await localDb.post(`/lessons/${lessonId}`, fullPayload);
+    localDbSuccess = true;
   } catch (err) {
     console.warn('[LocalDB] Could not sync updateLesson:', err.message);
   }
@@ -560,7 +616,14 @@ export const updateLesson = async (lessonId, updates) => {
     }
   }
 
-  return { success: true, id: lessonId };
+  return { 
+    success: true, 
+    id: lessonId,
+    neonSuccess,
+    localDbSuccess,
+    neonError,
+    timestamp: now
+  };
 };
 
 /**

@@ -16633,33 +16633,27 @@
     "id": "MOCK-L-CY2QQCC55",
     "title": "Continuité d'une fonction",
     "subject": "Mathématiques",
-    "chapter_number": null,
+    "chapter_number": "",
     "teacher": "ZAYANI MED",
-    "phone": null,
+    "phone": "",
     "schools": [],
-    "level": null,
+    "level": "2bac_pc_svt",
     "doc_type": "course",
     "content": {
       "level": "2bac_pc_svt",
       "header": {
-        "phone": "",
+        "prep_title": "Résumé 01 2026",
         "schools": [],
         "subject": "Mathématiques",
-        "teacher": "fayssal",
-        "is_summary": true,
-        "prep_title": "Résumé 01",
         "fiche_title": "Continuité d'une fonction",
-        "summary_meta": {
-          "prof": "Prof : fayssal",
-          "title": "Résumé 01 : Continuité d'une fonction",
-          "school": "",
-          "website": "www.elboutkhili.jimdofree.com",
-          "level_name": "2 Bac sx"
-        },
-        "is_national_exam": false,
-        "national_exam_meta": null
+        "chapter_number": "",
+        "teacher": "ZAYANI MED",
+        "phone": "",
+        "capacites_attendues": "",
+        "contenus": "",
+        "le_contenu": ""
       },
-      "doc_type": "summary",
+      "doc_type": "course",
       "metadata": {
         "language": "fr"
       },
@@ -16676,9 +16670,16 @@
           "title": "Continuité d'une fonction en un point d'abscisse $x_0$",
           "column": 1,
           "points": "",
+          "bgColor": "transparent",
           "content": "Soit $f$ une fonction définie sur un intervalle ouvert $I$ et $x_0 \\in I$.\\nLa fonction $f$ est continue en $x_0 \\Leftrightarrow \\lim_{x \\to x_0} f(x) = f(x_0)$.",
+          "bg_color": "transparent",
+          "fontSize": "",
           "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
           "accent_text": "",
+          "line_height": "",
           "section_header": "1) Continuité d'une fonction en un point",
           "section_number": "1"
         },
@@ -16698,9 +16699,16 @@
           "title": "Continuité d'une fonction à droite et à gauche d'un point $a$",
           "column": 1,
           "points": "",
+          "bgColor": "transparent",
           "content": "La fonction $f$ est continue à droite de $a \\Leftrightarrow \\lim_{x \\to a^+} f(x) = f(a)$\nLa fonction $f$ est continue à gauche de $a \\Leftrightarrow \\lim_{x \\to a^-} f(x) = f(a)$",
+          "bg_color": "transparent",
+          "fontSize": "",
           "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
           "accent_text": "la fonction $f$ est continue en $a \\Leftrightarrow f$ est continue à droite et à gauche du point $a$",
+          "line_height": "",
           "section_header": "1) Continuité d'une fonction en un point",
           "section_number": "1"
         },
@@ -16720,9 +16728,16 @@
           "title": "$f$ une fonction définie sur un intervalle $[a; b]$",
           "column": 1,
           "points": "",
+          "bgColor": "transparent",
           "content": "La fonction $f$ est continue sur l'intervalle ouvert $]a; b[$ ssi $f$ est continue en chaque point de l'intervalle $]a; b[$.\nLa fonction $f$ est continue sur l'intervalle $[a; b]$ ssi $f$ est continue sur l'intervalle $]a; b[$ et continue à droite de $a$ et à gauche de $b$.",
+          "bg_color": "transparent",
+          "fontSize": "",
           "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
           "accent_text": "",
+          "line_height": "",
           "section_header": "2) Continuité d'une fonction sur un intervalle",
           "section_number": "2"
         },
@@ -16758,9 +16773,16 @@
           "title": "Exemple des fonction usuelles continue sur un intervalle",
           "column": 1,
           "points": "",
+          "bgColor": "#fefce8",
           "content": "**1)** Toute fonction polynomiale est continue sur $\\mathbb{R}$\n**2)** Les fonctions rationnelles sont continues en tout intervalles inclus dans leurs domaines de définitions\n**3)** La fonction $x \\to \\sqrt{x}$ est continue sur $[0; +\\infty[$\n**4)** Les fonctions $x \\to \\cos x$ et $x \\to \\sin x$ sont continues sur $\\mathbb{R}$\n**5)** La fonction $x \\to \\tan x$ est continue sur tout intervalle inclus dans l'ensemble $\\mathbb{R} - \\left\\{ \\frac{\\pi}{2} + k\\pi / k \\in \\mathbb{Z} \\right\\}$\n**6)** La fonction $x \\to |x|$ est continue sur $\\mathbb{R}$",
+          "bg_color": "#fefce8",
+          "fontSize": "",
           "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
           "accent_text": "",
+          "line_height": "",
           "section_header": "2) Continuité d'une fonction sur un intervalle",
           "section_number": "2"
         },
@@ -16792,9 +16814,16 @@
           "title": "Somme -produit-quotient-composée",
           "column": 2,
           "points": "",
+          "bgColor": "transparent",
           "content": "La fonction $f = (u + v)$ est continue sur l'intervalle $I$ **ssi** les fonctions $u$ et $v$ sont continues sur l'intervalle $I$\nLa fonction $f = (\\alpha. u)$ est continue sur $I$ **ssi** la fonction $u$ est continue sur $I$\nLa fonction $f = (u. v)$ est continue sur $I$ **ssi** $u$ et $v$ sont continues sur $I$\nLa fonction $f = \\frac{u}{v}$ est continue sur $I$ **ssi** $u$ est continue sur $I$ et $v$ continue sur $I$ et $(\\forall x \\in I) ; v(x) \\neq 0$\nLa fonction $f = \\sqrt{u}$ est continue sur $I$ **ssi** la fonction $u$ est continue sur $I$ et $(\\forall x \\in I) ; u(x) \\geq 0$",
+          "bg_color": "transparent",
+          "fontSize": "",
           "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
           "accent_text": "",
+          "line_height": "",
           "section_header": "Opérations sur les fonctions continues",
           "section_number": ""
         },
@@ -16814,9 +16843,16 @@
           "title": "Image d'un intervalle par une fonction continue",
           "column": 2,
           "points": "",
+          "bgColor": "transparent",
           "content": "L'image d'un intervalle par une fonction continue est un intervalle\nSi $f$ est continue sur un segment $[a, b]$ et $M$ est le maximum de $f$ sur $[a, b]$ et $m$ est le minimum de $f$ sur $[a, b]$. Alors $f([a, b]) = [m, M]$",
+          "bg_color": "transparent",
+          "fontSize": "",
           "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
           "accent_text": "",
+          "line_height": "",
           "section_header": "3) Image d'un intervalle -Théorème des valeurs intermédiaire",
           "section_number": "3"
         },
@@ -16846,9 +16882,16 @@
           "title": "Image d'un intervalle par fonction continue et strictement monotone",
           "column": 1,
           "points": "",
+          "bgColor": "transparent",
           "content": "",
+          "bg_color": "transparent",
+          "fontSize": "",
           "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
           "accent_text": "",
+          "line_height": "",
           "section_header": "Image d'un intervalle par fonction continue et strictement monotone",
           "section_number": ""
         },
@@ -16868,9 +16911,16 @@
           "title": "Théorème des valeurs intermédiaires (TVI)",
           "column": 1,
           "points": "",
+          "bgColor": "transparent",
           "content": "Si $f$ une fonction continue sur $[a; b]$, alors pour tout réel $k$ compris entre $f(a)$ et $f(b)$, il existe un réel $c$ dans $[a; b]$ tel que $f(c) = k$.\nEn d'autres termes : l'équation $f(x) = k$ d'inconnue $x$ admet au moins une solution dans $[a, b]$ pour tout $k$ compris entre $f(a)$ et $f(b)$.",
+          "bg_color": "transparent",
+          "fontSize": "",
           "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
           "accent_text": "",
+          "line_height": "",
           "section_header": "Théorème des valeurs intermédiaires (TVI)",
           "section_number": ""
         },
@@ -16890,9 +16940,16 @@
           "title": "Corollaire 01",
           "column": 1,
           "points": "",
+          "bgColor": "transparent",
           "content": "Si $f$ une fonction continue sur $[a; b]$ et $f(a) \\times f(b) < 0$; alors l'équation $f(x) = 0$ admet au moins une solution $a$ dans $]a; b[$.\nDe plus si $f$ est **strictement monotone** sur $[a; b]$ alors $a$ est unique.",
+          "bg_color": "transparent",
+          "fontSize": "",
           "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
           "accent_text": "",
+          "line_height": "",
           "section_header": "Théorème des valeurs intermédiaires (TVI)",
           "section_number": ""
         },
@@ -16912,9 +16969,16 @@
           "title": "Corollaire 02",
           "column": 1,
           "points": "",
+          "bgColor": "transparent",
           "content": "Si la fonction $f$ est **continue** et **strictement monotone** sur l'intervalle $I$ et $k \\in f(I)$.\nAlors l'équation $f(x) = k$ admet une unique solution $a$ dans $I$.",
+          "bg_color": "transparent",
+          "fontSize": "",
           "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
           "accent_text": "",
+          "line_height": "",
           "section_header": "Théorème des valeurs intermédiaires (TVI)",
           "section_number": ""
         },
@@ -16930,9 +16994,16 @@
           "title": "4) Fonction Réciproque d'une fonction continue et strictement monotone",
           "column": 2,
           "points": "",
+          "bgColor": "transparent",
           "content": "Si $f$ une fonction **continue** et **strictement monotone** sur $I$; Alors la fonction $f$ admet une fonction réciproque, notée $f^{-1}$ définie sur l'intervalle $J = f(I)$.",
+          "bg_color": "transparent",
+          "fontSize": "",
           "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
           "accent_text": "",
+          "line_height": "",
           "section_header": "4) Fonction Réciproque d'une fonction continue et strictement monotone",
           "section_number": "4"
         },
@@ -16941,7 +17012,7 @@
           "type": "property",
           "items": [
             {
-              "text": "Si $f$ est continue et strictement monotone sur un $I$ alors : $\\begin{cases} f^{-1}(x) = y \\\\ x \\in f(I) \\end{cases} \\Leftrightarrow \\begin{cases} f(y) = x \\\\ y \\in I \\end{cases}$",
+              "text": "Si $f$ est continue et strictement monotone sur un $I$ alors : \n\n\n\n\n\n\n\n\n\n\n\n$$\\begin{cases} f^{-1}(x) = y \\\\ x \\in f(I) \\end{cases}$$\n\n\n\n\n\n\n\n\n\n\n\n \\Leftrightarrow \n\n\n\n\n\n\n\n\n\n\n\n$$\\begin{cases} f(y) = x \\\\ y \\in I \\end{cases}$$\n\n\n\n\n\n\n\n\n\n\n\n",
               "type": "bullet"
             },
             {
@@ -16960,9 +17031,16 @@
           "title": "Propriétés de fonction réciproque $f^{-1}$",
           "column": 2,
           "points": "",
-          "content": "Si $f$ est continue et strictement monotone sur un $I$ alors : $\\begin{cases} f^{-1}(x) = y \\\\ x \\in f(I) \\end{cases} \\Leftrightarrow \\begin{cases} f(y) = x \\\\ y \\in I \\end{cases}$\n$f^{-1}$ est continue sur $f(I)$ et a même sens de variation que $f$.\nLes courbes représentatives de $f$ et de $f^{-1}$, sont symétriques par rapport la droite d'équation $y=x$.\n$(\\forall x \\in I); f^{-1} \\circ f(x) = x \\quad ; \\quad (\\forall x \\in J); f \\circ f^{-1}(x) = x$",
+          "bgColor": "transparent",
+          "content": "Si $f$ est continue et strictement monotone sur un $I$ alors : \n\n\n\n\n\n\n\n\n\n\n\n$$\\begin{cases} f^{-1}(x) = y \\\\ x \\in f(I) \\end{cases}$$\n\n\n\n\n\n\n\n\n\n\n\n \\Leftrightarrow \n\n\n\n\n\n\n\n\n\n\n\n$$\\begin{cases} f(y) = x \\\\ y \\in I \\end{cases}$$\n\n\n\n\n\n\n\n\n\n\n\n\n$f^{-1}$ est continue sur $f(I)$ et a même sens de variation que $f$.\nLes courbes représentatives de $f$ et de $f^{-1}$, sont symétriques par rapport la droite d'équation $y=x$.\n$(\\forall x \\in I); f^{-1} \\circ f(x) = x \\quad ; \\quad (\\forall x \\in J); f \\circ f^{-1}(x) = x$",
+          "bg_color": "transparent",
+          "fontSize": "",
           "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
           "accent_text": "",
+          "line_height": "",
           "section_header": "4) Fonction Réciproque d'une fonction continue et strictement monotone",
           "section_number": "4"
         },
@@ -16982,9 +17060,16 @@
           "title": "5) Fonction racine n-ième",
           "column": 2,
           "points": "",
+          "bgColor": "transparent",
           "content": "La fonction $x \\to x^n$ est continue et strictement monotone sur $[0; +\\infty[$ donc admet une fonction réciproque sur $[0; +\\infty[$.\nCette fonction est appelée la fonction racine n-ième, et elle est notée par : $x \\to \\sqrt[n]{x}$.",
+          "bg_color": "transparent",
+          "fontSize": "",
           "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
           "accent_text": "",
+          "line_height": "",
           "section_header": "5) Fonction racine n-ième",
           "section_number": "5"
         },
@@ -17010,9 +17095,16 @@
           "title": "Propriété : Soient $x$ et $y$ dans $[0; +\\infty[$ et $m$ et $n$ dans $\\mathbb{N}^*$ :",
           "column": 2,
           "points": "",
+          "bgColor": "transparent",
           "content": "",
+          "bg_color": "transparent",
+          "fontSize": "",
           "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
           "accent_text": "",
+          "line_height": "",
           "section_header": "5) Fonction racine n-ième",
           "section_number": "5"
         },
@@ -17028,9 +17120,16 @@
           "title": "Puissances rationnelles d'un nombre réel strictement positif :",
           "column": 2,
           "points": "",
+          "bgColor": "transparent",
           "content": "Soient $a$ un réel strictement positif et $p \\in \\mathbb{Z}$ et $q \\in \\mathbb{N}^*$ on a: $\\sqrt[q]{a^p} = a^{\\frac{p}{q}}$.",
+          "bg_color": "transparent",
+          "fontSize": "",
           "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
           "accent_text": "",
+          "line_height": "",
           "section_header": "5) Fonction racine n-ième",
           "section_number": "5"
         }
@@ -17044,12 +17143,14 @@
         "level_name": "2 Bac sx"
       },
       "is_national_exam": false,
-      "national_exam_meta": null
+      "national_exam_meta": null,
+      "columns_count": 2
     },
     "is_active": true,
     "is_archived": false,
     "created_at": "2026-09-04T11:04:20.835+00:00",
-    "updated_at": "2026-09-06T10:31:25.916+00:00"
+    "updated_at": "2026-09-18T16:40:02.078Z",
+    "updatedAt": "2026-09-18T16:40:04.594Z"
   },
   {
     "id": "MOCK-L-MQNOQP9A8",
@@ -36569,5 +36670,438 @@
     "created_at": "2026-09-18T09:52:28.616Z",
     "createdAt": "2026-09-18T09:52:28.864Z",
     "updatedAt": "2026-09-18T10:24:58.406Z"
+  },
+  {
+    "id": "MOCK-L-Y038FBTD6",
+    "title": "Série d'exercices : Arithmétique dans l'ensemble N",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": null,
+    "phone": null,
+    "schools": [],
+    "level": "common_core_sci",
+    "doc_type": "exercises",
+    "content": {
+      "level": "common_core_sci",
+      "doc_type": "exercises",
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "subject": "Mathématiques",
+        "prep_title": "Tronc Commun Scientifique (BIOF)",
+        "fiche_title": "Série d'exercices : Arithmétique dans l'ensemble N",
+        "teacher": "Professeur",
+        "phone": "",
+        "schools": [
+          "Lycée Qualifiant"
+        ]
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "title": "Exercice 1 : Divisibilité et propriétés algébriques",
+          "points": "5 pts",
+          "content": "Soit $n$ un entier naturel non nul.\\n1) a) Vérifier que $n^2+n+1 = n(n+1)+1$.\\n   b) Montrer que si un entier $d$ divise $n$ et $d$ divise $n+1$, alors $d=1$.\\n2) En déduire que $n^2+n+1$ n'est jamais divisible par $n$.\\n3) Soit $A = n^3 - n$. Montrer que $A$ est divisible par 6 pour tout $n \\in \\mathbb{N}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n$ un entier naturel non nul.\\n1) a) Vérifier que $n^2+n+1 = n(n+1)+1$.\\n   b) Montrer que si un entier $d$ divise $n$ et $d$ divise $n+1$, alors $d=1$.\\n2) En déduire que $n^2+n+1$ n'est jamais divisible par $n$.\\n3) Soit $A = n^3 - n$. Montrer que $A$ est divisible par 6 pour tout $n \\in \\mathbb{N}$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "1"
+        },
+        {
+          "id": "ex-2",
+          "type": "exercise",
+          "title": "Exercice 2 : Parité et démonstrations",
+          "points": "5 pts",
+          "content": "Soient $a$ et $b$ deux entiers naturels.\\n1) a) Vérifier que $(a+b)^2 - (a-b)^2 = 4ab$.\\n   b) Montrer que $a$ et $b$ ont la même parité si et seulement si $a+b$ est pair.\\n2) En déduire que si $a+b$ est pair, alors $a^2+b^2$ est pair.\\n3) Montrer que le produit de quatre entiers naturels consécutifs est toujours divisible par 24.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soient $a$ et $b$ deux entiers naturels.\\n1) a) Vérifier que $(a+b)^2 - (a-b)^2 = 4ab$.\\n   b) Montrer que $a$ et $b$ ont la même parité si et seulement si $a+b$ est pair.\\n2) En déduire que si $a+b$ est pair, alors $a^2+b^2$ est pair.\\n3) Montrer que le produit de quatre entiers naturels consécutifs est toujours divisible par 24."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "2"
+        },
+        {
+          "id": "ex-3",
+          "type": "exercise",
+          "title": "Exercice 3 : Nombres premiers, décomposition et carrés parfaits",
+          "points": "5 pts",
+          "content": "Soit $N$ un entier naturel dont la décomposition en facteurs premiers est $N = 2^a \\times 3^b \\times 5^c$ où $a,b,c \\in \\mathbb{N}^*$.\\n1) Déterminer le nombre de diviseurs de $N$ en fonction de $a,b,c$.\\n2) On suppose que $N$ est un carré parfait. Montrer que $a$, $b$ et $c$ sont des nombres pairs.\\n3) Soit $M = 1200$. Décomposer $M$ en produit de facteurs premiers.\\n4) Déterminer le plus petit entier naturel $k$ tel que $1200k$ soit un carré parfait.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $N$ un entier naturel dont la décomposition en facteurs premiers est $N = 2^a \\times 3^b \\times 5^c$ où $a,b,c \\in \\mathbb{N}^*$.\\n1) Déterminer le nombre de diviseurs de $N$ en fonction de $a,b,c$.\\n2) On suppose que $N$ est un carré parfait. Montrer que $a$, $b$ et $c$ sont des nombres pairs.\\n3) Soit $M = 1200$. Décomposer $M$ en produit de facteurs premiers.\\n4) Déterminer le plus petit entier naturel $k$ tel que $1200k$ soit un carré parfait."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "3"
+        },
+        {
+          "id": "ex-4",
+          "type": "exercise",
+          "title": "Exercice 4 : PGCD et PPCM avec applications",
+          "points": "5 pts",
+          "content": "Soient $a$ et $b$ deux entiers naturels non nuls.\\n1) Calculer $\\text{PGCD}(105, 140)$ et $\\text{PPCM}(105, 140)$.\\n2) Montrer que $\\text{PGCD}(n, n+1) = 1$ pour tout $n \\in \\mathbb{N}^*$.\\n3) En déduire $\\text{PPCM}(n, n+1)$ pour tout $n \\in \\mathbb{N}^*$.\\n4) Soient $x, y \\in \\mathbb{N}^*$ tels que $x+y = 120$ et $\\text{PGCD}(x,y) = 15$. Déterminer toutes les paires $(x,y)$ possibles.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soient $a$ et $b$ deux entiers naturels non nuls.\\n1) Calculer $\\text{PGCD}(105, 140)$ et $\\text{PPCM}(105, 140)$.\\n2) Montrer que $\\text{PGCD}(n, n+1) = 1$ pour tout $n \\in \\mathbb{N}^*$.\\n3) En déduire $\\text{PPCM}(n, n+1)$ pour tout $n \\in \\mathbb{N}^*$.\\n4) Soient $x, y \\in \\mathbb{N}^*$ tels que $x+y = 120$ et $\\text{PGCD}(x,y) = 15$. Déterminer toutes les paires $(x,y)$ possibles."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "4"
+        },
+        {
+          "id": "ex-5",
+          "type": "exercise",
+          "title": "Exercice 5 : Critères de divisibilité et nombres à chiffres",
+          "points": "5 pts",
+          "content": "1) Soit $N = \\overline{abc}$ un nombre à trois chiffres (où $a, b, c$ sont des chiffres et $a \\neq 0$). Montrer que $N$ est divisible par 3 si et seulement si $a+b+c$ est divisible par 3.\\n2) Déterminer tous les chiffres $x$ tels que le nombre $\\overline{7x5x}$ (où $x$ représente le même chiffre) soit divisible par 15.\\n3) Montrer que le nombre $10^n - 1$ est divisible par 9 pour tout $n \\in \\mathbb{N}^*$.\\n4) Soit $S_n = 1 + 10 + 10^2 + \\dots + 10^{n-1}$. Montrer que $S_n$ est divisible par 3 si et seulement si $n$ est divisible par 3.",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "1) Soit $N = \\overline{abc}$ un nombre à trois chiffres (où $a, b, c$ sont des chiffres et $a \\neq 0$). Montrer que $N$ est divisible par 3 si et seulement si $a+b+c$ est divisible par 3.\\n2) Déterminer tous les chiffres $x$ tels que le nombre $\\overline{7x5x}$ (où $x$ représente le même chiffre) soit divisible par 15.\\n3) Montrer que le nombre $10^n - 1$ est divisible par 9 pour tout $n \\in \\mathbb{N}^*$.\\n4) Soit $S_n = 1 + 10 + 10^2 + \\dots + 10^{n-1}$. Montrer que $S_n$ est divisible par 3 si et seulement si $n$ est divisible par 3."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "5"
+        },
+        {
+          "id": "ex-6",
+          "type": "exercise",
+          "title": "Exercice 6 : Synthèse et raisonnement avancé",
+          "points": "5 pts",
+          "content": "Soit $n$ un entier naturel.\\n1) Montrer que le produit de deux entiers naturels consécutifs est toujours pair.\\n2) Déterminer les entiers naturels $n$ tels que $n^2+3n+2$ soit un nombre premier.\\n3) Soit $A = 2^{2n} - 1$. Montrer que $A$ est divisible par 3 pour tout $n \\in \\mathbb{N}^*$.\\n4) Trouver tous les entiers naturels $n$ tels que $n+1$ divise $n^2+n+1$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n$ un entier naturel.\\n1) Montrer que le produit de deux entiers naturels consécutifs est toujours pair.\\n2) Déterminer les entiers naturels $n$ tels que $n^2+3n+2$ soit un nombre premier.\\n3) Soit $A = 2^{2n} - 1$. Montrer que $A$ est divisible par 3 pour tout $n \\in \\mathbb{N}^*$.\\n4) Trouver tous les entiers naturels $n$ tels que $n+1$ divise $n^2+n+1$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "6"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-18T11:39:58.696Z",
+    "created_at": "2026-09-18T11:39:58.695Z",
+    "createdAt": "2026-09-18T11:39:59.634Z"
+  },
+  {
+    "id": "MOCK-L-1MCOOF9IC",
+    "title": "Série d'exercices : Continuité et limites (TVI, Bijection, Racine n-ème)",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": null,
+    "phone": null,
+    "schools": [],
+    "level": "2bac_pc_svt",
+    "doc_type": "exercises",
+    "content": {
+      "level": "2bac_pc_svt",
+      "doc_type": "exercises",
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "subject": "Mathématiques",
+        "prep_title": "2ème Bac Sciences Expérimentales (PC / SVT)",
+        "fiche_title": "Série d'exercices : Continuité et limites (TVI, Bijection, Racine n-ème)",
+        "teacher": "Professeur",
+        "phone": "",
+        "schools": [
+          "Lycée Qualifiant"
+        ]
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "title": "Exercice 1 : Étude de fonction, TVI, Bijection et fonction réciproque",
+          "points": "5 pts",
+          "content": "Soit $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = x^3 + x - 1$.\n\n1) a) Montrer que $f$ est continue sur $\\mathbb{R}$.\n   b) Étudier la monotonie de $f$ sur $\\mathbb{R}$.\n\n2) a) Montrer que l'équation $f(x) = 0$ admet une unique solution $\\alpha$ dans l'intervalle $]0, 1[$.\n   b) Montrer que $f$ réalise une bijection de $\\mathbb{R}$ vers $\\mathbb{R}$.\n\n3) Soit $f^{-1}$ la fonction réciproque de $f$.\n   a) Déterminer la valeur de $f^{-1}(1)$.\n   b) Montrer que $f^{-1}$ est dérivable en $1$ et calculer $(f^{-1})'(1)$.\n\n4) a) Vérifier que $\\alpha^3 + \\alpha = 1$.\n   b) Calculer $\\lim_{x \\to +\\infty} \\frac{f^{-1}(x)}{\\sqrt[3]{x}}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = x^3 + x - 1$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Montrer que $f$ est continue sur $\\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Étudier la monotonie de $f$ sur $\\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Montrer que l'équation $f(x) = 0$ admet une unique solution $\\alpha$ dans l'intervalle $]0, 1[$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Montrer que $f$ réalise une bijection de $\\mathbb{R}$ vers $\\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) Soit $f^{-1}$ la fonction réciproque de $f$."
+            },
+            {
+              "type": "bullet",
+              "text": "a) Déterminer la valeur de $f^{-1}(1)$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Montrer que $f^{-1}$ est dérivable en $1$ et calculer $(f^{-1})'(1)$."
+            },
+            {
+              "type": "bullet",
+              "text": "4) a) Vérifier que $\\alpha^3 + \\alpha = 1$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Calculer $\\lim_{x \\to +\\infty} \\frac{f^{-1}(x)}{\\sqrt[3]{x}}$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "1"
+        },
+        {
+          "id": "ex-2",
+          "type": "exercise",
+          "title": "Exercice 2 : Racine n-ième, suites et limites complexes",
+          "points": "5 pts",
+          "content": "Soit $n \\in \\mathbb{N}^*$ un entier naturel non nul.\nOn considère la fonction $g_n$ définie sur $[0, +\\infty[$ par $g_n(x) = x^n + x - 1$.\n\n1) a) Montrer que pour tout $n \\in \\mathbb{N}^*$, l'équation $g_n(x) = 0$ admet une unique solution $\\alpha_n$ dans l'intervalle $]0, 1[$.\n   b) Comparer $\\alpha_n$ et $\\alpha_{n+1}$.\n\n2) On considère la suite $(\\alpha_n)_{n \\ge 1}$.\n   a) Montrer que la suite $(\\alpha_n)$ est convergente.\n   b) Déterminer sa limite $L$.\n\n3) Calculer les limites suivantes :\n   a) $\\lim_{x \\to 1} \\frac{\\sqrt[n]{x} - 1}{x-1}$.\n   b) $\\lim_{x \\to 0^+} \\frac{\\sqrt[n]{1+x} - 1}{x}$.\n\n4) Soit $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = \\sqrt[3]{x^3+x^2+1} - x$.\n   Calculer $\\lim_{x \\to +\\infty} f(x)$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n \\in \\mathbb{N}^*$ un entier naturel non nul."
+            },
+            {
+              "type": "text",
+              "text": "On considère la fonction $g_n$ définie sur $[0, +\\infty[$ par $g_n(x) = x^n + x - 1$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Montrer que pour tout $n \\in \\mathbb{N}^*$, l'équation $g_n(x) = 0$ admet une unique solution $\\alpha_n$ dans l'intervalle $]0, 1[$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Comparer $\\alpha_n$ et $\\alpha_{n+1}$."
+            },
+            {
+              "type": "bullet",
+              "text": "2) On considère la suite $(\\alpha_n)_{n \\ge 1}$."
+            },
+            {
+              "type": "bullet",
+              "text": "a) Montrer que la suite $(\\alpha_n)$ est convergente."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Déterminer sa limite $L$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) Calculer les limites suivantes :"
+            },
+            {
+              "type": "bullet",
+              "text": "a) $\\lim_{x \\to 1} \\frac{\\sqrt[n]{x} - 1}{x-1}$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) $\\lim_{x \\to 0^+} \\frac{\\sqrt[n]{1+x} - 1}{x}$."
+            },
+            {
+              "type": "bullet",
+              "text": "4) Soit $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = \\sqrt[3]{x^3+x^2+1} - x$."
+            },
+            {
+              "type": "text",
+              "text": "Calculer $\\lim_{x \\to +\\infty} f(x)$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "2"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-18T11:45:43.001Z",
+    "created_at": "2026-09-18T11:45:42.999Z",
+    "createdAt": "2026-09-18T11:45:43.280Z"
+  },
+  {
+    "id": "MOCK-L-IXTS1UPU8",
+    "title": "Série - 1 : Continuité d'une fonction numérique",
+    "subject": "Mathématiques",
+    "chapter_number": "",
+    "teacher": "",
+    "phone": "",
+    "schools": [],
+    "level": "2bac_pc_svt",
+    "doc_type": "exercises",
+    "content": {
+      "level": "2bac_pc_svt",
+      "header": {
+        "prep_title": "Préparation aux concours",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Série - 1 : Continuité d'une fonction numérique",
+        "chapter_number": "",
+        "teacher": "",
+        "phone": "",
+        "capacites_attendues": "",
+        "contenus": "",
+        "le_contenu": ""
+      },
+      "doc_type": "exercises",
+      "metadata": {
+        "language": "fr"
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "1) Étudier la continuité de la fonction $f$ au point d'abscisse $x_0$ dans les cas a, b et c.",
+              "type": "text"
+            },
+            {
+              "text": "2) Déterminer les réels $a$ et $b$.",
+              "type": "text"
+            },
+            {
+              "text": "3) Déterminer la valeur du paramètre $a$.",
+              "type": "text"
+            }
+          ],
+          "title": "Exercice 1 : continuité en un point",
+          "points": "",
+          "bgColor": "#fefce8",
+          "content": "1) Étudier la continuité de la fonction $f$ au point d'abscisse $x_0$ dans les cas suivants :\\na) \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = \\frac{x^3 - 1}{x - 1} \\quad ; x \\neq 1 \\\\ f(1) = 3 \\text{ et } x_0 = 1 \\end{cases}$$\n\n\n\n\n\n\n\n\\nb) \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = \\frac{\\sqrt{x+1} - 1}{x} \\quad ; x \\neq 0 \\\\ f(0) = \\frac{1}{2} \\text{ et } x_0 = 0 \\end{cases}$$\n\n\n\n\n\n\n\n\\nc) \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = \\frac{x}{\\sqrt{x}} \\quad ; x > 0 \\\\ f(x) = \\frac{1-\\cos(2x)}{x} \\quad ; x < 0 \\\\ f(0) = 0 \\quad \\text{et } x_0 = 0 \\end{cases}$$\n\n\n\n\n\n\n\n\n\n2) Déterminer les valeurs des réels $a$ et $b$ pour que la fonction $f$ soit continue en $x_0$ tel que :\n\n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = 2ax + a^2 + 1 \\\\ f(1) = 0 \\text{ et } x_0 = 1 \\end{cases}$$\n\n\n\n\n\n\n\n ; \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = ax + b \\quad ; x \\geq 2 \\\\ f(x) = x^2 - b - 3a \\quad ; x \\leq 2 \\\\ f(2) = 0 \\quad ; x_0 = 2 \\end{cases}$$\n\n\n\n\n\n\n\n\n\n3) Soit $f$ la fonction numérique définie par :\n\n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = \\frac{2x^2 + x - 1}{2x^2 - 3x + 1} \\quad ; x \\neq \\frac{1}{2} \\text{ et } x \\neq 1 \\\\ f\\left(\\frac{1}{2}\\right) = a \\end{cases}$$\n\n\n\n\n\n\n\n\\nDéterminer la valeur de $a$ sachant que $f$ est continue en $\\frac{1}{2}$.",
+          "bg_color": "#fefce8",
+          "fontSize": "11pt",
+          "language": "fr",
+          "solution": "1) a) $\\lim_{x \\to 1} f(x) = \\lim_{x \\to 1} \\frac{(x-1)(x^2+x+1)}{x-1} = \\lim_{x \\to 1} (x^2+x+1) = 3 = f(1)$.\\nDonc $f$ est continue en $x_0 = 1$.\n\\nb) $\\lim_{x \\to 0} f(x) = \\lim_{x \\to 0} \\frac{(\\sqrt{x+1}-1)(\\sqrt{x+1}+1)}{x(\\sqrt{x+1}+1)} = \\lim_{x \\to 0} \\frac{x}{x(\\sqrt{x+1}+1)} = \\lim_{x \\to 0} \\frac{1}{\\sqrt{x+1}+1} = \\frac{1}{2} = f(0)$.\\nDonc $f$ est continue en $x_0 = 0$.\n\\nc) $\\lim_{x \\to 0^+} f(x) = \\lim_{x \\to 0^+} \\sqrt{x} = 0$.\n$\\lim_{x \\to 0^-} f(x) = \\lim_{x \\to 0^-} \\frac{1-\\cos(2x)}{x} = \\lim_{x \\to 0^-} 2x \\times \\frac{1-\\cos(2x)}{(2x)^2} = 0 \\times \\frac{1}{2} = 0$.\\nPuisque $\\lim_{x \\to 0^+} f(x) = \\lim_{x \\to 0^-} f(x) = f(0) = 0$, $f$ est continue en $x_0 = 0$.\n\n2) Pour le premier cas : $f(1) = 0 \\iff 2a(1) + a^2 + 1 = 0 \\iff (a+1)^2 = 0 \\iff a = -1$.\\nPour le second cas : $f$ est continue en 2 si et seulement si $\\lim_{x \\to 2^+} f(x) = \\lim_{x \\to 2^-} f(x) = f(2) = 0$.\n$\\lim_{x \\to 2^+} f(x) = 2a + b = 0 \\implies 2a + b = 0$.\n$\\lim_{x \\to 2^-} f(x) = 4 - b - 3a = 0 \\implies 3a + b = 4$.\\nEn soustrayant les deux équations : $a = 4$, d'où $b = -8$.\n\n3) On factorise le numérateur et le dénominateur :\n$2x^2 + x - 1 = (2x - 1)(x + 1)$ et $2x^2 - 3x + 1 = (2x - 1)(x - 1)$.\n$\\lim_{x \\to \\frac{1}{2}} f(x) = \\lim_{x \\to \\frac{1}{2}} \\frac{(2x - 1)(x + 1)}{(2x - 1)(x - 1)} = \\lim_{x \\to \\frac{1}{2}} \\frac{x + 1}{x - 1} = \\frac{\\frac{3}{2}}{-\\frac{1}{2}} = -3$.\\nComme $f$ est continue en $\\frac{1}{2}$, on a $a = f\\left(\\frac{1}{2}\\right) = \\lim_{x \\to \\frac{1}{2}} f(x) = -3$.",
+          "font_size": "11pt",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-2",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "1) Continuité de $g$ sur $\\mathbb{R}$.",
+              "type": "text"
+            },
+            {
+              "text": "2) Continuité de $f$ sur l'intervalle $I$.",
+              "type": "text"
+            }
+          ],
+          "title": "Exercice 2 : continuité sur un intervalle",
+          "points": "",
+          "bgColor": "transparent",
+          "content": "1) Étudier la continuité de la fonction $g$ sur $\\mathbb{R}$ telle que :\n\n\n\n\n\n\n\n\n$$\\begin{cases} g(x) = x - \\sqrt{x - 2} \\quad ; x \\geq 2 \\\\ g(x) = \\frac{2\\sin(x - 2)}{x - 2} \\quad ; x < 2 \\end{cases}$$\n\n\n\n\n\n\n\n\n\n2) Étudier la continuité de la fonction $f$ sur l'intervalle $I$ dans les cas suivants :\\na) $f(x) = 2x - 1 + \\sin(x) \\quad ; I = \\mathbb{R}$\\nb) $f(x) = (x^3 + 2x)\\cos(x) \\quad ; I = \\mathbb{R}^+$\\nc) $f(x) = \\frac{\\sin(x)}{x - 1} \\quad ; I = ]-\\infty; 1[$\\nd) $f(x) = \\sqrt{x^2 + x + 1} \\quad ; I = \\mathbb{R}$\\ne) $f(x) = \\cos(\\sin(x)) \\quad ; I = \\mathbb{R}$",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "language": "fr",
+          "solution": "1) • Sur $]2; +\\infty[$ : $x \\mapsto x$ est continue et $x \\mapsto \\sqrt{x-2}$ est continue sur $[2; +\\infty[$, donc $g$ est continue sur $]2; +\\infty[$.\n• Sur $]-\\infty; 2[$ : $x \\mapsto 2\\sin(x-2)$ et $x \\mapsto x-2$ sont continues et $x-2 \\neq 0$, donc $g$ est continue sur $]-\\infty; 2[$.\n• En $x_0 = 2$ :\n$g(2) = 2 - \\sqrt{0} = 2$.\n$\\lim_{x \\to 2^+} g(x) = 2$.\n$\\lim_{x \\to 2^-} g(x) = \\lim_{x \\to 2^-} 2 \\frac{\\sin(x-2)}{x-2} = 2 \\times 1 = 2$.\\nDonc $g$ est continue en 2. Ainsi $g$ est continue sur $\\mathbb{R}$.\n\n2) a) Somme de fonctions continues sur $\\mathbb{R}$ (polynôme et sinus), donc $f$ est continue sur $\\mathbb{R}$.\\nb) Produit d'une fonction polynomiale et de la fonction cosinus, toutes deux continues sur $\\mathbb{R}^+$, donc $f$ est continue sur $\\mathbb{R}^+$.\\nc) Quotient de deux fonctions continues sur $]-\\infty; 1[$ dont le dénominateur ne s'annule pas sur $]-\\infty; 1[$, donc $f$ est continue sur $]-\\infty; 1[$.\\nd) $x \\mapsto x^2+x+1$ est continue et strictement positive sur $\\mathbb{R}$ (car $\\Delta = -3 < 0$), donc la composée avec la racine carrée est continue sur $\\mathbb{R}$.\\ne) Composée des fonctions $\\sin$ (continue sur $\\mathbb{R}$) et $\\cos$ (continue sur $\\mathbb{R}$), donc $f$ est continue sur $\\mathbb{R}$.",
+          "font_size": "11pt",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-3",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "1) Théorème des Valeurs Intermédiaires (au moins une solution).",
+              "type": "text"
+            },
+            {
+              "text": "2) Unicité de la solution par la stricte monotonie.",
+              "type": "text"
+            },
+            {
+              "text": "3) Encadrement de $\\alpha$.",
+              "type": "text"
+            }
+          ],
+          "title": "Exercice 3 : T.V.I",
+          "points": "",
+          "bgColor": "transparent",
+          "content": "1) Montrer que l'équation $f(x) = 0$ admet au moins une solution dans l'intervalle $I$ dans les cas suivants :\\na) $f(x) = 7x^3 - x - 1 \\quad ; I = [0; 1]$\\nb) $f(x) = \\cos(x) - x \\quad ; I = \\left[0; \\frac{\\pi}{2}\\right]$\\nc) $f(x) = x\\sqrt{x + 2} \\quad ; I = [-1; 2]$\n\n2) Montrer que l'équation $f(x) = 0$ admet une solution unique $\\alpha \\in I$ telle que :\\na) $f(x) = 2x^3 - 3x^2 - 1 \\quad ; I = [1; 2]$\\nb) $f(x) = x + \\cos(x) \\quad ; I = \\left[-\\frac{\\pi}{2}; 0\\right]$\\nc) $f(x) = \\frac{1}{x} - x^3 - 1 \\quad ; I = ]0; +\\infty[$\n\n3) Donner un encadrement d'amplitude $L = 0,25$ pour la solution $\\alpha \\in [1; 2]$ de l'équation : $2x^3 - 3x^2 - 1 = 0$.",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "language": "fr",
+          "solution": "1) a) $f$ est continue sur $[0; 1]$. $f(0) = -1 < 0$ et $f(1) = 5 > 0$. Comme $f(0) \\times f(1) < 0$, d'après le TVI, l'équation $f(x)=0$ admet au moins une solution dans $[0; 1]$.\\nb) $f$ est continue sur $\\left[0; \\frac{\\pi}{2}\\right]$. $f(0) = 1 > 0$ et $f\\left(\\frac{\\pi}{2}\\right) = -\\frac{\\pi}{2} < 0$. Par le TVI, $f(x)=0$ a au moins une solution dans $\\left[0; \\frac{\\pi}{2}\\right]$.\\nc) $f$ est continue sur $[-1; 2]$. $f(-1) = -1 < 0$ et $f(2) = 4 > 0$. $f(-1) \\times f(2) < 0$, donc au moins une solution dans $[-1; 2]$.\n\n2) a) $f'(x) = 6x^2 - 6x = 6x(x - 1) > 0$ sur $]1; 2]$. Donc $f$ est strictement croissante et continue sur $[1; 2]$. $f(1) = -2 < 0$ et $f(2) = 3 > 0$. Par le TVI, $f(x)=0$ admet une unique solution $\\alpha \\in [1; 2]$.\\nb) $f'(x) = 1 - \\sin(x) > 0$ sur $]-\\frac{\\pi}{2}; 0[$. $f$ est strictement croissante et continue sur $\\left[-\\frac{\\pi}{2}; 0\\right]$. $f\\left(-\\frac{\\pi}{2}\\right) = -\\frac{\\pi}{2} < 0$ et $f(0) = 1 > 0$. Donc solution unique $\\alpha$.\\nc) $f'(x) = -\\frac{1}{x^2} - 3x^2 < 0$ sur $]0; +\\infty[$. $f$ est strictement décroissante et continue sur $]0; +\\infty[$. $\\lim_{x \\to 0^+} f(x) = +\\infty$ et $\\lim_{x \\to +\\infty} f(x) = -\\infty$. $0 \\in f(]0; +\\infty[) = \\mathbb{R}$, donc solution unique $\\alpha$.\n\n3) Par dichotomie sur $[1; 2]$ pour $f(x) = 2x^3 - 3x^2 - 1$ :\n- Milieu $m_1 = 1,5$ : $f(1,5) = 2(3,375) - 3(2,25) - 1 = 6,75 - 6,75 - 1 = -1 < 0$.\n  Puisque $f(1,5) < 0$ et $f(2) = 3 > 0$, $\\alpha \\in [1,5; 2]$.\n- Milieu $m_2 = 1,75$ : $f(1,75) = 2(5,359375) - 3(3,0625) - 1 = 10,71875 - 9,1875 - 1 = 0,53125 > 0$.\n  Puisque $f(1,5) < 0$ et $f(1,75) > 0$, $\\alpha \\in [1,5; 1,75]$.\\nL'amplitude est $1,75 - 1,5 = 0,25$. D'où : $1,5 < \\alpha < 1,75$.",
+          "font_size": "11pt",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-4",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "1) Tableau de variations de $f$.",
+              "type": "text"
+            },
+            {
+              "text": "2) Solution unique $\\alpha$ dans $\\mathbb{R}$.",
+              "type": "text"
+            },
+            {
+              "text": "3) Localisation dans $]0; 1[$.",
+              "type": "text"
+            },
+            {
+              "text": "4) Approximation par dichotomie.",
+              "type": "text"
+            }
+          ],
+          "title": "Exercice 4 : T.V.I et la dichotomie",
+          "points": "",
+          "bgColor": "transparent",
+          "content": "Soit $f$ la fonction numérique définie sur $\\mathbb{R}$ par : $f(x) = 3x^3 - 4x^2 + 4x - 1$\n\n1) Dresser le tableau de variations de $f$ sur $\\mathbb{R}$.\n2) Montrer que l'équation $f(x) = 0$ admet une solution unique $\\alpha$ dans $\\mathbb{R}$.\n3) Vérifier que $\\alpha \\in ]0; 1[$.\n4) En utilisant la dichotomie, donner une valeur approchée de $\\alpha$ à une précision $10^{-2}$.",
+          "bg_color": "transparent",
+          "fontSize": "11pt",
+          "language": "fr",
+          "solution": "1) $f'(x) = 9x^2 - 8x + 4$. Le discriminant est $\\Delta = 64 - 4(9)(4) = 64 - 144 = -80 < 0$. Ainsi, $f'(x) > 0$ pour tout $x \\in \\mathbb{R}$. La fonction $f$ est strictement croissante sur $\\mathbb{R}$.\\nLimites : $\\lim_{x \\to -\\infty}",
+          "font_size": "11pt",
+          "lineHeight": "",
+          "line_height": ""
+        }
+      ],
+      "is_summary": false,
+      "summary_meta": null,
+      "is_national_exam": false,
+      "national_exam_meta": null,
+      "columns_count": 2
+    },
+    "is_active": true,
+    "updated_at": "2026-09-18T16:26:12.315Z",
+    "createdAt": "2026-09-18T16:17:49.726Z",
+    "updatedAt": "2026-09-18T16:26:13.105Z"
   }
 ]

@@ -118,6 +118,7 @@ const mutate = async (endpoint, options) => {
 export const localDb = {
   get,
   post: (endpoint, body) => mutate(endpoint, { method: 'POST', body: JSON.stringify(body) }),
+  put: (endpoint, body) => mutate(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
   delete: (endpoint, id) => mutate(`${endpoint}?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
 };
 

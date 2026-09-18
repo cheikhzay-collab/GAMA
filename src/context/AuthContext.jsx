@@ -1239,6 +1239,9 @@ export function AuthProvider({ children }) {
 
     const handleVisibilityChange = async () => {
       if (document.visibilityState === 'visible') {
+        const neonToken = localStorage.getItem('gama_auth_token');
+        if (neonToken) return; // Neon-authenticated users don't have a Supabase auth session
+
         console.log('[Auth] Tab became visible. Syncing session from storage...');
         try {
           if (supabase) {

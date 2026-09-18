@@ -12,7 +12,7 @@ import {
   Type, Palette, BookOpen, Layers, Lightbulb, CornerDownLeft,
   GraduationCap, School, Phone, Globe, Tag, Bookmark, CheckSquare, Settings2, Users, Languages,
   Zap, Award, Search, Target, MessageSquare, Link2, HelpCircle, Info, Pin,
-  CheckCheck, Copy, Paintbrush, Columns, Wand2, RefreshCw
+  CheckCheck, Copy, Paintbrush, Columns, Wand2, RefreshCw, Database
 } from 'lucide-react';
 import PdfFigureCropperModal from '../components/PdfFigureCropperModal';
 import AiFigureEnhancerModal from '../components/AiFigureEnhancerModal';
@@ -96,7 +96,26 @@ export default function AdminLessonEdit() {
   const { user, loading: authLoading } = useAuth();
   const isMobile = useIsMobile();
 
+  // Component States & Database Sync Trackers
+  const [lesson, setLesson] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [lastSavedTime, setLastSavedTime] = useState('');
+  const [dbSyncStatus, setDbSyncStatus] = useState(null);
+  const isInitialLoadedRef = useRef(false);
+
   const goBack = () => {
+    if (hasUnsavedChanges) {
+      const confirmLeave = window.confirm(
+        isArMode
+          ? 'لديك تعديلات غير محفوظة! هل أنت متأكد من رغبتك في المغادرة دون حفظ في قاعدة البيانات؟'
+          : 'Vous avez des modifications non enregistrées ! Voulez-vous vraiment quitter sans enregistrer dans la base de données ?'
+      );
+      if (!confirmLeave) return;
+    }
     if (location.state?.from) {
       navigate(location.state.from);
       return;
@@ -112,13 +131,6 @@ export default function AdminLessonEdit() {
     }
     navigate('/admin/lessons');
   };
-
-  // Component States
-  const [lesson, setLesson] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   const [activeRibbonTab, setActiveRibbonTab] = useState('home'); // 'home' | 'math' | 'insert' | 'settings'
 
@@ -136,7 +148,7 @@ export default function AdminLessonEdit() {
   const [isActiveStatus, setIsActiveStatus] = useState(true);
   const [availableClasses, setAvailableClasses] = useState([]);
   const [customClassInput, setCustomClassInput] = useState('');
-  const [isGeneralInfoExpanded, setIsGeneralInfoExpanded] = useState(true);
+  const [isGeneralInfoExpanded, setIsGeneralInfoExpanded] = useState(false);
   const [columnsCount, setColumnsCount] = useState(2);
 
   // Global Style States (Apply to all sections/exercises)
@@ -295,6 +307,50 @@ export default function AdminLessonEdit() {
             };
           });
           setSections(loadedSections);
+
+          if (data.updatedAt || data.updated_at) {
+            const d = new Date(data.updatedAt || data.updated_at);
+            if (!isNaN(d.getTime())) {
+              setLastSavedTime(d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+            }
+          }
+
+          // Check for any unsaved local recovery draft
+          try {
+            const draftRaw = sessionStorage.getItem(`lconq_draft_${id}`);
+            if (draftRaw) {
+              const draft = JSON.parse(draftRaw);
+              if (draft?.draftTimestamp) {
+                const draftDate = new Date(draft.draftTimestamp);
+                const serverDate = new Date(data.updatedAt || data.updated_at || 0);
+                if (draftDate.getTime() > serverDate.getTime() + 5000) {
+                  const shouldRestore = window.confirm(
+                    isArMode
+                      ? "تم العثور على نسخة محلية أحدث لم يتم حفظها بعد في قاعدة البيانات. هل تود استرجاعها؟"
+                      : "Une version locale plus récente non enregistrée a été trouvée. Voulez-vous restaurer votre travail précédent ?"
+                  );
+                  if (shouldRestore) {
+                    if (draft.ficheTitle !== undefined) setFicheTitle(draft.ficheTitle);
+                    if (draft.subject !== undefined) setSubject(draft.subject);
+                    if (draft.sections) setSections(draft.sections);
+                    if (draft.teacher !== undefined) setTeacher(draft.teacher);
+                    if (draft.phone !== undefined) setPhone(draft.phone);
+                    if (draft.prepTitle !== undefined) setPrepTitle(draft.prepTitle);
+                    if (draft.selectedLevel !== undefined) setSelectedLevel(draft.selectedLevel);
+                    if (draft.docType !== undefined) setDocType(draft.docType);
+                    if (draft.columnsCount !== undefined) setColumnsCount(draft.columnsCount);
+                    if (draft.capacitesAttendues !== undefined) setCapacitesAttendues(draft.capacitesAttendues);
+                    if (draft.contenus !== undefined) setContenus(draft.contenus);
+                    setHasUnsavedChanges(true);
+                  }
+                }
+              }
+            }
+          } catch (_) {}
+
+          setTimeout(() => {
+            isInitialLoadedRef.current = true;
+          }, 350);
         }
       } catch (err) {
         console.error(err);
@@ -306,6 +362,51 @@ export default function AdminLessonEdit() {
 
     if (id) fetchLessonData();
   }, [id]);
+
+  // Track unsaved modifications
+  useEffect(() => {
+    if (!isInitialLoadedRef.current) return;
+    setHasUnsavedChanges(true);
+  }, [
+    ficheTitle, subject, chapterNumber, teacher, phone, prepTitle,
+    selectedLevel, docType, docLanguage, schools, isActiveStatus,
+    columnsCount, capacitesAttendues, contenus, leContenu, sections
+  ]);
+
+  // Auto-backup unsaved draft to sessionStorage for crash-resilience
+  useEffect(() => {
+    if (!isInitialLoadedRef.current || !hasUnsavedChanges || !id) return;
+    const timer = setTimeout(() => {
+      try {
+        const draft = {
+          ficheTitle, subject, chapterNumber, teacher, phone, prepTitle,
+          selectedLevel, docType, docLanguage, schools, isActiveStatus,
+          columnsCount, capacitesAttendues, contenus, leContenu, sections,
+          draftTimestamp: new Date().toISOString()
+        };
+        sessionStorage.setItem(`lconq_draft_${id}`, JSON.stringify(draft));
+      } catch (_) {}
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [
+    ficheTitle, subject, chapterNumber, teacher, phone, prepTitle,
+    selectedLevel, docType, docLanguage, schools, isActiveStatus,
+    columnsCount, capacitesAttendues, contenus, leContenu, sections,
+    hasUnsavedChanges, id
+  ]);
+
+  // Prevent accidental tab closure when unsaved changes exist
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   // Section manipulation helpers
   const handleAddSection = (type = 'exercise') => {
@@ -967,7 +1068,7 @@ export default function AdminLessonEdit() {
         }
       };
 
-      await updateLesson(id, lessonData);
+      const syncResult = await updateLesson(id, lessonData);
       setLesson(prev => ({
         ...prev,
         ...lessonData,
@@ -977,12 +1078,35 @@ export default function AdminLessonEdit() {
         }
       }));
 
-      setSuccess(isArMode 
-        ? '✓ تم حفظ التعديلات والإعدادات بنجاح في قاعدة البيانات' 
-        : '✓ Fiche et paramètres enregistrés avec succès dans la base de données');
+      setHasUnsavedChanges(false);
+      const nowFormatted = new Date().toLocaleTimeString(isArMode ? 'ar-MA' : 'fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      setLastSavedTime(nowFormatted);
+      setDbSyncStatus(syncResult);
+
+      try {
+        sessionStorage.removeItem(`lconq_draft_${id}`);
+      } catch (_) {}
+
+      if (syncResult?.neonSuccess && syncResult?.localDbSuccess) {
+        setSuccess(isArMode 
+          ? `✓ تم حفظ التعديلات والمزامنة بنجاح في قاعدة البيانات السحابية (Neon) والمحلية [${nowFormatted}]` 
+          : `✓ Fiche enregistrée et synchronisée avec la base Cloud (Neon) et locale [${nowFormatted}]`);
+      } else if (syncResult?.neonSuccess) {
+        setSuccess(isArMode 
+          ? `✓ تم الحفظ بنجاح في قاعدة البيانات السحابية (Neon) [${nowFormatted}]` 
+          : `✓ Synchronisé avec succès dans la base Cloud Neon [${nowFormatted}]`);
+      } else if (syncResult?.localDbSuccess) {
+        setSuccess(isArMode 
+          ? `✓ تم الحفظ في قاعدة البيانات المحلية [${nowFormatted}] (المزامنة السحابية ستكتمل تلقائياً عند عودة الاتصال)` 
+          : `✓ Enregistré dans la base locale [${nowFormatted}] (Sync Cloud dès reconnexion)`);
+      } else {
+        setSuccess(isArMode 
+          ? `✓ تم حفظ التعديلات في الذاكرة المؤقتة [${nowFormatted}]` 
+          : `✓ Fiche enregistrée dans le cache [${nowFormatted}]`);
+      }
       setTimeout(() => {
         setSuccess('');
-      }, 3500);
+      }, 4500);
     } catch (e) {
       console.error(e);
       setError(isArMode 
@@ -1767,13 +1891,58 @@ export default function AdminLessonEdit() {
                          <><BookOpen size={14} /> <span>Contenu de la Section :</span></>}
                       </div>
 
-                      {/* Custom Section Style Toolbar (Palette, Font Size, Spacing) */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', background: '#f8fafc', padding: '0.25rem 0.5rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        {/* Compact Section Style Popover */}
+                  <div style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      onClick={() => setApplyStyleMenuIndex(prev => prev === `style-${secIdx}` ? null : `style-${secIdx}`)}
+                      className="mode-pill-btn"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        padding: '0.25rem 0.6rem',
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                        borderRadius: '6px',
+                        background: applyStyleMenuIndex === `style-${secIdx}` ? '#e0f2fe' : '#f8fafc',
+                        border: `1px solid ${applyStyleMenuIndex === `style-${secIdx}` ? '#0284c7' : '#cbd5e1'}`,
+                        color: applyStyleMenuIndex === `style-${secIdx}` ? '#0284c7' : '#475569',
+                        cursor: 'pointer'
+                      }}
+                      title={isArMode ? "تخصيص التنسيق (الخلفية، حجم الخط، التباعد)" : "Personnaliser le style de cette section"}
+                    >
+                      <Paintbrush size={12} style={{ color: '#005086' }} />
+                      <span>{isArMode ? 'تنسيق الفقرة' : 'Style'}</span>
+                      <ChevronDown size={11} />
+                    </button>
+
+                    {applyStyleMenuIndex === `style-${secIdx}` && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        right: isArMode ? 0 : 'auto',
+                        left: isArMode ? 'auto' : 0,
+                        zIndex: 100,
+                        marginTop: '6px',
+                        background: '#ffffff',
+                        border: '1px solid #cbd5e1',
+                        borderRadius: '8px',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                        padding: '0.75rem',
+                        minWidth: '260px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.65rem',
+                        direction: isArMode ? 'rtl' : 'ltr'
+                      }}>
                         {/* Background Color */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <Palette size={13} style={{ color: '#005086' }} />
-                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b' }}>الخلفية :</span>
-                          <div style={{ display: 'flex', gap: '2.5px', alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#64748b', marginBottom: '0.3rem' }}>
+                            {isArMode ? 'لون الخلفية :' : 'Couleur de fond :'}
+                          </div>
+                          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                             {[
                               { label: 'Sans fond', val: 'transparent', color: '#ffffff', border: '#cbd5e1' },
                               { label: 'Bleu doux', val: '#f0f9ff', color: '#f0f9ff', border: '#bae6fd' },
@@ -1788,8 +1957,8 @@ export default function AdminLessonEdit() {
                                 onClick={() => handleUpdateSection(secIdx, 'bgColor', (sec.bgColor || 'transparent') === c.val ? 'transparent' : c.val)}
                                 title={c.label}
                                 style={{
-                                  width: '16px',
-                                  height: '16px',
+                                  width: '18px',
+                                  height: '18px',
                                   borderRadius: '50%',
                                   background: c.color,
                                   border: `2px solid ${(sec.bgColor || 'transparent') === c.val ? '#005086' : c.border}`,
@@ -1803,187 +1972,97 @@ export default function AdminLessonEdit() {
                               value={sec.bgColor && sec.bgColor !== 'transparent' ? sec.bgColor : '#ffffff'}
                               onChange={e => handleUpdateSection(secIdx, 'bgColor', e.target.value)}
                               title="Couleur personnalisée"
-                              style={{ width: '18px', height: '18px', padding: 0, border: 'none', borderRadius: '3px', cursor: 'pointer', background: 'transparent' }}
+                              style={{ width: '20px', height: '20px', padding: 0, border: 'none', borderRadius: '3px', cursor: 'pointer', background: 'transparent' }}
                             />
                           </div>
                         </div>
 
-                        <span style={{ color: '#cbd5e1' }}>|</span>
+                        {/* Font Size & Line Height in Row */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                          <div>
+                            <label style={{ fontSize: '0.68rem', fontWeight: 800, color: '#64748b', display: 'block', marginBottom: '0.2rem' }}>
+                              {isArMode ? 'حجم الخط :' : 'Taille :'}
+                            </label>
+                            <select
+                              value={sec.fontSize || ''}
+                              onChange={e => handleUpdateSection(secIdx, 'fontSize', e.target.value)}
+                              style={{ width: '100%', fontSize: '0.72rem', padding: '3px 4px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#334155', fontWeight: 600, outline: 'none' }}
+                            >
+                              <option value="">Normal (9.2pt)</option>
+                              <option value="8pt">8pt (Compact)</option>
+                              <option value="8.5pt">8.5pt</option>
+                              <option value="9.2pt">9.2pt</option>
+                              <option value="10pt">10pt</option>
+                              <option value="11pt">11pt (Grand)</option>
+                            </select>
+                          </div>
 
-                        {/* Font Size */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <Type size={13} style={{ color: '#005086' }} />
-                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b' }}>الحجم :</span>
-                          <select
-                            value={sec.fontSize || ''}
-                            onChange={e => handleUpdateSection(secIdx, 'fontSize', e.target.value)}
-                            style={{ fontSize: '0.7rem', padding: '1px 4px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#334155', fontWeight: 600, outline: 'none' }}
-                          >
-                            <option value="">Standard (9.2pt)</option>
-                            <option value="8pt">8pt (Compact)</option>
-                            <option value="8.5pt">8.5pt</option>
-                            <option value="9.2pt">9.2pt (Normal)</option>
-                            <option value="10pt">10pt</option>
-                            <option value="11pt">11pt (Grand)</option>
-                          </select>
+                          <div>
+                            <label style={{ fontSize: '0.68rem', fontWeight: 800, color: '#64748b', display: 'block', marginBottom: '0.2rem' }}>
+                              {isArMode ? 'التباعد :' : 'Interligne :'}
+                            </label>
+                            <select
+                              value={sec.lineHeight || ''}
+                              onChange={e => handleUpdateSection(secIdx, 'lineHeight', e.target.value)}
+                              style={{ width: '100%', fontSize: '0.72rem', padding: '3px 4px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#334155', fontWeight: 600, outline: 'none' }}
+                            >
+                              <option value="">Normal (1.55)</option>
+                              <option value="1.3">1.3 (Serré)</option>
+                              <option value="1.55">1.55</option>
+                              <option value="1.75">1.75</option>
+                              <option value="2.0">2.0</option>
+                            </select>
+                          </div>
                         </div>
 
-                        <span style={{ color: '#cbd5e1' }}>|</span>
-
-                        {/* Line Spacing */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <Layers size={13} style={{ color: '#005086' }} />
-                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b' }}>التباعد :</span>
-                          <select
-                            value={sec.lineHeight || ''}
-                            onChange={e => handleUpdateSection(secIdx, 'lineHeight', e.target.value)}
-                            style={{ fontSize: '0.7rem', padding: '1px 4px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#334155', fontWeight: 600, outline: 'none' }}
-                          >
-                            <option value="">Normal (1.55)</option>
-                            <option value="1.3">1.3 (Serré)</option>
-                            <option value="1.55">1.55 (Standard)</option>
-                            <option value="1.75">1.75 (Aéré)</option>
-                            <option value="2.0">2.0 (Spacieux)</option>
-                          </select>
-                        </div>
-
-                        <span style={{ color: '#cbd5e1' }}>|</span>
-
-                        {/* Apply Style to All / تطبيق التنسيق على كامل الملف */}
-                        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'stretch' }} onClick={e => e.stopPropagation()}>
+                        {/* Batch Apply Buttons */}
+                        <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '0.45rem', display: 'flex', flexDirection: 'column', gap: '3px' }}>
                           <button
                             type="button"
-                            onClick={() => handleApplySectionStyleToAll(secIdx, 'all')}
-                            title={isArMode ? "تطبيق هذه التنسيقات (الخلفية، الحجم، التباعد) على جميع عناصر الملف دفعة واحدة" : "Appliquer ce style (Fond, Taille, Interligne) à tout le document"}
+                            onClick={() => {
+                              handleApplySectionStyleToAll(secIdx, 'all');
+                              setApplyStyleMenuIndex(null);
+                            }}
                             style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '0.25rem',
-                              background: '#eff6ff',
-                              color: '#005086',
-                              border: '1px solid #bfdbfe',
-                              borderRight: isArMode ? '1px solid #bfdbfe' : 'none',
-                              borderLeft: isArMode ? 'none' : '1px solid #bfdbfe',
-                              borderRadius: isArMode ? '0 4px 4px 0' : '4px 0 0 4px',
-                              padding: '0.15rem 0.45rem',
+                              padding: '0.35rem 0.5rem',
                               fontSize: '0.7rem',
                               fontWeight: 800,
-                              cursor: 'pointer',
-                              transition: 'all 0.15s ease'
-                            }}
-                          >
-                            <CheckCheck size={12} style={{ color: '#0284c7' }} />
-                            <span>{isArMode ? 'تطبيق على الكل' : 'Appliquer à tout'}</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setApplyStyleMenuIndex(prev => prev === secIdx ? null : secIdx);
-                            }}
-                            title={isArMode ? "خيارات التطبيق" : "Options d'application"}
-                            style={{
+                              textAlign: isArMode ? 'right' : 'left',
                               background: '#eff6ff',
                               color: '#005086',
                               border: '1px solid #bfdbfe',
-                              borderRadius: isArMode ? '4px 0 0 4px' : '0 4px 4px 0',
-                              padding: '0.15rem 0.25rem',
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center'
+                              borderRadius: '4px',
+                              cursor: 'pointer'
                             }}
                           >
-                            <ChevronDown size={11} />
+                            📑 {isArMode ? 'تطبيق التنسيق على كامل الوثيقة' : 'Appliquer à tout le document'}
                           </button>
-
-                          {applyStyleMenuIndex === secIdx && (
-                            <div style={{
-                              position: 'absolute',
-                              top: '100%',
-                              right: isArMode ? 0 : 'auto',
-                              left: isArMode ? 'auto' : 0,
-                              zIndex: 100,
-                              marginTop: '4px',
-                              background: '#ffffff',
-                              border: '1px solid #cbd5e1',
-                              borderRadius: '6px',
-                              boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
-                              padding: '0.35rem',
-                              minWidth: '220px',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '2px',
-                              direction: isArMode ? 'rtl' : 'ltr'
-                            }}>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  handleApplySectionStyleToAll(secIdx, 'all');
-                                  setApplyStyleMenuIndex(null);
-                                }}
-                                style={{
-                                  padding: '0.4rem 0.6rem',
-                                  fontSize: '0.72rem',
-                                  fontWeight: 700,
-                                  textAlign: isArMode ? 'right' : 'left',
-                                  background: 'transparent',
-                                  border: 'none',
-                                  borderRadius: '4px',
-                                  cursor: 'pointer',
-                                  color: '#1e293b'
-                                }}
-                                onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
-                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                              >
-                                📑 {isArMode ? 'تطبيق على كامل الملف (جميع العناصر)' : 'Appliquer à tout le document'}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  handleApplySectionStyleToAll(secIdx, 'exercises');
-                                  setApplyStyleMenuIndex(null);
-                                }}
-                                style={{
-                                  padding: '0.4rem 0.6rem',
-                                  fontSize: '0.72rem',
-                                  fontWeight: 700,
-                                  textAlign: isArMode ? 'right' : 'left',
-                                  background: 'transparent',
-                                  border: 'none',
-                                  borderRadius: '4px',
-                                  cursor: 'pointer',
-                                  color: '#1e293b'
-                                }}
-                                onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
-                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                              >
-                                📝 {isArMode ? 'تطبيق على جميع التمارين فقط' : 'Appliquer aux exercices seulement'}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  handleApplySectionStyleToAll(secIdx, 'course');
-                                  setApplyStyleMenuIndex(null);
-                                }}
-                                style={{
-                                  padding: '0.4rem 0.6rem',
-                                  fontSize: '0.72rem',
-                                  fontWeight: 700,
-                                  textAlign: isArMode ? 'right' : 'left',
-                                  background: 'transparent',
-                                  border: 'none',
-                                  borderRadius: '4px',
-                                  cursor: 'pointer',
-                                  color: '#1e293b'
-                                }}
-                                onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
-                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                              >
-                                📖 {isArMode ? 'تطبيق على فقرات الدرس فقط' : 'Appliquer au cours seulement'}
-                              </button>
-                            </div>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleApplySectionStyleToAll(secIdx, 'exercises');
+                              setApplyStyleMenuIndex(null);
+                            }}
+                            style={{
+                              padding: '0.35rem 0.5rem',
+                              fontSize: '0.7rem',
+                              fontWeight: 700,
+                              textAlign: isArMode ? 'right' : 'left',
+                              background: 'transparent',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              color: '#1e293b'
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                          >
+                            📝 {isArMode ? 'تطبيق على التمارين فقط' : 'Appliquer aux exercices'}
+                          </button>
                         </div>
+                      </div>
+                    )}
+                  </div>
 
                         <span style={{ color: '#cbd5e1' }}>|</span>
 
@@ -2842,7 +2921,7 @@ export default function AdminLessonEdit() {
                   {isArMode ? currentModeInfo.badgeAr : currentModeInfo.badgeFr}
                 </span>
                 <span style={{
-                  background: 'rgba(99, 102, 241, 0.12)',
+                  background: 'rgba(99, 102, 241, 0.1)',
                   color: 'var(--violet)',
                   border: '1px solid rgba(99, 102, 241, 0.25)',
                   padding: '0.2rem 0.55rem',
@@ -2850,7 +2929,7 @@ export default function AdminLessonEdit() {
                   fontSize: '0.72rem',
                   fontWeight: 800
                 }}>
-                  Word Live
+                  {getLevelDisplayName(selectedLevel, isArMode)}
                 </span>
               </div>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', margin: '3px 0 0' }}>
@@ -2861,6 +2940,31 @@ export default function AdminLessonEdit() {
 
           {/* Primary Action Buttons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+            {/* Toggle Settings Drawer / Card */}
+            <button
+              type="button"
+              onClick={() => setIsGeneralInfoExpanded(prev => !prev)}
+              className="btn-outline mode-pill-btn lesson-action-btn"
+              style={{
+                padding: '0.55rem 0.95rem',
+                fontSize: '0.84rem',
+                fontWeight: 800,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                borderRadius: '10px',
+                background: isGeneralInfoExpanded ? 'rgba(99, 102, 241, 0.12)' : 'rgba(255, 255, 255, 0.04)',
+                borderColor: isGeneralInfoExpanded ? 'var(--violet)' : 'var(--border)',
+                color: isGeneralInfoExpanded ? 'var(--violet)' : 'var(--text-main)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+              }}
+              title={isArMode ? "إعدادات الوثيقة: المستوى، الشعبة، الأقسام، الكفايات المستهدفة" : "Paramètres du document : Niveau, Classes, Objectifs"}
+            >
+              <Settings2 size={15} />
+              <span>{isArMode ? 'إعدادات الوثيقة' : 'Paramètres'}</span>
+              {isGeneralInfoExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </button>
+
             {sections.some(s => (s.type === 'exercise' || s.type === 'activity') && (s.content || '').trim()) && (
               <button
                 type="button"
@@ -2894,12 +2998,70 @@ export default function AdminLessonEdit() {
                 ) : (
                   <>
                     <Sparkles size={15} style={{ color: '#eab308' }} />
-                    <span>{isArMode ? 'حل جميع التمارين (IA)' : 'Résoudre tous les exercices (IA)'}</span>
+                    <span>{isArMode ? 'حل التمارين (IA)' : 'Résoudre (IA)'}</span>
                   </>
                 )}
               </button>
             )}
 
+            {/* Live Database Sync Badge */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+              {saving ? (
+                <span style={{
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '8px',
+                  fontSize: '0.76rem',
+                  fontWeight: 800,
+                  background: 'rgba(99, 102, 241, 0.1)',
+                  color: 'var(--violet)',
+                  border: '1px solid rgba(99, 102, 241, 0.25)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}>
+                  <Loader2 size={13} className="animate-spin" />
+                  <span>{isArMode ? 'جاري الحفظ في قاعدة البيانات...' : 'Sync DB en cours...'}</span>
+                </span>
+              ) : hasUnsavedChanges ? (
+                <span style={{
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '8px',
+                  fontSize: '0.76rem',
+                  fontWeight: 800,
+                  background: 'rgba(245, 158, 11, 0.12)',
+                  color: '#d97706',
+                  border: '1px solid rgba(245, 158, 11, 0.35)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem'
+                }}
+                title={isArMode ? "توجد تعديلات جديدة لم تحفظ بعد في قاعدة البيانات" : "Modifications non enregistrées dans la base de données"}
+                >
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#d97706', display: 'inline-block' }} />
+                  <span>{isArMode ? 'تعديلات غير محفوظة' : 'Non enregistré'}</span>
+                </span>
+              ) : (
+                <span style={{
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '8px',
+                  fontSize: '0.76rem',
+                  fontWeight: 800,
+                  background: 'rgba(16, 185, 129, 0.08)',
+                  color: 'var(--emerald)',
+                  border: '1px solid rgba(16, 185, 129, 0.25)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}
+                title={isArMode ? "متزامن ومحفوظ بالكامل في قاعدة البيانات" : "Parfaitement synchronisé avec la base de données"}
+                >
+                  <Database size={13} style={{ color: 'var(--emerald)' }} />
+                  <span>{isArMode ? `محفوظ (${lastSavedTime || 'محدث'})` : `Synchronisé DB (${lastSavedTime || 'À jour'})`}</span>
+                </span>
+              )}
+            </div>
+
+            {/* Save Button */}
             <button
               type="button"
               onClick={handleSaveLesson}
@@ -2913,135 +3075,21 @@ export default function AdminLessonEdit() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.45rem',
-                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)'
+                background: hasUnsavedChanges 
+                  ? 'linear-gradient(135deg, #10b981, #059669)' 
+                  : 'rgba(16, 185, 129, 0.85)',
+                boxShadow: hasUnsavedChanges
+                  ? '0 4px 14px rgba(16, 185, 129, 0.45)'
+                  : '0 2px 8px rgba(16, 185, 129, 0.25)',
+                transition: 'all 0.2s ease'
               }}
             >
               {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-              <span>{saving ? (isArMode ? 'جاري الحفظ...' : 'Enregistrement...') : (isArMode ? 'حفظ التعديلات' : 'Enregistrer')}</span>
+              <span>{saving ? (isArMode ? 'جاري الحفظ...' : 'Enregistrement...') : hasUnsavedChanges ? (isArMode ? 'حفظ التعديلات (Ctrl+S)' : 'Enregistrer (Ctrl+S)') : (isArMode ? 'محفوظ ✓' : 'Enregistré ✓')}</span>
             </button>
           </div>
         </div>
 
-        {/* Lower row: Interactive Mode Switcher Pills (Course vs Series vs Exam) */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '0.75rem',
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid var(--border)',
-          borderRadius: '12px',
-          padding: '0.5rem 0.85rem'
-        }}>
-        {/* Quick Mode Switcher Pills */}
-          <div className="lesson-mode-pills" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', marginInlineEnd: '0.35rem' }}>
-              {isArMode ? 'وضع التعديل :' : 'Mode d\'édition :'}
-            </span>
-
-            {/* 1. Course Mode */}
-            <button
-              type="button"
-              onClick={() => setDocType('course')}
-              className="mode-pill-btn"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                padding: '0.42rem 0.85rem',
-                borderRadius: '8px',
-                border: (docType === 'course' || docType === 'summary') ? '1px solid rgba(2, 132, 199, 0.4)' : '1px solid transparent',
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-                fontWeight: (docType === 'course' || docType === 'summary') ? 900 : 700,
-                background: (docType === 'course' || docType === 'summary')
-                  ? 'linear-gradient(135deg, #005086, #0284c7)'
-                  : 'rgba(255, 255, 255, 0.04)',
-                color: (docType === 'course' || docType === 'summary') ? '#ffffff' : 'var(--text-muted)',
-                boxShadow: (docType === 'course' || docType === 'summary') ? '0 3px 10px rgba(0, 80, 134, 0.35)' : 'none'
-              }}
-              title="التبديل إلى وضع تعديل الدروس النظرية والملخصات"
-            >
-              <BookOpen size={14} />
-              <span>{isArMode ? '📘 وضع تعديل الدروس' : '📘 Mode Cours'}</span>
-            </button>
-
-            {/* 2. Exercises Series Mode */}
-            <button
-              type="button"
-              onClick={() => setDocType('exercises')}
-              className="mode-pill-btn"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                padding: '0.42rem 0.85rem',
-                borderRadius: '8px',
-                border: docType === 'exercises' ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid transparent',
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-                fontWeight: docType === 'exercises' ? 900 : 700,
-                background: docType === 'exercises'
-                  ? 'linear-gradient(135deg, #059669, #10b981)'
-                  : 'rgba(255, 255, 255, 0.04)',
-                color: docType === 'exercises' ? '#ffffff' : 'var(--text-muted)',
-                boxShadow: docType === 'exercises' ? '0 3px 10px rgba(16, 185, 129, 0.35)' : 'none'
-              }}
-              title="التبديل إلى وضع تعديل سلاسل التمارين التطبيقية"
-            >
-              <Layers size={14} />
-              <span>{isArMode ? '📑 وضع تعديل السلاسل' : '📑 Mode Séries'}</span>
-            </button>
-
-            {/* 3. National Exam / Homework Mode */}
-            <button
-              type="button"
-              onClick={() => setDocType('national')}
-              className="mode-pill-btn"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                padding: '0.42rem 0.85rem',
-                borderRadius: '8px',
-                border: (docType === 'national' || docType === 'homework' || docType === 'concours') ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid transparent',
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-                fontWeight: (docType === 'national' || docType === 'homework' || docType === 'concours') ? 900 : 700,
-                background: (docType === 'national' || docType === 'homework' || docType === 'concours')
-                  ? 'linear-gradient(135deg, #b91c1c, #ef4444)'
-                  : 'rgba(255, 255, 255, 0.04)',
-                color: (docType === 'national' || docType === 'homework' || docType === 'concours') ? '#ffffff' : 'var(--text-muted)',
-                boxShadow: (docType === 'national' || docType === 'homework' || docType === 'concours') ? '0 3px 10px rgba(239, 68, 68, 0.35)' : 'none'
-              }}
-              title="التبديل إلى وضع تعديل الامتحانات الوطنية والفروض المحروسة"
-            >
-              <Award size={14} />
-              <span>{isArMode ? '🏛️ وضع تعديل الامتحانات' : '🏛️ Mode Examens'}</span>
-            </button>
-          </div>
-
-          {/* Quick Badges: Sections count, Exercises count, KaTeX active, Columns */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.74rem' }}>
-            <span style={{ background: 'rgba(255, 255, 255, 0.06)', padding: '0.2rem 0.55rem', borderRadius: '6px', color: 'var(--text-muted)', fontWeight: 700 }}>
-              {sections.length} {isArMode ? 'أقسام إجمالية' : 'sections au total'}
-            </span>
-            {exerciseCount > 0 && (
-              <span style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', padding: '0.2rem 0.55rem', borderRadius: '6px', fontWeight: 800 }}>
-                {exerciseCount} {isArMode ? 'تمارين' : 'exercices'}
-              </span>
-            )}
-            {docType === 'exercises' && (
-              <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--emerald)', padding: '0.2rem 0.55rem', borderRadius: '6px', fontWeight: 800 }}>
-                {columnsCount} {isArMode ? 'أعمدة عرض' : 'colonnes'}
-              </span>
-            )}
-            <span style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--violet)', padding: '0.2rem 0.55rem', borderRadius: '6px', fontWeight: 700 }}>
-              KaTeX $...$
-            </span>
-          </div>
-        </div>
       </header>
 
       {/* ── Status Alerts ── */}
@@ -3059,340 +3107,155 @@ export default function AdminLessonEdit() {
         </div>
       )}
 
-      {/* ── MICROSOFT WORD / FIGMA MODERN OFFICE RIBBON TOOLBAR ── */}
-      <div className="word-ribbon-container" style={{
+      {/* ── GLOBAL DOCUMENT STYLE BAR (Mise en page & Style) ── */}
+      <div style={{
+        position: 'sticky',
+        top: '0.5rem',
+        zIndex: 40,
         background: 'var(--bg-card)',
         border: '1px solid var(--border)',
-        borderRadius: '14px',
-        marginBottom: '1.5rem',
-        overflow: 'hidden',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+        borderRadius: '12px',
+        marginBottom: '1.25rem',
+        padding: '0.65rem 1.15rem',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '0.85rem'
       }}>
-        {/* Ribbon Tabs Header */}
-        <div className="office-ribbon-tabs" style={{
-          display: 'flex',
-          borderBottom: '1px solid var(--border)',
-          background: 'rgba(255,255,255,0.02)',
-          padding: '0 0.5rem',
-          overflowX: 'auto',
-          whiteSpace: 'nowrap'
-        }}>
-          {[
-            { id: 'home', label: isArMode ? 'الرئيسية والفقرات' : 'Accueil & Blocs', icon: Type },
-            { id: 'math', label: isArMode ? 'صيغ ورموز LaTeX' : 'Formules KaTeX & Maths', icon: Sparkles },
-            { id: 'insert', label: isArMode ? 'إدراج الوسائط والجداول' : 'Insertion & Médias', icon: Plus },
-            { id: 'style', label: isArMode ? 'التنسيق الموحد للملف' : 'Mise en page & Style', icon: Paintbrush }
-          ].map(tab => {
-            const TabIcon = tab.icon;
-            const isActive = activeRibbonTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveRibbonTab(tab.id)}
-                style={{
-                  background: isActive ? 'var(--bg-card)' : 'transparent',
-                  color: isActive ? 'var(--violet)' : 'var(--text-muted)',
-                  border: 'none',
-                  borderBottom: isActive ? '2.5px solid var(--violet)' : '2.5px solid transparent',
-                  padding: '0.7rem 1.25rem',
-                  fontSize: '0.82rem',
-                  fontWeight: isActive ? 900 : 600,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.45rem',
-                  transition: 'all 0.15s ease',
-                  flexShrink: 0
-                }}
-              >
-                <TabIcon size={14} style={{ color: isActive ? 'var(--violet)' : 'inherit' }} />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Ribbon Tab Content Panel */}
-        <div style={{ padding: '0.85rem 1.15rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.85rem' }}>
-          
-          {/* TAB 1: ACCUEIL & BLOCS */}
-          {activeRibbonTab === 'home' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', width: '100%' }}>
-              {/* Text formatting */}
-              <div style={{ display: 'flex', gap: '2px', background: 'rgba(255,255,255,0.04)', padding: '2px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                <button onClick={() => insertTextOrSnippet('**نص بخط عريض**')} className="btn-outline ribbon-action-chip" style={{ padding: '0.4rem 0.65rem', border: 'none' }} title="Gras (Ctrl+B)">
-                  <Bold size={14} />
-                </button>
-                <button onClick={() => insertTextOrSnippet('*نص مائل*')} className="btn-outline ribbon-action-chip" style={{ padding: '0.4rem 0.65rem', border: 'none' }} title="Italique (Ctrl+I)">
-                  <Italic size={14} />
-                </button>
-                <button onClick={() => insertTextOrSnippet('$\\underline{texte}$')} className="btn-outline ribbon-action-chip" style={{ padding: '0.4rem 0.65rem', border: 'none' }} title="Souligné">
-                  <Underline size={14} />
-                </button>
-              </div>
-
-              <div style={{ height: '24px', width: '1px', background: 'var(--border)' }} />
-
-              {/* Block Types Fast Creation */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)' }}>
-                  {isArMode ? 'إضافة كتلة :' : 'Ajouter Bloc :'}
-                </span>
-                {[
-                  { label: isArMode ? 'تعريف' : 'Définition', type: 'definition', icon: BookOpen, color: '#0284c7' },
-                  { label: isArMode ? 'خاصية' : 'Propriété', type: 'property', icon: Zap, color: '#10b981' },
-                  { label: isArMode ? 'مبرهنة' : 'Théorème', type: 'theorem', icon: Award, color: '#8b5cf6' },
-                  { label: isArMode ? 'ملاحظة' : 'Remarque', type: 'remark', icon: MessageSquare, color: '#f59e0b' },
-                  { label: isArMode ? 'نشاط' : 'Activité', type: 'activity', icon: Target, color: '#ec4899' },
-                  { label: isArMode ? 'تمرين' : 'Exercice', type: 'exercise', icon: FileText, color: '#ef4444' }
-                ].map(b => {
-                  const BIcon = b.icon;
-                  return (
-                    <button
-                      key={b.type}
-                      onClick={() => handleAddSection(b.type)}
-                      className="ribbon-action-chip"
-                      style={{
-                        background: 'rgba(255,255,255,0.03)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '8px',
-                        padding: '0.4rem 0.75rem',
-                        fontSize: '0.76rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.4rem',
-                        color: 'var(--text-main)'
-                      }}
-                    >
-                      <BIcon size={13} style={{ color: b.color }} />
-                      <span>{b.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 2: MATHS & FORMULES LATEX */}
-          {activeRibbonTab === 'math' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', width: '100%' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)' }}>
-                {isArMode ? 'إدراج سريع :' : 'Insertion rapide :'}
-              </span>
-
-              {QUICK_LATEX_CHIPS.map(chip => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
+          {/* Background Color */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <Palette size={14} style={{ color: 'var(--violet)' }} />
+            <span style={{ fontSize: '0.76rem', fontWeight: 800, color: 'var(--text-muted)' }}>
+              {isArMode ? 'خلفية الوثيقة :' : 'Fond :'}
+            </span>
+            <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+              {[
+                { label: 'Sans fond', val: 'transparent', color: '#ffffff', border: '#cbd5e1' },
+                { label: 'Bleu doux', val: '#f0f9ff', color: '#f0f9ff', border: '#bae6fd' },
+                { label: 'Jaune doux', val: '#fefce8', color: '#fefce8', border: '#fef08a' },
+                { label: 'Vert menthe', val: '#f0fdf4', color: '#f0fdf4', border: '#bbf7d0' },
+                { label: 'Gris élégant', val: '#f8fafc', color: '#f8fafc', border: '#e2e8f0' },
+                { label: 'Rose pastel', val: '#fff1f2', color: '#fff1f2', border: '#fecdd3' },
+              ].map(c => (
                 <button
-                  key={chip.label}
+                  key={c.val}
                   type="button"
-                  onClick={() => insertTextOrSnippet(chip.latex)}
-                  className="ribbon-action-chip"
-                  title={`${chip.title} (${chip.latex})`}
+                  onClick={() => setGlobalBgColor(c.val)}
+                  title={c.label}
                   style={{
-                    padding: '0.35rem 0.65rem',
-                    fontSize: '0.76rem',
-                    borderRadius: '6px',
-                    border: '1px solid var(--border)',
-                    background: 'rgba(255, 255, 255, 0.04)',
-                    color: 'var(--text-main)',
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    background: c.color,
+                    border: `2px solid ${globalBgColor === c.val ? 'var(--violet)' : c.border}`,
                     cursor: 'pointer',
-                    fontFamily: 'monospace',
-                    fontWeight: 700
+                    padding: 0
                   }}
-                >
-                  {chip.label}
-                </button>
+                />
               ))}
-
-              <div style={{ height: '24px', width: '1px', background: 'var(--border)', margin: '0 0.2rem' }} />
-
-              <button
-                type="button"
-                onClick={() => setIsLatexPaletteOpen(prev => !prev)}
-                className="ribbon-action-chip"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  padding: '0.4rem 0.85rem',
-                  borderRadius: '8px',
-                  background: isLatexPaletteOpen ? 'var(--violet)' : 'rgba(99, 102, 241, 0.12)',
-                  color: isLatexPaletteOpen ? '#ffffff' : 'var(--violet)',
-                  border: '1px solid rgba(99, 102, 241, 0.35)',
-                  fontSize: '0.78rem',
-                  fontWeight: 800,
-                  cursor: 'pointer'
-                }}
-              >
-                <Sparkles size={14} style={{ color: isLatexPaletteOpen ? '#fef08a' : 'var(--violet)' }} />
-                <span>{isArMode ? 'لوحة الرموز الكاملة' : 'Palette KaTeX Complète'}</span>
-              </button>
-            </div>
-          )}
-
-          {/* TAB 3: INSERTION & MÉDIAS */}
-          {activeRibbonTab === 'insert' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap', width: '100%' }}>
-              <button
-                onClick={() => {
-                  if (sections.length > 0) {
-                    handleAddItemToContentSection(sections.length - 1, 'table');
-                  } else {
-                    handleAddSection('content');
-                  }
-                }}
-                className="btn-outline ribbon-action-chip"
-                style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', borderRadius: '8px' }}
-              >
-                <Table size={14} />
-                <span>{isArMode ? 'إدراج جدول ذكي' : 'Insérer un Tableau'}</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setCropperTarget({ secIdx: Math.max(0, sections.length - 1), itemIdx: null });
-                  setIsCropperOpen(true);
-                }}
-                className="btn-outline ribbon-action-chip"
-                style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem', color: 'var(--emerald)', borderColor: 'rgba(16, 185, 129, 0.35)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', borderRadius: '8px' }}
-              >
-                <Crop size={14} />
-                <span>{isArMode ? 'قص شكل من PDF' : 'Découper Figure PDF'}</span>
-              </button>
-
-              <ImageDropZone
-                compact
-                onImageInsert={(dataUrl, alt) => handleDirectImageInsert(dataUrl, alt)}
+              <input
+                type="color"
+                value={globalBgColor && globalBgColor !== 'transparent' ? globalBgColor : '#ffffff'}
+                onChange={e => setGlobalBgColor(e.target.value)}
+                title="Couleur personnalisée"
+                style={{ width: '20px', height: '20px', padding: 0, border: 'none', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }}
               />
-
-              <button
-                onClick={() => handleAddSection('exercise')}
-                className="btn-outline ribbon-action-chip"
-                style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem', color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.35)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', borderRadius: '8px' }}
-              >
-                <Lightbulb size={14} />
-                <span>{isArMode ? '+ تمرين جديد مع الحل' : '+ Nouvel Exercice & Corrigé'}</span>
-              </button>
             </div>
-          )}
+          </div>
 
-          {/* TAB 4: MISE EN PAGE & STYLE GLOBAL */}
-          {activeRibbonTab === 'style' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap', width: '100%' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Palette size={14} style={{ color: '#005086' }} />
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)' }}>
-                  {isArMode ? 'خلفية الوثيقة :' : 'Fond :'}
-                </span>
-                <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
-                  {[
-                    { label: 'Sans fond', val: 'transparent', color: '#ffffff', border: '#cbd5e1' },
-                    { label: 'Bleu doux', val: '#f0f9ff', color: '#f0f9ff', border: '#bae6fd' },
-                    { label: 'Jaune doux', val: '#fefce8', color: '#fefce8', border: '#fef08a' },
-                    { label: 'Vert menthe', val: '#f0fdf4', color: '#f0fdf4', border: '#bbf7d0' },
-                    { label: 'Gris élégant', val: '#f8fafc', color: '#f8fafc', border: '#e2e8f0' },
-                    { label: 'Rose pastel', val: '#fff1f2', color: '#fff1f2', border: '#fecdd3' },
-                  ].map(c => (
-                    <button
-                      key={c.val}
-                      type="button"
-                      onClick={() => setGlobalBgColor(c.val)}
-                      title={c.label}
-                      style={{
-                        width: '18px',
-                        height: '18px',
-                        borderRadius: '50%',
-                        background: c.color,
-                        border: `2px solid ${globalBgColor === c.val ? 'var(--violet)' : c.border}`,
-                        cursor: 'pointer',
-                        padding: 0
-                      }}
-                    />
-                  ))}
-                  <input
-                    type="color"
-                    value={globalBgColor && globalBgColor !== 'transparent' ? globalBgColor : '#ffffff'}
-                    onChange={e => setGlobalBgColor(e.target.value)}
-                    title="Couleur personnalisée"
-                    style={{ width: '20px', height: '20px', padding: 0, border: 'none', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }}
-                  />
-                </div>
-              </div>
+          <div style={{ height: '20px', width: '1px', background: 'var(--border)' }} />
 
-              <div style={{ height: '24px', width: '1px', background: 'var(--border)' }} />
+          {/* Global Font Size */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <Type size={13} style={{ color: 'var(--text-muted)' }} />
+            <select
+              value={globalFontSize}
+              onChange={e => setGlobalFontSize(e.target.value)}
+              style={{ fontSize: '0.75rem', padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-main)', fontWeight: 600, outline: 'none' }}
+            >
+              <option value="">{isArMode ? 'حجم الخط (9.2pt)' : 'Taille (9.2pt)'}</option>
+              <option value="8pt">8pt (Compact)</option>
+              <option value="8.5pt">8.5pt</option>
+              <option value="9.2pt">9.2pt (Normal)</option>
+              <option value="10pt">10pt</option>
+              <option value="11pt">11pt (Grand)</option>
+            </select>
+          </div>
 
-              {/* Global Font Size */}
+          {/* Global Line Height */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <Layers size={13} style={{ color: 'var(--text-muted)' }} />
+            <select
+              value={globalLineHeight}
+              onChange={e => setGlobalLineHeight(e.target.value)}
+              style={{ fontSize: '0.75rem', padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-main)', fontWeight: 600, outline: 'none' }}
+            >
+              <option value="">{isArMode ? 'التباعد (1.55)' : 'Interligne (1.55)'}</option>
+              <option value="1.3">1.3 (Serré)</option>
+              <option value="1.55">1.55 (Standard)</option>
+              <option value="1.75">1.75 (Aéré)</option>
+              <option value="2.0">2.0 (Spacieux)</option>
+            </select>
+          </div>
+
+          {/* Columns switcher (if series) */}
+          {docType === 'exercises' && (
+            <>
+              <div style={{ height: '20px', width: '1px', background: 'var(--border)' }} />
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <Type size={13} style={{ color: 'var(--text-muted)' }} />
+                <Columns size={13} style={{ color: 'var(--emerald)' }} />
                 <select
-                  value={globalFontSize}
-                  onChange={e => setGlobalFontSize(e.target.value)}
-                  style={{ fontSize: '0.74rem', padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-main)', fontWeight: 600, outline: 'none' }}
+                  value={columnsCount}
+                  onChange={e => setColumnsCount(Number(e.target.value))}
+                  style={{ fontSize: '0.75rem', padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-main)', fontWeight: 700, outline: 'none' }}
                 >
-                  <option value="">{isArMode ? 'حجم الخط (افتراضي)' : 'Taille (9.2pt)'}</option>
-                  <option value="8pt">8pt (Compact)</option>
-                  <option value="8.5pt">8.5pt</option>
-                  <option value="9.2pt">9.2pt (Normal)</option>
-                  <option value="10pt">10pt</option>
-                  <option value="11pt">11pt (Grand)</option>
+                  <option value={1}>{isArMode ? 'عمود واحد' : '1 Colonne'}</option>
+                  <option value={2}>{isArMode ? 'عمودان (2 Colonnes)' : '2 Colonnes'}</option>
+                  <option value={3}>{isArMode ? '3 أعمدة' : '3 Colonnes'}</option>
                 </select>
               </div>
-
-              {/* Global Line Height */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <Layers size={13} style={{ color: 'var(--text-muted)' }} />
-                <select
-                  value={globalLineHeight}
-                  onChange={e => setGlobalLineHeight(e.target.value)}
-                  style={{ fontSize: '0.74rem', padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-main)', fontWeight: 600, outline: 'none' }}
-                >
-                  <option value="">{isArMode ? 'التباعد (عادي 1.55)' : 'Interligne (1.55)'}</option>
-                  <option value="1.3">1.3 (Serré)</option>
-                  <option value="1.55">1.55 (Standard)</option>
-                  <option value="1.75">1.75 (Aéré)</option>
-                  <option value="2.0">2.0 (Spacieux)</option>
-                </select>
-              </div>
-
-              {/* Scope selector */}
-              <select
-                value={globalScope}
-                onChange={e => setGlobalScope(e.target.value)}
-                style={{ fontSize: '0.74rem', padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-main)', fontWeight: 700, outline: 'none' }}
-              >
-                <option value="all">{isArMode ? 'كامل الملف (الكل)' : 'Tout le document'}</option>
-                <option value="exercises">{isArMode ? 'التمارين فقط' : 'Exercices uniquement'}</option>
-                <option value="course">{isArMode ? 'فقرات الدرس فقط' : 'Cours uniquement'}</option>
-              </select>
-
-              <button
-                type="button"
-                onClick={handleApplyGlobalStyleToAll}
-                className="mode-pill-btn"
-                style={{
-                  background: 'linear-gradient(135deg, #005086, #0284c7)',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '6px',
-                  padding: '0.35rem 0.85rem',
-                  fontSize: '0.76rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                  boxShadow: '0 2px 8px rgba(0,80,134,0.25)'
-                }}
-                title={isArMode ? "تطبيق هذه الإعدادات الموحدة على جميع عناصر الملف المحددة" : "Appliquer ce style global à tout le document"}
-              >
-                <CheckCheck size={13} />
-                <span>{isArMode ? 'تطبيق على الملف' : 'Appliquer au document'}</span>
-              </button>
-            </div>
+            </>
           )}
 
+          {/* Scope selector */}
+          <select
+            value={globalScope}
+            onChange={e => setGlobalScope(e.target.value)}
+            style={{ fontSize: '0.75rem', padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-main)', fontWeight: 700, outline: 'none' }}
+          >
+            <option value="all">{isArMode ? 'كامل الملف' : 'Tout le document'}</option>
+            <option value="exercises">{isArMode ? 'التمارين فقط' : 'Exercices uniquement'}</option>
+            <option value="course">{isArMode ? 'الدرس فقط' : 'Cours uniquement'}</option>
+          </select>
         </div>
+
+        {/* Apply Button */}
+        <button
+          type="button"
+          onClick={handleApplyGlobalStyleToAll}
+          className="mode-pill-btn"
+          style={{
+            background: 'linear-gradient(135deg, #005086, #0284c7)',
+            color: '#ffffff',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '0.45rem 1rem',
+            fontSize: '0.78rem',
+            fontWeight: 800,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            boxShadow: '0 2px 8px rgba(0,80,134,0.25)'
+          }}
+          title={isArMode ? "تطبيق هذه التنسيقات على عناصر الملف" : "Appliquer au document"}
+        >
+          <CheckCheck size={14} />
+          <span>{isArMode ? 'تطبيق على الملف' : 'Appliquer au document'}</span>
+        </button>
       </div>
 
       {/* ── MAIN WORKSPACE CONTENT (Live Document Canvas) ── */}
@@ -3404,52 +3267,7 @@ export default function AdminLessonEdit() {
         </div>
       </ImageDropZone>
 
-      {/* ── FLOATING QUICK-SAVE BAR ── */}
-      <div className="floating-save-pill" style={{
-        position: 'fixed',
-        bottom: '1.5rem',
-        right: '1.5rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.75rem',
-        background: 'rgba(15, 23, 42, 0.92)',
-        backdropFilter: 'blur(16px)',
-        border: '1px solid rgba(255,255,255,0.15)',
-        padding: '0.55rem 1.15rem',
-        borderRadius: '50px',
-        boxShadow: '0 10px 32px rgba(0,0,0,0.38)',
-        zIndex: 999
-      }}>
-        <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)', fontWeight: 700 }}>
-          {sections.length} {isArMode ? 'أقسام' : 'sections'} • Ctrl+S
-        </span>
 
-        <button
-          onClick={handleSaveLesson}
-          disabled={saving}
-          className="mode-pill-btn"
-          style={{
-            background: 'linear-gradient(135deg, #10b981, #059669)',
-            color: '#ffffff',
-            border: 'none',
-            padding: '0.5rem 1.15rem',
-            borderRadius: '30px',
-            fontWeight: 900,
-            fontSize: '0.84rem',
-            cursor: saving ? 'not-allowed' : 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            boxShadow: '0 4px 14px rgba(16,185,129,0.35)'
-          }}
-        >
-          {saving ? (
-            <><Loader2 className="animate-spin" size={14} /> {isArMode ? 'جاري الحفظ...' : 'Sauvegarde...'}</>
-          ) : (
-            <><Save size={14} /> {isArMode ? 'حفظ' : 'Enregistrer'}</>
-          )}
-        </button>
-      </div>
 
       {/* PDF Figure Cropper Modal */}
       <PdfFigureCropperModal

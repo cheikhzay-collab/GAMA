@@ -21,7 +21,8 @@ import {
   getTeacherScheduleConfig, 
   saveTeacherScheduleConfig, 
   getLogbookStyleConfig, 
-  saveLogbookStyleConfig 
+  saveLogbookStyleConfig,
+  getOfficialMoroccanHolidays
 } from '../services/schoolService';
 import { renderWithMath } from '../utils/mathRenderer';
 import { openLogbookPrintWindow } from '../utils/generateLogbookPDF';
@@ -288,7 +289,116 @@ const checkTimeOverlap = (t1, t2) => {
   return false;
 };
 
-// Import normalizeLevel from utils/levelHelpers
+/**
+ * Merges actual recorded entries with official school holidays and teacher absences.
+ * Each holiday appears cleanly in its chronological position with standard banner styling.
+ */
+const buildCombinedEntries = (rawEntries = [], holidaysList = [], absencesList = [], currentClass) => {
+  if (!currentClass) return [];
+  const yearDates = getAcademicYearDates();
+  const isAr = currentClass.language === 'ar' || 
+               currentClass.isArabic || 
+               (currentClass.name && currentClass.name.includes('عرب')) ||
+               (currentClass.level && currentClass.level.includes('arts'));
+
+  // 1. Filter manual entries to current academic year
+  const actualFiltered = (rawEntries || []).filter(e => {
+    if (!e || !e.date) return false;
+    const d = new Date(e.date);
+    return d >= yearDates.startDate && d <= yearDates.endDate;
+  });
+
+  // Calculate effective date cutoff:
+  // Holidays & absences should NOT be inserted into the logbook table in advance.
+  // They only appear once their date has arrived/passed in reality (or preceding an already recorded session).
+  const todayStr = formatLocalDate(new Date());
+  let maxEntryDate = '';
+  for (const e of actualFiltered) {
+    if (e.date && e.date > maxEntryDate) {
+      maxEntryDate = e.date;
+    }
+  }
+  const effectiveCutoff = todayStr > maxEntryDate ? todayStr : maxEntryDate;
+
+  // 2. Generate unified official holiday entries
+  const holidayEntries = (holidaysList || []).map(h => {
+    if (!h || !h.startDate || !h.endDate) return null;
+    const isSingleDay = h.startDate === h.endDate;
+
+    const hStart = new Date(h.startDate);
+    const hEnd = new Date(h.endDate);
+    if (hEnd < yearDates.startDate || hStart > yearDates.endDate) return null;
+
+    // Do not insert future holidays until their date has actually arrived/passed
+    if (h.startDate > effectiveCutoff) return null;
+
+    const dateDisplay = isSingleDay 
+      ? h.startDate 
+      : (isAr ? `من ${h.startDate} إلى ${h.endDate}` : `Du ${h.startDate} au ${h.endDate}`);
+
+    const bannerText = isAr 
+      ? `=== عطلة مدرسية: ${h.label} ===` 
+      : `=== Vacances scolaires : ${h.label} ===`;
+
+    return {
+      id: `holiday-${h.id || h.startDate}`,
+      classId: currentClass.id,
+      date: h.startDate,
+      displayDate: dateDisplay,
+      endDate: h.endDate,
+      time: '—',
+      component: isAr ? 'عطلة مدرسية' : 'Vacances scolaires',
+      subject: currentClass.subject || (isAr ? 'الرياضيات' : 'Mathématiques'),
+      customContent: bannerText,
+      holidayLabel: h.label,
+      isHeaderSéance: true,
+      isHolidayEntry: true
+    };
+  }).filter(Boolean);
+
+  // 3. Generate teacher absence entries
+  const absenceEntries = (absencesList || []).map(a => {
+    if (!a || !a.startDate || !a.endDate) return null;
+    const isSingleDay = a.startDate === a.endDate;
+    const aStart = new Date(a.startDate);
+    const aEnd = new Date(a.endDate);
+    if (aEnd < yearDates.startDate || aStart > yearDates.endDate) return null;
+
+    // Do not insert future absences until their date has actually arrived/passed
+    if (a.startDate > effectiveCutoff) return null;
+
+    const dateDisplay = isSingleDay 
+      ? a.startDate 
+      : (isAr ? `من ${a.startDate} إلى ${a.endDate}` : `Du ${a.startDate} au ${a.endDate}`);
+
+    const bannerText = isAr 
+      ? `=== رخصة/غياب: ${a.type} ===\nالسبب: ${a.reason || 'غير محدد'}` 
+      : `=== Absence/Congé : ${a.type} ===\nMotif : ${a.reason || 'non spécifié'}`;
+
+    return {
+      id: `absence-${a.id || a.startDate}`,
+      classId: currentClass.id,
+      date: a.startDate,
+      displayDate: dateDisplay,
+      endDate: a.endDate,
+      time: '—',
+      component: isAr ? 'رخصة/غياب' : 'Absence/Congé',
+      subject: currentClass.subject || (isAr ? 'الرياضيات' : 'Mathématiques'),
+      customContent: bannerText,
+      isHeaderSéance: true,
+      isAbsenceEntry: true
+    };
+  }).filter(Boolean);
+
+  // 4. Combine and sort chronologically by date
+  return [...actualFiltered, ...holidayEntries, ...absenceEntries].sort((a, b) => {
+    const dComp = (a.date || '').localeCompare(b.date || '');
+    if (dComp !== 0) return dComp;
+    if (a.isHolidayEntry) return -1;
+    if (b.isHolidayEntry) return 1;
+    return (a.time || '').localeCompare(b.time || '');
+  });
+};
 
 export default function AdminLogbook() {
   const { profName, profAcademy, profSchool } = useAuth();
@@ -749,17 +859,15 @@ export default function AdminLogbook() {
 
         // Exclude Holidays
         const isHoliday = holidays.some(h => {
-          const start = parseLocalDate(h.startDate, false);
-          const end = parseLocalDate(h.endDate, true);
-          return scanDate >= start && scanDate <= end;
+          if (!h.startDate || !h.endDate) return false;
+          return dateStr >= h.startDate && dateStr <= h.endDate;
         });
         if (isHoliday) continue;
 
         // Exclude Teacher Absences
         const isAbsent = absences.some(a => {
-          const start = parseLocalDate(a.startDate, false);
-          const end = parseLocalDate(a.endDate, true);
-          return scanDate >= start && scanDate <= end;
+          if (!a.startDate || !a.endDate) return false;
+          return dateStr >= a.startDate && dateStr <= a.endDate;
         });
         if (isAbsent) continue;
 
@@ -825,17 +933,15 @@ export default function AdminLogbook() {
 
         // Exclude Holidays
         const isHoliday = holidays.some(h => {
-          const start = parseLocalDate(h.startDate, false);
-          const end = parseLocalDate(h.endDate, true);
-          return scanDate >= start && scanDate <= end;
+          if (!h.startDate || !h.endDate) return false;
+          return dateStr >= h.startDate && dateStr <= h.endDate;
         });
         if (isHoliday) continue;
 
         // Exclude Teacher Absences
         const isAbsent = absences.some(a => {
-          const start = parseLocalDate(a.startDate, false);
-          const end = parseLocalDate(a.endDate, true);
-          return scanDate >= start && scanDate <= end;
+          if (!a.startDate || !a.endDate) return false;
+          return dateStr >= a.startDate && dateStr <= a.endDate;
         });
         if (isAbsent) continue;
 
@@ -882,107 +988,12 @@ export default function AdminLogbook() {
     }
   }, [classes, entries, schedule, holidays, absences, missingDaysFilter]);
 
-  // Load entries when selected class changes
+  // Load entries when selected class changes or when holidays/absences update
   useEffect(() => {
     if (selectedClass) {
       const loadEntries = async () => {
         const data = await getLogbookEntries(selectedClass.id);
-        const yearDates = getAcademicYearDates();
-        const isAr = selectedClass.language === 'ar';
-        
-        // 1. Filter actual manual entries to current academic year
-        const actualFiltered = (data || []).filter(e => {
-          const d = new Date(e.date);
-          return d >= yearDates.startDate && d <= yearDates.endDate;
-        });
-
-        // 2. Generate virtual holiday and absence entries for the selected class slots
-        const classSlots = [];
-        if (schedule) {
-          Object.keys(schedule).forEach(slotKey => {
-            if (schedule[slotKey] && schedule[slotKey].classId === selectedClass.name) {
-              classSlots.push({
-                slotKey,
-                dayName: slotKey.split('-')[0],
-                time: slotKey.split('-').slice(1).join('-')
-              });
-            }
-          });
-        }
-
-        const virtualEntries = [];
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const startDate = new Date(yearDates.startDate);
-        const endDate = new Date(today);
-
-        // Loop day by day from start of year to today
-        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-          const scanDate = new Date(d);
-          scanDate.setHours(0, 0, 0, 0);
-          const dayNum = scanDate.getDay();
-          if (dayNum === 0) continue; // Sunday
-
-          const dayName = WEEKDAYS_MAP[dayNum];
-          const dateStr = formatLocalDate(scanDate);
-
-          const todaySlots = classSlots.filter(s => s.dayName === dayName);
-          if (todaySlots.length === 0) continue;
-
-          // Check if date is a Holiday
-          const holiday = holidays.find(h => {
-            const start = parseLocalDate(h.startDate, false);
-            const end = parseLocalDate(h.endDate, true);
-            return scanDate >= start && scanDate <= end;
-          });
-
-          if (holiday) {
-            todaySlots.forEach(slot => {
-              virtualEntries.push({
-                id: `holiday-${dateStr}-${slot.slotKey}`,
-                classId: selectedClass.id,
-                date: dateStr,
-                time: slot.time.replace('-', ' - '),
-                component: isAr ? 'عطلة' : 'Vacance',
-                subject: 'Mathématiques',
-                customContent: isAr ? `=== عطلة: ${holiday.label} ===` : `=== Vacance : ${holiday.label} ===`,
-                isHeaderSéance: true,
-                isHolidayEntry: true
-              });
-            });
-            continue;
-          }
-
-          // Check if date is a Teacher Absence
-          const absence = absences.find(a => {
-            const start = parseLocalDate(a.startDate, false);
-            const end = parseLocalDate(a.endDate, true);
-            return scanDate >= start && scanDate <= end;
-          });
-
-          if (absence) {
-            todaySlots.forEach(slot => {
-              virtualEntries.push({
-                id: `absence-${dateStr}-${slot.slotKey}`,
-                classId: selectedClass.id,
-                date: dateStr,
-                time: slot.time.replace('-', ' - '),
-                component: isAr ? 'رخصة/غياب' : 'Absence/Congé',
-                subject: 'Mathématiques',
-                customContent: isAr 
-                  ? `=== رخصة/غياب: ${absence.type} ===\nالسبب: ${absence.reason || 'غير محدد'}` 
-                  : `=== Absence/Congé : ${absence.type} ===\nMotif : ${absence.reason || 'non spécifié'}`,
-                isHeaderSéance: true,
-                isAbsenceEntry: true
-              });
-            });
-          }
-        }
-
-        // Combine manual & virtual entries, then sort chronologically
-        const combined = [...actualFiltered, ...virtualEntries].sort((a, b) => new Date(a.date) - new Date(b.date));
+        const combined = buildCombinedEntries(data || [], holidays, absences, selectedClass);
         setEntries(combined);
       };
       loadEntries();
@@ -1391,6 +1402,19 @@ export default function AdminLogbook() {
       return; // Stop form submission
     }
 
+    // Validation: Check if selected date is on a school holiday
+    const holidayConflict = holidays.find(h => 
+      h.startDate && h.endDate && formData.date >= h.startDate && formData.date <= h.endDate
+    );
+    if (holidayConflict) {
+      const confirmMsg = isArMode
+        ? `تنبيه: التاريخ المحدد (${formData.date}) يوافق عطلة مدرسية: "${holidayConflict.label}".\nهل تود تأكيد تسجيل هذه الحصة (مثلاً كحصة دعم أو استدراك)؟`
+        : `Attention : La date sélectionnée (${formData.date}) coïncide avec des vacances scolaires : "${holidayConflict.label}".\nSouhaitez-vous confirmer l'enregistrement d'une séance exceptionnelle ?`;
+      if (!window.confirm(confirmMsg)) {
+        return;
+      }
+    }
+
     const entryPayload = {
       classId: selectedClass.id,
       date: formData.date,
@@ -1414,9 +1438,9 @@ export default function AdminLogbook() {
         setSuccess("Séance ajoutée au cahier de textes.");
       }
       
-      // Reload entries
+      // Reload entries preserving holidays and absences
       const data = await getLogbookEntries(selectedClass.id);
-      setEntries(data || []);
+      setEntries(buildCombinedEntries(data || [], holidays, absences, selectedClass));
       
       setModalOpen(false);
       setTimeout(() => setSuccess(''), 3000);
@@ -1427,14 +1451,16 @@ export default function AdminLogbook() {
   };
 
   const handleDelete = async (entryId) => {
-    if (window.confirm("Voulez-vous supprimer cette séance du cahier de textes ?")) {
+    const confirmMsg = isArMode ? "هل أنت متأكد من حذف هذه الحصة من دفتر النصوص؟" : "Voulez-vous supprimer cette séance du cahier de textes ?";
+    if (window.confirm(confirmMsg)) {
       try {
         await deleteLogbookEntry(entryId);
-        setEntries(prev => prev.filter(e => e.id !== entryId));
-        setSuccess("Séance supprimée.");
+        const data = await getLogbookEntries(selectedClass.id);
+        setEntries(buildCombinedEntries(data || [], holidays, absences, selectedClass));
+        setSuccess(isArMode ? "تم حذف الحصة بنجاح." : "Séance supprimée.");
         setTimeout(() => setSuccess(''), 2500);
       } catch (err) {
-        setError("Erreur lors de la suppression.");
+        setError(isArMode ? "حدث خطأ أثناء الحذف." : "Erreur lors de la suppression.");
       }
     }
   };
@@ -2525,18 +2551,61 @@ export default function AdminLogbook() {
                 </thead>
                 <tbody>
                   {entries.map(e => (
-                    <tr key={e.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                      <td style={{ padding: '0.75rem', border: '1px solid var(--border)', textAlign: 'center', fontWeight: 700, color: 'var(--text-main)' }}>
-                        {new Date(e.date).toLocaleDateString('fr-FR')}
+                    <tr key={e.id} style={{ borderBottom: '1px solid var(--border)', background: e.isHolidayEntry ? 'rgba(22, 163, 74, 0.02)' : 'transparent' }}>
+                      <td style={{ padding: '0.75rem', border: '1px solid var(--border)', textAlign: 'center', fontWeight: 700, color: 'var(--text-main)', fontSize: e.displayDate ? '0.8rem' : 'inherit' }}>
+                        {e.displayDate ? e.displayDate : new Date(e.date).toLocaleDateString('fr-FR')}
                       </td>
                       <td style={{ padding: '0.75rem', border: '1px solid var(--border)', textAlign: 'center', fontWeight: 600, color: 'var(--text-muted)' }}>
-                        {e.time}
+                        {e.time || '—'}
                       </td>
                       <td style={{ padding: '0.75rem', border: '1px solid var(--border)', textAlign: 'center', fontWeight: 600, color: 'var(--text-muted)' }}>
-                        {getTranslatedComponent(e.component, true)}
+                        {e.isHolidayEntry ? (
+                          <span style={{ background: 'rgba(22, 163, 74, 0.12)', color: '#15803d', padding: '3px 8px', borderRadius: '6px', fontWeight: 800, fontSize: '0.76rem' }}>
+                            عطلة مدرسية
+                          </span>
+                        ) : e.isAbsenceEntry ? (
+                          <span style={{ background: 'rgba(239, 68, 68, 0.12)', color: '#b91c1c', padding: '3px 8px', borderRadius: '6px', fontWeight: 800, fontSize: '0.76rem' }}>
+                            رخصة
+                          </span>
+                        ) : (
+                          getTranslatedComponent(e.component, true)
+                        )}
                       </td>
-                      <td className="squared-grid-cell" style={{ border: '1px solid var(--border)' }}>
-                        {renderActivityContent(e.customContent, e.isHeaderSéance)}
+                      <td className={e.isHolidayEntry || e.isAbsenceEntry ? "normal-cell" : "squared-grid-cell"} style={{ border: '1px solid var(--border)', verticalAlign: 'middle' }}>
+                        {e.isHolidayEntry ? (
+                          <div style={{
+                            padding: '0.65rem 1rem',
+                            background: 'linear-gradient(135deg, rgba(22, 163, 74, 0.09) 0%, rgba(16, 185, 129, 0.04) 100%)',
+                            border: '1px dashed rgba(22, 163, 74, 0.4)',
+                            borderRadius: '8px',
+                            color: '#15803d',
+                            fontWeight: 800,
+                            textAlign: 'center',
+                            fontSize: '0.86rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.5rem'
+                          }}>
+                            <span>🌴</span>
+                            <span>{e.customContent.replace(/===/g, '').trim()}</span>
+                          </div>
+                        ) : e.isAbsenceEntry ? (
+                          <div style={{
+                            padding: '0.65rem 1rem',
+                            background: 'rgba(239, 68, 68, 0.07)',
+                            border: '1px dashed rgba(239, 68, 68, 0.35)',
+                            borderRadius: '8px',
+                            color: '#b91c1c',
+                            fontWeight: 800,
+                            textAlign: 'center',
+                            fontSize: '0.86rem'
+                          }}>
+                            {e.customContent.replace(/===/g, '').trim()}
+                          </div>
+                        ) : (
+                          renderActivityContent(e.customContent, e.isHeaderSéance)
+                        )}
                       </td>
                       <td style={{ padding: '0.75rem', border: '1px solid var(--border)', textAlign: 'center', verticalAlign: 'middle' }}>
                         {e.isHolidayEntry || e.isAbsenceEntry ? (
@@ -2547,7 +2616,7 @@ export default function AdminLogbook() {
                       </td>
                       <td className="no-print" style={{ padding: '0.75rem', border: '1px solid var(--border)', textAlign: 'center', verticalAlign: 'middle' }}>
                         {e.isHolidayEntry || e.isAbsenceEntry ? (
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', fontStyle: 'italic', fontWeight: 600 }}>
+                          <span style={{ fontSize: '0.75rem', color: e.isHolidayEntry ? '#15803d' : '#b91c1c', fontStyle: 'italic', fontWeight: 700 }}>
                             {e.isHolidayEntry ? 'عطلة' : 'رخصة'}
                           </span>
                         ) : (
@@ -2615,18 +2684,61 @@ export default function AdminLogbook() {
                 </thead>
                 <tbody>
                   {entries.map(e => (
-                    <tr key={e.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                      <td style={{ padding: '0.75rem', border: '1px solid var(--border)', textAlign: 'center', fontWeight: 700, color: 'var(--text-main)' }}>
-                        {new Date(e.date).toLocaleDateString('fr-FR')}
+                    <tr key={e.id} style={{ borderBottom: '1px solid var(--border)', background: e.isHolidayEntry ? 'rgba(22, 163, 74, 0.02)' : 'transparent' }}>
+                      <td style={{ padding: '0.75rem', border: '1px solid var(--border)', textAlign: 'center', fontWeight: 700, color: 'var(--text-main)', fontSize: e.displayDate ? '0.8rem' : 'inherit' }}>
+                        {e.displayDate ? e.displayDate : new Date(e.date).toLocaleDateString('fr-FR')}
                       </td>
                       <td style={{ padding: '0.75rem', border: '1px solid var(--border)', textAlign: 'center', fontWeight: 600, color: 'var(--text-muted)' }}>
-                        {e.time}
+                        {e.time || '—'}
                       </td>
                       <td style={{ padding: '0.75rem', border: '1px solid var(--border)', textAlign: 'center', fontWeight: 600, color: 'var(--text-muted)' }}>
-                        {getTranslatedComponent(e.component, false)}
+                        {e.isHolidayEntry ? (
+                          <span style={{ background: 'rgba(22, 163, 74, 0.12)', color: '#15803d', padding: '3px 8px', borderRadius: '6px', fontWeight: 800, fontSize: '0.76rem' }}>
+                            Vacances scolaires
+                          </span>
+                        ) : e.isAbsenceEntry ? (
+                          <span style={{ background: 'rgba(239, 68, 68, 0.12)', color: '#b91c1c', padding: '3px 8px', borderRadius: '6px', fontWeight: 800, fontSize: '0.76rem' }}>
+                            Absence
+                          </span>
+                        ) : (
+                          getTranslatedComponent(e.component, false)
+                        )}
                       </td>
-                      <td className="squared-grid-cell" style={{ border: '1px solid var(--border)' }}>
-                        {renderActivityContent(e.customContent, e.isHeaderSéance)}
+                      <td className={e.isHolidayEntry || e.isAbsenceEntry ? "normal-cell" : "squared-grid-cell"} style={{ border: '1px solid var(--border)', verticalAlign: 'middle' }}>
+                        {e.isHolidayEntry ? (
+                          <div style={{
+                            padding: '0.65rem 1rem',
+                            background: 'linear-gradient(135deg, rgba(22, 163, 74, 0.09) 0%, rgba(16, 185, 129, 0.04) 100%)',
+                            border: '1px dashed rgba(22, 163, 74, 0.4)',
+                            borderRadius: '8px',
+                            color: '#15803d',
+                            fontWeight: 800,
+                            textAlign: 'center',
+                            fontSize: '0.86rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.5rem'
+                          }}>
+                            <span>🌴</span>
+                            <span>{e.customContent.replace(/===/g, '').trim()}</span>
+                          </div>
+                        ) : e.isAbsenceEntry ? (
+                          <div style={{
+                            padding: '0.65rem 1rem',
+                            background: 'rgba(239, 68, 68, 0.07)',
+                            border: '1px dashed rgba(239, 68, 68, 0.35)',
+                            borderRadius: '8px',
+                            color: '#b91c1c',
+                            fontWeight: 800,
+                            textAlign: 'center',
+                            fontSize: '0.86rem'
+                          }}>
+                            {e.customContent.replace(/===/g, '').trim()}
+                          </div>
+                        ) : (
+                          renderActivityContent(e.customContent, e.isHeaderSéance)
+                        )}
                       </td>
                       <td style={{ padding: '0.75rem', border: '1px solid var(--border)', textAlign: 'center', verticalAlign: 'middle' }}>
                         {e.isHolidayEntry || e.isAbsenceEntry ? (
@@ -2637,8 +2749,8 @@ export default function AdminLogbook() {
                       </td>
                       <td className="no-print" style={{ padding: '0.75rem', border: '1px solid var(--border)', textAlign: 'center', verticalAlign: 'middle' }}>
                         {e.isHolidayEntry || e.isAbsenceEntry ? (
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', fontStyle: 'italic', fontWeight: 600 }}>
-                            {e.isHolidayEntry ? 'Vacance' : 'Absence'}
+                          <span style={{ fontSize: '0.75rem', color: e.isHolidayEntry ? '#15803d' : '#b91c1c', fontStyle: 'italic', fontWeight: 700 }}>
+                            {e.isHolidayEntry ? 'Vacances' : 'Absence'}
                           </span>
                         ) : (
                           <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
@@ -3174,6 +3286,34 @@ export default function AdminLogbook() {
                     value={formData.date}
                     onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))}
                   />
+                  {(() => {
+                    const activeHol = holidays.find(h => 
+                      h.startDate && h.endDate && formData.date >= h.startDate && formData.date <= h.endDate
+                    );
+                    if (!activeHol) return null;
+                    return (
+                      <div style={{
+                        marginTop: '0.45rem',
+                        padding: '0.45rem 0.75rem',
+                        background: 'rgba(245, 158, 11, 0.12)',
+                        border: '1px solid rgba(245, 158, 11, 0.4)',
+                        borderRadius: '8px',
+                        color: 'var(--warning)',
+                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.4rem'
+                      }}>
+                        <span>🌴</span>
+                        <span>
+                          {isArMode 
+                            ? `تنبيه: هذا التاريخ يوافق عطلة مدرسية: "${activeHol.label}"`
+                            : `Attention : Cette date coïncide avec des vacances scolaires : "${activeHol.label}"`}
+                        </span>
+                      </div>
+                    );
+                  })()}
                 </div>
                 
                 {/* Time */}

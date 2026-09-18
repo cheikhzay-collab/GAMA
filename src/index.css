@@ -2858,7 +2858,7 @@ b .katex * {
 /* ── XS screens (≤ 400px) ────────────────────────────────────────────────── */
 @media (max-width: 400px) {
   .main-content {
-    padding: 0.875rem 0.75rem calc(80px + env(safe-area-inset-bottom)) 0.75rem;
+    padding: calc(56px + 1rem + env(safe-area-inset-top)) 0.75rem calc(80px + env(safe-area-inset-bottom)) 0.75rem;
   }
   .mob-nav-label { font-size: 0.58rem; }
   .mob-nav-items { padding: 0.4rem 0; }
@@ -2871,7 +2871,7 @@ b .katex * {
 /* ── Very small screens (≤ 360px — iPhone SE, Galaxy A) ─── */
 @media (max-width: 360px) {
   .main-content {
-    padding: 0.75rem 0.625rem calc(78px + env(safe-area-inset-bottom)) 0.625rem;
+    padding: calc(56px + 0.875rem + env(safe-area-inset-top)) 0.625rem calc(78px + env(safe-area-inset-bottom)) 0.625rem;
   }
   .mob-nav-label { display: none; }
   .mob-nav-icon-wrap { width: 44px; height: 44px; border-radius: 12px; }

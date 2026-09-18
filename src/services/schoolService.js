@@ -729,7 +729,16 @@ export const getSchoolHolidaysConfig = async (options = {}) => {
       }
     }
 
-    // 3. LocalStorage fallback
+    // 3. Companion DB (Local Database)
+    try {
+      const config = await localDb.get('/config');
+      if (config && Array.isArray(config.school_holidays) && config.school_holidays.length > 0) {
+        try { localStorage.setItem('school_holidays', JSON.stringify(config.school_holidays)); } catch (_) {}
+        return config.school_holidays;
+      }
+    } catch (_) {}
+
+    // 4. LocalStorage fallback
     try {
       const raw = localStorage.getItem('school_holidays');
       return raw ? JSON.parse(raw) : [];
@@ -741,6 +750,107 @@ export const getSchoolHolidaysConfig = async (options = {}) => {
     staleTime: 1000 * 60 * 10,
     cacheTime: 1000 * 60 * 60
   });
+};
+
+/**
+ * Standard official Moroccan school holidays preset for an academic year.
+ */
+export const getOfficialMoroccanHolidays = (academicYear = '2026-2027') => {
+  const startYear = parseInt(String(academicYear).split(/[-/]/)[0], 10) || 2026;
+  const nextYear = startYear + 1;
+
+  return [
+    {
+      id: `hol-mowlid-${startYear}`,
+      label: 'عيد المولد النبوي الشريف',
+      startDate: `${startYear}-09-15`,
+      endDate: `${startYear}-09-16`
+    },
+    {
+      id: `hol-bainiya-1-${startYear}`,
+      label: 'عطلة الفترة البينية الأولى',
+      startDate: `${startYear}-10-20`,
+      endDate: `${startYear}-10-27`
+    },
+    {
+      id: `hol-marche-verte-${startYear}`,
+      label: 'ذكرى المسيرة الخضراء',
+      startDate: `${startYear}-11-06`,
+      endDate: `${startYear}-11-06`
+    },
+    {
+      id: `hol-independance-${startYear}`,
+      label: 'عيد الاستقلال',
+      startDate: `${startYear}-11-18`,
+      endDate: `${startYear}-11-18`
+    },
+    {
+      id: `hol-bainiya-2-${startYear}`,
+      label: 'عطلة الفترة البينية الثانية',
+      startDate: `${startYear}-12-08`,
+      endDate: `${startYear}-12-15`
+    },
+    {
+      id: `hol-nouvel-an-${nextYear}`,
+      label: 'رأس السنة الميلادية',
+      startDate: `${nextYear}-01-01`,
+      endDate: `${nextYear}-01-01`
+    },
+    {
+      id: `hol-manifeste-${nextYear}`,
+      label: 'ذكرى تقديم وثيقة الاستقلال',
+      startDate: `${nextYear}-01-11`,
+      endDate: `${nextYear}-01-11`
+    },
+    {
+      id: `hol-yennayer-${nextYear}`,
+      label: 'رأس السنة الأمازيغية',
+      startDate: `${nextYear}-01-14`,
+      endDate: `${nextYear}-01-14`
+    },
+    {
+      id: `hol-mi-semestre-${nextYear}`,
+      label: 'عطلة منتصف السنة الدراسية',
+      startDate: `${nextYear}-01-26`,
+      endDate: `${nextYear}-02-02`
+    },
+    {
+      id: `hol-bainiya-3-${nextYear}`,
+      label: 'عطلة الفترة البينية الثالثة',
+      startDate: `${nextYear}-03-16`,
+      endDate: `${nextYear}-03-23`
+    },
+    {
+      id: `hol-aid-fitr-${nextYear}`,
+      label: 'عطلة عيد الفطر السعيد',
+      startDate: `${nextYear}-03-30`,
+      endDate: `${nextYear}-04-02`
+    },
+    {
+      id: `hol-travail-${nextYear}`,
+      label: 'عيد الشغل',
+      startDate: `${nextYear}-05-01`,
+      endDate: `${nextYear}-05-01`
+    },
+    {
+      id: `hol-bainiya-4-${nextYear}`,
+      label: 'عطلة الفترة البينية الرابعة',
+      startDate: `${nextYear}-05-04`,
+      endDate: `${nextYear}-05-11`
+    },
+    {
+      id: `hol-aid-adha-${nextYear}`,
+      label: 'عطلة عيد الأضحى المبارك',
+      startDate: `${nextYear}-06-06`,
+      endDate: `${nextYear}-06-10`
+    },
+    {
+      id: `hol-1er-moharram-${nextYear}`,
+      label: 'فاتح محرم - رأس السنة الهجرية',
+      startDate: `${nextYear}-06-26`,
+      endDate: `${nextYear}-06-26`
+    }
+  ];
 };
 
 /**
@@ -814,7 +924,16 @@ export const getTeacherAbsencesConfig = async (options = {}) => {
       }
     }
 
-    // 3. LocalStorage fallback
+    // 3. Companion DB (Local Database)
+    try {
+      const config = await localDb.get('/config');
+      if (config && Array.isArray(config.teacher_absences) && config.teacher_absences.length > 0) {
+        try { localStorage.setItem('teacher_absences', JSON.stringify(config.teacher_absences)); } catch (_) {}
+        return config.teacher_absences;
+      }
+    } catch (_) {}
+
+    // 4. LocalStorage fallback
     try {
       const raw = localStorage.getItem('teacher_absences');
       return raw ? JSON.parse(raw) : [];
@@ -899,7 +1018,16 @@ export const getTeacherScheduleConfig = async (options = {}) => {
       }
     }
 
-    // 3. LocalStorage fallback
+    // 3. Companion DB (Local Database)
+    try {
+      const config = await localDb.get('/config');
+      if (config && config.teacher_schedule_current && typeof config.teacher_schedule_current === 'object') {
+        try { localStorage.setItem('teacher_schedule_current', JSON.stringify(config.teacher_schedule_current)); } catch (_) {}
+        return config.teacher_schedule_current;
+      }
+    } catch (_) {}
+
+    // 4. LocalStorage fallback
     try {
       const raw = localStorage.getItem('teacher_schedule_current');
       return raw ? JSON.parse(raw) : {};
@@ -980,7 +1108,15 @@ export const getLogbookStyleConfig = async (options = {}) => {
       }
     }
 
-    // 3. Fallback to localStorage individual keys
+    // 3. Companion DB (Local Database)
+    try {
+      const config = await localDb.get('/config');
+      if (config && config.logbook_style_settings && typeof config.logbook_style_settings === 'object') {
+        return config.logbook_style_settings;
+      }
+    } catch (_) {}
+
+    // 4. Fallback to localStorage individual keys
     try {
       return {
         arFont: localStorage.getItem('logbook_ar_font') || 'UKIJ Merdane',

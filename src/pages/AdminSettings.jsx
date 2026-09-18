@@ -10,7 +10,8 @@ import {
   getTeacherScheduleConfig, 
   saveTeacherScheduleConfig, 
   getLogbookStyleConfig, 
-  saveLogbookStyleConfig 
+  saveLogbookStyleConfig,
+  getOfficialMoroccanHolidays
 } from '../services/schoolService';
 import { decodeHtmlEntities } from '../utils/security';
 
@@ -538,6 +539,20 @@ export default function AdminSettings() {
   const removeHoliday = (id) => {
     setLogbookHolidays(prev => prev.filter(h => h.id !== id));
     if (editingHolId === id) setEditingHolId(null);
+  };
+
+  const loadMoroccanOfficialHolidays = () => {
+    if (logbookHolidays.length > 0) {
+      if (!window.confirm("هل تريد إضافة لائحة العطل المدرسية الرسمية بالمغرب إلى لائحتك الحالية؟")) {
+        return;
+      }
+    }
+    const officialHols = getOfficialMoroccanHolidays('2026-2027');
+    setLogbookHolidays(prev => {
+      const existingKeys = new Set(prev.map(p => `${p.label}-${p.startDate}`));
+      const fresh = officialHols.filter(o => !existingKeys.has(`${o.label}-${o.startDate}`));
+      return [...prev, ...fresh];
+    });
   };
 
   const isArabicText = (text) => {
@@ -3032,18 +3047,29 @@ export default function AdminSettings() {
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <p className="text-xs text-[var(--text-subtle)]">
-                      Enregistrez les vacances scolaires pour les exclure automatiquement des rapports de séances réalisées :
+                      Enregistrez les vacances scolaires pour les refléter dans le cahier de textes et les exclure des alertes de séances manquantes :
                     </p>
-                    <label className="btn flex items-center gap-1.5 py-1.5 px-4 text-xs cursor-pointer bg-[var(--violet-soft)] text-[var(--violet)] border border-[var(--violet)] hover:bg-[var(--violet-soft)] transition-all duration-200 rounded-lg">
-                      <Upload size={14} />
-                      Importer ICS
-                      <input
-                        type="file"
-                        accept=".ics"
-                        style={{ display: 'none' }}
-                        onChange={handleIcsUpload}
-                      />
-                    </label>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={loadMoroccanOfficialHolidays}
+                        className="btn flex items-center gap-1.5 py-1.5 px-3 text-xs bg-[rgba(16,185,129,0.1)] text-[var(--emerald)] border border-[var(--emerald)] hover:bg-[rgba(16,185,129,0.2)] transition-all duration-200 rounded-lg font-bold"
+                        title="Charger la liste officielle des vacances scolaires au Maroc"
+                      >
+                        <Sparkles size={13} />
+                        <span>العطل الرسمية (المغرب)</span>
+                      </button>
+                      <label className="btn flex items-center gap-1.5 py-1.5 px-3 text-xs cursor-pointer bg-[var(--violet-soft)] text-[var(--violet)] border border-[var(--violet)] hover:bg-[var(--violet-soft)] transition-all duration-200 rounded-lg">
+                        <Upload size={13} />
+                        Importer ICS
+                        <input
+                          type="file"
+                          accept=".ics"
+                          style={{ display: 'none' }}
+                          onChange={handleIcsUpload}
+                        />
+                      </label>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-[var(--bg-glass)] p-4 rounded-xl border border-[var(--border)] items-end">
@@ -3137,17 +3163,17 @@ export default function AdminSettings() {
                         }
 
                         return (
-                          <div key={h.id} className="flex justify-between items-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] transition-all duration-200" style={{ marginBottom: '0.5rem' }} dir={isArabic ? 'rtl' : 'ltr'}>
-                            <div className="flex items-center gap-3" style={{ flex: 1, minWidth: 0 }}>
+                          <div key={h.id} className="flex justify-between items-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] transition-all duration-200 gap-3" style={{ marginBottom: '0.5rem' }}>
+                            <div className="flex items-center gap-3" style={{ flex: 1, minWidth: 0, flexDirection: isArabic ? 'row-reverse' : 'row' }}>
                               <div className="w-10 h-10 rounded-xl bg-[var(--violet-soft)] border border-[var(--violet)] flex items-center justify-center text-[var(--violet)] flex-shrink-0">
                                 <span className="text-lg">🌴</span>
                               </div>
-                              <div style={{ flex: 1, minWidth: 0, textAlign: isArabic ? 'right' : 'left' }}>
-                                <strong style={{ display: 'block', fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.25rem', whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                              <div style={{ flex: 1, minWidth: 0, textAlign: isArabic ? 'right' : 'left', direction: isArabic ? 'rtl' : 'ltr' }}>
+                                <strong style={{ display: 'block', fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.2rem', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                                   {h.label}
                                 </strong>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: 'var(--text-subtle)', flexWrap: 'wrap' }}>
-                                  <Calendar size={12} className="text-[var(--violet)]" />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: 'var(--text-subtle)', flexWrap: 'wrap' }}>
+                                  <Calendar size={13} className="text-[var(--violet)] flex-shrink-0" />
                                   {isArabic ? (
                                     <span>من <strong>{h.startDate}</strong> إلى <strong>{h.endDate}</strong></span>
                                   ) : (
@@ -3156,7 +3182,7 @@ export default function AdminSettings() {
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2" style={{ marginLeft: isArabic ? '0' : '1rem', marginRight: isArabic ? '1rem' : '0', flexShrink: 0 }}>
+                            <div className="flex items-center gap-2 flex-shrink-0">
                               <button
                                 type="button"
                                 onClick={() => {
@@ -3169,7 +3195,7 @@ export default function AdminSettings() {
                                 style={{ position: 'static', opacity: 1, color: 'var(--violet)' }}
                                 title="Modifier"
                               >
-                                <Pencil size={12} />
+                                <Pencil size={14} />
                               </button>
                               <button
                                 type="button"
@@ -3178,7 +3204,7 @@ export default function AdminSettings() {
                                 style={{ position: 'static', opacity: 1 }}
                                 title="Supprimer"
                               >
-                                <Trash2 size={12} />
+                                <Trash2 size={14} />
                               </button>
                             </div>
                           </div>

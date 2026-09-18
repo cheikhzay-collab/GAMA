@@ -327,30 +327,50 @@ const server = http.createServer(async (req, res) => {
   }
 
   // ── Database Lessons Endpoints ────────────────────────────────────────────
-  if (pathname === '/api/lessons') {
+  if (pathname === '/api/lessons' || pathname.startsWith('/api/lessons/')) {
     const lessons = readDataFile('lessons.json');
+    const singleId = pathname.startsWith('/api/lessons/') ? pathname.replace('/api/lessons/', '').trim() : null;
+
     if (req.method === 'GET') {
+      if (singleId) {
+        const found = lessons.find(l => l.id === singleId);
+        if (found) {
+          sendJSON(res, 200, found);
+        } else {
+          sendJSON(res, 404, { error: 'Lesson not found' });
+        }
+        return;
+      }
       sendJSON(res, 200, lessons);
-    } else if (req.method === 'POST') {
+    } else if (req.method === 'POST' || req.method === 'PUT') {
       try {
         const lesson = await getBody(req);
-        if (!lesson.id) {
-          lesson.id = 'MOCK-L-' + Math.random().toString(36).substring(2, 11).toUpperCase();
-        }
-        const index = lessons.findIndex(l => l.id === lesson.id);
+        const targetId = singleId || lesson.id || ('MOCK-L-' + Math.random().toString(36).substring(2, 11).toUpperCase());
+        lesson.id = targetId;
+
+        const index = lessons.findIndex(l => l.id === targetId);
         if (index > -1) {
-          lessons[index] = { ...lessons[index], ...lesson, updatedAt: new Date().toISOString() };
+          lessons[index] = { 
+            ...lessons[index], 
+            ...lesson, 
+            content: {
+              ...(lessons[index].content || {}),
+              ...(lesson.content || {})
+            },
+            updatedAt: new Date().toISOString() 
+          };
         } else {
           lesson.createdAt = new Date().toISOString();
+          lesson.updatedAt = lesson.createdAt;
           lessons.push(lesson);
         }
         writeDataFile('lessons.json', lessons);
-        sendJSON(res, 200, { success: true, lesson });
+        sendJSON(res, 200, { success: true, lesson: index > -1 ? lessons[index] : lesson });
       } catch (err) {
         sendJSON(res, 500, { error: err.message });
       }
     } else if (req.method === 'DELETE') {
-      const id = parsedUrl.searchParams.get('id');
+      const id = singleId || parsedUrl.searchParams.get('id');
       if (!id) {
         sendJSON(res, 400, { error: 'Missing lesson id' });
         return;

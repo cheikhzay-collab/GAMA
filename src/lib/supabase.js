@@ -47,10 +47,24 @@ if (supabaseUrl && supabaseAnonKey) {
 
         return fetch(url, newOptions)
           .then(response => {
-            // Intercept 401 responses (except refresh token requests) to signal invalid auth session
+            // Intercept 401 responses (except refresh token requests)
             if (response.status === 401 && !url.includes('/auth/v1/token')) {
-              console.warn('[Supabase API] 401 Unauthorized response detected. Dispatching unauthorized event.');
-              window.dispatchEvent(new CustomEvent('supabase-auth-unauthorized'));
+              const hasNeonToken = typeof localStorage !== 'undefined' && !!localStorage.getItem('gama_auth_token');
+              if (hasNeonToken) {
+                // User is authenticated via Neon; a stale Supabase session token in storage caused 401.
+                // Clear stale Supabase auth token so subsequent requests cleanly use the anon key.
+                try {
+                  for (let i = localStorage.length - 1; i >= 0; i--) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
+                      localStorage.removeItem(key);
+                    }
+                  }
+                } catch (_) {}
+              } else {
+                console.warn('[Supabase API] 401 Unauthorized response detected. Dispatching unauthorized event.');
+                window.dispatchEvent(new CustomEvent('supabase-auth-unauthorized'));
+              }
             }
             return response;
           })

@@ -330,21 +330,26 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
     const signatureStyle = isHolidayOrAbsence ? 'color:#94a3b8;font-style:italic;' : 'color:#10b981;font-weight:bold;font-size:0.75rem;';
 
     const componentText = getTranslatedComponent(e.component, isArMode);
+    const dateText = e.displayDate 
+      ? (e.displayDate.includes('من') || e.displayDate.includes('Du') 
+          ? esc(e.displayDate) 
+          : new Date(e.date).toLocaleDateString('fr-FR'))
+      : new Date(e.date).toLocaleDateString('fr-FR');
 
     return `
       <tr>
-        <td style="width:11%;text-align:center;font-weight:800;color:#0f172a;border:1px solid #cbd5e1;padding:8px 6px;">
-          ${new Date(e.date).toLocaleDateString('fr-FR')}
+        <td style="width:11%;text-align:center;font-weight:800;color:#0f172a;border:1px solid #cbd5e1;padding:8px 6px;font-size:0.8rem;">
+          ${dateText}
         </td>
         <td style="width:11%;text-align:center;font-weight:600;color:#475569;border:1px solid #cbd5e1;padding:8px 6px;font-size:0.8rem;">
-          ${esc(e.time)}
+          ${esc(e.time || '—')}
         </td>
         <td style="width:12%;text-align:center;font-weight:700;color:#1e3a8a;border:1px solid #cbd5e1;padding:8px 6px;font-size:0.82rem;">
-          <span class="comp-badge ${e.component.toLowerCase().includes('contrôle') ? 'contrôle' : ''}">${esc(componentText)}</span>
+          <span class="comp-badge ${e.component.toLowerCase().includes('contrôle') ? 'contrôle' : (isHolidayOrAbsence ? 'holiday' : '')}">${esc(componentText)}</span>
         </td>
-        <td class="${cellClass}" style="width:54%;border:1px solid #cbd5e1;vertical-align:top;position:relative;text-align:${alignment};">
+        <td class="${cellClass}" style="width:54%;border:1px solid #cbd5e1;vertical-align:middle;position:relative;text-align:${alignment};">
           ${isHolidayOrAbsence 
-            ? `<div class="holiday-absence-banner ${e.isHolidayEntry ? 'holiday' : 'absence'}">${esc(e.customContent)}</div>`
+            ? `<div class="holiday-absence-banner ${e.isHolidayEntry ? 'holiday' : 'absence'}">${esc(e.customContent.replace(/===/g, '').trim())}</div>`
             : renderActivityCellHTML(e.customContent, e.isHeaderSéance, isArMode, styleConfig)
           }
         </td>
