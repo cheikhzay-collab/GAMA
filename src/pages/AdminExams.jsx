@@ -452,7 +452,7 @@ export default function AdminExams() {
                     boxShadow: '0 0 6px #10B981',
                     display: 'inline-block'
                   }} />
-                  Supabase Connecté ({exams?.length || 0} QCM)
+                  Base de données connectée ({exams?.length || 0} QCM)
                 </span>
                 {syncSuccessMsg && (
                   <span style={{

@@ -552,18 +552,20 @@ ${sectionsContentText}
               <h1 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.02em', margin: 0, color: 'var(--text-main)' }}>
                 Bibliothèque de Fiches de Cours
               </h1>
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '0.2rem 0.65rem',
-                borderRadius: '999px',
-                background: 'rgba(16, 185, 129, 0.08)',
-                border: '1px solid rgba(16, 185, 129, 0.25)',
-                color: '#059669',
-                fontSize: '0.72rem',
-                fontWeight: 700
-              }}>
+              <span 
+                title="Base de données Cloud Neon PostgreSQL & Mémorisation locale synchronisée"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '0.2rem 0.65rem',
+                  borderRadius: '999px',
+                  background: 'rgba(16, 185, 129, 0.08)',
+                  border: '1px solid rgba(16, 185, 129, 0.25)',
+                  color: '#059669',
+                  fontSize: '0.72rem',
+                  fontWeight: 700
+                }}>
                 <span style={{
                   width: 7,
                   height: 7,
@@ -572,7 +574,7 @@ ${sectionsContentText}
                   boxShadow: '0 0 6px #10B981',
                   display: 'inline-block'
                 }} />
-                Supabase Connecté ({totalCount} Fiches)
+                Base de données connectée ({totalCount} Fiches)
               </span>
               {syncSuccessMsg && (
                 <span style={{

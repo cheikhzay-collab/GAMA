@@ -392,9 +392,76 @@
     },
     "homework": {},
     "language": "fr",
-    "program": [],
+    "program": [
+      {
+        "id": "prog_2b_01_mu6u4s2k",
+        "type": "course",
+        "title": "Série -1: Révision",
+        "lessonId": "MOCK-L-ZU2R75VV9"
+      },
+      {
+        "id": "prog_2b_02_mu6u4s2k",
+        "type": "course",
+        "title": "Série - 1 : Continuité d'une fonction numérique",
+        "lessonId": "MOCK-L-IXTS1UPU8"
+      },
+      {
+        "id": "prog_2b_03_mu6u4s2k",
+        "type": "exercises",
+        "title": "Série - 1 : Continuité d'une fonction numérique",
+        "lessonId": "MOCK-L-IXTS1UPU8"
+      },
+      {
+        "id": "prog_2b_04_mu6u4s2l",
+        "type": "course",
+        "title": "المتتاليات الترجعية",
+        "lessonId": "MOCK-L-RBZPC9IGC"
+      },
+      {
+        "id": "prog_2b_05_mu6u4s2l",
+        "type": "homework",
+        "title": "Devoir Surveillé N° 1 (Semestre 1)",
+        "lessonId": "MOCK-L-DVJHX540W"
+      },
+      {
+        "id": "prog_2b_06_mu6u4s2l",
+        "type": "course",
+        "title": "Dérivation - Étude de fonctions",
+        "lessonId": "MOCK-L-VI0M9NG6G"
+      },
+      {
+        "id": "prog_2b_07_mu6u4s2l",
+        "type": "course",
+        "title": "الدوال اللوغاريتمية (Ln)",
+        "lessonId": null
+      },
+      {
+        "id": "prog_2b_08_mu6u4s2l",
+        "type": "homework",
+        "title": "Devoir surveillé N° 2 (Version Française)",
+        "lessonId": "MOCK-L-9T3B6YYXA"
+      },
+      {
+        "id": "prog_2b_09_mu6u4s2l",
+        "type": "course",
+        "title": "الأعداد العقدية (الجزء الأول)",
+        "lessonId": null
+      },
+      {
+        "id": "prog_2b_10_mu6u4s2l",
+        "type": "course",
+        "title": "100 Limites pour devenir un expert",
+        "lessonId": "MOCK-L-P600JRN9R"
+      },
+      {
+        "id": "prog_2b_11_mu6u4s2l",
+        "type": "homework",
+        "title": "الفرض المحروس رقم 3 (الدورة الأولى)",
+        "lessonId": null
+      }
+    ],
     "createdAt": "2026-08-16T09:00:49.968Z",
-    "updatedAt": "2026-08-16T09:01:16.067Z"
+    "updatedAt": "2026-09-18T10:48:08.849Z"
   },
   {
     "id": "TCSF-2",
