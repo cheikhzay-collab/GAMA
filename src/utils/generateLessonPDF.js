@@ -3472,9 +3472,9 @@ function adjustFontSize(delta) {
   try {
     _currentFontSize = Math.max(7, Math.min(16, Math.round((_currentFontSize + delta) * 10) / 10));
     localStorage.setItem('pdf_font_size_pt', _currentFontSize);
-    // Apply to page-content and all exercise/section text
-    var pc = document.querySelector('.page-content');
-    if (pc) pc.style.fontSize = _currentFontSize + 'pt';
+    // [FIX] Apply ONLY to sections content, not the header
+    var sc = document.querySelector('.sections-container');
+    if (sc) sc.style.fontSize = _currentFontSize + 'pt';
     var display = document.getElementById('fontSizeDisplay');
     if (display) display.textContent = _currentFontSize + 'pt';
   } catch (err) { console.error(err); }
@@ -3485,8 +3485,9 @@ function adjustLineHeight(delta) {
   try {
     _currentLineHeight = Math.max(1.0, Math.min(3.0, Math.round((_currentLineHeight + delta) * 10) / 10));
     localStorage.setItem('pdf_line_height', _currentLineHeight);
-    var pc = document.querySelector('.page-content');
-    if (pc) pc.style.lineHeight = _currentLineHeight;
+    // [FIX] Apply ONLY to sections content, not the header
+    var sc = document.querySelector('.sections-container');
+    if (sc) sc.style.lineHeight = _currentLineHeight;
     var display = document.getElementById('lineHeightDisplay');
     if (display) display.textContent = _currentLineHeight.toFixed(1);
   } catch (err) { console.error(err); }
@@ -3504,10 +3505,10 @@ async function printNow() {
 
 // ── Init: restore saved font size & line height on page load ─────────────────
 (function init() {
-  var pc = document.querySelector('.page-content');
-  if (pc) {
-    pc.style.fontSize = _currentFontSize + 'pt';
-    pc.style.lineHeight = _currentLineHeight;
+  var sc = document.querySelector('.sections-container');
+  if (sc) {
+    sc.style.fontSize = _currentFontSize + 'pt';
+    sc.style.lineHeight = _currentLineHeight;
   }
   var fDisplay = document.getElementById('fontSizeDisplay');
   if (fDisplay) fDisplay.textContent = _currentFontSize + 'pt';
