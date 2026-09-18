@@ -34535,18 +34535,18 @@
     "content": {
       "level": "2bac_pc_svt",
       "header": {
-        "phone": "",
+        "prep_title": "Résumé de cours : Dérivabilité & Branches Infinies",
         "schools": [
           "2BACSPF-1"
         ],
         "subject": "Mathématiques",
-        "teacher": "Zayani Mohammed",
-        "contenus": "",
-        "le_contenu": "",
-        "prep_title": "Résumé de cours : Dérivabilité & Branches Infinies",
         "fiche_title": "Dérivabilité et Branches Infinies",
         "chapter_number": "",
-        "capacites_attendues": ""
+        "teacher": "Zayani Mohammed",
+        "phone": "",
+        "capacites_attendues": "",
+        "contenus": "",
+        "le_contenu": ""
       },
       "doc_type": "summary",
       "metadata": {
@@ -34574,7 +34574,7 @@
               "type": "highlight_box"
             },
             {
-              "text": "Dans ce cas, la courbe de $f$ admet une demi-tangente au voisinage de $a$ d'équation : \n\n\n\n\n\n\n\n\n\n\n\n$$\\begin{cases} y = f'_d(a)(x - a) + f(a) \\\\ x > a \\end{cases}$$\n\n\n\n\n\n\n\n\n\n\n\n",
+              "text": "Dans ce cas, la courbe de $f$ admet une demi-tangente au voisinage de $a$ d'équation : \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n$$\\begin{cases} y = f'_d(a)(x - a) + f(a) \\\\ x > a \\end{cases}$$\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
               "type": "bullet"
             },
             {
@@ -34585,7 +34585,7 @@
           "title": "1. Dérivabilité en un point et à droite",
           "points": "",
           "bgColor": "transparent",
-          "content": "Soit $f$ une fonction définie sur un intervalle ouvert $I$ et $a$ un point de $I$.\n• On dit que $f$ est **dérivable** en $a$ s'il existe un réel $l$ tel que : $$\\lim_{x \\to a} \\frac{f(x)-f(a)}{x-a} = l$$\\nLe nombre $l$, noté $f'(a)$ ou $\\frac{df}{dx}(a)$, est appelé le **nombre dérivé** de la fonction $f$ en $a$.\nDans ce cas, la courbe de $f$ admet une tangente au voisinage de $a$ d'équation : $$y = f'(a)(x - a) + f(a)$$\nOn écrit alors : $f(x) \\approx f'(a)(x - a) + f(a)$ au voisinage de $a$.\n• On dit que $f$ est **dérivable à droite** de $a$, s'il existe un réel $l'$, tel que : $$\\lim_{\\substack{x \\to a \\\\ x > a}} \\frac{f(x)-f(a)}{x-a} = l'$$\\nLe nombre $l'$, noté $f'_d(a)$, est appelé le **nombre dérivé à droite** de la fonction $f$ en $a$.\nDans ce cas, la courbe de $f$ admet une demi-tangente au voisinage de $a$ d'équation : \n\n\n\n\n\n\n\n\n\n\n\n$$\\begin{cases} y = f'_d(a)(x - a) + f(a) \\\\ x > a \\end{cases}$$\n\n\n\n\n\n\n\n\n\n\n\n\n*(On définit de la même manière la dérivabilité à gauche en $a$)*",
+          "content": "Soit $f$ une fonction définie sur un intervalle ouvert $I$ et $a$ un point de $I$.\n• On dit que $f$ est **dérivable** en $a$ s'il existe un réel $l$ tel que : $$\\lim_{x \\to a} \\frac{f(x)-f(a)}{x-a} = l$$\\nLe nombre $l$, noté $f'(a)$ ou $\\frac{df}{dx}(a)$, est appelé le **nombre dérivé** de la fonction $f$ en $a$.\nDans ce cas, la courbe de $f$ admet une tangente au voisinage de $a$ d'équation : $$y = f'(a)(x - a) + f(a)$$\nOn écrit alors : $f(x) \\approx f'(a)(x - a) + f(a)$ au voisinage de $a$.\n• On dit que $f$ est **dérivable à droite** de $a$, s'il existe un réel $l'$, tel que : $$\\lim_{\\substack{x \\to a \\\\ x > a}} \\frac{f(x)-f(a)}{x-a} = l'$$\\nLe nombre $l'$, noté $f'_d(a)$, est appelé le **nombre dérivé à droite** de la fonction $f$ en $a$.\nDans ce cas, la courbe de $f$ admet une demi-tangente au voisinage de $a$ d'équation : \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n$$\\begin{cases} y = f'_d(a)(x - a) + f(a) \\\\ x > a \\end{cases}$$\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n*(On définit de la même manière la dérivabilité à gauche en $a$)*",
           "bg_color": "transparent",
           "fontSize": "8pt",
           "language": "fr",
@@ -34826,7 +34826,7 @@
           "title": "1. Diagramme de détermination des branches infinies",
           "points": "",
           "bgColor": "transparent",
-          "content": "Résumé des différentes branches infinies pour la courbe représentative $(C_f)$ d'une fonction $f$ :\n**Asymptote verticale :** Si $\\lim_{x \\to a} f(x) = \\infty$, alors $(C_f)$ admet une asymptote verticale d'équation $x = a$.\n**Asymptote horizontale :** Si $\\lim_{x \\to \\infty} f(x) = l$, alors $(C_f)$ admet une asymptote horizontale d'équation $y = l$ au voisinage de $\\infty$.\n**Branches paraboliques et asymptotes obliques :** Si $\\lim_{x \\to \\infty} f(x) = \\infty$, on étudie la limite de $\\frac{f(x)}{x}$ :\n• Si $\\lim_{x \\to \\infty} \\frac{f(x)}{x} = 0$ : $(C_f)$ admet une branche parabolique de direction l'axe des abscisses au voisinage de $\\infty$.\n• Si $\\lim_{x \\to \\infty} \\frac{f(x)}{x} = \\infty$ : $(C_f)$ admet une branche parabolique de direction l'axe des ordonnées au voisinage de $\\infty$.\n• Si $\\lim_{x \\to \\infty} \\frac{f(x)}{x} = a \\quad (a \\neq 0)$, on étudie la limite de $f(x) - ax$ :\n  - Si $\\lim_{x \\to \\infty} (f(x) - ax) = \\infty$ : $(C_f)$ admet une branche parabolique de direction la droite d'équation $y = ax$ au voisinage de $\\infty$.\n  - Si $\\lim_{x \\to \\infty} (f(x) - ax) = b$ : $(C_f)$ admet une asymptote oblique d'équation $y = ax + b$ au voisinage de $\\infty$.\n• **Caractérisation directe :** Si $\\lim_{x \\to \\infty} [f(x) - (ax + b)] = 0$, alors la droite d'équation $y = ax + b$ est asymptote oblique à $(C_f)$ au voisinage de $\\infty$.",
+          "content": "Résumé des différentes branches infinies pour la courbe représentative $(C_f)$ d'une fonction $f$ :\n",
           "bg_color": "transparent",
           "fontSize": "8pt",
           "language": "fr",
@@ -34844,7 +34844,8 @@
     "is_active": true,
     "is_archived": false,
     "created_at": "2026-09-13T22:28:22.944+00:00",
-    "updated_at": "2026-09-16T13:33:48.357+00:00"
+    "updated_at": "2026-09-18T11:21:57.253Z",
+    "updatedAt": "2026-09-18T11:21:59.219Z"
   },
   {
     "id": "MOCK-L-8T827LE2I",
