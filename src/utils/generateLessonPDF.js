@@ -3467,14 +3467,36 @@ function setSeriesStyle(style) {
   } catch (err) { console.error(err); }
 }
 
+// ── Dynamic print style injector ─────────────────────────────────────────────
+// Inline styles are overridden by @media print CSS rules.
+// Solution: inject a <style> tag that is always applied, including during print.
+function _applyPrintStyles() {
+  var tag = document.getElementById('_dynamicPrintStyle');
+  if (!tag) {
+    tag = document.createElement('style');
+    tag.id = '_dynamicPrintStyle';
+    document.head.appendChild(tag);
+  }
+  tag.textContent = [
+    '.sections-container, .sections-list-container {',
+    '  font-size: ' + _currentFontSize + 'pt !important;',
+    '  line-height: ' + _currentLineHeight + ' !important;',
+    '}',
+    '@media print {',
+    '  .sections-container, .sections-list-container {',
+    '    font-size: ' + _currentFontSize + 'pt !important;',
+    '    line-height: ' + _currentLineHeight + ' !important;',
+    '  }',
+    '}'
+  ].join('\n');
+}
+
 // ── Font Size ─────────────────────────────────────────────────────────────────
 function adjustFontSize(delta) {
   try {
     _currentFontSize = Math.max(7, Math.min(16, Math.round((_currentFontSize + delta) * 10) / 10));
     localStorage.setItem('pdf_font_size_pt', _currentFontSize);
-    // [FIX] Apply ONLY to sections content, not the header
-    var sc = document.querySelector('.sections-container');
-    if (sc) sc.style.fontSize = _currentFontSize + 'pt';
+    _applyPrintStyles();
     var display = document.getElementById('fontSizeDisplay');
     if (display) display.textContent = _currentFontSize + 'pt';
   } catch (err) { console.error(err); }
@@ -3485,13 +3507,12 @@ function adjustLineHeight(delta) {
   try {
     _currentLineHeight = Math.max(1.0, Math.min(3.0, Math.round((_currentLineHeight + delta) * 10) / 10));
     localStorage.setItem('pdf_line_height', _currentLineHeight);
-    // [FIX] Apply ONLY to sections content, not the header
-    var sc = document.querySelector('.sections-container');
-    if (sc) sc.style.lineHeight = _currentLineHeight;
+    _applyPrintStyles();
     var display = document.getElementById('lineHeightDisplay');
     if (display) display.textContent = _currentLineHeight.toFixed(1);
   } catch (err) { console.error(err); }
 }
+
 
 // ── Print ─────────────────────────────────────────────────────────────────────
 async function printNow() {
@@ -3505,16 +3526,14 @@ async function printNow() {
 
 // ── Init: restore saved font size & line height on page load ─────────────────
 (function init() {
-  var sc = document.querySelector('.sections-container');
-  if (sc) {
-    sc.style.fontSize = _currentFontSize + 'pt';
-    sc.style.lineHeight = _currentLineHeight;
-  }
+  // Use CSS injector so settings are respected in @media print too
+  _applyPrintStyles();
   var fDisplay = document.getElementById('fontSizeDisplay');
   if (fDisplay) fDisplay.textContent = _currentFontSize + 'pt';
   var lDisplay = document.getElementById('lineHeightDisplay');
   if (lDisplay) lDisplay.textContent = _currentLineHeight.toFixed(1);
 })();
+
 
 // Auto-print when ready
 printNow();
