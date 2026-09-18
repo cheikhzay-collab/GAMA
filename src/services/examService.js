@@ -350,52 +350,34 @@ export const updateExam = async (examId, updates) => {
     console.warn('[LocalDB] Could not sync updateExam to Companion server:', err.message);
   }
 
-  // 3. Sync to Supabase
+  // 3. Primary Cloud Database Sync (Neon PostgreSQL) — Direct & Unconditional
+  const dbUpdates = { updated_at: now };
+  if (updates.name !== undefined) dbUpdates.name = updates.name;
+  if (updates.school !== undefined) dbUpdates.school = updates.school;
+  if (updates.level !== undefined) {
+    dbUpdates.level = updates.level;
+  } else if (updates.school !== undefined) {
+    dbUpdates.level = mapLegacySchoolToLevel(updates.school);
+  }
+  if (updates.year !== undefined) dbUpdates.year = updates.year;
+  if (updates.tier !== undefined) dbUpdates.tier = updates.tier;
+  if (updates.questions !== undefined) dbUpdates.questions = updates.questions;
+  if (updates.pdfUrl !== undefined) dbUpdates.pdf_url = updates.pdfUrl;
+  if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
+  if (updates.isArchived !== undefined) dbUpdates.is_archived = updates.isArchived;
+
+  try {
+    await neonSaveExam({ id: examId, ...dbUpdates });
+  } catch (err) {
+    console.warn('[Neon] Could not sync updateExam to Neon:', err.message || err);
+  }
+
+  // 4. Secondary Supabase Sync (non-blocking)
   if (supabase) {
     try {
-      const dbUpdates = {};
-      if (updates.name !== undefined) dbUpdates.name = updates.name;
-      if (updates.school !== undefined) dbUpdates.school = updates.school;
-      if (updates.level !== undefined) {
-        dbUpdates.level = updates.level;
-      } else if (updates.school !== undefined) {
-        dbUpdates.level = mapLegacySchoolToLevel(updates.school);
-      }
-      if (updates.year !== undefined) dbUpdates.year = updates.year;
-      if (updates.tier !== undefined) dbUpdates.tier = updates.tier;
-      if (updates.questions !== undefined) dbUpdates.questions = updates.questions;
-      if (updates.pdfUrl !== undefined) dbUpdates.pdf_url = updates.pdfUrl;
-      if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
-      if (updates.isArchived !== undefined) dbUpdates.is_archived = updates.isArchived;
-      dbUpdates.updated_at = now;
-
-      // Sync to Neon PostgreSQL
-      try {
-        await neonSaveExam({ id: examId, ...dbUpdates });
-      } catch (err) {
-        console.warn('[Neon] Could not sync updateExam to Neon:', err.message);
-      }
-
       await supabase.from('exams').update(dbUpdates).eq('id', examId);
     } catch (err) {
       console.warn('[Supabase] Could not sync updateExam to Supabase:', err.message);
-    }
-  } else {
-    // Supabase absent, still sync to Neon
-    try {
-      const dbUpdates = { updated_at: now };
-      if (updates.name !== undefined) dbUpdates.name = updates.name;
-      if (updates.school !== undefined) dbUpdates.school = updates.school;
-      if (updates.level !== undefined) dbUpdates.level = updates.level;
-      if (updates.year !== undefined) dbUpdates.year = updates.year;
-      if (updates.tier !== undefined) dbUpdates.tier = updates.tier;
-      if (updates.questions !== undefined) dbUpdates.questions = updates.questions;
-      if (updates.pdfUrl !== undefined) dbUpdates.pdf_url = updates.pdfUrl;
-      if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
-      if (updates.isArchived !== undefined) dbUpdates.is_archived = updates.isArchived;
-      await neonSaveExam({ id: examId, ...dbUpdates });
-    } catch (err) {
-      console.warn('[Neon] Could not sync updateExam to Neon:', err.message);
     }
   }
 };

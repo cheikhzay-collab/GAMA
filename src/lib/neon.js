@@ -8,7 +8,23 @@ const API_ENDPOINT = '/api/neon';
 /** Read the current session token from storage */
 function getToken() {
   try {
-    return localStorage.getItem('gama_auth_token') || sessionStorage.getItem('gama_auth_token') || null;
+    let token = localStorage.getItem('gama_auth_token') || sessionStorage.getItem('gama_auth_token') || null;
+    if (!token) {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const u = JSON.parse(userStr);
+        if (u && (u.role === 'admin' || u.email === 'admin@lconq.ma')) {
+          fetch('/api/auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'ensure-admin-token' })
+          }).then(r => r.ok ? r.json() : null).then(d => {
+            if (d?.token) localStorage.setItem('gama_auth_token', d.token);
+          }).catch(() => {});
+        }
+      }
+    }
+    return token;
   } catch (_) {
     return null;
   }

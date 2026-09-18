@@ -303,7 +303,34 @@ export const updateClass = async (classId, updates) => {
   // 2. Invalidate SWR Cache AFTER writing localStorage
   queryCache.invalidate('classes_all');
 
-  // 3. Companion API — merge server state with updates (fire-and-forget)
+  // 3. Primary Cloud Database Sync (Neon PostgreSQL) — Direct & Unconditional
+  const dbUpdates = {
+    id: classId,
+    updated_at: now
+  };
+  if (updates.name !== undefined) dbUpdates.name = updates.name;
+  if (updates.level !== undefined) dbUpdates.level = updates.level;
+  if (updates.language !== undefined) dbUpdates.language = updates.language;
+  if (updates.students !== undefined) {
+    dbUpdates.students = updates.students;
+    dbUpdates.student_count = updates.studentCount !== undefined ? updates.studentCount : (Array.isArray(updates.students) ? updates.students.length : 0);
+  } else if (updates.studentCount !== undefined) {
+    dbUpdates.student_count = updates.studentCount;
+  }
+  if (updates.competitions !== undefined) dbUpdates.competitions = updates.competitions;
+  if (updates.competitionGrades !== undefined) dbUpdates.competition_grades = updates.competitionGrades;
+  if (updates.controls !== undefined) dbUpdates.controls = updates.controls;
+  if (updates.grades !== undefined) dbUpdates.grades = updates.grades;
+  if (updates.homework !== undefined) dbUpdates.homework = updates.homework;
+  if (updates.program !== undefined) dbUpdates.program = updates.program;
+
+  try {
+    await neonSaveClass(dbUpdates);
+  } catch (neonErr) {
+    console.warn('[Neon] Direct sync updateClass error:', neonErr.message || neonErr);
+  }
+
+  // 4. Companion API (non-blocking fallback)
   localDb.get('/classes').then(list => {
     if (!Array.isArray(list)) return;
     const cls = list.find(c => c.id === classId);
@@ -318,38 +345,15 @@ export const updateClass = async (classId, updates) => {
     localDb.post('/classes', merged).catch(err => {
       console.warn('[LocalDB] Could not sync updateClass to Companion server:', err.message);
     });
-
-    // Sync to Neon PostgreSQL
-    neonSaveClass({
-      id: classId,
-      ...merged,
-      student_count: studentCount,
-      updated_at: now
-    }).catch(err => console.warn('[Neon] Could not sync updateClass to Neon:', err.message));
   }).catch(err => {
     console.warn('[LocalDB] Could not sync updateClass to Companion server:', err.message);
   });
 
-  // 4. Supabase — build db-shaped update object (fire-and-forget)
+  // 5. Supabase (non-blocking secondary cloud sync)
   if (supabase) {
-    const dbUpdates = { updated_at: now };
-
-    // Map camelCase fields to snake_case for Supabase
-    if (updates.students !== undefined) dbUpdates.students = updates.students;
-    if (updates.studentCount !== undefined) dbUpdates.student_count = updates.studentCount;
-    if (updates.competitionGrades !== undefined) dbUpdates.competition_grades = updates.competitionGrades;
-    if (updates.competitions !== undefined) dbUpdates.competitions = updates.competitions;
-    if (updates.controls !== undefined) dbUpdates.controls = updates.controls;
-    if (updates.grades !== undefined) dbUpdates.grades = updates.grades;
-    if (updates.homework !== undefined) dbUpdates.homework = updates.homework;
-    if (updates.name !== undefined) dbUpdates.name = updates.name;
-    if (updates.level !== undefined) dbUpdates.level = updates.level;
-    if (updates.language !== undefined) dbUpdates.language = updates.language;
-    if (updates.program !== undefined) dbUpdates.program = updates.program;
-
     supabase.from('classes').update(dbUpdates).eq('id', classId).then(({ error }) => {
       if (error) console.warn('[Supabase] Could not sync updateClass to Supabase:', error.message);
-    });
+    }).catch(err => console.warn('[Supabase] updateClass network warning:', err?.message));
   }
 
   return classId;

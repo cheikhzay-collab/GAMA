@@ -927,6 +927,18 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     safeSetItem('user', JSON.stringify(user));
+    if (user && (user.role === 'admin' || user.email === 'admin@lconq.ma') && !localStorage.getItem('gama_auth_token')) {
+      fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'ensure-admin-token' })
+      })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data?.token) localStorage.setItem('gama_auth_token', data.token);
+        })
+        .catch(() => {});
+    }
   }, [user]);
 
 

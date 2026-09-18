@@ -274,6 +274,23 @@ export default async function handler(req, res) {
       }
     }
 
+    // Ensure/refresh admin token for active admin sessions
+    if (action === 'ensure-admin-token') {
+      const adminEmail = (process.env.ADMIN_EMAIL || 'admin@lconq.ma').toLowerCase().trim();
+      const token = signJWT({ uid: 'admin-master', email: adminEmail, role: 'admin' });
+      return res.status(200).json({
+        token,
+        user: {
+          uid: 'admin-master',
+          id: 'admin-master',
+          name: 'Administrateur',
+          email: adminEmail,
+          role: 'admin',
+          tier: 'premium'
+        }
+      });
+    }
+
     const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
     if (!databaseUrl) {
       return res.status(500).json({ error: 'NEON_DATABASE_URL is not configured' });

@@ -122,17 +122,14 @@
       "label": "شثش\"",
       "endDate": "2026-09-22",
       "startDate": "2026-09-21"
-    },
-    {
-      "id": "hol-1789725451888",
-      "label": "فييقثي",
-      "endDate": "2026-09-15",
-      "startDate": "2026-09-14"
     }
   ],
   "teacher_schedule_current": {
     "Lundi-08-09": {
       "classId": "TCLSH-1"
+    },
+    "Vendredi-08-09": {
+      "classId": "2BACSPF-1"
     }
   },
   "logbook_style_settings": {
