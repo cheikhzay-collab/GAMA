@@ -432,8 +432,37 @@ DIRECTIVES SPÉCIFIQUES DE L'ENSEIGNANT (À RESPECTER PRIORITAIREMENT) :
         ? `Fournis pour CHAQUE exercice une solution modèle détaillée pas à pas ("solution") rédigée avec rigueur pédagogique, justifiant chaque étape et règle appliquée.`
         : `Laisse le champ "solution" vide ("").`;
 
-      const systemPrompt = `Tu es un Inspecteur Général Principal et Concepteur Pédagogique Expert en Mathématiques auprès du Ministère de l'Éducation Nationale du Maroc.
-Ta mission est de concevoir et générer une série d'exercices d'excellence mathématique pour le niveau "${levelLabel}" sur le chapitre/thème "${resolvedChapterTitle}".
+      const systemPrompt = `Tu es Inspecteur Général Pédagogique et Concepteur Expert de Mathématiques auprès du Ministère de l'Éducation Nationale du Maroc.
+Ta mission est de concevoir et générer une série de mathématiques d'EXCELLENCE PÉDAGOGIQUE pour le niveau "${levelLabel}" sur le chapitre "${resolvedChapterTitle}".
+
+═══════════════════════════════════════════════════════════════════════════
+⭐ RÈGLES FONDAMENTALES DU MINISTÈRE DE L'ÉDUCATION NATIONALE DU MAROC :
+═══════════════════════════════════════════════════════════════════════════
+
+1. 🚫 100% INÉDIT — INTERDICTION STRICTE DE COPIER :
+   - Ne recopie ni ne reprends aucune série existante sur la plateforme ni d'exercices déjà vus.
+   - Tu dois INVENTER et CONCEVOIR des exercices ENTIÈREMENT NOUVEAUX, originaux, stimulants et parfaitement adaptés au niveau "${levelLabel}".
+
+2. 🎯 COUVERTURE EXHAUSTIVE DE TOUS LES AXES DU CHAPITRE :
+   - La série de ${count} exercices DOIT couvrir les DIFFÉRENTS axes fondamentaux du chapitre "${resolvedChapterTitle}".
+   - Chaque exercice de la série doit être centré sur un axe pédagogique spécifique et distinct pour offrir une couverture complète du cours.
+   - Par exemple :
+     * Exercice 1 : Notions fondamentales, applications directes et manipulations algébriques.
+     * Exercice 2 : Raisonnement mathématique, propriétés clés et démonstrations guidées.
+     * Exercice 3 : Problème de synthèse, recherche et approfondissement avec questions enchaînées.
+
+3. 📝 ÉNONCÉS EXHAUSTIFS ET COMPLETS (OBLIGATION ABSOLUE) :
+   - Chaque exercice doit être un VRAI problème mathématique complet et rigoureux.
+   - ⚠️ INTERDICTION FORMELLE DE S'ARRÊTER À UNE SIMPLE PHRASE D'INTRODUCTION SANS QUESTIONS !
+   - Chaque exercice DOIT obligatoirement comporter :
+     * Le contexte mathématique / données initiales (ex: "Soit $f$ la fonction...", "Soit $n \\in \\mathbb{N}^*$...").
+     * Au minimum 3 à 5 questions numérotées et hiérarchisées de manière progressive :
+       1) a) Vérifier que...
+          b) Montrer que...
+       2) a) En déduire que...
+          b) Déterminer...
+       3) Résoudre...
+   - Utilise les formules canoniques marocaines : "Vérifier que", "Montrer que", "En déduire que", "Calculer", "Résoudre dans".
 
 ${promptMoroccanGuidelines}
 ${languageInstruction}
@@ -441,13 +470,10 @@ ${baremeInstruction}
 ${solutionInstruction}
 ${promptUserDirectives}
 
-RÈGLES CRITIQUES DE VALIDITÉ DU FORMAT JSON :
-1. Renvoyer UNIQUEMENT un objet JSON valide (pas de préambule, pas de commentaires, pas de markdown \`\`\`json).
-2. Pour TOUTES les formules LaTeX mathématiques, DOUBLE SYSTÉMATIQUEMENT les antislashs pour que le JSON reste parfaitement valide (ex: "\\\\frac{a}{b}", "\\\\sqrt{x}", "\\\\lim_{x \\\\to 0}", "\\\\in \\\\mathbb{R}").
-3. N'utilise JAMAIS de guillemets doubles non échappés à l'intérieur des chaînes de texte (utilise des guillemets français « » ou \\").
-4. Ne mets pas de virgule traînante avant une accolade fermante.
-
-Structure JSON obligatoire :
+═══════════════════════════════════════════════════════════════════════════
+🔧 FORMAT JSON STRICT ET TECHNIQUE :
+═══════════════════════════════════════════════════════════════════════════
+Tu dois renvoyer UNIQUEMENT un objet JSON valide suivant exactement ce modèle :
 {
   "sheet_title": "${language === 'ar' ? 'سلسلة تمارين : ' : 'Série d\'exercices : '}${resolvedChapterTitle}",
   "chapter": "${resolvedChapterTitle}",
@@ -457,22 +483,21 @@ Structure JSON obligatoire :
   "exercises": [
     {
       "id": "ex-1",
-      "title": "${language === 'ar' ? 'التمرين 1' : 'Exercice 1'}",
-      "points": "4 pts",
-      "content": "Texte complet de l'exercice avec toutes ses questions numérotées 1), 2), a), b)... et formules LaTeX...",
-      "items": [
-        { "type": "text", "text": "Énoncé d'introduction ou contexte mathématique éventuel" },
-        { "type": "bullet", "text": "1) Première question..." },
-        { "type": "bullet", "text": "2) Deuxième question..." }
-      ],
-      "solution": "Corrigé modèle étape par étape entièrement rédigé en LaTeX avec justifications claires..."
+      "title": "${language === 'ar' ? 'التمرين 1 : [المحور الأول]' : 'Exercice 1 : [Premier Axe du cours]'}",
+      "points": "5 pts",
+      "statement": "Données introductives de l'exercice...\\n1) a) Première question...\\n   b) Deuxième question...\\n2) Troisième question...\\n3) Quatrième question...",
+      "solution": "Corrigé modèle étape par étape pour chaque question 1) a), b), 2), 3)... avec toutes les justifications mathématiques et encadrement des résultats."
     }
   ]
-}`;
+}
 
-      const userPrompt = `Génère exactement ${count} exercices de mathématiques de niveau "${diffDesc}" sur le chapitre "${resolvedChapterTitle}" pour la classe de "${levelLabel}".`;
+RÈGLE TECHNIQUE CRITIQUE :
+- Dans les chaînes JSON, TOUS les antislashs LaTeX doivent impérativement être DOUBLÉS (ex: "\\\\frac{a}{b}", "\\\\sqrt{x}", "\\\\lim_{x \\\\to 0}", "\\\\mathbb{R}").
+- Dans "statement", inclus TOUT l'énoncé avec TOUTES les questions numérotées 1), 2), a), b)... Ne tronque jamais l'énoncé !`;
 
-      setProgressStep(language === 'ar' ? 'صياغة التمارين الرياضية وضبط التدرج البيداغوجي...' : 'Rédaction des exercices et structuration pédagogique...');
+      const userPrompt = `Génère une série de ${count} exercices de mathématiques 100% INÉDITS et COMPLETS, de niveau "${diffDesc}", couvrant tous les axes du chapitre "${resolvedChapterTitle}" pour la classe de "${levelLabel}". Chaque exercice doit impérativement avoir toutes ses questions rédigées de 1) à 4).`;
+
+      setProgressStep(language === 'ar' ? 'صياغة تمارين جديدة كلياً وتغطية محاور الدرس...' : 'Conception d\'exercices inédits et structuration des axes...');
 
       // Models to try in order of capability
       const storedModel = (localStorage.getItem('geminiModel') || '').trim();
@@ -498,7 +523,7 @@ Structure JSON obligatoire :
                 }
               ],
               generationConfig: {
-                temperature: 0.35,
+                temperature: 0.45,
                 maxOutputTokens: 8192,
                 responseMimeType: "application/json"
               }
@@ -539,19 +564,31 @@ Structure JSON obligatoire :
       }
 
       // Format as standard lesson document sections
-      const sections = parsed.exercises.map((ex, idx) => ({
-        id: ex.id || `ex-${idx + 1}`,
-        type: 'exercise',
-        title: ex.title || `${language === 'ar' ? 'تمرين ' : 'Exercice '}${idx + 1}`,
-        points: ex.points || '',
-        content: ex.content || '',
-        items: Array.isArray(ex.items) && ex.items.length > 0 
-          ? ex.items 
-          : [{ type: 'text', text: ex.content || '' }],
-        solution: ex.solution || '',
-        language: language,
-        section_number: `${idx + 1}`
-      }));
+      const sections = parsed.exercises.map((ex, idx) => {
+        const fullContent = (ex.statement || ex.content || '').trim();
+        
+        // Split content into structured items for PDF and multi-paragraph KaTeX rendering
+        const rawLines = fullContent.split('\n').map(l => l.trim()).filter(Boolean);
+        const items = rawLines.map(line => {
+          const isBullet = /^(\d+[\.\)]|[a-zA-Z][\.\)]|[-*•])\s+/.test(line);
+          return {
+            type: isBullet ? 'bullet' : 'text',
+            text: line
+          };
+        });
+
+        return {
+          id: ex.id || `ex-${idx + 1}`,
+          type: 'exercise',
+          title: ex.title || `${language === 'ar' ? 'التمرين ' : 'Exercice '}${idx + 1}`,
+          points: ex.points || '',
+          content: fullContent,
+          items: items.length > 0 ? items : [{ type: 'text', text: fullContent }],
+          solution: (ex.solution || '').trim(),
+          language: language,
+          section_number: `${idx + 1}`
+        };
+      });
 
       const sheetDoc = {
         title: parsed.sheet_title || `${language === 'ar' ? 'سلسلة تمارين : ' : 'Série d\'exercices : '}${resolvedChapterTitle}`,
@@ -1101,8 +1138,20 @@ Structure JSON obligatoire :
                 {includeSolutions && (
                   <button 
                     onClick={toggleAllSolutions}
-                    className="btn btn-secondary"
-                    style={{ borderRadius: '10px', padding: '0.55rem 0.85rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+                    className="btn"
+                    style={{ 
+                      borderRadius: '10px', 
+                      padding: '0.55rem 0.95rem', 
+                      fontSize: '0.82rem', 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '0.45rem', 
+                      fontWeight: 700,
+                      color: '#0284C7',
+                      background: 'rgba(2, 132, 199, 0.08)',
+                      border: '1px solid rgba(2, 132, 199, 0.25)',
+                      cursor: 'pointer'
+                    }}
                   >
                     <Eye size={15} />
                     <span>{language === 'ar' ? 'إظهار/إخفاء الحلول' : 'Afficher Corrigé'}</span>
@@ -1112,8 +1161,20 @@ Structure JSON obligatoire :
                 {/* Print PDF */}
                 <button 
                   onClick={handlePrint}
-                  className="btn btn-secondary"
-                  style={{ borderRadius: '10px', padding: '0.55rem 0.85rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+                  className="btn"
+                  style={{ 
+                    borderRadius: '10px', 
+                    padding: '0.55rem 0.95rem', 
+                    fontSize: '0.82rem', 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    gap: '0.45rem', 
+                    fontWeight: 700,
+                    color: '#059669',
+                    background: 'rgba(5, 150, 105, 0.08)',
+                    border: '1px solid rgba(5, 150, 105, 0.25)',
+                    cursor: 'pointer'
+                  }}
                 >
                   <Printer size={15} />
                   <span>{language === 'ar' ? 'طباعة PDF' : 'Imprimer PDF'}</span>
@@ -1122,11 +1183,23 @@ Structure JSON obligatoire :
                 {/* Copy Markdown */}
                 <button 
                   onClick={handleCopy}
-                  className="btn btn-secondary"
-                  style={{ borderRadius: '10px', padding: '0.55rem 0.85rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+                  className="btn"
+                  style={{ 
+                    borderRadius: '10px', 
+                    padding: '0.55rem 0.95rem', 
+                    fontSize: '0.82rem', 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    gap: '0.45rem', 
+                    fontWeight: 700,
+                    color: '#6366F1',
+                    background: 'rgba(99, 102, 241, 0.08)',
+                    border: '1px solid rgba(99, 102, 241, 0.25)',
+                    cursor: 'pointer'
+                  }}
                 >
                   <Copy size={15} />
-                  <span>{language === 'ar' ? 'نسخ' : 'Copier'}</span>
+                  <span>{language === 'ar' ? 'نسخ السلسلة' : 'Copier'}</span>
                 </button>
 
                 {/* Save to DB as Series */}
