@@ -25,7 +25,9 @@ import {
   Languages,
   Check,
   ChevronDown,
-  Info
+  Info,
+  GraduationCap,
+  Zap
 } from 'lucide-react';
 import { getAllLessons, addLesson } from '../services/lessonService';
 import { renderWithMath } from '../utils/mathRenderer';
@@ -682,36 +684,72 @@ RÈGLE TECHNIQUE CRITIQUE :
     <div className="container animate-fade-in" style={{ padding: '2rem 1.5rem', maxWidth: '1280px', margin: '0 auto' }}>
       
       {/* ── Top Bar ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2.25rem', flexWrap: 'wrap', gap: '1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
           <button 
             onClick={onBack || (() => navigate('/admin/ai-generator'))}
-            className="btn btn-secondary"
-            style={{ borderRadius: '12px', padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}
+            type="button"
+            style={{ 
+              borderRadius: '14px', 
+              padding: '0.65rem 1.15rem', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.6rem', 
+              fontWeight: 700,
+              fontSize: '0.86rem',
+              background: 'var(--bg-card, #ffffff)',
+              color: 'var(--text-main, #0f172a)',
+              border: '1.5px solid var(--border, rgba(148, 163, 184, 0.25))',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+              cursor: 'pointer',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.08)';
+              e.currentTarget.style.borderColor = 'var(--violet, #7c3aed)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
+              e.currentTarget.style.borderColor = 'var(--border, rgba(148, 163, 184, 0.25))';
+            }}
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={18} style={{ color: 'var(--violet, #7c3aed)' }} />
             <span>{language === 'ar' ? 'الرجوع للاستوديو' : 'Retour au Studio'}</span>
           </button>
           
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
               <span style={{ 
-                background: 'rgba(236, 72, 153, 0.12)', 
-                color: '#EC4899', 
-                fontSize: '0.75rem', 
+                background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%)', 
+                color: '#db2777', 
+                fontSize: '0.74rem', 
                 fontWeight: 800, 
-                padding: '0.2rem 0.6rem', 
-                borderRadius: '20px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em'
+                padding: '0.22rem 0.75rem', 
+                borderRadius: '99px',
+                border: '1px solid rgba(236, 72, 153, 0.25)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                letterSpacing: '0.04em'
               }}>
-                IA Pédagogique
+                <Sparkles size={13} />
+                {language === 'ar' ? 'ذكاء اصطناعي بيداغوجي' : 'IA PÉDAGOGIQUE'}
               </span>
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-                • Orientations Officielles Marocaines
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem', fontWeight: 600 }}>
+                • {language === 'ar' ? 'التوجيهات الرسمية لوزارة التربية الوطنية' : 'Orientations Officielles Marocaines'}
               </span>
             </div>
-            <h1 style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--text-main)', margin: '0.2rem 0 0 0', letterSpacing: '-0.02em' }}>
+            <h1 style={{ 
+              fontSize: '1.95rem', 
+              fontWeight: 900, 
+              margin: '0.35rem 0 0 0', 
+              letterSpacing: '-0.03em',
+              background: 'linear-gradient(135deg, var(--text-main, #0f172a) 40%, #7c3aed 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}>
               {language === 'ar' ? 'صانع ومولد التمارين بالذكاء الاصطناعي' : 'Générateur d\'Exercices & Séries IA'}
             </h1>
           </div>
@@ -722,61 +760,75 @@ RÈGLE TECHNIQUE CRITIQUE :
           {/* API Key Indicator */}
           <button 
             onClick={() => { setTempKey(geminiKey); setShowKeyModal(true); }}
-            className="btn"
+            type="button"
             style={{ 
-              borderRadius: '12px', 
-              padding: '0.5rem 0.9rem', 
+              borderRadius: '14px', 
+              padding: '0.55rem 1rem', 
               fontSize: '0.82rem',
-              background: geminiKey ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-              color: geminiKey ? '#10B981' : '#EF4444',
-              border: `1px solid ${geminiKey ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`,
+              background: geminiKey ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
+              color: geminiKey ? '#059669' : '#dc2626',
+              border: `1.5px solid ${geminiKey ? 'rgba(16, 185, 129, 0.28)' : 'rgba(239, 68, 68, 0.28)'}`,
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem',
-              fontWeight: 700
+              gap: '0.55rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+              transition: 'all 0.2s ease'
             }}
           >
+            <div style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: geminiKey ? '#10B981' : '#EF4444',
+              boxShadow: geminiKey ? '0 0 8px #10B981' : '0 0 8px #EF4444'
+            }} />
             <Settings size={15} />
-            <span>{geminiKey ? 'Clé Gemini Active' : 'Configurer Clé API'}</span>
+            <span>{geminiKey ? (language === 'ar' ? 'مفتاح Gemini نشط ⚡' : 'Clé Gemini Active') : (language === 'ar' ? 'ضبط مفتاح API' : 'Configurer Clé API')}</span>
           </button>
 
           {/* Language Switcher */}
           <div style={{ 
             display: 'flex', 
-            background: 'var(--bg-card)', 
-            border: '1px solid var(--border)', 
-            borderRadius: '12px', 
+            background: 'var(--bg-card, #ffffff)', 
+            border: '1.5px solid var(--border, rgba(148, 163, 184, 0.25))', 
+            borderRadius: '14px', 
             padding: '3px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+            boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
           }}>
             <button
+              type="button"
               onClick={() => setLanguage('fr')}
               style={{
                 border: 'none',
-                background: language === 'fr' ? 'var(--violet)' : 'transparent',
+                background: language === 'fr' ? 'linear-gradient(135deg, #7c3aed, #6366f1)' : 'transparent',
                 color: language === 'fr' ? '#fff' : 'var(--text-muted)',
-                padding: '0.4rem 0.8rem',
-                borderRadius: '9px',
+                padding: '0.45rem 0.9rem',
+                borderRadius: '11px',
                 fontSize: '0.82rem',
                 fontWeight: 700,
                 cursor: 'pointer',
-                transition: 'all 0.2s'
+                boxShadow: language === 'fr' ? '0 2px 6px rgba(124, 58, 237, 0.3)' : 'none',
+                transition: 'all 0.2s ease'
               }}
             >
               Français (BIOF)
             </button>
             <button
+              type="button"
               onClick={() => setLanguage('ar')}
               style={{
                 border: 'none',
-                background: language === 'ar' ? 'var(--violet)' : 'transparent',
+                background: language === 'ar' ? 'linear-gradient(135deg, #7c3aed, #6366f1)' : 'transparent',
                 color: language === 'ar' ? '#fff' : 'var(--text-muted)',
-                padding: '0.4rem 0.8rem',
-                borderRadius: '9px',
+                padding: '0.45rem 0.9rem',
+                borderRadius: '11px',
                 fontSize: '0.82rem',
                 fontWeight: 700,
                 cursor: 'pointer',
-                transition: 'all 0.2s'
+                boxShadow: language === 'ar' ? '0 2px 6px rgba(124, 58, 237, 0.3)' : 'none',
+                transition: 'all 0.2s ease'
               }}
             >
               العربية
@@ -785,67 +837,113 @@ RÈGLE TECHNIQUE CRITIQUE :
         </div>
       </div>
 
-      {/* ── Main Layout: Config Form + Results ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: generatedSheet ? '360px 1fr' : '1fr', gap: '2rem', alignItems: 'start' }}>
+      {/* ── Main Layout: Config Form + Results / Showcase ── */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: generatedSheet ? '380px 1fr' : 'minmax(0, 1.15fr) minmax(0, 0.85fr)', 
+        gap: '2.25rem', 
+        alignItems: 'start' 
+      }}>
         
         {/* ── LEFT: Configuration Card ── */}
-        <div className="glass-panel" style={{ 
-          background: 'var(--bg-card)', 
-          border: '1px solid var(--border)', 
-          borderRadius: '20px', 
-          padding: '1.75rem',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.04)'
+        <div style={{ 
+          background: 'var(--bg-card, #ffffff)', 
+          border: '1.5px solid var(--border, rgba(148, 163, 184, 0.2))', 
+          borderRadius: '24px', 
+          padding: '2rem',
+          boxShadow: '0 20px 45px -15px rgba(0,0,0,0.05), 0 0 1px 1px rgba(0,0,0,0.02)',
+          position: 'relative'
         }}>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ width: 36, height: 36, borderRadius: '10px', background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Sparkles size={20} style={{ color: '#EC4899' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1.5px solid var(--border, rgba(148, 163, 184, 0.15))' }}>
+            <div style={{ width: 42, height: 42, borderRadius: '12px', background: 'linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(236, 72, 153, 0.35)', color: '#fff' }}>
+              <Sparkles size={22} />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
+              <h2 style={{ fontSize: '1.18rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
                 {language === 'ar' ? 'معايير السلسلة البيداغوجية' : 'Paramètres de la Série'}
               </h2>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                {language === 'ar' ? 'تحديد المستوى والدرس والصعوبة' : 'Cible, contenu & exigences'}
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                {language === 'ar' ? 'تحديد المستوى والدرس ودرجة الصعوبة' : 'Cible, contenu & exigences'}
               </span>
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.35rem' }}>
             
             {/* 1. Level Selection */}
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>
-                1. {language === 'ar' ? 'المستوى الدراسي' : 'Niveau d\'études'}
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.86rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.45rem' }}>
+                <span style={{ width: 22, height: 22, borderRadius: '6px', background: 'rgba(139, 92, 246, 0.12)', color: '#8B5CF6', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 900 }}>1</span>
+                <span>{language === 'ar' ? 'المستوى الدراسي' : 'Niveau d\'études'}</span>
               </label>
-              <select 
-                value={selectedLevel}
-                onChange={e => setSelectedLevel(e.target.value)}
-                className="input-field"
-                style={{ width: '100%', borderRadius: '12px', padding: '0.65rem 0.85rem', fontSize: '0.88rem', fontWeight: 600 }}
-              >
-                {Object.entries(MOROCCAN_CURRICULA).map(([lvlKey, lvl]) => (
-                  <option key={lvlKey} value={lvlKey}>
-                    {language === 'ar' ? lvl.labelAr : lvl.labelFr}
-                  </option>
-                ))}
-              </select>
+              <div style={{ position: 'relative' }}>
+                <select 
+                  value={selectedLevel}
+                  onChange={e => setSelectedLevel(e.target.value)}
+                  style={{ 
+                    width: '100%', 
+                    borderRadius: '14px', 
+                    padding: '0.75rem 2.5rem 0.75rem 2.6rem', 
+                    fontSize: '0.9rem', 
+                    fontWeight: 600,
+                    color: 'var(--text-main, #0f172a)',
+                    background: 'var(--bg-hover, #f8fafc)',
+                    border: '1.5px solid var(--border, rgba(148, 163, 184, 0.25))',
+                    outline: 'none',
+                    appearance: 'none',
+                    WebkitAppearance: 'none',
+                    cursor: 'pointer',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {Object.entries(MOROCCAN_CURRICULA).map(([lvlKey, lvl]) => (
+                    <option key={lvlKey} value={lvlKey}>
+                      {language === 'ar' ? lvl.labelAr : lvl.labelFr}
+                    </option>
+                  ))}
+                </select>
+                <div style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#8B5CF6', display: 'flex', alignItems: 'center' }}>
+                  <GraduationCap size={18} />
+                </div>
+                <div style={{ position: 'absolute', right: '0.85rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
+                  <ChevronDown size={18} />
+                </div>
+              </div>
             </div>
 
             {/* 2. Chapter / Lesson Selection */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
-                  2. {language === 'ar' ? 'الدرس / المحور المستهدف' : 'Leçon / Chapitre cible'}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.86rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
+                  <span style={{ width: 22, height: 22, borderRadius: '6px', background: 'rgba(236, 72, 153, 0.12)', color: '#EC4899', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 900 }}>2</span>
+                  <span>{language === 'ar' ? 'الدرس / المحور المستهدف' : 'Leçon / Chapitre cible'}</span>
                 </label>
                 <button
                   type="button"
                   onClick={() => setIsCustomChapter(!isCustomChapter)}
-                  style={{ background: 'none', border: 'none', color: 'var(--violet)', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}
+                  style={{ 
+                    background: 'rgba(124, 58, 237, 0.08)', 
+                    border: '1px solid rgba(124, 58, 237, 0.2)', 
+                    color: 'var(--violet, #7c3aed)', 
+                    fontSize: '0.76rem', 
+                    fontWeight: 700, 
+                    cursor: 'pointer',
+                    padding: '0.25rem 0.65rem',
+                    borderRadius: '8px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    transition: 'all 0.2s ease'
+                  }}
                 >
-                  {isCustomChapter 
-                    ? (language === 'ar' ? '← العودة للمنهاج الرسمي' : '← Choisir du programme') 
-                    : (language === 'ar' ? '+ كتابة عنوان مخصص' : '+ Titre personnalisé')}
+                  {isCustomChapter ? <BookOpen size={13} /> : <Plus size={13} />}
+                  <span>
+                    {isCustomChapter 
+                      ? (language === 'ar' ? '← العودة للمنهاج' : '← Choisir du programme') 
+                      : (language === 'ar' ? '+ عنوان مخصص' : '+ Titre personnalisé')}
+                  </span>
                 </button>
               </div>
 
@@ -855,43 +953,75 @@ RÈGLE TECHNIQUE CRITIQUE :
                   placeholder={language === 'ar' ? 'مثال: النهايات والدوال العكسية، مبرهنة رول...' : 'Ex: Continuité, TVI, Fonctions réciproques...'}
                   value={customChapterTitle}
                   onChange={e => setCustomChapterTitle(e.target.value)}
-                  className="input-field"
-                  style={{ width: '100%', borderRadius: '12px', padding: '0.65rem 0.85rem', fontSize: '0.88rem' }}
+                  style={{ 
+                    width: '100%', 
+                    borderRadius: '14px', 
+                    padding: '0.75rem 1rem', 
+                    fontSize: '0.9rem',
+                    color: 'var(--text-main)',
+                    background: 'var(--bg-hover, #f8fafc)',
+                    border: '1.5px solid var(--border, rgba(148, 163, 184, 0.25))',
+                    outline: 'none',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                  }}
                 />
               ) : (
-                <select 
-                  value={selectedChapterId}
-                  onChange={e => setSelectedChapterId(e.target.value)}
-                  className="input-field"
-                  style={{ width: '100%', borderRadius: '12px', padding: '0.65rem 0.85rem', fontSize: '0.88rem', fontWeight: 500 }}
-                >
-                  <optgroup label={language === 'ar' ? '📚 المنهاج المغربي الرسمي' : '📚 Programme officiel marocain'}>
-                    {currentLevelMeta.chapters.map(c => (
-                      <option key={c.id} value={c.id}>
-                        {language === 'ar' ? c.ar : c.fr}
-                      </option>
-                    ))}
-                  </optgroup>
-
-                  {filteredUserLessons.length > 0 && (
-                    <optgroup label={language === 'ar' ? '📁 دروسك المحفوظة' : '📁 Vos fiches de cours'}>
-                      {filteredUserLessons.map(ul => (
-                        <option key={ul.id} value={ul.id}>
-                          {ul.title}
+                <div style={{ position: 'relative' }}>
+                  <select 
+                    value={selectedChapterId}
+                    onChange={e => setSelectedChapterId(e.target.value)}
+                    style={{ 
+                      width: '100%', 
+                      borderRadius: '14px', 
+                      padding: '0.75rem 2.5rem 0.75rem 2.6rem', 
+                      fontSize: '0.9rem', 
+                      fontWeight: 600,
+                      color: 'var(--text-main, #0f172a)',
+                      background: 'var(--bg-hover, #f8fafc)',
+                      border: '1.5px solid var(--border, rgba(148, 163, 184, 0.25))',
+                      outline: 'none',
+                      appearance: 'none',
+                      WebkitAppearance: 'none',
+                      cursor: 'pointer',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <optgroup label={language === 'ar' ? '📚 المنهاج المغربي الرسمي' : '📚 Programme officiel marocain'}>
+                      {currentLevelMeta.chapters.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {language === 'ar' ? c.ar : c.fr}
                         </option>
                       ))}
                     </optgroup>
-                  )}
-                </select>
+
+                    {filteredUserLessons.length > 0 && (
+                      <optgroup label={language === 'ar' ? '📁 دروسك المحفوظة' : '📁 Vos fiches de cours'}>
+                        {filteredUserLessons.map(ul => (
+                          <option key={ul.id} value={ul.id}>
+                            {ul.title}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                  </select>
+                  <div style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#EC4899', display: 'flex', alignItems: 'center' }}>
+                    <BookOpen size={18} />
+                  </div>
+                  <div style={{ position: 'absolute', right: '0.85rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
+                    <ChevronDown size={18} />
+                  </div>
+                </div>
               )}
             </div>
 
             {/* 3. Difficulty */}
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>
-                3. {language === 'ar' ? 'درجة الصعوبة' : 'Degré de difficulté'}
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.86rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.55rem' }}>
+                <span style={{ width: 22, height: 22, borderRadius: '6px', background: 'rgba(245, 158, 11, 0.12)', color: '#F59E0B', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 900 }}>3</span>
+                <span>{language === 'ar' ? 'درجة الصعوبة البيداغوجية' : 'Degré de difficulté'}</span>
               </label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {DIFFICULTIES.map(d => {
                   const Icon = d.icon;
                   const isSelected = difficulty === d.id;
@@ -900,33 +1030,69 @@ RÈGLE TECHNIQUE CRITIQUE :
                       key={d.id}
                       onClick={() => setDifficulty(d.id)}
                       style={{
-                        padding: '0.55rem 0.85rem',
-                        borderRadius: '10px',
-                        border: `1.5px solid ${isSelected ? d.color : 'var(--border)'}`,
-                        background: isSelected ? `${d.color}12` : 'transparent',
+                        padding: '0.75rem 1rem',
+                        borderRadius: '14px',
+                        border: `1.5px solid ${isSelected ? d.color : 'var(--border, rgba(148, 163, 184, 0.2))'}`,
+                        background: isSelected 
+                          ? `linear-gradient(135deg, ${d.color}15 0%, ${d.color}06 100%)` 
+                          : 'var(--bg-hover, rgba(0,0,0,0.015))',
+                        boxShadow: isSelected ? `0 4px 14px -3px ${d.color}35` : 'none',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        transition: 'all 0.2s'
+                        transition: 'all 0.2s ease',
+                        transform: isSelected ? 'translateY(-1px)' : 'none'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                        <Icon size={16} style={{ color: d.color }} />
-                        <span style={{ fontSize: '0.82rem', fontWeight: isSelected ? 700 : 500, color: 'var(--text-main)' }}>
-                          {language === 'ar' ? d.labelAr : d.labelFr}
-                        </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: '10px',
+                          background: isSelected ? d.color : `${d.color}15`,
+                          color: isSelected ? '#fff' : d.color,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s ease',
+                          boxShadow: isSelected ? `0 2px 8px ${d.color}50` : 'none'
+                        }}>
+                          <Icon size={16} />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.86rem', fontWeight: isSelected ? 800 : 600, color: 'var(--text-main)' }}>
+                            {language === 'ar' ? d.labelAr : d.labelFr}
+                          </div>
+                        </div>
                       </div>
-                      <span style={{ 
-                        fontSize: '0.7rem', 
-                        fontWeight: 800, 
-                        color: d.color, 
-                        background: `${d.color}20`, 
-                        padding: '0.15rem 0.45rem', 
-                        borderRadius: '6px' 
-                      }}>
-                        {d.badge}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ 
+                          fontSize: '0.72rem', 
+                          fontWeight: 800, 
+                          color: d.color, 
+                          background: `${d.color}18`, 
+                          border: `1px solid ${d.color}30`,
+                          padding: '0.2rem 0.6rem', 
+                          borderRadius: '8px' 
+                        }}>
+                          {d.badge}
+                        </span>
+                        {isSelected && (
+                          <div style={{
+                            width: 18,
+                            height: 18,
+                            borderRadius: '50%',
+                            background: d.color,
+                            color: '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}>
+                            <Check size={11} strokeWidth={3} />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
@@ -935,30 +1101,42 @@ RÈGLE TECHNIQUE CRITIQUE :
 
             {/* 4. Number of Exercises */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
-                  4. {language === 'ar' ? 'عدد التمارين' : 'Nombre d\'exercices'}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.86rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
+                  <span style={{ width: 22, height: 22, borderRadius: '6px', background: 'rgba(59, 130, 246, 0.12)', color: '#3B82F6', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 900 }}>4</span>
+                  <span>{language === 'ar' ? 'عدد التمارين' : 'Nombre d\'exercices'}</span>
                 </label>
-                <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--violet)' }}>
+                <span style={{ 
+                  fontSize: '0.78rem', 
+                  fontWeight: 800, 
+                  color: 'var(--violet, #7c3aed)',
+                  background: 'rgba(124, 58, 237, 0.1)',
+                  padding: '0.15rem 0.55rem',
+                  borderRadius: '20px'
+                }}>
                   {count} {language === 'ar' ? 'تمارين' : 'exercices'}
                 </span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.35rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.5rem' }}>
                 {[1, 2, 3, 4, 5, 6].map(num => (
                   <button
                     key={num}
                     type="button"
                     onClick={() => setCount(num)}
                     style={{
-                      padding: '0.45rem 0',
-                      borderRadius: '8px',
-                      border: `1.5px solid ${count === num ? 'var(--violet)' : 'var(--border)'}`,
-                      background: count === num ? 'var(--violet)' : 'transparent',
+                      padding: '0.6rem 0',
+                      borderRadius: '12px',
+                      border: `1.5px solid ${count === num ? 'var(--violet, #7c3aed)' : 'var(--border, rgba(148, 163, 184, 0.25))'}`,
+                      background: count === num 
+                        ? 'linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)' 
+                        : 'var(--bg-hover, #f8fafc)',
                       color: count === num ? '#fff' : 'var(--text-main)',
-                      fontWeight: 700,
-                      fontSize: '0.85rem',
+                      fontWeight: 800,
+                      fontSize: '0.95rem',
                       cursor: 'pointer',
-                      transition: 'all 0.2s'
+                      boxShadow: count === num ? '0 4px 14px rgba(139, 92, 246, 0.35)' : 'none',
+                      transform: count === num ? 'scale(1.03)' : 'none',
+                      transition: 'all 0.2s ease'
                     }}
                   >
                     {num}
@@ -969,59 +1147,183 @@ RÈGLE TECHNIQUE CRITIQUE :
 
             {/* 5. Custom Directives (خانة التوجيهات الخاصة) */}
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.35rem' }}>
-                5. {language === 'ar' ? 'توجيهات وملاحظات خاصة (اختياري)' : 'Consignes & Directives spécifiques (Optionnel)'}
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.86rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.45rem' }}>
+                <span style={{ width: 22, height: 22, borderRadius: '6px', background: 'rgba(16, 185, 129, 0.12)', color: '#10B981', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 900 }}>5</span>
+                <span>{language === 'ar' ? 'توجيهات وملاحظات خاصة (اختياري)' : 'Consignes & Directives spécifiques (Optionnel)'}</span>
               </label>
               <textarea 
                 rows={3}
                 placeholder={language === 'ar' 
                   ? 'مثال: التركيز على مبرهنة القيم الوسيطية، إضافة سؤال برهان بالترجع، تضمين متراجحة بمجهولين، تمارين مناسبة لفرض محروس مدته ساعة...'
-                  : 'Ex: Insister sur le calcul des limites avec expressions conjuguées, inclure une question de TVI avec unicité par stricte monotonie...'}
+                  : 'Ex: Insister sur le calcul des limites avec expressions conjuguées, inclure une question de TVI avec unicité par stricte monotonie, adapter pour un devoir d\'une heure...'}
                 value={customDirectives}
                 onChange={e => setCustomDirectives(e.target.value)}
-                className="input-field"
-                style={{ width: '100%', borderRadius: '12px', padding: '0.65rem 0.85rem', fontSize: '0.82rem', lineHeight: '1.4' }}
+                style={{ 
+                  width: '100%', 
+                  borderRadius: '14px', 
+                  padding: '0.75rem 1rem', 
+                  fontSize: '0.85rem', 
+                  lineHeight: '1.45',
+                  color: 'var(--text-main)',
+                  background: 'var(--bg-hover, #f8fafc)',
+                  border: '1.5px solid var(--border, rgba(148, 163, 184, 0.25))',
+                  outline: 'none',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                }}
               />
             </div>
 
             {/* 6. Moroccan Guidelines & Pro Toggles */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', padding: '0.75rem', background: 'rgba(124, 58, 237, 0.04)', borderRadius: '12px', border: '1px solid rgba(124, 58, 237, 0.1)' }}>
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '0.5rem', 
+              padding: '0.9rem 1rem', 
+              background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(236, 72, 153, 0.03) 100%)', 
+              borderRadius: '16px', 
+              border: '1px solid rgba(124, 58, 237, 0.15)' 
+            }}>
               
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }}>
-                <input 
-                  type="checkbox" 
-                  checked={respectGuidelines} 
-                  onChange={e => setRespectGuidelines(e.target.checked)}
-                  style={{ width: 16, height: 16, accentColor: 'var(--violet)' }}
-                />
-                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)' }}>
-                  {language === 'ar' ? 'احترام التوجيهات التربوية المغربية الرسمية' : 'Respect strict des Orientations Pédagogiques'}
-                </span>
-              </label>
+              {/* Moroccan Guidelines */}
+              <div 
+                onClick={() => setRespectGuidelines(!respectGuidelines)}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  padding: '0.45rem 0.5rem',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  userSelect: 'none'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <span style={{ fontSize: '1.1rem' }}>🇲🇦</span>
+                  <div>
+                    <div style={{ fontSize: '0.84rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                      {language === 'ar' ? 'احترام التوجيهات التربوية المغربية الرسمية' : 'Respect strict des Orientations Pédagogiques'}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                      {language === 'ar' ? 'مطابقة للأطر المرجعية والامتحانات الإشهادية' : 'Cadres de référence & normes des examens'}
+                    </div>
+                  </div>
+                </div>
+                <div style={{
+                  width: 40,
+                  height: 22,
+                  borderRadius: '99px',
+                  background: respectGuidelines ? 'var(--violet, #7c3aed)' : 'rgba(100, 116, 139, 0.25)',
+                  position: 'relative',
+                  transition: 'all 0.25s ease',
+                  flexShrink: 0
+                }}>
+                  <div style={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: '50%',
+                    background: '#fff',
+                    position: 'absolute',
+                    top: 3,
+                    left: respectGuidelines ? 21 : 3,
+                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                  }} />
+                </div>
+              </div>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }}>
-                <input 
-                  type="checkbox" 
-                  checked={includeSolutions} 
-                  onChange={e => setIncludeSolutions(e.target.checked)}
-                  style={{ width: 16, height: 16, accentColor: 'var(--violet)' }}
-                />
-                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                  {language === 'ar' ? 'توليد عناصر الإجابة والحلول المفصلة' : 'Générer le corrigé modèle pas à pas'}
-                </span>
-              </label>
+              {/* Solutions Toggle */}
+              <div 
+                onClick={() => setIncludeSolutions(!includeSolutions)}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  padding: '0.45rem 0.5rem',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  userSelect: 'none'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <span style={{ fontSize: '1.1rem' }}>📝</span>
+                  <div>
+                    <div style={{ fontSize: '0.84rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                      {language === 'ar' ? 'توليد عناصر الإجابة والحلول المفصلة' : 'Générer le corrigé modèle pas à pas'}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                      {language === 'ar' ? 'دليل تصحيح نموذجي مع خطوات البرهان' : 'Démonstrations détaillées prêtes pour l\'élève'}
+                    </div>
+                  </div>
+                </div>
+                <div style={{
+                  width: 40,
+                  height: 22,
+                  borderRadius: '99px',
+                  background: includeSolutions ? 'var(--violet, #7c3aed)' : 'rgba(100, 116, 139, 0.25)',
+                  position: 'relative',
+                  transition: 'all 0.25s ease',
+                  flexShrink: 0
+                }}>
+                  <div style={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: '50%',
+                    background: '#fff',
+                    position: 'absolute',
+                    top: 3,
+                    left: includeSolutions ? 21 : 3,
+                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                  }} />
+                </div>
+              </div>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }}>
-                <input 
-                  type="checkbox" 
-                  checked={includeBareme} 
-                  onChange={e => setIncludeBareme(e.target.checked)}
-                  style={{ width: 16, height: 16, accentColor: 'var(--violet)' }}
-                />
-                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                  {language === 'ar' ? 'وضع سلم التنقيط التقديري (Barème)' : 'Inclure le barème de notation'}
-                </span>
-              </label>
+              {/* Barème Toggle */}
+              <div 
+                onClick={() => setIncludeBareme(!includeBareme)}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  padding: '0.45rem 0.5rem',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  userSelect: 'none'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <span style={{ fontSize: '1.1rem' }}>⚖️</span>
+                  <div>
+                    <div style={{ fontSize: '0.84rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                      {language === 'ar' ? 'وضع سلم التنقيط التقديري (Barème)' : 'Inclure le barème de notation'}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                      {language === 'ar' ? 'توزيع النقاط حسب الأسئلة والمهام' : 'Attribution précise des points par question'}
+                    </div>
+                  </div>
+                </div>
+                <div style={{
+                  width: 40,
+                  height: 22,
+                  borderRadius: '99px',
+                  background: includeBareme ? 'var(--violet, #7c3aed)' : 'rgba(100, 116, 139, 0.25)',
+                  position: 'relative',
+                  transition: 'all 0.25s ease',
+                  flexShrink: 0
+                }}>
+                  <div style={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: '50%',
+                    background: '#fff',
+                    position: 'absolute',
+                    top: 3,
+                    left: includeBareme ? 21 : 3,
+                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                  }} />
+                </div>
+              </div>
 
             </div>
 
@@ -1029,34 +1331,35 @@ RÈGLE TECHNIQUE CRITIQUE :
             <button
               onClick={handleGenerate}
               disabled={isGenerating}
-              className="btn"
+              type="button"
               style={{
                 width: '100%',
-                padding: '0.9rem 1.5rem',
-                borderRadius: '14px',
+                padding: '1rem 1.75rem',
+                borderRadius: '16px',
                 background: 'linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)',
                 color: '#fff',
                 fontWeight: 800,
-                fontSize: '0.95rem',
+                fontSize: '1rem',
+                letterSpacing: '-0.01em',
                 border: 'none',
-                boxShadow: '0 8px 25px rgba(236, 72, 153, 0.3)',
+                boxShadow: '0 12px 30px -6px rgba(236, 72, 153, 0.45), 0 4px 12px rgba(139, 92, 246, 0.3)',
                 cursor: isGenerating ? 'not-allowed' : 'pointer',
-                opacity: isGenerating ? 0.7 : 1,
+                opacity: isGenerating ? 0.75 : 1,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.6rem',
-                transition: 'all 0.3s'
+                gap: '0.75rem',
+                transition: 'all 0.25s ease'
               }}
             >
               {isGenerating ? (
                 <>
-                  <RefreshCw size={18} className="spin" />
-                  <span>{language === 'ar' ? 'جاري صناعة التمارين...' : 'Génération en cours...'}</span>
+                  <RefreshCw size={20} className="spin" />
+                  <span>{language === 'ar' ? 'جاري صياغة التمارين بدقة بيداغوجية...' : 'Génération en cours selon le curriculum...'}</span>
                 </>
               ) : (
                 <>
-                  <Sparkles size={18} />
+                  <Sparkles size={20} />
                   <span>{language === 'ar' ? 'صناعة وتوليد التمارين بالـ IA' : 'Générer la Série d\'Exercices'}</span>
                 </>
               )}
@@ -1066,30 +1369,33 @@ RÈGLE TECHNIQUE CRITIQUE :
             {isGenerating && progressStep && (
               <div style={{ 
                 textAlign: 'center', 
-                fontSize: '0.78rem', 
-                color: 'var(--violet)', 
-                fontWeight: 600, 
+                fontSize: '0.8rem', 
+                color: 'var(--violet, #7c3aed)', 
+                fontWeight: 700, 
                 animation: 'pulse 1.5s infinite',
-                padding: '0.4rem',
-                background: 'rgba(124, 58, 237, 0.06)',
-                borderRadius: '8px'
+                padding: '0.6rem',
+                background: 'rgba(124, 58, 237, 0.08)',
+                borderRadius: '12px',
+                border: '1px dashed rgba(124, 58, 237, 0.25)'
               }}>
-                {progressStep}
+                ⚡ {progressStep}
               </div>
             )}
 
             {errorMsg && (
               <div style={{ 
-                padding: '0.75rem', 
-                borderRadius: '10px', 
+                padding: '0.85rem 1rem', 
+                borderRadius: '12px', 
                 background: 'rgba(239, 68, 68, 0.1)', 
                 color: '#EF4444', 
-                fontSize: '0.82rem',
+                fontSize: '0.84rem',
+                fontWeight: 600,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem'
+                gap: '0.6rem',
+                border: '1px solid rgba(239, 68, 68, 0.2)'
               }}>
-                <AlertCircle size={16} flexShrink={0} />
+                <AlertCircle size={18} flexShrink={0} />
                 <span>{errorMsg}</span>
               </div>
             )}
@@ -1097,6 +1403,157 @@ RÈGLE TECHNIQUE CRITIQUE :
           </div>
 
         </div>
+
+        {/* ── RIGHT: Educational Showcase (when sheet is not yet generated) ── */}
+        {!generatedSheet && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{
+              background: 'var(--bg-card, #ffffff)',
+              border: '1.5px solid var(--border, rgba(148, 163, 184, 0.2))',
+              borderRadius: '24px',
+              padding: '2rem',
+              boxShadow: '0 20px 45px -15px rgba(0, 0, 0, 0.05)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: -40,
+                right: -40,
+                width: 140,
+                height: 140,
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%)',
+                pointerEvents: 'none'
+              }} />
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                <div style={{ width: 40, height: 40, borderRadius: '12px', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Award size={22} style={{ color: '#3B82F6' }} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
+                    {language === 'ar' ? 'معايير التميز في التوليد التربوي' : 'Studio d\'Excellence Pédagogique'}
+                  </h3>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    {language === 'ar' ? 'صياغة رياضية محكمة متوافقة مع الأطر الوطنية' : 'Conformité didactique avancée & normes MEN'}
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                
+                {/* Feature 1 */}
+                <div style={{
+                  padding: '1rem',
+                  borderRadius: '16px',
+                  background: 'rgba(59, 130, 246, 0.04)',
+                  border: '1px solid rgba(59, 130, 246, 0.14)',
+                  display: 'flex',
+                  gap: '0.85rem',
+                  alignItems: 'flex-start'
+                }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '10px', background: '#3B82F6', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px', boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)' }}>
+                    <Compass size={18} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.2rem' }}>
+                      {language === 'ar' ? 'احترام المنهاج المغربي ومستويات بلوم' : 'Curricula Officiels & Taxonomie de Bloom'}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: '1.45' }}>
+                      {language === 'ar' 
+                        ? 'تدرج بيداغوجي دقيق من التطبيق المباشر للقواعد إلى حل المشكلات المركبة والاستدلال الرياضي.'
+                        : 'Progression didactique rigoureuse : restitution des connaissances, application directe, puis raisonnement et synthèse.'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Feature 2 */}
+                <div style={{
+                  padding: '1rem',
+                  borderRadius: '16px',
+                  background: 'rgba(16, 185, 129, 0.04)',
+                  border: '1px solid rgba(16, 185, 129, 0.14)',
+                  display: 'flex',
+                  gap: '0.85rem',
+                  alignItems: 'flex-start'
+                }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '10px', background: '#10B981', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px', boxShadow: '0 4px 10px rgba(16, 185, 129, 0.3)' }}>
+                    <CheckCircle2 size={18} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.2rem' }}>
+                      {language === 'ar' ? 'صياغة LaTeX / KaTeX عالية الجودة' : 'Rendu LaTeX / KaTeX Haute Définition'}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: '1.45' }}>
+                      {language === 'ar'
+                        ? 'رموز رياضية واضحة، نهايات، تكاملات، متتاليات، وجداول إشارات مجهزة فوراً للطباعة والنشر.'
+                        : 'Typographie mathématique impeccable : intégrales, limites, suites, systèmes et tableaux prêts à l\'impression.'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Feature 3 */}
+                <div style={{
+                  padding: '1rem',
+                  borderRadius: '16px',
+                  background: 'rgba(236, 72, 153, 0.04)',
+                  border: '1px solid rgba(236, 72, 153, 0.14)',
+                  display: 'flex',
+                  gap: '0.85rem',
+                  alignItems: 'flex-start'
+                }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '10px', background: '#EC4899', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px', boxShadow: '0 4px 10px rgba(236, 72, 153, 0.3)' }}>
+                    <Printer size={18} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.2rem' }}>
+                      {language === 'ar' ? 'تصدير PDF، طباعة وقارئ QR للحلول' : 'Export PDF Pro avec QR Code WhatsApp'}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: '1.45' }}>
+                      {language === 'ar'
+                        ? 'إمكانية إخراج السلسلة في نمط عصري أو كلاسيكي، مع تضمين QR كود يربط التلميذ بحل التمرين.'
+                        : 'Mise en page optimisée sur 1, 2 ou 3 colonnes avec génération automatique d\'un QR code menant aux solutions.'}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Footer info badge */}
+              <div style={{ 
+                marginTop: '1.5rem', 
+                paddingTop: '1.25rem', 
+                borderTop: '1px dashed var(--border, rgba(148, 163, 184, 0.2))',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: 'rgba(124, 58, 237, 0.03)',
+                padding: '0.85rem 1.15rem',
+                borderRadius: '14px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Sparkles size={16} style={{ color: '#8B5CF6' }} />
+                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                    {language === 'ar' ? 'محرك ذكاء اصطناعي فائق السرعة' : 'Moteur IA Haute Vitesse'}
+                  </span>
+                </div>
+                <span style={{ 
+                  fontSize: '0.72rem', 
+                  fontWeight: 800, 
+                  color: '#10B981', 
+                  background: 'rgba(16, 185, 129, 0.12)', 
+                  border: '1px solid rgba(16, 185, 129, 0.25)',
+                  padding: '0.2rem 0.65rem', 
+                  borderRadius: '99px' 
+                }}>
+                  ⚡ Gemini 2.5 Flash / Pro
+                </span>
+              </div>
+
+            </div>
+          </div>
+        )}
 
         {/* ── RIGHT: Generated Sheet Preview & Actions ── */}
         {generatedSheet ? (
