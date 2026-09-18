@@ -142,7 +142,7 @@ function AppContent() {
         title = "Admin : Dossier de l'Élève — L'CONQ";
       } else if (path === '/admin/upload') {
         title = "Admin : Upload de Sujets — L'CONQ";
-      } else if (path === '/admin/ai-import' || path === '/admin/ai-lessons' || path === '/admin/ai-generator') {
+      } else if (path === '/admin/ai-import' || path === '/admin/ai-lessons' || path === '/admin/ai-generator' || path === '/admin/ai-exercises') {
         title = "Admin : Générateur de Contenu IA — L'CONQ";
       } else if (path === '/admin/lessons') {
         title = "Admin : Fiches de Cours — L'CONQ";
@@ -200,6 +200,7 @@ function AppContent() {
             <Route path="/admin/users/:id" element={<AdminRoute><AdminStudentDetail /></AdminRoute>} />
             <Route path="/admin/upload" element={<AdminRoute><AdminUpload /></AdminRoute>} />
             <Route path="/admin/ai-generator" element={<AdminRoute><AdminAIGenerator /></AdminRoute>} />
+            <Route path="/admin/ai-exercises" element={<AdminRoute><AdminAIGenerator /></AdminRoute>} />
             <Route path="/admin/ai-import" element={<AdminRoute><AdminAIGenerator /></AdminRoute>} />
             <Route path="/admin/ai-lessons" element={<AdminRoute><AdminAIGenerator /></AdminRoute>} />
             <Route path="/admin/lessons" element={<AdminRoute><AdminLessons /></AdminRoute>} />

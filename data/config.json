@@ -116,14 +116,7 @@
     "position": "right",
     "tooltipText": "Besoin d'aide ?"
   },
-  "school_holidays": [
-    {
-      "id": "hol-1789139374176",
-      "label": "شثش\"",
-      "endDate": "2026-09-22",
-      "startDate": "2026-09-21"
-    }
-  ],
+  "school_holidays": [],
   "teacher_schedule_current": {
     "Lundi-08-09": {
       "classId": "TCLSH-1"
@@ -138,5 +131,17 @@
     "colorChapter": "#0f172a",
     "colorAxis": "#04349a",
     "colorExercise": "#d97706"
+  },
+  "ai_settings": {
+    "claudeApiKey": "",
+    "claudeProxyUrl": "",
+    "claude_solve_solutions": true,
+    "geminiApiKey": "",
+    "gemini_solve_solutions": true,
+    "deepseekApiKey": "",
+    "deepseekApiUrl": "https://api.deepseek.com",
+    "deepseek_solve_solutions": true,
+    "groqApiKey": "",
+    "openaiApiKey": ""
   }
 }

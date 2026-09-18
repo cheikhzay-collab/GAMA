@@ -473,6 +473,21 @@ export default function AdminOverview() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <button
+                className="dash-ai-btn"
+                onClick={() => navigate('/admin/ai-generator?type=exercise')}
+                style={{
+                  border: '1px solid rgba(236, 72, 153, 0.35)',
+                  background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.12) 0%, rgba(139, 92, 246, 0.08) 100%)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <Layers size={20} style={{ color: '#EC4899' }} />
+                  <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>Générer une Série d'Exercices IA</span>
+                </div>
+                <ArrowUpRight size={15} style={{ opacity: 0.8, color: '#EC4899' }} />
+              </button>
+
+              <button
                 className="dash-ai-btn dash-ai-btn--warning"
                 onClick={() => navigate('/admin/ai-generator?type=exam')}
               >
