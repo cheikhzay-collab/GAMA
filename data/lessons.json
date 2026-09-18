@@ -35604,5 +35604,959 @@
     "created_at": "2026-09-18T08:16:57.162Z",
     "createdAt": "2026-09-18T08:16:58.247Z",
     "updatedAt": "2026-09-18T08:18:14.894Z"
+  },
+  {
+    "id": "MOCK-L-I7IMNR8M3",
+    "title": "Série d'exercices : Arithmétique dans l'ensemble N",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": null,
+    "phone": null,
+    "schools": [],
+    "content": {
+      "level": "common_core_sci",
+      "doc_type": "exercises",
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "subject": "Mathématiques",
+        "prep_title": "Tronc Commun Scientifique (BIOF)",
+        "fiche_title": "Série d'exercices : Arithmétique dans l'ensemble N",
+        "teacher": "Professeur",
+        "phone": "",
+        "schools": [
+          "Lycée Qualifiant"
+        ]
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "title": "Exercice 1 : Divisibilité, Parité et Manipulations Algébriques",
+          "points": "5 pts",
+          "content": "Soit $n$ un entier naturel.\n\n1) Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $A = n(n+1)(n+2)$ est divisible par 6.\n\n2) On considère l'expression $E = n^2 + 5n + 6$.\n   a) Vérifier que $E = (n+2)(n+3)$.\n   b) En déduire que $E$ est toujours un nombre pair pour tout $n \\in \\mathbb{N}$.\n\n3) Déterminer tous les entiers naturels $n$ tels que $n+3$ divise $2n+9$.\n\n4) Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $F = n^3 - n$ est divisible par 3.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n$ un entier naturel."
+            },
+            {
+              "type": "bullet",
+              "text": "1) Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $A = n(n+1)(n+2)$ est divisible par 6."
+            },
+            {
+              "type": "bullet",
+              "text": "2) On considère l'expression $E = n^2 + 5n + 6$."
+            },
+            {
+              "type": "bullet",
+              "text": "a) Vérifier que $E = (n+2)(n+3)$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que $E$ est toujours un nombre pair pour tout $n \\in \\mathbb{N}$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) Déterminer tous les entiers naturels $n$ tels que $n+3$ divise $2n+9$."
+            },
+            {
+              "type": "bullet",
+              "text": "4) Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $F = n^3 - n$ est divisible par 3."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "1"
+        },
+        {
+          "id": "ex-2",
+          "type": "exercise",
+          "title": "Exercice 2 : Division Euclidienne et Propriétés des Diviseurs Communs",
+          "points": "5 pts",
+          "content": "Soit $a, b$ des entiers naturels non nuls.\n\n1) a) Effectuer la division euclidienne de 137 par 11.\n   b) Sans effectuer de division, déterminer le reste de la division euclidienne de $137000$ par 11.\n\n2) Soient $x$ et $y$ deux entiers naturels. Soit $d$ un diviseur commun de $x$ et $y$.\n   a) Montrer que $d$ divise toute combinaison linéaire de $x$ et $y$, c'est-à-dire $d$ divise $ux + vy$ pour tous entiers relatifs $u, v$.\n   b) En déduire que si $d$ est un diviseur commun de $3n+5$ et $2n+3$, alors $d$ divise 1. Que peut-on conclure pour $d$ ?\n\n3) Montrer que pour tout entier naturel $n$, le nombre $G = n^2 + n + 3$ n'est jamais divisible par 2.\n\n4) Déterminer tous les entiers naturels $n$ tels que la fraction $\\frac{4n+15}{n+3}$ soit un entier naturel.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $a, b$ des entiers naturels non nuls."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Effectuer la division euclidienne de 137 par 11."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Sans effectuer de division, déterminer le reste de la division euclidienne de $137000$ par 11."
+            },
+            {
+              "type": "bullet",
+              "text": "2) Soient $x$ et $y$ deux entiers naturels. Soit $d$ un diviseur commun de $x$ et $y$."
+            },
+            {
+              "type": "bullet",
+              "text": "a) Montrer que $d$ divise toute combinaison linéaire de $x$ et $y$, c'est-à-dire $d$ divise $ux + vy$ pour tous entiers relatifs $u, v$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que si $d$ est un diviseur commun de $3n+5$ et $2n+3$, alors $d$ divise 1. Que peut-on conclure pour $d$ ?"
+            },
+            {
+              "type": "bullet",
+              "text": "3) Montrer que pour tout entier naturel $n$, le nombre $G = n^2 + n + 3$ n'est jamais divisible par 2."
+            },
+            {
+              "type": "bullet",
+              "text": "4) Déterminer tous les entiers naturels $n$ tels que la fraction $\\frac{4n+15}{n+3}$ soit un entier naturel."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "2"
+        },
+        {
+          "id": "ex-3",
+          "type": "exercise",
+          "title": "Exercice 3 : Problème de Synthèse sur l'Arithmétique dans N",
+          "points": "5 pts",
+          "content": "Soit $n$ un entier naturel. On considère les nombres $X = n^2 + 4n + 3$ et $Y = n+1$.\n\n1) a) Vérifier que $X = (n+1)(n+3)$.\n   b) En déduire que $Y$ divise $X$.\n\n2) a) Montrer que $X$ est toujours un nombre pair si et seulement si $n$ est impair.\n   b) Montrer que $X$ est divisible par 3 si et seulement si $n$ n'est pas de la forme $3k+2$ pour un certain $k \\in \\mathbb{N}$.\n\n3) Déterminer tous les entiers naturels $n$ pour lesquels $X$ est divisible par 5.\n\n4) On considère le nombre $Z = n^2 + 6n + 10$.\n   a) Vérifier que $Z = (n+3)^2 + 1$.\n   b) En déduire le reste de la division euclidienne de $Z$ par $n+3$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n$ un entier naturel. On considère les nombres $X = n^2 + 4n + 3$ et $Y = n+1$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Vérifier que $X = (n+1)(n+3)$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que $Y$ divise $X$."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Montrer que $X$ est toujours un nombre pair si et seulement si $n$ est impair."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Montrer que $X$ est divisible par 3 si et seulement si $n$ n'est pas de la forme $3k+2$ pour un certain $k \\in \\mathbb{N}$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) Déterminer tous les entiers naturels $n$ pour lesquels $X$ est divisible par 5."
+            },
+            {
+              "type": "bullet",
+              "text": "4) On considère le nombre $Z = n^2 + 6n + 10$."
+            },
+            {
+              "type": "bullet",
+              "text": "a) Vérifier que $Z = (n+3)^2 + 1$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire le reste de la division euclidienne de $Z$ par $n+3$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "3"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-18T09:42:04.027Z",
+    "level": "common_core_sci",
+    "doc_type": "exercises",
+    "created_at": "2026-09-18T09:42:04.021Z",
+    "createdAt": "2026-09-18T09:42:04.401Z"
+  },
+  {
+    "id": "MOCK-L-C888PND5P",
+    "title": "Série d'exercices : Arithmétique dans l'ensemble N",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": null,
+    "phone": null,
+    "schools": [],
+    "content": {
+      "level": "common_core_sci",
+      "doc_type": "exercises",
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "subject": "Mathématiques",
+        "prep_title": "Tronc Commun Scientifique (BIOF)",
+        "fiche_title": "Série d'exercices : Arithmétique dans l'ensemble N",
+        "teacher": "Professeur",
+        "phone": "",
+        "schools": [
+          "Lycée Qualifiant"
+        ]
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "title": "Exercice 1 : Divisibilité, Parité et Manipulations Algébriques",
+          "points": "5 pts",
+          "content": "Soit $n$ un entier naturel.\n\n1) Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $A = n(n+1)(n+2)$ est divisible par 6.\n\n2) On considère l'expression $E = n^2 + 5n + 6$.\n   a) Vérifier que $E = (n+2)(n+3)$.\n   b) En déduire que $E$ est toujours un nombre pair pour tout $n \\in \\mathbb{N}$.\n\n3) Déterminer tous les entiers naturels $n$ tels que $n+3$ divise $2n+9$.\n\n4) Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $F = n^3 - n$ est divisible par 3.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n$ un entier naturel."
+            },
+            {
+              "type": "bullet",
+              "text": "1) Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $A = n(n+1)(n+2)$ est divisible par 6."
+            },
+            {
+              "type": "bullet",
+              "text": "2) On considère l'expression $E = n^2 + 5n + 6$."
+            },
+            {
+              "type": "bullet",
+              "text": "a) Vérifier que $E = (n+2)(n+3)$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que $E$ est toujours un nombre pair pour tout $n \\in \\mathbb{N}$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) Déterminer tous les entiers naturels $n$ tels que $n+3$ divise $2n+9$."
+            },
+            {
+              "type": "bullet",
+              "text": "4) Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $F = n^3 - n$ est divisible par 3."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "1"
+        },
+        {
+          "id": "ex-2",
+          "type": "exercise",
+          "title": "Exercice 2 : Division Euclidienne et Propriétés des Diviseurs Communs",
+          "points": "5 pts",
+          "content": "Soit $a, b$ des entiers naturels non nuls.\n\n1) a) Effectuer la division euclidienne de 137 par 11.\n   b) Sans effectuer de division, déterminer le reste de la division euclidienne de $137000$ par 11.\n\n2) Soient $x$ et $y$ deux entiers naturels. Soit $d$ un diviseur commun de $x$ et $y$.\n   a) Montrer que $d$ divise toute combinaison linéaire de $x$ et $y$, c'est-à-dire $d$ divise $ux + vy$ pour tous entiers relatifs $u, v$.\n   b) En déduire que si $d$ est un diviseur commun de $3n+5$ et $2n+3$, alors $d$ divise 1. Que peut-on conclure pour $d$ ?\n\n3) Montrer que pour tout entier naturel $n$, le nombre $G = n^2 + n + 3$ n'est jamais divisible par 2.\n\n4) Déterminer tous les entiers naturels $n$ tels que la fraction $\\frac{4n+15}{n+3}$ soit un entier naturel.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $a, b$ des entiers naturels non nuls."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Effectuer la division euclidienne de 137 par 11."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Sans effectuer de division, déterminer le reste de la division euclidienne de $137000$ par 11."
+            },
+            {
+              "type": "bullet",
+              "text": "2) Soient $x$ et $y$ deux entiers naturels. Soit $d$ un diviseur commun de $x$ et $y$."
+            },
+            {
+              "type": "bullet",
+              "text": "a) Montrer que $d$ divise toute combinaison linéaire de $x$ et $y$, c'est-à-dire $d$ divise $ux + vy$ pour tous entiers relatifs $u, v$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que si $d$ est un diviseur commun de $3n+5$ et $2n+3$, alors $d$ divise 1. Que peut-on conclure pour $d$ ?"
+            },
+            {
+              "type": "bullet",
+              "text": "3) Montrer que pour tout entier naturel $n$, le nombre $G = n^2 + n + 3$ n'est jamais divisible par 2."
+            },
+            {
+              "type": "bullet",
+              "text": "4) Déterminer tous les entiers naturels $n$ tels que la fraction $\\frac{4n+15}{n+3}$ soit un entier naturel."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "2"
+        },
+        {
+          "id": "ex-3",
+          "type": "exercise",
+          "title": "Exercice 3 : Problème de Synthèse sur l'Arithmétique dans N",
+          "points": "5 pts",
+          "content": "Soit $n$ un entier naturel. On considère les nombres $X = n^2 + 4n + 3$ et $Y = n+1$.\n\n1) a) Vérifier que $X = (n+1)(n+3)$.\n   b) En déduire que $Y$ divise $X$.\n\n2) a) Montrer que $X$ est toujours un nombre pair si et seulement si $n$ est impair.\n   b) Montrer que $X$ est divisible par 3 si et seulement si $n$ n'est pas de la forme $3k+2$ pour un certain $k \\in \\mathbb{N}$.\n\n3) Déterminer tous les entiers naturels $n$ pour lesquels $X$ est divisible par 5.\n\n4) On considère le nombre $Z = n^2 + 6n + 10$.\n   a) Vérifier que $Z = (n+3)^2 + 1$.\n   b) En déduire le reste de la division euclidienne de $Z$ par $n+3$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n$ un entier naturel. On considère les nombres $X = n^2 + 4n + 3$ et $Y = n+1$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Vérifier que $X = (n+1)(n+3)$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que $Y$ divise $X$."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Montrer que $X$ est toujours un nombre pair si et seulement si $n$ est impair."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Montrer que $X$ est divisible par 3 si et seulement si $n$ n'est pas de la forme $3k+2$ pour un certain $k \\in \\mathbb{N}$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) Déterminer tous les entiers naturels $n$ pour lesquels $X$ est divisible par 5."
+            },
+            {
+              "type": "bullet",
+              "text": "4) On considère le nombre $Z = n^2 + 6n + 10$."
+            },
+            {
+              "type": "bullet",
+              "text": "a) Vérifier que $Z = (n+3)^2 + 1$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire le reste de la division euclidienne de $Z$ par $n+3$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "3"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-18T09:42:07.772Z",
+    "level": "common_core_sci",
+    "doc_type": "exercises",
+    "created_at": "2026-09-18T09:42:07.770Z",
+    "createdAt": "2026-09-18T09:42:07.980Z"
+  },
+  {
+    "id": "MOCK-L-BAQVYWVYM",
+    "title": "Série d'exercices : Arithmétique dans l'ensemble N",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": null,
+    "phone": null,
+    "schools": [],
+    "content": {
+      "level": "common_core_sci",
+      "doc_type": "exercises",
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "subject": "Mathématiques",
+        "prep_title": "Tronc Commun Scientifique (BIOF)",
+        "fiche_title": "Série d'exercices : Arithmétique dans l'ensemble N",
+        "teacher": "Professeur",
+        "phone": "",
+        "schools": [
+          "Lycée Qualifiant"
+        ]
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "title": "Exercice 1 : Divisibilité, Parité et Manipulations Algébriques",
+          "points": "5 pts",
+          "content": "Soit $n$ un entier naturel.\n\n1) Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $A = n(n+1)(n+2)$ est divisible par 6.\n\n2) On considère l'expression $E = n^2 + 5n + 6$.\n   a) Vérifier que $E = (n+2)(n+3)$.\n   b) En déduire que $E$ est toujours un nombre pair pour tout $n \\in \\mathbb{N}$.\n\n3) Déterminer tous les entiers naturels $n$ tels que $n+3$ divise $2n+9$.\n\n4) Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $F = n^3 - n$ est divisible par 3.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n$ un entier naturel."
+            },
+            {
+              "type": "bullet",
+              "text": "1) Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $A = n(n+1)(n+2)$ est divisible par 6."
+            },
+            {
+              "type": "bullet",
+              "text": "2) On considère l'expression $E = n^2 + 5n + 6$."
+            },
+            {
+              "type": "bullet",
+              "text": "a) Vérifier que $E = (n+2)(n+3)$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que $E$ est toujours un nombre pair pour tout $n \\in \\mathbb{N}$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) Déterminer tous les entiers naturels $n$ tels que $n+3$ divise $2n+9$."
+            },
+            {
+              "type": "bullet",
+              "text": "4) Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $F = n^3 - n$ est divisible par 3."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "1"
+        },
+        {
+          "id": "ex-2",
+          "type": "exercise",
+          "title": "Exercice 2 : Division Euclidienne et Propriétés des Diviseurs Communs",
+          "points": "5 pts",
+          "content": "Soit $a, b$ des entiers naturels non nuls.\n\n1) a) Effectuer la division euclidienne de 137 par 11.\n   b) Sans effectuer de division, déterminer le reste de la division euclidienne de $137000$ par 11.\n\n2) Soient $x$ et $y$ deux entiers naturels. Soit $d$ un diviseur commun de $x$ et $y$.\n   a) Montrer que $d$ divise toute combinaison linéaire de $x$ et $y$, c'est-à-dire $d$ divise $ux + vy$ pour tous entiers relatifs $u, v$.\n   b) En déduire que si $d$ est un diviseur commun de $3n+5$ et $2n+3$, alors $d$ divise 1. Que peut-on conclure pour $d$ ?\n\n3) Montrer que pour tout entier naturel $n$, le nombre $G = n^2 + n + 3$ n'est jamais divisible par 2.\n\n4) Déterminer tous les entiers naturels $n$ tels que la fraction $\\frac{4n+15}{n+3}$ soit un entier naturel.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $a, b$ des entiers naturels non nuls."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Effectuer la division euclidienne de 137 par 11."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Sans effectuer de division, déterminer le reste de la division euclidienne de $137000$ par 11."
+            },
+            {
+              "type": "bullet",
+              "text": "2) Soient $x$ et $y$ deux entiers naturels. Soit $d$ un diviseur commun de $x$ et $y$."
+            },
+            {
+              "type": "bullet",
+              "text": "a) Montrer que $d$ divise toute combinaison linéaire de $x$ et $y$, c'est-à-dire $d$ divise $ux + vy$ pour tous entiers relatifs $u, v$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que si $d$ est un diviseur commun de $3n+5$ et $2n+3$, alors $d$ divise 1. Que peut-on conclure pour $d$ ?"
+            },
+            {
+              "type": "bullet",
+              "text": "3) Montrer que pour tout entier naturel $n$, le nombre $G = n^2 + n + 3$ n'est jamais divisible par 2."
+            },
+            {
+              "type": "bullet",
+              "text": "4) Déterminer tous les entiers naturels $n$ tels que la fraction $\\frac{4n+15}{n+3}$ soit un entier naturel."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "2"
+        },
+        {
+          "id": "ex-3",
+          "type": "exercise",
+          "title": "Exercice 3 : Problème de Synthèse sur l'Arithmétique dans N",
+          "points": "5 pts",
+          "content": "Soit $n$ un entier naturel. On considère les nombres $X = n^2 + 4n + 3$ et $Y = n+1$.\n\n1) a) Vérifier que $X = (n+1)(n+3)$.\n   b) En déduire que $Y$ divise $X$.\n\n2) a) Montrer que $X$ est toujours un nombre pair si et seulement si $n$ est impair.\n   b) Montrer que $X$ est divisible par 3 si et seulement si $n$ n'est pas de la forme $3k+2$ pour un certain $k \\in \\mathbb{N}$.\n\n3) Déterminer tous les entiers naturels $n$ pour lesquels $X$ est divisible par 5.\n\n4) On considère le nombre $Z = n^2 + 6n + 10$.\n   a) Vérifier que $Z = (n+3)^2 + 1$.\n   b) En déduire le reste de la division euclidienne de $Z$ par $n+3$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n$ un entier naturel. On considère les nombres $X = n^2 + 4n + 3$ et $Y = n+1$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Vérifier que $X = (n+1)(n+3)$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que $Y$ divise $X$."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Montrer que $X$ est toujours un nombre pair si et seulement si $n$ est impair."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Montrer que $X$ est divisible par 3 si et seulement si $n$ n'est pas de la forme $3k+2$ pour un certain $k \\in \\mathbb{N}$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) Déterminer tous les entiers naturels $n$ pour lesquels $X$ est divisible par 5."
+            },
+            {
+              "type": "bullet",
+              "text": "4) On considère le nombre $Z = n^2 + 6n + 10$."
+            },
+            {
+              "type": "bullet",
+              "text": "a) Vérifier que $Z = (n+3)^2 + 1$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire le reste de la division euclidienne de $Z$ par $n+3$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "3"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-18T09:42:11.637Z",
+    "level": "common_core_sci",
+    "doc_type": "exercises",
+    "created_at": "2026-09-18T09:42:11.629Z",
+    "createdAt": "2026-09-18T09:42:11.857Z"
+  },
+  {
+    "id": "MOCK-L-9GWUSSW8C",
+    "title": "Série d'exercices : Arithmétique dans l'ensemble N",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": null,
+    "phone": null,
+    "schools": [],
+    "content": {
+      "level": "common_core_sci",
+      "doc_type": "exercises",
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "subject": "Mathématiques",
+        "prep_title": "Tronc Commun Scientifique (BIOF)",
+        "fiche_title": "Série d'exercices : Arithmétique dans l'ensemble N",
+        "teacher": "Professeur",
+        "phone": "",
+        "schools": [
+          "Lycée Qualifiant"
+        ]
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "title": "Exercice 1 : Divisibilité, Parité et Manipulations Algébriques",
+          "points": "5 pts",
+          "content": "Soit $n$ un entier naturel.\n\n1) Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $A = n(n+1)(n+2)$ est divisible par 6.\n\n2) On considère l'expression $E = n^2 + 5n + 6$.\n   a) Vérifier que $E = (n+2)(n+3)$.\n   b) En déduire que $E$ est toujours un nombre pair pour tout $n \\in \\mathbb{N}$.\n\n3) Déterminer tous les entiers naturels $n$ tels que $n+3$ divise $2n+9$.\n\n4) Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $F = n^3 - n$ est divisible par 3.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n$ un entier naturel."
+            },
+            {
+              "type": "bullet",
+              "text": "1) Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $A = n(n+1)(n+2)$ est divisible par 6."
+            },
+            {
+              "type": "bullet",
+              "text": "2) On considère l'expression $E = n^2 + 5n + 6$."
+            },
+            {
+              "type": "bullet",
+              "text": "a) Vérifier que $E = (n+2)(n+3)$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que $E$ est toujours un nombre pair pour tout $n \\in \\mathbb{N}$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) Déterminer tous les entiers naturels $n$ tels que $n+3$ divise $2n+9$."
+            },
+            {
+              "type": "bullet",
+              "text": "4) Montrer que pour tout $n \\in \\mathbb{N}$, le nombre $F = n^3 - n$ est divisible par 3."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "1"
+        },
+        {
+          "id": "ex-2",
+          "type": "exercise",
+          "title": "Exercice 2 : Division Euclidienne et Propriétés des Diviseurs Communs",
+          "points": "5 pts",
+          "content": "Soit $a, b$ des entiers naturels non nuls.\n\n1) a) Effectuer la division euclidienne de 137 par 11.\n   b) Sans effectuer de division, déterminer le reste de la division euclidienne de $137000$ par 11.\n\n2) Soient $x$ et $y$ deux entiers naturels. Soit $d$ un diviseur commun de $x$ et $y$.\n   a) Montrer que $d$ divise toute combinaison linéaire de $x$ et $y$, c'est-à-dire $d$ divise $ux + vy$ pour tous entiers relatifs $u, v$.\n   b) En déduire que si $d$ est un diviseur commun de $3n+5$ et $2n+3$, alors $d$ divise 1. Que peut-on conclure pour $d$ ?\n\n3) Montrer que pour tout entier naturel $n$, le nombre $G = n^2 + n + 3$ n'est jamais divisible par 2.\n\n4) Déterminer tous les entiers naturels $n$ tels que la fraction $\\frac{4n+15}{n+3}$ soit un entier naturel.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $a, b$ des entiers naturels non nuls."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Effectuer la division euclidienne de 137 par 11."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Sans effectuer de division, déterminer le reste de la division euclidienne de $137000$ par 11."
+            },
+            {
+              "type": "bullet",
+              "text": "2) Soient $x$ et $y$ deux entiers naturels. Soit $d$ un diviseur commun de $x$ et $y$."
+            },
+            {
+              "type": "bullet",
+              "text": "a) Montrer que $d$ divise toute combinaison linéaire de $x$ et $y$, c'est-à-dire $d$ divise $ux + vy$ pour tous entiers relatifs $u, v$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que si $d$ est un diviseur commun de $3n+5$ et $2n+3$, alors $d$ divise 1. Que peut-on conclure pour $d$ ?"
+            },
+            {
+              "type": "bullet",
+              "text": "3) Montrer que pour tout entier naturel $n$, le nombre $G = n^2 + n + 3$ n'est jamais divisible par 2."
+            },
+            {
+              "type": "bullet",
+              "text": "4) Déterminer tous les entiers naturels $n$ tels que la fraction $\\frac{4n+15}{n+3}$ soit un entier naturel."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "2"
+        },
+        {
+          "id": "ex-3",
+          "type": "exercise",
+          "title": "Exercice 3 : Problème de Synthèse sur l'Arithmétique dans N",
+          "points": "5 pts",
+          "content": "Soit $n$ un entier naturel. On considère les nombres $X = n^2 + 4n + 3$ et $Y = n+1$.\n\n1) a) Vérifier que $X = (n+1)(n+3)$.\n   b) En déduire que $Y$ divise $X$.\n\n2) a) Montrer que $X$ est toujours un nombre pair si et seulement si $n$ est impair.\n   b) Montrer que $X$ est divisible par 3 si et seulement si $n$ n'est pas de la forme $3k+2$ pour un certain $k \\in \\mathbb{N}$.\n\n3) Déterminer tous les entiers naturels $n$ pour lesquels $X$ est divisible par 5.\n\n4) On considère le nombre $Z = n^2 + 6n + 10$.\n   a) Vérifier que $Z = (n+3)^2 + 1$.\n   b) En déduire le reste de la division euclidienne de $Z$ par $n+3$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n$ un entier naturel. On considère les nombres $X = n^2 + 4n + 3$ et $Y = n+1$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Vérifier que $X = (n+1)(n+3)$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que $Y$ divise $X$."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Montrer que $X$ est toujours un nombre pair si et seulement si $n$ est impair."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Montrer que $X$ est divisible par 3 si et seulement si $n$ n'est pas de la forme $3k+2$ pour un certain $k \\in \\mathbb{N}$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) Déterminer tous les entiers naturels $n$ pour lesquels $X$ est divisible par 5."
+            },
+            {
+              "type": "bullet",
+              "text": "4) On considère le nombre $Z = n^2 + 6n + 10$."
+            },
+            {
+              "type": "bullet",
+              "text": "a) Vérifier que $Z = (n+3)^2 + 1$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire le reste de la division euclidienne de $Z$ par $n+3$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "3"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-18T09:42:13.293Z",
+    "level": "common_core_sci",
+    "doc_type": "exercises",
+    "created_at": "2026-09-18T09:42:13.291Z",
+    "createdAt": "2026-09-18T09:42:13.518Z"
+  },
+  {
+    "id": "MOCK-L-CH3AEJUDR",
+    "title": "Série d'exercices : Continuité et limites (TVI, Bijection, Racine n-ème)",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": null,
+    "phone": null,
+    "schools": [],
+    "content": {
+      "level": "2bac_pc_svt",
+      "doc_type": "exercises",
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "subject": "Mathématiques",
+        "prep_title": "2ème Bac Sciences Expérimentales (PC / SVT)",
+        "fiche_title": "Série d'exercices : Continuité et limites (TVI, Bijection, Racine n-ème)",
+        "teacher": "Professeur",
+        "phone": "",
+        "schools": [
+          "Lycée Qualifiant"
+        ]
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "title": "Exercice 1 : Continuité, Théorème des Valeurs Intermédiaires et Fonction Réciproque",
+          "points": "5 pts",
+          "content": "Cet exercice explore les concepts fondamentaux de la continuité, du Théorème des Valeurs Intermédiaires (TVI) et des fonctions réciproques, y compris la fonction racine n-ème.\n\n**Partie A : Étude de la fonction $f$ et application du TVI.**\nSoit $f$ la fonction numérique définie sur $\\mathbb{R}$ par $f(x) = x^3 - 3x - 1$.\n\n1) a) Vérifier que la fonction $f$ est continue sur $\\mathbb{R}$.\n   b) Calculer $f(-1)$, $f(0)$, $f(1)$ et $f(2)$.\n   c) Montrer que l'équation $f(x) = 0$ admet au moins une solution $\\alpha$ dans l'intervalle $[1, 2]$.\n   d) Montrer que l'équation $f(x) = 0$ admet une solution unique $\\beta$ dans l'intervalle $[-1, 0]$.\n\n**Partie B : Étude d'une fonction bijective et sa réciproque.**\nSoit $g$ la fonction numérique définie sur l'intervalle $[0, +\\infty[$ par $g(x) = x^4 + 2$.\n\n2) a) Montrer que la fonction $g$ est continue et strictement croissante sur $[0, +\\infty[$.\n   b) En déduire que $g$ réalise une bijection de $[0, +\\infty[$ vers un intervalle $J$ que l'on déterminera.\n   c) Déterminer l'expression de la fonction réciproque $g^{-1}(x)$ pour tout $x \\in J$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Cet exercice explore les concepts fondamentaux de la continuité, du Théorème des Valeurs Intermédiaires (TVI) et des fonctions réciproques, y compris la fonction racine n-ème."
+            },
+            {
+              "type": "text",
+              "text": "**Partie A : Étude de la fonction $f$ et application du TVI.**"
+            },
+            {
+              "type": "text",
+              "text": "Soit $f$ la fonction numérique définie sur $\\mathbb{R}$ par $f(x) = x^3 - 3x - 1$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Vérifier que la fonction $f$ est continue sur $\\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Calculer $f(-1)$, $f(0)$, $f(1)$ et $f(2)$."
+            },
+            {
+              "type": "bullet",
+              "text": "c) Montrer que l'équation $f(x) = 0$ admet au moins une solution $\\alpha$ dans l'intervalle $[1, 2]$."
+            },
+            {
+              "type": "bullet",
+              "text": "d) Montrer que l'équation $f(x) = 0$ admet une solution unique $\\beta$ dans l'intervalle $[-1, 0]$."
+            },
+            {
+              "type": "text",
+              "text": "**Partie B : Étude d'une fonction bijective et sa réciproque.**"
+            },
+            {
+              "type": "text",
+              "text": "Soit $g$ la fonction numérique définie sur l'intervalle $[0, +\\infty[$ par $g(x) = x^4 + 2$."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Montrer que la fonction $g$ est continue et strictement croissante sur $[0, +\\infty[$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que $g$ réalise une bijection de $[0, +\\infty[$ vers un intervalle $J$ que l'on déterminera."
+            },
+            {
+              "type": "bullet",
+              "text": "c) Déterminer l'expression de la fonction réciproque $g^{-1}(x)$ pour tout $x \\in J$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "1"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-18T09:44:26.097Z",
+    "level": "2bac_pc_svt",
+    "doc_type": "exercises",
+    "created_at": "2026-09-18T09:44:26.090Z",
+    "createdAt": "2026-09-18T09:44:26.350Z"
+  },
+  {
+    "id": "MOCK-L-I8HGATLQ0",
+    "title": "Série d'exercices : Continuité et limites (TVI, Bijection, Racine n-ème)",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": null,
+    "phone": null,
+    "schools": [],
+    "content": {
+      "level": "2bac_pc_svt",
+      "doc_type": "exercises",
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "subject": "Mathématiques",
+        "prep_title": "2ème Bac Sciences Expérimentales (PC / SVT)",
+        "fiche_title": "Série d'exercices : Continuité et limites (TVI, Bijection, Racine n-ème)",
+        "teacher": "Professeur",
+        "phone": "",
+        "schools": [
+          "Lycée Qualifiant"
+        ]
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "title": "Exercice 1 : Étude approfondie d'une fonction et de sa réciproque",
+          "points": "5 pts",
+          "content": "Soit $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = x + \\sqrt[3]{x}$.\nOn considère également la fonction $g$ définie sur $\\mathbb{R}$ par $g(t) = t^3 + t$.\n\n1) a) Montrer que $f$ est continue sur $\\mathbb{R}$.\n   b) Calculer $\\lim_{x \\to +\\infty} f(x)$ et $\\lim_{x \\to -\\infty} f(x)$.\n\n2) a) Montrer que pour tout $x \\in \\mathbb{R}^*$, $f'(x) = 1 + \\frac{1}{3\\sqrt[3]{x^2}}$.\n   b) En déduire que $f$ est strictement croissante sur $\\mathbb{R}$.\n\n3) a) Montrer que $f$ réalise une bijection de $\\mathbb{R}$ sur $\\mathbb{R}$.\n   b) En déduire que pour tout réel $k$, l'équation $f(x) = k$ admet une unique solution dans $\\mathbb{R}$.\n   c) Vérifier que l'équation $f(x) = 2$ admet une solution entière que l'on déterminera.\n\n4) Soit $f^{-1}$ la fonction réciproque de $f$.\n   a) Montrer que pour tout $y \\in \\mathbb{R}$, si $x = f^{-1}(y)$, alors $y = g(\\sqrt[3]{x})$.\n   b) En déduire que pour tout $y \\in \\mathbb{R}$, $f^{-1}(y) = (g^{-1}(y))^3$.\n   c) Calculer $(f^{-1})'(2)$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = x + \\sqrt[3]{x}$."
+            },
+            {
+              "type": "text",
+              "text": "On considère également la fonction $g$ définie sur $\\mathbb{R}$ par $g(t) = t^3 + t$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Montrer que $f$ est continue sur $\\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Calculer $\\lim_{x \\to +\\infty} f(x)$ et $\\lim_{x \\to -\\infty} f(x)$."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Montrer que pour tout $x \\in \\mathbb{R}^*$, $f'(x) = 1 + \\frac{1}{3\\sqrt[3]{x^2}}$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que $f$ est strictement croissante sur $\\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) a) Montrer que $f$ réalise une bijection de $\\mathbb{R}$ sur $\\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que pour tout réel $k$, l'équation $f(x) = k$ admet une unique solution dans $\\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "c) Vérifier que l'équation $f(x) = 2$ admet une solution entière que l'on déterminera."
+            },
+            {
+              "type": "bullet",
+              "text": "4) Soit $f^{-1}$ la fonction réciproque de $f$."
+            },
+            {
+              "type": "bullet",
+              "text": "a) Montrer que pour tout $y \\in \\mathbb{R}$, si $x = f^{-1}(y)$, alors $y = g(\\sqrt[3]{x})$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que pour tout $y \\in \\mathbb{R}$, $f^{-1}(y) = (g^{-1}(y))^3$."
+            },
+            {
+              "type": "bullet",
+              "text": "c) Calculer $(f^{-1})'(2)$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "1"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-18T09:52:23.505Z",
+    "level": "2bac_pc_svt",
+    "doc_type": "exercises",
+    "created_at": "2026-09-18T09:52:23.499Z",
+    "createdAt": "2026-09-18T09:52:23.833Z"
+  },
+  {
+    "id": "MOCK-L-DWHBF71FG",
+    "title": "Série d'exercices : Continuité et limites (TVI, Bijection, Racine n-ème)",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": null,
+    "phone": null,
+    "schools": [],
+    "content": {
+      "level": "2bac_pc_svt",
+      "doc_type": "exercises",
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "subject": "Mathématiques",
+        "prep_title": "2ème Bac Sciences Expérimentales (PC / SVT)",
+        "fiche_title": "Série d'exercices : Continuité et limites (TVI, Bijection, Racine n-ème)",
+        "teacher": "Professeur",
+        "phone": "",
+        "schools": [
+          "Lycée Qualifiant"
+        ]
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "title": "Exercice 1 : Étude approfondie d'une fonction et de sa réciproque",
+          "points": "5 pts",
+          "content": "Soit $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = x + \\sqrt[3]{x}$.\nOn considère également la fonction $g$ définie sur $\\mathbb{R}$ par $g(t) = t^3 + t$.\n\n1) a) Montrer que $f$ est continue sur $\\mathbb{R}$.\n   b) Calculer $\\lim_{x \\to +\\infty} f(x)$ et $\\lim_{x \\to -\\infty} f(x)$.\n\n2) a) Montrer que pour tout $x \\in \\mathbb{R}^*$, $f'(x) = 1 + \\frac{1}{3\\sqrt[3]{x^2}}$.\n   b) En déduire que $f$ est strictement croissante sur $\\mathbb{R}$.\n\n3) a) Montrer que $f$ réalise une bijection de $\\mathbb{R}$ sur $\\mathbb{R}$.\n   b) En déduire que pour tout réel $k$, l'équation $f(x) = k$ admet une unique solution dans $\\mathbb{R}$.\n   c) Vérifier que l'équation $f(x) = 2$ admet une solution entière que l'on déterminera.\n\n4) Soit $f^{-1}$ la fonction réciproque de $f$.\n   a) Montrer que pour tout $y \\in \\mathbb{R}$, si $x = f^{-1}(y)$, alors $y = g(\\sqrt[3]{x})$.\n   b) En déduire que pour tout $y \\in \\mathbb{R}$, $f^{-1}(y) = (g^{-1}(y))^3$.\n   c) Calculer $(f^{-1})'(2)$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $f$ la fonction définie sur $\\mathbb{R}$ par $f(x) = x + \\sqrt[3]{x}$."
+            },
+            {
+              "type": "text",
+              "text": "On considère également la fonction $g$ définie sur $\\mathbb{R}$ par $g(t) = t^3 + t$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Montrer que $f$ est continue sur $\\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Calculer $\\lim_{x \\to +\\infty} f(x)$ et $\\lim_{x \\to -\\infty} f(x)$."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Montrer que pour tout $x \\in \\mathbb{R}^*$, $f'(x) = 1 + \\frac{1}{3\\sqrt[3]{x^2}}$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que $f$ est strictement croissante sur $\\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) a) Montrer que $f$ réalise une bijection de $\\mathbb{R}$ sur $\\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que pour tout réel $k$, l'équation $f(x) = k$ admet une unique solution dans $\\mathbb{R}$."
+            },
+            {
+              "type": "bullet",
+              "text": "c) Vérifier que l'équation $f(x) = 2$ admet une solution entière que l'on déterminera."
+            },
+            {
+              "type": "bullet",
+              "text": "4) Soit $f^{-1}$ la fonction réciproque de $f$."
+            },
+            {
+              "type": "bullet",
+              "text": "a) Montrer que pour tout $y \\in \\mathbb{R}$, si $x = f^{-1}(y)$, alors $y = g(\\sqrt[3]{x})$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que pour tout $y \\in \\mathbb{R}$, $f^{-1}(y) = (g^{-1}(y))^3$."
+            },
+            {
+              "type": "bullet",
+              "text": "c) Calculer $(f^{-1})'(2)$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "1"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-18T09:52:28.621Z",
+    "level": "2bac_pc_svt",
+    "doc_type": "exercises",
+    "created_at": "2026-09-18T09:52:28.616Z",
+    "createdAt": "2026-09-18T09:52:28.864Z"
   }
 ]

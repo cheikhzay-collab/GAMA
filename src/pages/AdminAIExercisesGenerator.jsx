@@ -300,6 +300,9 @@ export default function AdminAIExercisesGenerator({ onBack }) {
   const [errorMsg, setErrorMsg] = useState(null);
   const [savingStatus, setSavingStatus] = useState(null); // 'saving', 'saved', null
   const [expandedSolutions, setExpandedSolutions] = useState({});
+  const [savedLessonId, setSavedLessonId] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
 
   // Fetch teacher lessons to allow selecting from them
   useEffect(() => {
@@ -633,13 +636,19 @@ RÈGLE TECHNIQUE CRITIQUE :
     if (!generatedSheet) return;
     setSavingStatus('saving');
     try {
-      const saved = await addLesson(generatedSheet);
+      const savedId = await addLesson(generatedSheet);
       setSavingStatus('saved');
-      setTimeout(() => setSavingStatus(null), 4000);
-      return saved;
+      setSavedLessonId(savedId);
+      setToastMessage(language === 'ar' ? '✅ تم حفظ سلسلة التمارين بنجاح في بنك الفروض والتمارين !' : '✅ Série d\'exercices enregistrée avec succès dans la base !');
+      setShowSuccessModal(true);
+      setTimeout(() => {
+        setSavingStatus(null);
+        setToastMessage(null);
+      }, 5000);
+      return savedId;
     } catch (err) {
       console.error('Failed to save exercise sheet:', err);
-      alert(language === 'ar' ? 'حدث خطأ أثناء الحفظ في المنظومة.' : 'Erreur lors de la sauvegarde dans la base.');
+      alert(language === 'ar' ? 'حدث خطأ أثناء الحفظ في المنظومة : ' + (err.message || err) : 'Erreur lors de la sauvegarde dans la base : ' + (err.message || err));
       setSavingStatus(null);
     }
   };
@@ -1138,22 +1147,24 @@ RÈGLE TECHNIQUE CRITIQUE :
                 {includeSolutions && (
                   <button 
                     onClick={toggleAllSolutions}
-                    className="btn"
+                    type="button"
                     style={{ 
                       borderRadius: '10px', 
-                      padding: '0.55rem 0.95rem', 
-                      fontSize: '0.82rem', 
+                      padding: '0.6rem 1.05rem', 
+                      fontSize: '0.84rem', 
                       display: 'inline-flex', 
                       alignItems: 'center', 
-                      gap: '0.45rem', 
+                      gap: '0.5rem', 
                       fontWeight: 700,
                       color: '#0284C7',
-                      background: 'rgba(2, 132, 199, 0.08)',
-                      border: '1px solid rgba(2, 132, 199, 0.25)',
-                      cursor: 'pointer'
+                      background: '#F0F9FF',
+                      border: '1.5px solid #BAE6FD',
+                      boxShadow: '0 2px 4px rgba(2, 132, 199, 0.08)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
                     }}
                   >
-                    <Eye size={15} />
+                    <Eye size={16} />
                     <span>{language === 'ar' ? 'إظهار/إخفاء الحلول' : 'Afficher Corrigé'}</span>
                   </button>
                 )}
@@ -1161,44 +1172,48 @@ RÈGLE TECHNIQUE CRITIQUE :
                 {/* Print PDF */}
                 <button 
                   onClick={handlePrint}
-                  className="btn"
+                  type="button"
                   style={{ 
                     borderRadius: '10px', 
-                    padding: '0.55rem 0.95rem', 
-                    fontSize: '0.82rem', 
+                    padding: '0.6rem 1.05rem', 
+                    fontSize: '0.84rem', 
                     display: 'inline-flex', 
                     alignItems: 'center', 
-                    gap: '0.45rem', 
+                    gap: '0.5rem', 
                     fontWeight: 700,
-                    color: '#059669',
-                    background: 'rgba(5, 150, 105, 0.08)',
-                    border: '1px solid rgba(5, 150, 105, 0.25)',
-                    cursor: 'pointer'
+                    color: '#047857',
+                    background: '#ECFDF5',
+                    border: '1.5px solid #A7F3D0',
+                    boxShadow: '0 2px 4px rgba(5, 150, 105, 0.08)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
                   }}
                 >
-                  <Printer size={15} />
+                  <Printer size={16} />
                   <span>{language === 'ar' ? 'طباعة PDF' : 'Imprimer PDF'}</span>
                 </button>
 
                 {/* Copy Markdown */}
                 <button 
                   onClick={handleCopy}
-                  className="btn"
+                  type="button"
                   style={{ 
                     borderRadius: '10px', 
-                    padding: '0.55rem 0.95rem', 
-                    fontSize: '0.82rem', 
+                    padding: '0.6rem 1.05rem', 
+                    fontSize: '0.84rem', 
                     display: 'inline-flex', 
                     alignItems: 'center', 
-                    gap: '0.45rem', 
+                    gap: '0.5rem', 
                     fontWeight: 700,
-                    color: '#6366F1',
-                    background: 'rgba(99, 102, 241, 0.08)',
-                    border: '1px solid rgba(99, 102, 241, 0.25)',
-                    cursor: 'pointer'
+                    color: '#4F46E5',
+                    background: '#EEF2FF',
+                    border: '1.5px solid #C7D2FE',
+                    boxShadow: '0 2px 4px rgba(99, 102, 241, 0.08)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
                   }}
                 >
-                  <Copy size={15} />
+                  <Copy size={16} />
                   <span>{language === 'ar' ? 'نسخ السلسلة' : 'Copier'}</span>
                 </button>
 
@@ -1206,32 +1221,37 @@ RÈGLE TECHNIQUE CRITIQUE :
                 <button 
                   onClick={handleSaveToDb}
                   disabled={savingStatus === 'saving'}
-                  className="btn btn-primary"
+                  type="button"
                   style={{ 
                     borderRadius: '10px', 
-                    padding: '0.55rem 1.1rem', 
-                    fontSize: '0.85rem', 
-                    display: 'flex', 
+                    padding: '0.6rem 1.3rem', 
+                    fontSize: '0.86rem', 
+                    display: 'inline-flex', 
                     alignItems: 'center', 
-                    gap: '0.45rem', 
-                    fontWeight: 700,
-                    background: savingStatus === 'saved' ? '#10B981' : 'linear-gradient(135deg, var(--violet), #6366f1)'
+                    gap: '0.5rem', 
+                    fontWeight: 800,
+                    color: '#ffffff',
+                    background: savingStatus === 'saved' ? '#10B981' : 'linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)',
+                    border: 'none',
+                    boxShadow: savingStatus === 'saved' ? '0 4px 14px rgba(16, 185, 129, 0.35)' : '0 4px 14px rgba(124, 58, 237, 0.35)',
+                    cursor: savingStatus === 'saving' ? 'wait' : 'pointer',
+                    transition: 'all 0.2s ease'
                   }}
                 >
                   {savingStatus === 'saving' ? (
                     <>
-                      <RefreshCw size={15} className="spin" />
+                      <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} />
                       <span>{language === 'ar' ? 'جاري الحفظ...' : 'Sauvegarde...'}</span>
                     </>
                   ) : savingStatus === 'saved' ? (
                     <>
                       <CheckCircle2 size={16} />
-                      <span>{language === 'ar' ? 'تم الحفظ في التمارين !' : 'Enregistré !'}</span>
+                      <span>{language === 'ar' ? 'تم الحفظ في المنصة !' : 'Enregistré avec succès !'}</span>
                     </>
                   ) : (
                     <>
                       <Save size={16} />
-                      <span>{language === 'ar' ? 'حفظ كسلسلة تمارين' : 'Enregistrer la Série'}</span>
+                      <span>{language === 'ar' ? 'حفظ السلسلة' : 'Enregistrer la Série'}</span>
                     </>
                   )}
                 </button>
@@ -1395,14 +1415,67 @@ RÈGLE TECHNIQUE CRITIQUE :
                     : 'Cette série est conforme aux cadres de référence marocains. Vous pouvez la sauvegarder dans vos cours ou l\'imprimer.'}
                 </span>
               </div>
-              <button 
-                onClick={handleSaveToDb} 
-                className="btn btn-primary"
-                style={{ borderRadius: '10px', padding: '0.55rem 1.25rem', fontWeight: 700, fontSize: '0.85rem' }}
-              >
-                <Save size={16} />
-                <span>{language === 'ar' ? 'حفظ السلسلة الآن' : 'Sauvegarder'}</span>
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <button
+                  onClick={handlePrint}
+                  type="button"
+                  style={{
+                    borderRadius: '12px',
+                    padding: '0.65rem 1.25rem',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    color: '#047857',
+                    background: '#ECFDF5',
+                    border: '1.5px solid #A7F3D0',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <Printer size={16} />
+                  <span>{language === 'ar' ? 'طباعة PDF' : 'Imprimer PDF'}</span>
+                </button>
+
+                <button 
+                  onClick={handleSaveToDb} 
+                  disabled={savingStatus === 'saving'}
+                  type="button"
+                  style={{ 
+                    borderRadius: '12px', 
+                    padding: '0.7rem 1.6rem', 
+                    fontWeight: 800, 
+                    fontSize: '0.9rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.6rem',
+                    color: '#ffffff',
+                    background: savingStatus === 'saved' ? '#10B981' : 'linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)',
+                    border: 'none',
+                    boxShadow: savingStatus === 'saved' ? '0 4px 16px rgba(16, 185, 129, 0.4)' : '0 4px 16px rgba(124, 58, 237, 0.4)',
+                    cursor: savingStatus === 'saving' ? 'wait' : 'pointer',
+                    transition: 'all 0.25s ease'
+                  }}
+                >
+                  {savingStatus === 'saving' ? (
+                    <>
+                      <RefreshCw size={17} style={{ animation: 'spin 1s linear infinite' }} />
+                      <span>{language === 'ar' ? 'جاري الحفظ في المنظومة...' : 'Sauvegarde en cours...'}</span>
+                    </>
+                  ) : savingStatus === 'saved' ? (
+                    <>
+                      <CheckCircle2 size={17} />
+                      <span>{language === 'ar' ? 'تم الحفظ بنجاح !' : 'Enregistré avec succès !'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save size={17} />
+                      <span>{language === 'ar' ? 'حفظ السلسلة في بنك الدروس والتمارين' : 'Sauvegarder dans la banque'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
           </div>
@@ -1504,6 +1577,170 @@ RÈGLE TECHNIQUE CRITIQUE :
                 {language === 'ar' ? 'حفظ المفتاح' : 'Enregistrer'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Floating Toast Notification ── */}
+      {toastMessage && (
+        <div style={{
+          position: 'fixed',
+          top: '24px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 10000,
+          background: '#065F46',
+          color: '#ffffff',
+          padding: '0.85rem 1.6rem',
+          borderRadius: '14px',
+          boxShadow: '0 12px 36px rgba(0,0,0,0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          fontWeight: 700,
+          fontSize: '0.92rem',
+          border: '1px solid rgba(52, 211, 153, 0.4)'
+        }}>
+          <CheckCircle2 size={20} color="#34D399" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* ── Success Celebration Modal ── */}
+      {showSuccessModal && generatedSheet && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(15, 23, 42, 0.75)',
+          backdropFilter: 'blur(6px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000,
+          padding: '1.25rem'
+        }}>
+          <div className="glass-panel" style={{
+            background: 'var(--bg-card)',
+            border: '1px solid rgba(16, 185, 129, 0.35)',
+            borderRadius: '24px',
+            padding: '2.25rem',
+            maxWidth: '540px',
+            width: '100%',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.35)',
+            textAlign: 'center'
+          }}>
+            <div style={{
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.1) 100%)',
+              border: '2px solid #10B981',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1.25rem'
+            }}>
+              <CheckCircle2 size={36} style={{ color: '#10B981' }} />
+            </div>
+
+            <span style={{
+              display: 'inline-block',
+              background: 'rgba(16, 185, 129, 0.12)',
+              color: '#059669',
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              padding: '0.25rem 0.8rem',
+              borderRadius: '20px',
+              marginBottom: '0.75rem'
+            }}>
+              {language === 'ar' ? '🎉 تم الحفظ بنجاح في المنظومة' : '🎉 Enregistrement Réussi !'}
+            </span>
+
+            <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.5rem', lineHeight: 1.3 }}>
+              {generatedSheet.title}
+            </h3>
+
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '1.75rem' }}>
+              {language === 'ar'
+                ? 'تم تسجيل هذه السلسلة بنجاح في بنك الدروس والتمارين. يمكنك الآن فتحها وتصفحها من لوحة إدارة الدروس أو طباعتها فوراً بصيغة PDF.'
+                : 'Cette série d\'exercices a été ajoutée avec succès à votre bibliothèque de cours et fiches. Vous pouvez la consulter immédiatement ou l\'imprimer.'}
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {/* Primary action: Go to lessons library */}
+              <button
+                type="button"
+                onClick={() => navigate('/admin/lessons')}
+                style={{
+                  width: '100%',
+                  borderRadius: '12px',
+                  padding: '0.85rem 1.5rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 800,
+                  color: '#ffffff',
+                  background: 'linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.6rem',
+                  boxShadow: '0 8px 20px rgba(124, 58, 237, 0.35)'
+                }}
+              >
+                <BookOpen size={18} />
+                <span>{language === 'ar' ? 'عرض السلسلة في بنك الدروس والتمارين' : 'Consulter dans la bibliothèque de cours'}</span>
+              </button>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                {/* Print PDF */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    handlePrint();
+                  }}
+                  style={{
+                    borderRadius: '12px',
+                    padding: '0.75rem 1rem',
+                    fontSize: '0.88rem',
+                    fontWeight: 700,
+                    color: '#047857',
+                    background: '#ECFDF5',
+                    border: '1.5px solid #A7F3D0',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}
+                >
+                  <Printer size={16} />
+                  <span>{language === 'ar' ? 'طباعة PDF' : 'Imprimer PDF'}</span>
+                </button>
+
+                {/* Close modal */}
+                <button
+                  type="button"
+                  onClick={() => setShowSuccessModal(false)}
+                  style={{
+                    borderRadius: '12px',
+                    padding: '0.75rem 1rem',
+                    fontSize: '0.88rem',
+                    fontWeight: 700,
+                    color: 'var(--text-main)',
+                    background: 'var(--bg-glass)',
+                    border: '1px solid var(--border)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {language === 'ar' ? 'متابعة المعاينة' : 'Continuer l\'aperçu'}
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       )}
