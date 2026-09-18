@@ -147,6 +147,111 @@ const DIFFICULTIES = [
   { id: 'progressif', labelFr: 'Trousse progressive — De l\'application au défi', labelAr: 'تدرج بيداغوجي — من المباشر إلى المركب', icon: Layers, color: '#8B5CF6', badge: 'Progressif' }
 ];
 
+// ── Ultra-resilient JSON parser for LLM-generated math/LaTeX content ──
+function robustParseAiJson(raw) {
+  if (!raw || typeof raw !== 'string') {
+    throw new Error('Réponse vide du modèle IA.');
+  }
+
+  let str = raw.trim();
+
+  // 1. Remove markdown code blocks if present
+  if (str.includes('```')) {
+    str = str.replace(/```(?:json)?\s*([\s\S]*?)\s*```/gi, '$1').trim();
+  }
+
+  // 2. Extract outermost JSON { ... }
+  const firstBrace = str.indexOf('{');
+  const lastBrace = str.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    str = str.substring(firstBrace, lastBrace + 1);
+  }
+
+  // Attempt 1: Direct parse
+  try {
+    const res = JSON.parse(str);
+    if (res && (res.exercises || res.sheet_title)) return res;
+  } catch (_) {}
+
+  // Attempt 2: Sanitize invalid escape sequences (LaTeX \frac, \sqrt, \mathbb, etc.)
+  // Valid JSON escape sequences: \", \\, \/, \b, \f, \n, \r, \t, \uXXXX
+  try {
+    const fixedEscapes = str
+      .replace(/\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\')
+      .replace(/,\s*([}\]])/g, '$1'); // remove trailing commas
+    const res = JSON.parse(fixedEscapes);
+    if (res && (res.exercises || res.sheet_title)) return res;
+  } catch (_) {}
+
+  // Attempt 3: Fix unescaped newlines and carriage returns inside JSON strings
+  try {
+    let inString = false;
+    let escaped = false;
+    let fixed = '';
+    for (let i = 0; i < str.length; i++) {
+      const c = str[i];
+      if (c === '\\') {
+        escaped = !escaped;
+        fixed += c;
+        continue;
+      }
+      if (c === '"' && !escaped) {
+        inString = !inString;
+      }
+      if (inString && (c === '\n' || c === '\r')) {
+        fixed += '\\n';
+      } else if (inString && c === '\t') {
+        fixed += '\\t';
+      } else {
+        fixed += c;
+      }
+      escaped = false;
+    }
+    const fixedEscapes = fixed
+      .replace(/\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\')
+      .replace(/,\s*([}\]])/g, '$1');
+    const res = JSON.parse(fixedEscapes);
+    if (res && (res.exercises || res.sheet_title)) return res;
+  } catch (_) {}
+
+  // Attempt 4: Fallback Regex Extractor
+  try {
+    const exercises = [];
+    const blocks = str.split(/(?=\{\s*"(?:id|title)"\s*:)/gi);
+    for (const b of blocks) {
+      if (b.includes('"title"') || b.includes('"content"')) {
+        const titleM = b.match(/"title"\s*:\s*"([^"]+)"/);
+        const pointsM = b.match(/"points"\s*:\s*"([^"]+)"/);
+        const contentM = b.match(/"content"\s*:\s*"([\s\S]*?)"(?=,\s*"(?:items|solution|points)"|\s*\})/);
+        const solM = b.match(/"solution"\s*:\s*"([\s\S]*?)"(?=\s*\})/);
+        
+        if (titleM || contentM) {
+          exercises.push({
+            id: `ex-${exercises.length + 1}`,
+            title: titleM ? titleM[1] : `Exercice ${exercises.length + 1}`,
+            points: pointsM ? pointsM[1] : '',
+            content: contentM ? contentM[1].replace(/\\n/g, '\n').replace(/\\\\/g, '\\') : '',
+            solution: solM ? solM[1].replace(/\\n/g, '\n').replace(/\\\\/g, '\\') : '',
+            items: []
+          });
+        }
+      }
+    }
+
+    if (exercises.length > 0) {
+      const sheetTitleM = str.match(/"sheet_title"\s*:\s*"([^"]+)"/);
+      return {
+        sheet_title: sheetTitleM ? sheetTitleM[1] : "Série d'exercices",
+        exercises: exercises
+      };
+    }
+  } catch (reErr) {
+    console.warn('[JSON Parse] Fallback regex failed:', reErr);
+  }
+
+  throw new Error("Erreur de décodage JSON : Les formules générées contiennent une syntaxe non reconnue. Veuillez relancer la génération.");
+}
+
 export default function AdminAIExercisesGenerator({ onBack }) {
   const navigate = useNavigate();
 
@@ -336,7 +441,13 @@ ${baremeInstruction}
 ${solutionInstruction}
 ${promptUserDirectives}
 
-Tu dois impérativement renvoyer UNIQUEMENT un objet JSON valide suivant exactement cette structure, sans aucun bloc de markdown autour (pas de \`\`\`json) :
+RÈGLES CRITIQUES DE VALIDITÉ DU FORMAT JSON :
+1. Renvoyer UNIQUEMENT un objet JSON valide (pas de préambule, pas de commentaires, pas de markdown \`\`\`json).
+2. Pour TOUTES les formules LaTeX mathématiques, DOUBLE SYSTÉMATIQUEMENT les antislashs pour que le JSON reste parfaitement valide (ex: "\\\\frac{a}{b}", "\\\\sqrt{x}", "\\\\lim_{x \\\\to 0}", "\\\\in \\\\mathbb{R}").
+3. N'utilise JAMAIS de guillemets doubles non échappés à l'intérieur des chaînes de texte (utilise des guillemets français « » ou \\").
+4. Ne mets pas de virgule traînante avant une accolade fermante.
+
+Structure JSON obligatoire :
 {
   "sheet_title": "${language === 'ar' ? 'سلسلة تمارين : ' : 'Série d\'exercices : '}${resolvedChapterTitle}",
   "chapter": "${resolvedChapterTitle}",
@@ -401,7 +512,10 @@ Tu dois impérativement renvoyer UNIQUEMENT un objet JSON valide suivant exactem
 
           const data = await res.json();
           const candidate = data.candidates?.[0];
-          const text = candidate?.content?.parts?.[0]?.text;
+          const nonThoughtParts = candidate?.content?.parts?.filter(p => !p.thought) || [];
+          const text = (nonThoughtParts.length > 0 ? nonThoughtParts : (candidate?.content?.parts || []))
+            .map(p => p.text || '')
+            .join('');
           if (text) {
             rawResponseText = text;
             break;
@@ -418,13 +532,8 @@ Tu dois impérativement renvoyer UNIQUEMENT un objet JSON valide suivant exactem
 
       setProgressStep(language === 'ar' ? 'معالجة التنسيق الرياضي ورموز LaTeX...' : 'Finalisation et rendu des formules LaTeX...');
 
-      // Clean markdown wrappers if any
-      let cleanedJson = rawResponseText.trim();
-      if (cleanedJson.startsWith('```')) {
-        cleanedJson = cleanedJson.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
-      }
-
-      const parsed = JSON.parse(cleanedJson);
+      // Robust JSON decoding specifically resilient to unescaped LaTeX
+      const parsed = robustParseAiJson(rawResponseText);
       if (!parsed.exercises || !Array.isArray(parsed.exercises) || parsed.exercises.length === 0) {
         throw new Error(language === 'ar' ? 'لم يقم الذكاء الاصطناعي بإنشاء تمارين صالحة.' : 'Aucun exercice valide n\'a été renvoyé.');
       }
