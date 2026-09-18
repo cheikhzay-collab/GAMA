@@ -596,7 +596,6 @@ export default function AdminLogbook() {
     return filtered;
   }, [missingSessions, selectedClass, missingDaysFilter]);
   const [missingPanelOpen, setMissingPanelOpen] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [programDrawerOpen, setProgramDrawerOpen] = useState(false);
   const [previewSections, setPreviewSections] = useState({});
 
@@ -2310,62 +2309,74 @@ export default function AdminLogbook() {
                   </button>
                   <h2 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0, color: 'var(--text-main)' }}>{selectedClass.name}</h2>
                 </div>
-                <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.9rem' }}>
+                <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.9rem', lineHeight: 1.5 }}>
                   Niveau : <strong>{selectedClassLevelLabel}</strong> • Année Scolaire : <strong>{getAcademicYearDates().label}</strong> • Enseignant : <strong>{profName || 'Professeur'}</strong>
                 </p>
               </div>
 
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              {/* Action Buttons Toolbar */}
+              <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 {selectedClass && selectedClass.program && selectedClass.program.length > 0 && (
                   <button
                     onClick={() => setProgramDrawerOpen(true)}
                     className="btn-outline"
+                    title={isArMode ? 'عرض البرنامج الرسمي ومؤشر التقدم' : 'Consulter le programme officiel et la progression'}
                     style={{ 
-                      display: 'flex', alignItems: 'center', gap: '0.4rem', 
-                      fontSize: '0.85rem', padding: '0.6rem 1.15rem', borderRadius: '10px', 
-                      background: 'rgba(99, 102, 241, 0.08)', borderColor: 'var(--violet)', color: 'var(--violet)',
-                      fontWeight: 700
+                      display: 'flex', alignItems: 'center', gap: '0.45rem', 
+                      fontSize: '0.85rem', padding: '0.55rem 1.05rem', borderRadius: '10px', 
+                      background: 'rgba(99, 102, 241, 0.06)', borderColor: 'rgba(99, 102, 241, 0.3)', 
+                      color: 'var(--violet)', fontWeight: 750
                     }}
                   >
-                    <ListOrdered size={16} /> {isArMode ? `برنامج القسم (${selectedClass.program.length})` : `Programme (${selectedClass.program.length})`}
+                    <ListOrdered size={16} /> 
+                    <span>{isArMode ? `البرنامج والتقدم (${selectedClass.program.length})` : `Programme & Progression (${selectedClass.program.length})`}</span>
                   </button>
                 )}
-                <button
-                  onClick={() => setDrawerOpen(true)}
-                  className="btn-outline"
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', padding: '0.6rem 1.15rem', borderRadius: '10px', background: 'transparent', borderColor: 'var(--emerald)', color: 'var(--emerald)' }}
-                >
-                  <CheckCircle2 size={16} /> {isArMode ? 'مؤشر التقدم' : 'Progression'}
-                </button>
+                
                 <button
                   onClick={triggerPrint}
                   className="btn-outline"
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', padding: '0.6rem 1.15rem', borderRadius: '10px', background: 'transparent' }}
+                  title={isArMode ? 'طباعة دفتر النصوص' : 'Imprimer le cahier de textes'}
+                  style={{ 
+                    display: 'flex', alignItems: 'center', gap: '0.4rem', 
+                    fontSize: '0.85rem', padding: '0.55rem 1rem', borderRadius: '10px', 
+                    background: 'transparent', borderColor: 'var(--border)', color: 'var(--text-main)',
+                    fontWeight: 650
+                  }}
                 >
-                  <Printer size={16} /> Imprimer le cahier
+                  <Printer size={16} /> 
+                  <span>{isArMode ? 'طباعة' : 'Imprimer'}</span>
                 </button>
+
                 {selectedClass && selectedClass.program && selectedClass.program.length > 0 && (
                   <button
                     onClick={handleOpenAddFromProgram}
-                    className="btn"
+                    className="btn-outline"
+                    title={isArMode ? 'تعبئة سريعة للحصة التالية من البرنامج' : 'Remplir automatiquement la prochaine séance du programme'}
                     style={{ 
                       display: 'flex', alignItems: 'center', gap: '0.4rem', 
-                      fontSize: '0.85rem', padding: '0.6rem 1.25rem', borderRadius: '10px',
-                      background: 'linear-gradient(135deg, var(--emerald) 0%, #059669 100%)',
-                      border: 'none', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)',
-                      fontWeight: 800
+                      fontSize: '0.85rem', padding: '0.55rem 1.05rem', borderRadius: '10px',
+                      background: 'rgba(16, 185, 129, 0.08)', borderColor: 'rgba(16, 185, 129, 0.35)',
+                      color: 'var(--emerald)', fontWeight: 750
                     }}
                   >
-                    <Sparkles size={16} /> {isArMode ? 'تعبئة من البرنامج' : 'Remplir depuis le Programme'}
+                    <Sparkles size={15} /> 
+                    <span>{isArMode ? 'تعبئة من البرنامج' : 'Remplir auto'}</span>
                   </button>
                 )}
+
                 <button
                   onClick={handleOpenAddModal}
                   className="btn"
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', padding: '0.6rem 1.25rem', borderRadius: '10px' }}
+                  style={{ 
+                    display: 'flex', alignItems: 'center', gap: '0.45rem', 
+                    fontSize: '0.85rem', padding: '0.55rem 1.25rem', borderRadius: '10px',
+                    fontWeight: 800,
+                    boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)'
+                  }}
                 >
-                  <Plus size={16} /> {isArMode ? 'إضافة حصة' : 'Ajouter une séance'}
+                  <Plus size={16} /> 
+                  <span>{isArMode ? 'إضافة حصة' : 'Ajouter une séance'}</span>
                 </button>
               </div>
             </div>
@@ -2809,178 +2820,7 @@ export default function AdminLogbook() {
       </div>
     )}
 
-      {/* ── Slide-over Drawer for Syllabus Progress ── */}
-      {drawerOpen && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="no-print"
-            onClick={() => setDrawerOpen(false)}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0,0,0,0.5)',
-              backdropFilter: 'blur(4px)',
-              zIndex: 9999,
-              animation: 'fadeInLogbook 0.2s ease'
-            }}
-          />
-          {/* Drawer Panel */}
-          <div 
-            className="no-print"
-            style={{
-              position: 'fixed',
-              top: 0,
-              right: 0,
-              bottom: 0,
-              width: '385px',
-              maxWidth: '90vw',
-              background: 'var(--bg-card)',
-              borderLeft: '1px solid var(--border)',
-              boxShadow: '-10px 0 30px rgba(0,0,0,0.3)',
-              zIndex: 10000,
-              padding: '2rem 1.5rem',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '1.5rem',
-              animation: 'slideInRightLogbook 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-            }}
-          >
-            {/* Drawer Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <CheckCircle2 size={20} color="var(--emerald)" />
-                {isArMode ? 'مؤشر تقدم الدروس' : 'Progression du Programme'}
-              </h3>
-              <button 
-                onClick={() => setDrawerOpen(false)}
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.25rem' }}
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Drawer Content */}
-            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {selectedClass && selectedClass.program && selectedClass.program.length > 0 ? (
-                selectedClass.program.map((item, pIdx) => {
-                  const status = getProgramItemStatus(item);
-                  return (
-                    <div key={item.id} style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '1rem', borderRadius: '16px', border: '1px solid var(--border)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
-                        <span style={{ fontWeight: 800, color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '210px' }} title={item.title}>
-                          {pIdx + 1}. {item.title}
-                        </span>
-                        <span style={{ fontWeight: 800, color: status.isDone ? 'var(--emerald)' : 'var(--violet)' }}>
-                          {status.pct || (status.isDone ? 100 : 0)}%
-                        </span>
-                      </div>
-                      
-                      <div style={{ width: '100%', height: '8px', borderRadius: '4px', background: 'rgba(255, 255, 255, 0.05)', overflow: 'hidden', marginBottom: '0.4rem' }}>
-                        <div style={{ 
-                          width: `${status.pct || (status.isDone ? 100 : 0)}%`, 
-                          height: '100%', 
-                          borderRadius: '4px',
-                          background: status.isDone 
-                            ? 'linear-gradient(90deg, var(--emerald) 0%, #34d399 100%)' 
-                            : 'linear-gradient(90deg, var(--violet) 0%, #8b5cf6 100%)',
-                          transition: 'width 0.4s ease'
-                        }} />
-                      </div>
-
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.25rem' }}>
-                        <span>{status.total ? `${status.count} / ${status.total} ${isArMode ? 'فقرات منجزة' : 'sections'}` : status.label}</span>
-                        {!status.isDone ? (
-                          <button
-                            onClick={() => {
-                              setDrawerOpen(false);
-                              handleOpenAddSpecificProgramItem(item);
-                            }}
-                            className="btn"
-                            style={{ padding: '0.2rem 0.6rem', fontSize: '0.68rem', borderRadius: '6px' }}
-                          >
-                            ⚡ {isArMode ? 'تعبئة' : 'Saisir'}
-                          </button>
-                        ) : (
-                          <span style={{ color: 'var(--emerald)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.15rem' }}>
-                            <Check size={12} strokeWidth={3} /> {isArMode ? 'مكتمل' : 'Complété'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
-              ) : levelLessons.length === 0 ? (
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  {isArMode ? 'لا توجد دروس أو عناصر مبرمجة لهذا القسم حالياً.' : 'Aucun élément de programme pour cette classe.'}
-                </p>
-              ) : (
-                levelLessons.map(lesson => {
-                  const lessonSections = lesson.content?.sections || [];
-                  const totalCount = lessonSections.length;
-                  
-                  const coveredSectionTitles = new Set();
-                  entries.forEach(e => {
-                    if (e.selectedSections && Array.isArray(e.selectedSections)) {
-                      e.selectedSections.forEach(s => coveredSectionTitles.add(s));
-                    }
-                  });
-
-                  const coveredCount = lessonSections.filter(s => coveredSectionTitles.has(s.title)).length;
-                  const progressPercent = totalCount > 0 ? Math.round((coveredCount / totalCount) * 100) : 0;
-                  
-                  return (
-                    <div key={lesson.id} style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '1rem', borderRadius: '16px', border: '1px solid var(--border)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
-                        <span style={{ fontWeight: 800, color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }} title={lesson.title}>
-                          {renderWithMath(lesson.title)}
-                        </span>
-                        <span style={{ fontWeight: 800, color: progressPercent === 100 ? 'var(--emerald)' : 'var(--violet)' }}>
-                          {progressPercent}%
-                        </span>
-                      </div>
-                      
-                      <div style={{ width: '100%', height: '8px', borderRadius: '4px', background: 'rgba(255, 255, 255, 0.05)', overflow: 'hidden', marginBottom: '0.4rem' }}>
-                        <div style={{ 
-                          width: `${progressPercent}%`, 
-                          height: '100%', 
-                          borderRadius: '4px',
-                          background: progressPercent === 100 
-                            ? 'linear-gradient(90deg, var(--emerald) 0%, #34d399 100%)' 
-                            : 'linear-gradient(90deg, var(--violet) 0%, #8b5cf6 100%)',
-                          transition: 'width 0.4s ease'
-                        }} />
-                      </div>
-
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)', display: 'flex', justifyContent: 'space-between', marginTop: '0.25rem' }}>
-                        <span>{coveredCount} / {totalCount} {isArMode ? 'فقرات منجزة' : 'sections couvertes'}</span>
-                        {progressPercent === 100 && (
-                          <span style={{ color: 'var(--emerald)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.15rem' }}>
-                            <Check size={12} strokeWidth={3} /> {isArMode ? 'مكتمل' : 'Complété'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-          <style dangerouslySetInnerHTML={{__html: `
-            @keyframes fadeInLogbook {
-              from { opacity: 0; }
-              to { opacity: 1; }
-            }
-            @keyframes slideInRightLogbook {
-              from { transform: translateX(100%); }
-              to { transform: translateX(0); }
-            }
-          `}} />
-        </>
-      )}
-
-      {/* ── Programme de la classe Drawer ── */}
+      {/* ── Programme & Progression de la classe Drawer (Unified) ── */}
       {programDrawerOpen && (
         <>
           <div 
@@ -2994,19 +2834,20 @@ export default function AdminLogbook() {
             className="no-print"
             style={{
               position: 'fixed', top: 0, right: isArMode ? 'auto' : 0, left: isArMode ? 0 : 'auto', bottom: 0,
-              width: '420px', maxWidth: '92vw', background: 'var(--bg-card)',
+              width: '430px', maxWidth: '92vw', background: 'var(--bg-card)',
               borderLeft: isArMode ? 'none' : '1px solid var(--border)',
               borderRight: isArMode ? '1px solid var(--border)' : 'none',
               boxShadow: '0 0 35px rgba(0,0,0,0.4)', zIndex: 10000,
-              padding: '2rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem',
+              padding: '1.75rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem',
               direction: isArMode ? 'rtl' : 'ltr', animation: 'slideInRightLogbook 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
             }}
           >
+            {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-main)', margin: '0 0 0.2rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <h3 style={{ fontSize: '1.18rem', fontWeight: 900, color: 'var(--text-main)', margin: '0 0 0.2rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <ListOrdered size={20} color="var(--violet)" />
-                  {isArMode ? 'البرنامج المعتمد للقسم' : 'Programme officiel de la classe'}
+                  {isArMode ? 'برنامج وتقدم المقرر' : 'Programme & Progression'}
                 </h3>
                 <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                   {selectedClass ? `${selectedClass.name} • ${selectedClass.program?.length || 0} ${isArMode ? 'عناصر مقررة' : 'activités'}` : ''}
@@ -3019,6 +2860,57 @@ export default function AdminLogbook() {
                 <X size={20} />
               </button>
             </div>
+
+            {/* Overall Progress Summary Card */}
+            {selectedClass?.program && selectedClass.program.length > 0 && (() => {
+              const total = selectedClass.program.length;
+              const doneCount = selectedClass.program.filter(item => getProgramItemStatus(item).isDone).length;
+              const overallPct = Math.round((doneCount / total) * 100);
+              return (
+                <div style={{
+                  background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '14px',
+                  padding: '1rem 1.15rem'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <span style={{ fontSize: '0.84rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <CheckCircle2 size={16} color="var(--emerald)" />
+                      {isArMode ? 'مستوى الإنجاز العام' : 'Progression Globale'}
+                    </span>
+                    <span style={{ fontSize: '1.1rem', fontWeight: 900, color: overallPct === 100 ? 'var(--emerald)' : 'var(--violet)' }}>
+                      {overallPct}%
+                    </span>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', borderRadius: '4px', background: 'rgba(255, 255, 255, 0.08)', overflow: 'hidden' }}>
+                    <div style={{
+                      width: `${overallPct}%`,
+                      height: '100%',
+                      borderRadius: '4px',
+                      background: overallPct === 100
+                        ? 'linear-gradient(90deg, var(--emerald) 0%, #34d399 100%)'
+                        : 'linear-gradient(90deg, var(--violet) 0%, var(--emerald) 100%)',
+                      transition: 'width 0.4s ease'
+                    }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.45rem', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                    <span>{doneCount} / {total} {isArMode ? 'عناصر منجزة' : 'éléments complétés'}</span>
+                    <span>{total - doneCount} {isArMode ? 'متبقية' : 'restants'}</span>
+                  </div>
+                </div>
+              );
+            })()}
+
+            <style dangerouslySetInnerHTML={{__html: `
+              @keyframes fadeInLogbook {
+                from { opacity: 0; }
+                to { opacity: 1; }
+              }
+              @keyframes slideInRightLogbook {
+                from { transform: translateX(100%); }
+                to { transform: translateX(0); }
+              }
+            `}} />
 
             <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingRight: '0.25rem' }}>
               {(!selectedClass?.program || selectedClass.program.length === 0) ? (
