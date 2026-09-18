@@ -134,14 +134,19 @@ const mapLessonToDB = (l) => ({
   teacher: l.teacher || null,
   phone: l.phone || null,
   schools: l.schools || [],
+  // [FIX] level and doc_type must be top-level columns in the Neon `lessons` table,
+  // not only nested inside content. Without this they were always saved as null.
+  level: l.level || l.content?.level || null,
+  doc_type: l.docType || l.doc_type || l.content?.doc_type || 'course',
   content: {
     ...(l.content || {}),
     level: l.level || l.content?.level || null,
-    doc_type: l.docType || l.content?.doc_type || 'course'
+    doc_type: l.docType || l.doc_type || l.content?.doc_type || 'course'
   },
   is_active: l.isActive !== undefined ? l.isActive : true,
   updated_at: new Date().toISOString(),
 });
+
 
 // Helper to parse content JSON safely
 const parseContent = (content) => {

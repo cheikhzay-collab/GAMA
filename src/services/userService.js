@@ -345,22 +345,33 @@ export const setUserSubscription = async (uid, subscription, tier = 'premium') =
  * Neon-first with Supabase fallback.
  */
 export const saveQuestionProgress = async (uid, questionId, progressData) => {
-  const row = {
-    user_id: uid,
-    question_id: questionId,
-    difficulty: progressData.difficulty,
-    stability: progressData.stability,
-    repetitions: progressData.repetitions,
-    ease_factor: progressData.easeFactor,
-    last_review_date: progressData.lastReviewDate,
-    next_review_date: progressData.nextReviewDate,
-    updated_at: new Date().toISOString(),
-  };
+  const now = new Date().toISOString();
 
-  // 1. Neon via raw SQL upsert (conflict on user_id + question_id)
+  // 1. Neon — [FIX] progress.id is bigint (auto-increment), conflict on (user_id, question_id)
+  //    Use raw SQL INSERT ... ON CONFLICT instead of generic upsert with string id.
   try {
-    await neonUpsert('progress', { ...row, id: `${uid}_${questionId}` }, 'id');
-    return;
+    const res = await neonAuthFetch({
+      action: 'query',
+      sql: `INSERT INTO public.progress
+        (user_id, question_id, difficulty, stability, repetitions, ease_factor, last_review_date, next_review_date, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        ON CONFLICT (user_id, question_id) DO UPDATE SET
+          difficulty = EXCLUDED.difficulty,
+          stability = EXCLUDED.stability,
+          repetitions = EXCLUDED.repetitions,
+          ease_factor = EXCLUDED.ease_factor,
+          last_review_date = EXCLUDED.last_review_date,
+          next_review_date = EXCLUDED.next_review_date,
+          updated_at = EXCLUDED.updated_at`,
+      params: [
+        uid, questionId,
+        progressData.difficulty, progressData.stability,
+        progressData.repetitions, progressData.easeFactor,
+        progressData.lastReviewDate, progressData.nextReviewDate,
+        now
+      ]
+    });
+    if (res.ok) return;
   } catch (neonErr) {
     console.warn('[Neon] saveQuestionProgress error:', neonErr.message);
   }
@@ -370,7 +381,17 @@ export const saveQuestionProgress = async (uid, questionId, progressData) => {
   try {
     const { error } = await supabase
       .from('progress')
-      .upsert(row, { onConflict: 'user_id,question_id' });
+      .upsert({
+        user_id: uid,
+        question_id: questionId,
+        difficulty: progressData.difficulty,
+        stability: progressData.stability,
+        repetitions: progressData.repetitions,
+        ease_factor: progressData.easeFactor,
+        last_review_date: progressData.lastReviewDate,
+        next_review_date: progressData.nextReviewDate,
+        updated_at: now,
+      }, { onConflict: 'user_id,question_id' });
     if (error) console.warn('[Supabase] Failed to save question progress:', error.message || error);
   } catch (err) {
     console.warn('[Supabase] Network error during saveQuestionProgress:', err.message || err);
@@ -425,27 +446,23 @@ export const getAllProgress = async (uid) => {
  * Neon-first with Supabase fallback.
  */
 export const saveMockResult = async (uid, result) => {
-  const id = `mh_${uid}_${Date.now()}`;
-  const row = {
-    id,
-    user_id: uid,
-    exam_id: result.examId,
-    exam_name: result.examName,
-    school: result.school,
-    score: result.score,
-    max_score: result.maxScore,
-    pct: result.pct,
-    correct_count: result.correctCount,
-    wrong_count: result.wrongCount,
-    empty_count: result.emptyCount,
-    mode: result.mode,
-    date: result.date || new Date().toISOString(),
-  };
+  const date = result.date || new Date().toISOString();
 
-  // 1. Try Neon
+  // 1. Try Neon — [FIX] mock_history.id is bigint (auto-increment) — use INSERT without id
   try {
-    await neonUpsert('mock_history', row, 'id');
-    return;
+    const res = await neonAuthFetch({
+      action: 'query',
+      sql: `INSERT INTO public.mock_history
+        (user_id, exam_id, exam_name, school, score, max_score, pct, correct_count, wrong_count, empty_count, mode, date)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+      params: [
+        uid, result.examId, result.examName, result.school,
+        result.score, result.maxScore, result.pct,
+        result.correctCount, result.wrongCount, result.emptyCount,
+        result.mode, date
+      ]
+    });
+    if (res.ok) return;
   } catch (neonErr) {
     console.warn('[Neon] saveMockResult error:', neonErr.message);
   }
@@ -453,7 +470,20 @@ export const saveMockResult = async (uid, result) => {
   // 2. Supabase fallback
   if (!supabase) return;
   try {
-    const { error } = await supabase.from('mock_history').insert(row);
+    const { error } = await supabase.from('mock_history').insert({
+      user_id: uid,
+      exam_id: result.examId,
+      exam_name: result.examName,
+      school: result.school,
+      score: result.score,
+      max_score: result.maxScore,
+      pct: result.pct,
+      correct_count: result.correctCount,
+      wrong_count: result.wrongCount,
+      empty_count: result.emptyCount,
+      mode: result.mode,
+      date,
+    });
     if (error) console.warn('[Supabase] Failed to save mock result:', error.message || error);
   } catch (err) {
     console.warn('[Supabase] Network error during saveMockResult:', err.message || err);
@@ -480,16 +510,12 @@ export const getMockHistory = async (uid) => {
     date: row.date,
   });
 
-  // 1. Try Neon
+  // 1. Try Neon — [FIX] Added Authorization header via neonAuthFetch
   try {
-    const res = await fetch('/api/neon', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'query',
-        sql: 'SELECT * FROM public.mock_history WHERE user_id = $1 ORDER BY date DESC',
-        params: [uid]
-      })
+    const res = await neonAuthFetch({
+      action: 'query',
+      sql: 'SELECT * FROM public.mock_history WHERE user_id = $1 ORDER BY date DESC',
+      params: [uid]
     });
     if (res.ok) {
       const data = await res.json();
@@ -520,23 +546,17 @@ export const getMockHistory = async (uid) => {
  */
 export const incrementDailyActivity = async (uid) => {
   const today = new Date().toISOString().split('T')[0];
-  const id = `${uid}_${today}`;
 
-  // 1. Try Neon — read current count then upsert
+  // 1. Try Neon — [FIX] activity.id is bigint (auto-increment). Use INSERT ON CONFLICT (user_id, date)
   try {
-    const res = await fetch('/api/neon', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'query',
-        sql: 'SELECT count FROM public.activity WHERE user_id = $1 AND date = $2 LIMIT 1',
-        params: [uid, today]
-      })
+    const res = await neonAuthFetch({
+      action: 'query',
+      sql: `INSERT INTO public.activity (user_id, date, count)
+        VALUES ($1, $2, 1)
+        ON CONFLICT (user_id, date) DO UPDATE SET count = public.activity.count + 1`,
+      params: [uid, today]
     });
     if (res.ok) {
-      const data = await res.json();
-      const currentCount = data.rows?.[0]?.count || 0;
-      await neonUpsert('activity', { id, user_id: uid, date: today, count: currentCount + 1 }, 'id');
       return;
     }
   } catch (neonErr) {
@@ -567,16 +587,12 @@ export const getRecentActivity = async (uid, days = 90) => {
   cutoffDate.setDate(cutoffDate.getDate() - days);
   const cutoffStr = cutoffDate.toISOString().split('T')[0];
 
-  // 1. Try Neon
+  // 1. Try Neon — [FIX] Added Authorization header via neonAuthFetch
   try {
-    const res = await fetch('/api/neon', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'query',
-        sql: 'SELECT date, count FROM public.activity WHERE user_id = $1 AND date >= $2',
-        params: [uid, cutoffStr]
-      })
+    const res = await neonAuthFetch({
+      action: 'query',
+      sql: 'SELECT date, count FROM public.activity WHERE user_id = $1 AND date >= $2',
+      params: [uid, cutoffStr]
     });
     if (res.ok) {
       const data = await res.json();
@@ -618,13 +634,9 @@ export const deleteUser = async (uid) => {
   const filtered = currentUsers.filter(u => u.id !== uid && u.uid !== uid);
   saveLocalStorageUsers(filtered);
 
-  // 2. Neon delete
+  // 2. Neon delete — [FIX] Added Authorization header via neonAuthFetch
   try {
-    const res = await fetch('/api/neon', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'delete', table: 'profiles', id: uid, keyField: 'id' })
-    });
+    const res = await neonAuthFetch({ action: 'delete', table: 'profiles', id: uid, keyField: 'id' });
     if (res.ok) return true;
   } catch (neonErr) {
     console.warn('[Neon] deleteUser error:', neonErr.message);
@@ -783,7 +795,7 @@ export const getLeaderboard = async (options = {}) => {
  */
 export const addLoginLog = async (uid) => {
   const id = `ll_${uid}_${Date.now()}`;
-  // 1. Try Neon
+  // 1. Try Neon — table login_logs now exists with TEXT id (created via MCP)
   try {
     await neonUpsert('login_logs', { id, user_id: uid, logged_at: new Date().toISOString() }, 'id');
     return;
@@ -806,16 +818,12 @@ export const addLoginLog = async (uid) => {
  */
 export const getLoginLogs = async (uid) => {
   const mapRow = row => ({ id: row.id, userId: row.user_id, loggedAt: row.logged_at });
-  // 1. Try Neon
+  // 1. Try Neon — [FIX] Added Authorization header via neonAuthFetch
   try {
-    const res = await fetch('/api/neon', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'query',
-        sql: 'SELECT * FROM public.login_logs WHERE user_id = $1 ORDER BY logged_at DESC LIMIT 100',
-        params: [uid]
-      })
+    const res = await neonAuthFetch({
+      action: 'query',
+      sql: 'SELECT * FROM public.login_logs WHERE user_id = $1 ORDER BY logged_at DESC LIMIT 100',
+      params: [uid]
     });
     if (res.ok) {
       const data = await res.json();
@@ -852,17 +860,13 @@ export const getProgressDeltas = async (uid, sinceTimestamp) => {
     updatedAt: row.updated_at
   });
 
-  // 1. Try Neon
+  // 1. Try Neon — [FIX] Added Authorization header via neonAuthFetch
   try {
     const sql = sinceTimestamp
       ? 'SELECT * FROM public.progress WHERE user_id = $1 AND updated_at > $2'
       : 'SELECT * FROM public.progress WHERE user_id = $1';
     const params = sinceTimestamp ? [uid, sinceTimestamp] : [uid];
-    const res = await fetch('/api/neon', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'query', sql, params })
-    });
+    const res = await neonAuthFetch({ action: 'query', sql, params });
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data.rows)) {
@@ -916,16 +920,12 @@ export const syncStudentsWithSupabase = async () => {
  * Neon-first with Supabase fallback.
  */
 export const logUserDownload = async (uid, downloadData) => {
-  // 1. Try Neon — read current downloads then upsert
+  // 1. Try Neon — [FIX] Added Authorization header via neonAuthFetch
   try {
-    const res = await fetch('/api/neon', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'query',
-        sql: 'SELECT downloads FROM public.profiles WHERE id = $1 LIMIT 1',
-        params: [uid]
-      })
+    const res = await neonAuthFetch({
+      action: 'query',
+      sql: 'SELECT downloads FROM public.profiles WHERE id = $1 LIMIT 1',
+      params: [uid]
     });
     if (res.ok) {
       const data = await res.json();
