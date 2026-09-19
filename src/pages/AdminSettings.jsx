@@ -11,7 +11,8 @@ import {
   saveTeacherScheduleConfig, 
   getLogbookStyleConfig, 
   saveLogbookStyleConfig,
-  getOfficialMoroccanHolidays
+  getOfficialMoroccanHolidays,
+  syncAllConfigsAndSchedule
 } from '../services/schoolService';
 import { decodeHtmlEntities } from '../utils/security';
 
@@ -516,8 +517,13 @@ export default function AdminSettings() {
     }).catch(() => {});
   }, []);
 
-  // Auto-save holidays to localStorage and Cloud DB on state changes
+  const holidaysMountedRef = useRef(false);
+  // Auto-save holidays to localStorage and Cloud DB on state changes (skip initial mount)
   useEffect(() => {
+    if (!holidaysMountedRef.current) {
+      holidaysMountedRef.current = true;
+      return;
+    }
     localStorage.setItem('school_holidays', JSON.stringify(logbookHolidays));
     saveSchoolHolidaysConfig(logbookHolidays).catch(err => console.warn('[AdminSettings] Error syncing holidays:', err));
   }, [logbookHolidays]);
@@ -712,6 +718,36 @@ export default function AdminSettings() {
 
     setLogbookSaved(true);
     setTimeout(() => setLogbookSaved(false), 2500);
+  };
+
+  const [syncingAll, setSyncingAll] = useState(false);
+  const [syncSuccessMsg, setSyncSuccessMsg] = useState('');
+
+  const handleSyncAll = async () => {
+    setSyncingAll(true);
+    setSyncSuccessMsg('');
+    try {
+      const res = await syncAllConfigsAndSchedule();
+      if (res.success) {
+        setSyncSuccessMsg(`✓ تم مزامنة جدول الحصص (${res.scheduleSlots} حصص) وجميع الإعدادات سحابياً بنجاح!`);
+        // Refresh local states
+        const freshSched = await getTeacherScheduleConfig({ forceRefresh: true });
+        if (freshSched && typeof freshSched === 'object' && Object.keys(freshSched).length > 0) {
+          setLogbookSchedule(freshSched);
+        }
+        const freshHols = await getSchoolHolidaysConfig({ forceRefresh: true });
+        if (freshHols && Array.isArray(freshHols) && freshHols.length > 0) {
+          setLogbookHolidays(freshHols);
+        }
+      } else {
+        setSyncSuccessMsg('⚠️ تمت المزامنة مع بعض الملاحظات: ' + (res.error || ''));
+      }
+    } catch (e) {
+      setSyncSuccessMsg('❌ حدث خطأ أثناء المزامنة: ' + (e.message || ''));
+    } finally {
+      setSyncingAll(false);
+      setTimeout(() => setSyncSuccessMsg(''), 5000);
+    }
   };
 
   return (
@@ -1411,13 +1447,29 @@ export default function AdminSettings() {
             <p className="text-sm text-[var(--text-muted)]">Ajustez et modifiez la configuration globale de L'CONQ.</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={handleSyncAll}
+            disabled={syncingAll}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-md shadow-emerald-500/20 active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-50"
+            title="مزامنة شاملة لجدول الحصص وجميع الإعدادات سحابياً ومحلياً"
+          >
+            <RefreshCw size={14} className={syncingAll ? 'animate-spin' : ''} />
+            <span>{syncingAll ? 'جاري المزامنة...' : 'مزامنة السحاب وجدول الحصص'}</span>
+          </button>
           <div className="flex flex-col items-center px-4 py-2 bg-[var(--bg-card)] border border-[var(--border)] rounded-xl min-w-[75px]">
             <span className="text-lg font-black text-[var(--text-main)]">{(classes || []).length}</span>
             <span className="text-[10px] text-[var(--text-subtle)] font-bold uppercase tracking-wider">Classes</span>
           </div>
         </div>
       </div>
+
+      {syncSuccessMsg && (
+        <div className="mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center gap-2 animate-fade-in" style={{ direction: 'rtl' }}>
+          <CheckCircle2 size={16} />
+          <span>{syncSuccessMsg}</span>
+        </div>
+      )}
 
       <div className="settings-layout">
         

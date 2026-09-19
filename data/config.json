@@ -1,4 +1,18 @@
 {
+  "teacher_schedule_current": {
+    "Lundi-08-09": {
+      "classId": "TCLSH-1"
+    },
+    "Mercredi-09-10": {
+      "classId": "2BACSPF-1"
+    },
+    "Mercredi-11-12": {
+      "classId": "TCLSH-1"
+    },
+    "Vendredi-08-09": {
+      "classId": "2BACSPF-1"
+    }
+  },
   "school_holidays": [
     {
       "id": "hol-1789139374176",
@@ -101,6 +115,346 @@
       "label": "س-س-س(( س ",
       "endDate": "2026-09-04",
       "startDate": "2026-09-04"
+    }
+  ],
+  "branding": {
+    "bankRIB": "230 780 4567890123 0001 89",
+    "profSOM": "",
+    "bankName": "CIH Bank (Maroc)",
+    "profCity": "Fes",
+    "profName": "zayani Mohammed",
+    "profSite": "www.lconq.ma",
+    "fbPixelId": "",
+    "profEmail": "cheikh.zay@gmail.com",
+    "profPhone": "+212708072844",
+    "profSchool": "18 NOVEMBRE",
+    "profAcademy": "Fès-Meknès",
+    "profSubject": "Mathématiques",
+    "profDirection": "Moulay Yaâcoub",
+    "bankBeneficiary": "L'CONQ SARL",
+    "profAcademicYear": "2025/2026"
+  },
+  "ai_settings": {
+    "groqApiKey": "",
+    "claudeApiKey": "",
+    "geminiApiKey": "",
+    "openaiApiKey": "",
+    "claudeProxyUrl": "",
+    "deepseekApiKey": "",
+    "deepseekApiUrl": "https://api.deepseek.com",
+    "claude_solve_solutions": true,
+    "gemini_solve_solutions": true,
+    "deepseek_solve_solutions": true
+  },
+  "logbook_style_settings": {
+    "arFont": "UKIJ Merdane",
+    "frFont": "Inter",
+    "fontSize": "0.9rem",
+    "lineHeight": 20,
+    "colorInk": "#334155",
+    "colorChapter": "#243f7f",
+    "colorAxis": "#0639a7",
+    "colorExercise": "#d97706"
+  },
+  "logbook_entries": [
+    {
+      "id": "entry_1789760747237_exjtunzvr",
+      "date": "2026-09-19",
+      "time": "08:00 - 10:00",
+      "classId": "2BACSPF-1",
+      "subject": "Mathématiques",
+      "lessonId": "MOCK-L-ZU2R75VV9",
+      "component": "Cours",
+      "createdAt": "2026-09-18T19:45:47.237Z",
+      "activities": [
+        "=== SÉRIE -1: RÉVISION ===",
+        "• Exercice 03",
+        "Calculer les limites suivantes :",
+        "1) $\\lim_{x \\to +\\infty} \\sqrt{x^2 - 3x + 1}$",
+        "2) $\\lim_{x \\to 5} \\frac{\\sqrt{x-1} - 2}{x-5}$",
+        "3) $\\lim_{x \\to +\\infty} x - 2\\sqrt{x}$",
+        "4) $\\lim_{x \\to +\\infty} \\sqrt{x+1} - \\sqrt{x}$",
+        "5) $\\lim_{x \\to +\\infty} \\sqrt{x^2 - 3x + 1} + 2x$",
+        "6) $\\lim_{x \\to 0} \\frac{\\sqrt{1+\\sin x} - 1}{x}$"
+      ],
+      "customContent": "=== SÉRIE -1: RÉVISION ===\n• Exercice 03\nCalculer les limites suivantes :\n1) $\\lim_{x \\to +\\infty} \\sqrt{x^2 - 3x + 1}$\n2) $\\lim_{x \\to 5} \\frac{\\sqrt{x-1} - 2}{x-5}$\n3) $\\lim_{x \\to +\\infty} x - 2\\sqrt{x}$\n4) $\\lim_{x \\to +\\infty} \\sqrt{x+1} - \\sqrt{x}$\n5) $\\lim_{x \\to +\\infty} \\sqrt{x^2 - 3x + 1} + 2x$\n6) $\\lim_{x \\to 0} \\frac{\\sqrt{1+\\sin x} - 1}{x}$",
+      "isHeaderSéance": true,
+      "selectedSections": [
+        "Exercice 03"
+      ],
+      "selectedProgramItemId": "prog_2b_01_mu6u4s2k"
+    },
+    {
+      "id": "entry_1789720608044_dvprxok18",
+      "date": "2026-09-18",
+      "time": "08:00 - 10:00",
+      "classId": "TCLSH-1",
+      "subject": "Mathématiques",
+      "lessonId": "MOCK-L-MZBIPZ6XO",
+      "component": "Cours",
+      "createdAt": "2026-09-18T08:36:48.044Z",
+      "activities": [
+        "=== TEST DIAGNOSTIQUE ===",
+        "• **Exercice 1 :**",
+        "• Exercice 1",
+        "• Exercice 3",
+        "• **Exercice 3 :**",
+        "• Exercice 4",
+        "• **Exercice 4 :**",
+        "• Exercice 5",
+        "• **Exercice 5 :**",
+        "• Exercice 2",
+        "• **Exercice 2 :**",
+        "• Exercice 7"
+      ],
+      "customContent": "=== TEST DIAGNOSTIQUE ===\n• **Exercice 1 :**\n• Exercice 1\n• Exercice 3\n• **Exercice 3 :**\n• Exercice 4\n• **Exercice 4 :**\n• Exercice 5\n• **Exercice 5 :**\n• Exercice 2\n• **Exercice 2 :**\n• Exercice 7",
+      "isHeaderSéance": true,
+      "selectedSections": [
+        "**Exercice 1 :**",
+        "Exercice 1",
+        "Exercice 3",
+        "**Exercice 3 :**",
+        "Exercice 4",
+        "**Exercice 4 :**",
+        "Exercice 5",
+        "**Exercice 5 :**",
+        "Exercice 2",
+        "**Exercice 2 :**",
+        "Exercice 7"
+      ]
+    },
+    {
+      "id": "entry_1789728500309_szsmubxbs",
+      "date": "2026-09-18",
+      "time": "08:00 - 10:00",
+      "classId": "2BACSPF-1",
+      "subject": "Mathématiques",
+      "lessonId": "MOCK-L-ZU2R75VV9",
+      "component": "Cours",
+      "createdAt": "2026-09-18T10:48:20.309Z",
+      "activities": [
+        "=== SÉRIE -1: RÉVISION ===",
+        "• Exercice 01",
+        "• Exercice 02",
+        "Calculer les limites suivantes :",
+        "1) $\\lim_{x \\to +\\infty} -3x^3 + 2x^2 - 6x + 1$",
+        "2) $\\lim_{x \\to +\\infty} -3x^3 + 2x^7 - 6x + 1$",
+        "3) $\\lim_{x \\to +\\infty} \\frac{2x^3 + x^2 - 3}{x^4 - 6x + 5}$",
+        "4) $\\lim_{x \\to +\\infty} \\frac{2x^5 + x^2 - 3}{x^4 - 6x + 5}$",
+        "5) $\\lim_{x \\to +\\infty} \\frac{2x^3 + x^2 - 3}{x^3 - 6x + 5}$",
+        "6) $\\lim_{x \\to 2} \\frac{x^2 - 4}{x - 2}$",
+        "7) $\\lim_{x \\to 3} \\frac{x^2 - 9}{x^3 - 27}$",
+        "8) $\\lim_{x \\to 1} \\frac{2x^3 + x^2 - 3}{x - 1}$"
+      ],
+      "customContent": "=== SÉRIE -1: RÉVISION ===\n• Exercice 01\n• Exercice 02\nCalculer les limites suivantes :\n1) $\\lim_{x \\to +\\infty} -3x^3 + 2x^2 - 6x + 1$\n2) $\\lim_{x \\to +\\infty} -3x^3 + 2x^7 - 6x + 1$\n3) $\\lim_{x \\to +\\infty} \\frac{2x^3 + x^2 - 3}{x^4 - 6x + 5}$\n4) $\\lim_{x \\to +\\infty} \\frac{2x^5 + x^2 - 3}{x^4 - 6x + 5}$\n5) $\\lim_{x \\to +\\infty} \\frac{2x^3 + x^2 - 3}{x^3 - 6x + 5}$\n6) $\\lim_{x \\to 2} \\frac{x^2 - 4}{x - 2}$\n7) $\\lim_{x \\to 3} \\frac{x^2 - 9}{x^3 - 27}$\n8) $\\lim_{x \\to 1} \\frac{2x^3 + x^2 - 3}{x - 1}$",
+      "isHeaderSéance": true,
+      "selectedSections": [
+        "Exercice 01",
+        "Exercice 02"
+      ],
+      "selectedProgramItemId": "prog_2b_01_mu6u4s2k"
+    },
+    {
+      "id": "entry_1789720698783_uk57epork",
+      "date": "2026-09-17",
+      "time": "08:00 - 10:00",
+      "classId": "TCLSH-1",
+      "subject": "Mathématiques",
+      "lessonId": "MOCK-L-MZBIPZ6XO",
+      "component": "Cours",
+      "createdAt": "2026-09-18T08:38:18.783Z",
+      "activities": [
+        "=== RÉVISION  ===",
+        "• undefined - مبرهنة"
+      ],
+      "customContent": "=== RÉVISION  ===\n• undefined - مبرهنة",
+      "isHeaderSéance": true,
+      "selectedSections": []
+    },
+    {
+      "id": "entry_1789753026078_b79xrkk6x",
+      "date": "2026-09-14",
+      "time": "08 - 09",
+      "classId": "TCLSH-1",
+      "subject": "Mathématiques",
+      "lessonId": "MOCK-L-MZBIPZ6XO",
+      "component": "Cours",
+      "createdAt": "2026-09-18T17:37:06.078Z",
+      "activities": [
+        "=== TEST DIAGNOSTIQUE ==="
+      ],
+      "customContent": "=== TEST DIAGNOSTIQUE ===\n",
+      "isHeaderSéance": true,
+      "selectedSections": [],
+      "selectedProgramItemId": "prog_tcl_01"
+    },
+    {
+      "id": "entry_1789720642825_xbg8f2ogs",
+      "date": "2026-09-07",
+      "time": "08 - 09",
+      "classId": "TCLSH-1",
+      "subject": "Mathématiques",
+      "lessonId": "MOCK-L-MZBIPZ6XO",
+      "component": "Cours",
+      "createdAt": "2026-09-18T08:37:22.825Z",
+      "activities": [
+        "$ABC$ un triangle rectangle en $A$ tel que : $BC=5cm$ et $AC = 4cm$.\\nCocher la réponse juste dans tous les cas suivants :",
+        "**a)**",
+        "$\\square$ $AB = 3cm$",
+        "$\\square$ $AB = 4cm$",
+        "$\\square$ $AB = 3,5cm$",
+        "$\\square$ $AB = 5cm$",
+        "**b)**",
+        "$\\square$ $\\sin(\\widehat{ACB}) = 3/5$",
+        "$\\square$ $\\sin(\\widehat{ACB}) = 5/3$",
+        "$\\square$ $\\sin(\\widehat{ACB}) = -5/3$",
+        "$\\square$ $\\sin(\\widehat{ACB}) = -3/5$",
+        "**c)**",
+        "$\\square$ $\\cos(\\widehat{ACB}) = 4/5$",
+        "$\\square$ $\\cos(\\widehat{ACB}) = 5/4$",
+        "$\\square$ $\\cos(\\widehat{ACB}) = -5/4$",
+        "$\\square$ $\\cos(\\widehat{ACB}) = -4/5$",
+        "**d)**",
+        "$\\square$ $\\sin(\\widehat{ABC}) = \\tan(\\widehat{ACB})$",
+        "$\\square$ $\\sin(\\widehat{ACB}) = \\cos(\\widehat{ABC})$",
+        "$\\square$ $\\sin(\\widehat{ABC}) = \\cos(\\widehat{BAC})$",
+        "$\\square$ $\\sin(\\widehat{ABC}) = \\tan(\\widehat{ABC})$",
+        "• Exercice 7"
+      ],
+      "customContent": "$ABC$ un triangle rectangle en $A$ tel que : $BC=5cm$ et $AC = 4cm$.\\nCocher la réponse juste dans tous les cas suivants :\n**a)**\n$\\square$ $AB = 3cm$\n$\\square$ $AB = 4cm$\n$\\square$ $AB = 3,5cm$\n$\\square$ $AB = 5cm$\n**b)**\n$\\square$ $\\sin(\\widehat{ACB}) = 3/5$\n$\\square$ $\\sin(\\widehat{ACB}) = 5/3$\n$\\square$ $\\sin(\\widehat{ACB}) = -5/3$\n$\\square$ $\\sin(\\widehat{ACB}) = -3/5$\n**c)**\n$\\square$ $\\cos(\\widehat{ACB}) = 4/5$\n$\\square$ $\\cos(\\widehat{ACB}) = 5/4$\n$\\square$ $\\cos(\\widehat{ACB}) = -5/4$\n$\\square$ $\\cos(\\widehat{ACB}) = -4/5$\n**d)**\n$\\square$ $\\sin(\\widehat{ABC}) = \\tan(\\widehat{ACB})$\n$\\square$ $\\sin(\\widehat{ACB}) = \\cos(\\widehat{ABC})$\n$\\square$ $\\sin(\\widehat{ABC}) = \\cos(\\widehat{BAC})$\n$\\square$ $\\sin(\\widehat{ABC}) = \\tan(\\widehat{ABC})$\n• Exercice 7",
+      "isHeaderSéance": false,
+      "selectedSections": [
+        "**Exercice 7 :**",
+        "Exercice 7"
+      ]
+    },
+    {
+      "id": "entry_1789719208200_xg2f0hudt",
+      "date": "2026-09-02",
+      "time": "08:00 - 10:00",
+      "classId": "TCLSH-1",
+      "subject": "Mathématiques",
+      "lessonId": "",
+      "component": "Cours",
+      "createdAt": "2026-09-18T08:13:28.200Z",
+      "activities": [
+        "توقيع محضر الدخول"
+      ],
+      "customContent": "توقيع محضر الدخول",
+      "isHeaderSéance": false,
+      "selectedSections": []
+    }
+  ],
+  "pdf_settings": {
+    "pdfFontSize": "11pt",
+    "pdfFontFamily": "Computer Modern Serif",
+    "pdfPageMargins": "standard",
+    "pdfShowSidebar": true,
+    "pdfTemplateStyle": "classic_latex",
+    "pdfAvoidPageBreaks": true,
+    "pdfForcePrintColors": true
+  },
+  "flashcard_settings": {
+    "cardFontSize": "1rem",
+    "cardFontFamily": "Computer Modern Serif",
+    "cardRevealMode": "flip",
+    "cardFlipEnabled": true,
+    "cardAstuceWeight": "400",
+    "cardSoundEnabled": true,
+    "cardSwipeEnabled": true,
+    "cardOptionsWeight": "400",
+    "cardQuestionWeight": "400"
+  },
+  "omr_scanner_settings": {
+    "scannerDirectCapture": true
+  },
+  "omr_settings": {
+    "scannerDirectCapture": true
+  },
+  "whatsapp_settings": {
+    "enabled": true,
+    "message": "Bonjour, j'ai une question concernant la plateforme Gima.",
+    "position": "right",
+    "phoneNumber": "",
+    "tooltipText": "Besoin d'aide ?"
+  },
+  "schools": [
+    "2bac_sm",
+    "2bac_pc_svt",
+    "1bac_sci",
+    "common_core_sci",
+    "2bac_arts",
+    "1bac_arts",
+    "common_core_arts"
+  ],
+  "schoolBranding": {},
+  "plans": [
+    {
+      "id": "plan_lconq",
+      "name": "Premium L'CONQ",
+      "price": 99,
+      "features": [
+        "Accès à toutes les archives (2010–2025)",
+        "Astuces IA exclusives pour chaque QCM",
+        "Simulateur de concours chronométré",
+        "Heatmaps des faiblesses"
+      ],
+      "description": "Le pack complet pour la réussite.",
+      "durationDays": 30,
+      "isRecommended": true,
+      "allowedSchools": [
+        "Médecine / Pharmacie",
+        "ENSA",
+        "ENSAM",
+        "ENCG",
+        "INPT",
+        "INSEA",
+        "Général (Prépa)"
+      ]
+    },
+    {
+      "id": "plan_complet",
+      "name": "Pack Premium Global",
+      "price": 699,
+      "features": [
+        "Accès à toutes les archives (2010–2025)",
+        "Astuces IA exclusives pour chaque QCM",
+        "Simulateur de concours chronométré",
+        "Heatmaps des faiblesses",
+        "Accès prioritaire aux nouveautés"
+      ],
+      "description": "La préparation ultime sur le long terme.",
+      "durationDays": 365,
+      "isRecommended": false,
+      "allowedSchools": [
+        "Médecine / Pharmacie",
+        "ENSA",
+        "ENSAM",
+        "ENCG",
+        "INPT",
+        "INSEA",
+        "Général (Prépa)"
+      ]
+    }
+  ],
+  "activationCodes": [
+    {
+      "code": "LCONQ-PREM-TEST-30D",
+      "isUsed": false,
+      "planId": "plan_lconq",
+      "usedAt": "",
+      "usedBy": "",
+      "batchName": "Test Batch 30 Jours",
+      "createdDate": "2026-07-12T17:11:40.183Z"
+    },
+    {
+      "code": "LCONQ-GLOB-TEST-365",
+      "isUsed": false,
+      "planId": "plan_complet",
+      "usedAt": "",
+      "usedBy": "",
+      "batchName": "Test Batch 365 Jours",
+      "createdDate": "2026-07-12T17:11:40.183Z"
     }
   ]
 }

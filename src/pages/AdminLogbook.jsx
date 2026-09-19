@@ -2025,7 +2025,7 @@ export default function AdminLogbook() {
       )}
 
       {/* ── Smart Missing Sessions Alert Banner ── */}
-      {missingSessions.length > 0 && (
+      {schedule && Object.keys(schedule).length > 0 && (
         <div className="no-print animate-fade-in" style={{ 
           background: displayMissingSessions.length === 0
             ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.09) 100%)'

@@ -1265,3 +1265,79 @@ export const saveClassesSettingsConfig = async (settings) => {
   } catch (_) {}
 };
 
+/**
+ * Master Bidirectional Synchronization for Schedule & All System Settings
+ * Synchronizes Neon PostgreSQL, Supabase, and LocalStorage / Companion DB in one unified operation.
+ */
+export const syncAllConfigsAndSchedule = async () => {
+  const syncResults = {
+    scheduleSlots: 0,
+    holidaysCount: 0,
+    syncedKeys: [],
+    errors: []
+  };
+
+  try {
+    // 1. Force refresh configurations from primary Cloud DB (Neon)
+    const [cloudSched, cloudHols, cloudStyle, cloudAi, cloudBranding, cloudPdf, cloudFlash, cloudWa] = await Promise.allSettled([
+      getTeacherScheduleConfig({ forceRefresh: true }),
+      getSchoolHolidaysConfig({ forceRefresh: true }),
+      getLogbookStyleConfig({ forceRefresh: true }),
+      getAiSettingsConfig({ forceRefresh: true }),
+      getBrandingConfig({ forceRefresh: true }),
+      getPdfSettingsConfig({ forceRefresh: true }),
+      getFlashcardSettingsConfig({ forceRefresh: true }),
+      getWhatsAppSettingsConfig({ forceRefresh: true })
+    ]);
+
+    // 2. Save & mirror to Supabase and Companion DB
+    if (cloudSched.status === 'fulfilled' && cloudSched.value) {
+      await saveTeacherScheduleConfig(cloudSched.value);
+      syncResults.scheduleSlots = Object.keys(cloudSched.value).length;
+      syncResults.syncedKeys.push('teacher_schedule_current');
+    }
+
+    if (cloudHols.status === 'fulfilled' && Array.isArray(cloudHols.value)) {
+      await saveSchoolHolidaysConfig(cloudHols.value);
+      syncResults.holidaysCount = cloudHols.value.length;
+      syncResults.syncedKeys.push('school_holidays');
+    }
+
+    if (cloudStyle.status === 'fulfilled' && cloudStyle.value) {
+      await saveLogbookStyleConfig(cloudStyle.value);
+      syncResults.syncedKeys.push('logbook_style_settings');
+    }
+
+    if (cloudAi.status === 'fulfilled' && cloudAi.value) {
+      await saveAiSettingsConfig(cloudAi.value);
+      syncResults.syncedKeys.push('ai_settings');
+    }
+
+    if (cloudBranding.status === 'fulfilled' && cloudBranding.value) {
+      await saveBrandingConfig(cloudBranding.value);
+      syncResults.syncedKeys.push('branding');
+    }
+
+    if (cloudPdf.status === 'fulfilled' && cloudPdf.value) {
+      await savePdfSettingsConfig(cloudPdf.value);
+      syncResults.syncedKeys.push('pdf_settings');
+    }
+
+    if (cloudFlash.status === 'fulfilled' && cloudFlash.value) {
+      await saveFlashcardSettingsConfig(cloudFlash.value);
+      syncResults.syncedKeys.push('flashcard_settings');
+    }
+
+    if (cloudWa.status === 'fulfilled' && cloudWa.value) {
+      await saveWhatsAppSettingsConfig(cloudWa.value);
+      syncResults.syncedKeys.push('whatsapp_settings');
+    }
+
+    return { success: true, ...syncResults };
+  } catch (err) {
+    console.error('[syncAllConfigsAndSchedule] Error:', err);
+    return { success: false, error: err.message, ...syncResults };
+  }
+};
+
+
