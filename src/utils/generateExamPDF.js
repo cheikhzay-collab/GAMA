@@ -698,8 +698,10 @@ const repairMathExpression = (latex) => {
   // Convert parenthesized powers ^(xxx) to ^{xxx}
   repaired = repaired.replace(/\^\(([^)]+)\)/g, '^{$1}');
   
-  // 3. Convert multiplication asterisk * to \cdot
-  repaired = repaired.replace(/\*/g, '\\cdot');
+  // 3. Convert multiplication asterisk * to \cdot ONLY when used as binary multiplication
+  // Never convert superscript asterisks (e.g. \mathbb{R}^*, \mathbb{N}^*, x^*, ^{*})
+  repaired = repaired.replace(/(\\mathbb\{[A-Z]\})\*/g, '$1^*');
+  repaired = repaired.replace(/(?<!\^|\^\{)\*/g, '\\cdot');
   
   // 4. Convert division slashes to textbook fractions (\frac)
   // Case A: number/var / (expr) -> \frac{number/var}{expr}

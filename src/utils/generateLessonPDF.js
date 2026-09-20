@@ -1,6 +1,7 @@
 import katex from 'katex';
-import { openNationalExamPrintWindow } from './generateNationalExamPDF';
-import { openCourseSummaryPrintWindow } from './generateCourseSummaryPDF';
+import katexCss from 'katex/dist/katex.min.css?inline';
+import { openNationalExamPrintWindow } from './generateNationalExamPDF.js';
+import { openCourseSummaryPrintWindow } from './generateCourseSummaryPDF.js';
 
 /* ── RTL mode flag — set per render call ── */
 let _rtlMode = false;
@@ -220,8 +221,10 @@ const repairMathExpression = (latex) => {
   // Convert parenthesized powers ^(xxx) to ^{xxx}
   repaired = repaired.replace(/\^\(([^)]+)\)/g, '^{$1}');
   
-  // 3. Convert multiplication asterisk * to \cdot
-  repaired = repaired.replace(/\*/g, '\\cdot');
+  // 3. Convert multiplication asterisk * to \cdot ONLY when used as binary multiplication
+  // Never convert superscript asterisks (e.g. \mathbb{R}^*, \mathbb{N}^*, x^*, ^{*})
+  repaired = repaired.replace(/(\\mathbb\{[A-Z]\})\*/g, '$1^*');
+  repaired = repaired.replace(/(?<!\^|\^\{)\*/g, '\\cdot');
   
   // 4. Convert division slashes to textbook fractions (\frac)
   // Case A: number/var / (expr) -> \frac{number/var}{expr}
@@ -313,11 +316,29 @@ const renderLineContent = (text) => {
   const autoWrapped = autoWrapLatex(repaired);
   const prepared = wrapStandaloneLatexCommands(autoWrapped);
   const tokens = tokenizeMath(prepared);
-  const html = tokens.map((tok) => {
-    if (tok.type === 'block') return renderBlockKatex(tok.content);
-    if (tok.type === 'inline') return renderInlineKatex(tok.content);
-    return esc(tok.content);
-  }).join('');
+  let html = '';
+  for (let i = 0; i < tokens.length; i++) {
+    const tok = tokens[i];
+    if (tok.type === 'block') {
+      html += renderBlockKatex(tok.content);
+    } else if (tok.type === 'inline') {
+      const rendered = renderInlineKatex(tok.content);
+      // If immediately followed by punctuation (e.g. '.', ',', ';', ':', '?', '!'), glue them together
+      if (i + 1 < tokens.length && tokens[i + 1].type === 'text') {
+        const nextContent = tokens[i + 1].content;
+        const punctMatch = nextContent.match(/^([.,;:?!]+)(.*)$/s);
+        if (punctMatch) {
+          const punct = punctMatch[1];
+          tokens[i + 1].content = punctMatch[2];
+          html += `<span class="math-punct-wrapper" style="white-space:nowrap;display:inline-block">${rendered}${esc(punct)}</span>`;
+          continue;
+        }
+      }
+      html += rendered;
+    } else {
+      html += esc(tok.content);
+    }
+  }
   return html
     .replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*([\s\S]+?)\*/g, '<em>$1</em>');
@@ -524,15 +545,18 @@ const renderMath = (text) => {
   // Step 1: Repair corrupted LaTeX environments and commands FIRST before line splitting or \n processing
   let rawText = repairCorruptedLatex(String(text));
   
-  // Split by math blocks to safely replace literal \n outside math without corrupting LaTeX commands like \neq
-  const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
+  // Regex to safely convert literal \n to real newline while protecting rare LaTeX commands that start with \n (\neq, \notin, \nabla)
+  const SAFE_NEWLINE_RE = /\\n(?!(?:eq|ne|notin|nabla|nsubseteq|nsupseteq|nexists|nparallel|natural|nearrow|nwarrow|ni|not|neg)\b)/gi;
+
+  // Split by math blocks to safely replace literal \n
+  const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[^\$\n]+?\$)/g);
   const processedParts = parts.map((part, idx) => {
     if (idx % 2 === 1) {
-      // Inside math block: only replace literal \n if NOT followed by letters (e.g. KaTeX commands)
-      return part.replace(/\\n(?![a-zA-Z])/g, '\n');
+      // Inside math block: only replace literal \n if NOT a LaTeX \n-command like \neq
+      return part.replace(SAFE_NEWLINE_RE, '\n');
     } else {
-      // Outside math block: replace literal \n safely, never breaking LaTeX commands like \neq, \notin, etc.
-      return part.replace(/\\n(?![a-zA-Z])/g, '\n');
+      // Outside math block: replace all literal \n with real newlines
+      return part.replace(SAFE_NEWLINE_RE, '\n');
     }
   });
   rawText = processedParts.join('');
@@ -747,7 +771,7 @@ const renderMathInternal = (text) => {
   normalised = normalised.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g)
     .map((part, idx) => {
       if (idx % 2 === 1) return part; // inside math — leave as-is
-      let p = part.replace(/\\n(?![a-zA-Z])/g, '\n');
+      let p = part.replace(/\\n(?!(?:eq|ne|notin|nabla|nsubseteq|nsupseteq|nexists|nparallel|natural|nearrow|nwarrow|ni|not|neg)\b)/gi, '\n');
       
       // Force line break after period followed by space and uppercase letter/backslash/math delimiter
       // NOTE: exclude when preceded by a digit (numbered list item like "1. Calculer") or single letter (like "A. Calculer")
@@ -840,8 +864,7 @@ const renderHomeworkBody = (text, isArabicMode) => {
   const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
   const processedParts = parts.map((part, idx) => {
     if (idx % 2 === 1) {
-      // Inside math block: only replace literal \n if NOT followed by letters (e.g. KaTeX commands)
-      return part.replace(/\\n(?![a-zA-Z])/g, '\n');
+      return part.replace(/\\n(?!(?:eq|ne|notin|nabla|nsubseteq|nsupseteq|nexists|nparallel|natural|nearrow|nwarrow|ni|not|neg)\b)/gi, '\n');
     } else {
       // Outside math block: replace all literal \n with real newlines safely
       return part.replace(/\\n/g, '\n');
@@ -975,13 +998,8 @@ const calculateTotalPoints = (text, isArabicMode) => {
   // Split by math blocks to safely replace literal \n outside math without corrupting LaTeX commands like \neq
   const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
   const processedParts = parts.map((part, idx) => {
-    if (idx % 2 === 1) {
-      // Inside math block: only replace literal \n if NOT followed by letters (e.g. KaTeX commands)
-      return part.replace(/\\n(?![a-zA-Z])/g, '\n');
-    } else {
-      // Outside math block: replace literal \n safely, never breaking LaTeX commands like \neq, \notin, etc.
-      return part.replace(/\\n(?![a-zA-Z])/g, '\n');
-    }
+    const SAFE_NEWLINE_RE = /\\n(?!(?:eq|ne|notin|nabla|nsubseteq|nsupseteq|nexists|nparallel|natural|nearrow|nwarrow|ni|not|neg)\b)/gi;
+    return part.replace(SAFE_NEWLINE_RE, '\n');
   });
   rawText = processedParts.join('');
 
@@ -1015,6 +1033,16 @@ const calculateTotalPoints = (text, isArabicMode) => {
   const totalStr = String(total).replace('.', ',');
   const ptsWord = isArabicMode ? 'ن' : (total > 1 ? 'pts' : 'pt');
   return `${totalStr} ${ptsWord}`;
+};
+
+const formatExercisePointsBadge = (points, isArabicMode) => {
+  if (!points) return '';
+  const raw = String(points).trim();
+  const cleanNum = raw.replace(/\s*(?:pts?|points?|ن|نقطة|نقط)\s*$/i, '').trim();
+  if (!cleanNum) return '';
+  const numVal = parseFloat(cleanNum.replace(',', '.'));
+  const unit = isArabicMode ? 'ن' : (!isNaN(numVal) && numVal <= 1 ? 'pt' : 'pts');
+  return `${cleanNum} ${unit}`;
 };
 
 
@@ -1532,7 +1560,7 @@ export const generateLessonHTML = (lesson, settings = {}) => {
                 <span class="modern-pill-text">${isArabic ? 'تمرين' : 'Exercice'}</span>
                 <span class="exercise-num modern-exercise-num">${esc(exeNumber)}</span>
               </div>
-              ${sec.points ? `<span class="modern-exercise-points">${esc(sec.points)} pts</span>` : ''}
+              ${sec.points ? `<span class="modern-exercise-points">${esc(formatExercisePointsBadge(sec.points, isArabic))}</span>` : ''}
               ${exeLabel ? `<span class="exercise-label modern-exercise-title" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>${esc(exeLabel)}</span>` : ''}
             </div>
             <div class="exercise-body modern-exercise-body" style="${customBodyStyle} ${isArabic ? 'border-left:none;border-right:3.5px solid #005086;border-radius:4px;text-align:right;direction:rtl' : ''}">
@@ -1580,7 +1608,8 @@ export const generateLessonHTML = (lesson, settings = {}) => {
 <meta charset="UTF-8">
 <base href="${(typeof window !== 'undefined') ? window.location.origin : ''}/">
 <title>${esc(pdfDocumentTitle)}</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+<style id="katex-inline-css">${katexCss}</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
@@ -2294,11 +2323,25 @@ body.hide-solutions .modern-solution-block {
   font-weight: normal !important;
 }
 
-/* KaTeX base spans */
+/* KaTeX base spans: must remain inline-block with relative positioning for radical clipping */
 .inline-math-container .katex .base {
   white-space: nowrap !important;
-  display: inline !important;
+  display: inline-block !important;
   font-weight: normal !important;
+}
+
+/* Ensure KaTeX radicals and bounding boxes never overflow or distort */
+.katex .hide-tail {
+  width: 100% !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+.katex .sqrt > .vlist-t {
+  position: relative !important;
+}
+.math-punct-wrapper {
+  white-space: nowrap !important;
+  display: inline-block !important;
 }
 
 /* Inline math size: perfectly matches 10pt text size and optical weight */
@@ -2445,11 +2488,11 @@ b .katex * {
   overflow-y: visible !important;
   font-size: 0.92em !important;
 }
-.exercises-two-columns .katex,
+.exercises-two-columns .katex {
+  font-size: 0.95em !important;
+}
 .exercises-two-columns .katex-html {
-  white-space: normal !important;
-  display: inline !important;
-  font-size: 0.93em !important;
+  font-size: 0.95em !important;
 }
 .exercises-two-columns .katex .base {
   white-space: nowrap !important;
@@ -2539,11 +2582,11 @@ b .katex * {
   font-size: 0.82em !important;
 }
 
-.exercises-three-columns .katex,
+.exercises-three-columns .katex {
+  font-size: 0.88em !important;
+}
 .exercises-three-columns .katex-html {
-  white-space: normal !important;
-  display: inline !important;
-  font-size: 0.84em !important;
+  font-size: 0.88em !important;
 }
 
 .exercises-three-columns .katex .base {

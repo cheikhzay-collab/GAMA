@@ -39187,5 +39187,1082 @@
     "created_at": "2026-09-20T08:50:10.618Z",
     "createdAt": "2026-09-20T08:50:11.052Z",
     "updatedAt": "2026-09-20T08:50:11.052Z"
+  },
+  {
+    "id": "MOCK-L-DWL2WPF8E",
+    "title": "Calcul vectoriel — Résumé de cours",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": null,
+    "phone": null,
+    "schools": [],
+    "level": "common_core_sci",
+    "doc_type": "summary",
+    "content": {
+      "level": "common_core_sci",
+      "doc_type": "summary",
+      "is_national_exam": false,
+      "national_exam_meta": null,
+      "is_summary": true,
+      "summary_meta": {
+        "prof": "",
+        "website": "",
+        "title": "Calcul vectoriel — Résumé de cours",
+        "level_name": "common_core_sci",
+        "school": "2bac_sm"
+      },
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "Préparation aux concours",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Calcul vectoriel — Résumé de cours",
+        "teacher": "",
+        "phone": "",
+        "is_national_exam": false,
+        "national_exam_meta": null,
+        "is_summary": true,
+        "summary_meta": {
+          "prof": "",
+          "website": "",
+          "title": "Calcul vectoriel — Résumé de cours",
+          "level_name": "common_core_sci",
+          "school": "2bac_sm"
+        }
+      },
+      "sections": [
+        {
+          "id": "sec-1",
+          "section_header": "I. Egalité de deux vecteurs-Somme de deux vecteurs",
+          "title": "Activité :",
+          "type": "activity",
+          "section_number": "I",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soient $A$, $B$, $C$ et $D$ quatre points du plan $(\\mathcal{P})$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1)** Construire les points du plan $M$ et $N$ tels que $\\overrightarrow{AN} = \\overrightarrow{AC} + \\overrightarrow{AD}$ et $\\overrightarrow{AM} = \\overrightarrow{AB} + \\overrightarrow{AD}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** Montrer que $\\overrightarrow{MN} = \\overrightarrow{BC}$ et déduire la nature du quadrilatère $MNCB$."
+            }
+          ],
+          "content": "Soient $A$, $B$, $C$ et $D$ quatre points du plan $(\\mathcal{P})$.\n**1)** Construire les points du plan $M$ et $N$ tels que $\\overrightarrow{AN} = \\overrightarrow{AC} + \\overrightarrow{AD}$ et $\\overrightarrow{AM} = \\overrightarrow{AB} + \\overrightarrow{AD}$.\n**2)** Montrer que $\\overrightarrow{MN} = \\overrightarrow{BC}$ et déduire la nature du quadrilatère $MNCB$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-2",
+          "section_header": "I. Egalité de deux vecteurs-Somme de deux vecteurs",
+          "title": "Propriétés :",
+          "type": "property",
+          "section_number": "I",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "highlight_box",
+              "text": "• Deux vecteurs sont égaux s'ils ont la même direction, même sens et même norme (on note la norme d'un vecteur $\\vec{u}$ par $\\|\\vec{u}\\|$).\n• Soient $A$, $B$ et $C$ trois points du plan. On a :\n- $\\overrightarrow{AB} + \\overrightarrow{BC} = \\overrightarrow{AC}$ (Relation de Chasles).\n- $\\overrightarrow{AB} = \\overrightarrow{CD}$ si et seulement si $ABDC$ est un parallélogramme.\n- $\\overrightarrow{AB} + \\overrightarrow{AC} = \\overrightarrow{AD}$ si et seulement si $ABDC$ est un parallélogramme.\n- $\\overrightarrow{AB} = -\\overrightarrow{BA}$ et $\\overrightarrow{AA} = \\vec{0}$."
+            }
+          ],
+          "content": "• Deux vecteurs sont égaux s'ils ont la même direction, même sens et même norme (on note la norme d'un vecteur $\\vec{u}$ par $\\|\\vec{u}\\|$).\n• Soient $A$, $B$ et $C$ trois points du plan. On a :\n- $\\overrightarrow{AB} + \\overrightarrow{BC} = \\overrightarrow{AC}$ (Relation de Chasles).\n- $\\overrightarrow{AB} = \\overrightarrow{CD}$ si et seulement si $ABDC$ est un parallélogramme.\n- $\\overrightarrow{AB} + \\overrightarrow{AC} = \\overrightarrow{AD}$ si et seulement si $ABDC$ est un parallélogramme.\n- $\\overrightarrow{AB} = -\\overrightarrow{BA}$ et $\\overrightarrow{AA} = \\vec{0}$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-3",
+          "section_header": "I. Egalité de deux vecteurs-Somme de deux vecteurs",
+          "title": "Application :",
+          "type": "activity",
+          "section_number": "I",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1)** Simplifier le vecteur $\\vec{U}$ tel que : $\\vec{U} = \\overrightarrow{BC} - \\overrightarrow{AC} - \\overrightarrow{BA} + \\overrightarrow{AB}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** Soient $A$, $B$, $C$, $D$ et $E$ des points du plan. Montrer que : $\\overrightarrow{AC} -\\overrightarrow{DB} + \\overrightarrow{CE} + \\overrightarrow{DA} - \\overrightarrow{EB} = \\vec{0}$."
+            }
+          ],
+          "content": "**1)** Simplifier le vecteur $\\vec{U}$ tel que : $\\vec{U} = \\overrightarrow{BC} - \\overrightarrow{AC} - \\overrightarrow{BA} + \\overrightarrow{AB}$.\n**2)** Soient $A$, $B$, $C$, $D$ et $E$ des points du plan. Montrer que : $\\overrightarrow{AC} -\\overrightarrow{DB} + \\overrightarrow{CE} + \\overrightarrow{DA} - \\overrightarrow{EB} = \\vec{0}$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-4",
+          "section_header": "I. Egalité de deux vecteurs-Somme de deux vecteurs",
+          "title": "Activité :",
+          "type": "activity",
+          "section_number": "I",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $ABC$ un triangle. Construire les points $M$, $N$, $L$ et $K$ tels que :\n$\\overrightarrow{AM} = 2\\overrightarrow{AB}$, $\\overrightarrow{BN} = -2\\overrightarrow{BC}$, $\\overrightarrow{AL} = \\dfrac{1}{2}\\overrightarrow{AC}$, $\\overrightarrow{CK} = \\dfrac{2}{3}\\overrightarrow{CB}$."
+            }
+          ],
+          "content": "Soit $ABC$ un triangle. Construire les points $M$, $N$, $L$ et $K$ tels que :\n$\\overrightarrow{AM} = 2\\overrightarrow{AB}$, $\\overrightarrow{BN} = -2\\overrightarrow{BC}$, $\\overrightarrow{AL} = \\dfrac{1}{2}\\overrightarrow{AC}$, $\\overrightarrow{CK} = \\dfrac{2}{3}\\overrightarrow{CB}$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-5",
+          "section_header": "II. Multiplication d'un vecteur par un nombre réel",
+          "title": "Définition :",
+          "type": "definition",
+          "section_number": "II",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "highlight_box",
+              "text": "Soit $\\vec{u}$ un vecteur non nul et $k$ un nombre réel non nul.\n• $k\\vec{u}$ est un vecteur.\n• Si $k > 0$, alors $k\\vec{u}$ et $\\vec{u}$ ont même direction, même sens et $\\|k\\vec{u}\\| = k\\|\\vec{u}\\|$.\n• Si $k < 0$, alors $k\\vec{u}$ et $\\vec{u}$ ont même direction, des sens opposés et $\\|k\\vec{u}\\| = -k\\|\\vec{u}\\|$.\n• $k\\vec{u} = \\vec{0}$ si et seulement si $\\vec{u} = \\vec{0}$ ou $k = 0$."
+            }
+          ],
+          "content": "Soit $\\vec{u}$ un vecteur non nul et $k$ un nombre réel non nul.\n• $k\\vec{u}$ est un vecteur.\n• Si $k > 0$, alors $k\\vec{u}$ et $\\vec{u}$ ont même direction, même sens et $\\|k\\vec{u}\\| = k\\|\\vec{u}\\|$.\n• Si $k < 0$, alors $k\\vec{u}$ et $\\vec{u}$ ont même direction, des sens opposés et $\\|k\\vec{u}\\| = -k\\|\\vec{u}\\|$.\n• $k\\vec{u} = \\vec{0}$ si et seulement si $\\vec{u} = \\vec{0}$ ou $k = 0$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-6",
+          "section_header": "II. Multiplication d'un vecteur par un nombre réel",
+          "title": "Application :",
+          "type": "activity",
+          "section_number": "II",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $ABC$ un triangle et soit $D$ un point du plan tel que : $\\overrightarrow{BD} = 3\\overrightarrow{DC}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1)** Montrer que : $\\overrightarrow{BD} = \\dfrac{3}{4}\\overrightarrow{BC}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** Placer le point $D$."
+            }
+          ],
+          "content": "Soit $ABC$ un triangle et soit $D$ un point du plan tel que : $\\overrightarrow{BD} = 3\\overrightarrow{DC}$.\n**1)** Montrer que : $\\overrightarrow{BD} = \\dfrac{3}{4}\\overrightarrow{BC}$.\n**2)** Placer le point $D$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-7",
+          "section_header": "II. Multiplication d'un vecteur par un nombre réel",
+          "title": "Propriétés :",
+          "type": "property",
+          "section_number": "II",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "highlight_box",
+              "text": "Soient $\\vec{u}$ et $\\vec{v}$ deux vecteurs, $\\alpha$ et $\\beta$ deux nombres réels, on a :\n• $\\alpha(\\vec{u} + \\vec{v}) = \\alpha\\vec{u} + \\alpha\\vec{v}$\n• $(\\alpha + \\beta)\\vec{u} = \\alpha\\vec{u} + \\beta\\vec{u}$\n• $\\alpha(\\beta\\vec{u}) = (\\alpha\\beta)\\vec{u}$\n• $1\\vec{u} = \\vec{u}$"
+            }
+          ],
+          "content": "Soient $\\vec{u}$ et $\\vec{v}$ deux vecteurs, $\\alpha$ et $\\beta$ deux nombres réels, on a :\n• $\\alpha(\\vec{u} + \\vec{v}) = \\alpha\\vec{u} + \\alpha\\vec{v}$\n• $(\\alpha + \\beta)\\vec{u} = \\alpha\\vec{u} + \\beta\\vec{u}$\n• $\\alpha(\\beta\\vec{u}) = (\\alpha\\beta)\\vec{u}$\n• $1\\vec{u} = \\vec{u}$",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-8",
+          "section_header": "II. Multiplication d'un vecteur par un nombre réel",
+          "title": "Application :",
+          "type": "activity",
+          "section_number": "II",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1)** Simplifier les écritures vectorielles suivantes : $\\vec{a} = 2(\\vec{u} + 5\\vec{v}) + 3(\\vec{u} - \\vec{v})$ et $\\vec{b} = 13\\vec{u} + 3(4\\vec{v} - \\vec{u}) + 2\\vec{v}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** En déduire une relation vectorielle entre les vecteurs $\\vec{a}$ et $\\vec{b}$."
+            }
+          ],
+          "content": "**1)** Simplifier les écritures vectorielles suivantes : $\\vec{a} = 2(\\vec{u} + 5\\vec{v}) + 3(\\vec{u} - \\vec{v})$ et $\\vec{b} = 13\\vec{u} + 3(4\\vec{v} - \\vec{u}) + 2\\vec{v}$.\n**2)** En déduire une relation vectorielle entre les vecteurs $\\vec{a}$ et $\\vec{b}$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-9",
+          "section_header": "III. Colinéarité de deux vecteurs — Alignement de trois points",
+          "title": "Activité :",
+          "type": "activity",
+          "section_number": "III",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $ABC$ un triangle et soient $D$ et $E$ deux points du plan tels que : $\\overrightarrow{AD} = 2\\overrightarrow{AB} + \\overrightarrow{AC}$ et $\\overrightarrow{BE} = \\dfrac{1}{3}\\overrightarrow{BC}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1)** Construire une figure convenable."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** Déduire la relation vectorielle entre les deux vecteurs $\\overrightarrow{AD}$ et $\\overrightarrow{AE}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3)** Que peut-on dire sur les points $A$, $D$ et $E$."
+            }
+          ],
+          "content": "Soit $ABC$ un triangle et soient $D$ et $E$ deux points du plan tels que : $\\overrightarrow{AD} = 2\\overrightarrow{AB} + \\overrightarrow{AC}$ et $\\overrightarrow{BE} = \\dfrac{1}{3}\\overrightarrow{BC}$.\n**1)** Construire une figure convenable.\n**2)** Déduire la relation vectorielle entre les deux vecteurs $\\overrightarrow{AD}$ et $\\overrightarrow{AE}$.\n**3)** Que peut-on dire sur les points $A$, $D$ et $E$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-10",
+          "section_header": "III. Colinéarité de deux vecteurs — Alignement de trois points",
+          "title": "Définition et propriété :",
+          "type": "definition",
+          "section_number": "III",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "highlight_box",
+              "text": "• On dit que deux vecteurs $\\vec{u}$ et $\\vec{v}$ sont colinéaires, si et seulement s'il existe un nombre réel $\\alpha$ tel que : $\\vec{v} = \\alpha\\vec{u}$.\n• On dit que les points $A$, $B$ et $C$ sont alignés, si et seulement s'il existe un nombre réel $\\alpha$ tel que : $\\overrightarrow{AC} = \\alpha\\overrightarrow{AB}$ (Le nombre $\\alpha$ est appelé l'abscisse du point $C$ au repère $(A, \\overrightarrow{AB})$)."
+            }
+          ],
+          "content": "• On dit que deux vecteurs $\\vec{u}$ et $\\vec{v}$ sont colinéaires, si et seulement s'il existe un nombre réel $\\alpha$ tel que : $\\vec{v} = \\alpha\\vec{u}$.\n• On dit que les points $A$, $B$ et $C$ sont alignés, si et seulement s'il existe un nombre réel $\\alpha$ tel que : $\\overrightarrow{AC} = \\alpha\\overrightarrow{AB}$ (Le nombre $\\alpha$ est appelé l'abscisse du point $C$ au repère $(A, \\overrightarrow{AB})$).",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-11",
+          "section_header": "III. Colinéarité de deux vecteurs — Alignement de trois points",
+          "title": "Exemple :",
+          "type": "example",
+          "section_number": "III",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "L'écriture $\\overrightarrow{AC} = \\dfrac{4}{3}\\overrightarrow{AD}$ entraîne que les points $A$, $C$ et $D$ sont alignés et que $\\dfrac{4}{3}$ est l'abscisse du point $C$ au repère $(A, \\overrightarrow{AD})$."
+            }
+          ],
+          "content": "L'écriture $\\overrightarrow{AC} = \\dfrac{4}{3}\\overrightarrow{AD}$ entraîne que les points $A$, $C$ et $D$ sont alignés et que $\\dfrac{4}{3}$ est l'abscisse du point $C$ au repère $(A, \\overrightarrow{AD})$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-12",
+          "section_header": "III. Colinéarité de deux vecteurs — Alignement de trois points",
+          "title": "Application :",
+          "type": "activity",
+          "section_number": "III",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "ABC est un triangle et soient $D$ et $E$ deux points du plan tels que : $\\overrightarrow{AD} = \\dfrac{3}{2}\\overrightarrow{AB}$ et $\\overrightarrow{DE} = \\dfrac{3}{2}\\overrightarrow{BC}$."
+            },
+            {
+              "type": "bullet",
+              "text": "Montrer que : $\\overrightarrow{AE} = \\dfrac{3}{2}\\overrightarrow{AC}$. Que déduisez-vous ?"
+            }
+          ],
+          "content": "ABC est un triangle et soient $D$ et $E$ deux points du plan tels que : $\\overrightarrow{AD} = \\dfrac{3}{2}\\overrightarrow{AB}$ et $\\overrightarrow{DE} = \\dfrac{3}{2}\\overrightarrow{BC}$.\nMontrer que : $\\overrightarrow{AE} = \\dfrac{3}{2}\\overrightarrow{AC}$. Que déduisez-vous ?",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-13",
+          "section_header": "IV. Milieu d'un segment",
+          "title": "Propriété :",
+          "type": "property",
+          "section_number": "IV",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "highlight_box",
+              "text": "Soient $A$, $B$ et $I$ trois points du plan.\n$I$ est le milieu du segment $[AB]$, si et seulement si $\\overrightarrow{AI} = \\overrightarrow{IB} = \\dfrac{1}{2}\\overrightarrow{AB}$."
+            }
+          ],
+          "content": "Soient $A$, $B$ et $I$ trois points du plan.\n$I$ est le milieu du segment $[AB]$, si et seulement si $\\overrightarrow{AI} = \\overrightarrow{IB} = \\dfrac{1}{2}\\overrightarrow{AB}$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-14",
+          "section_header": "IV. Milieu d'un segment",
+          "title": "Application :",
+          "type": "activity",
+          "section_number": "IV",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $ABC$ un triangle et soient $I$ et $J$ les milieux respectifs de $[AB]$ et $[AC]$."
+            },
+            {
+              "type": "bullet",
+              "text": "Montrer que $\\overrightarrow{IJ} = \\dfrac{1}{2}\\overrightarrow{BC}$."
+            }
+          ],
+          "content": "Soit $ABC$ un triangle et soient $I$ et $J$ les milieux respectifs de $[AB]$ et $[AC]$.\nMontrer que $\\overrightarrow{IJ} = \\dfrac{1}{2}\\overrightarrow{BC}$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-15",
+          "section_header": "IV. Milieu d'un segment",
+          "title": "Propriété : (Propriété caractéristique de milieu d'un segment)",
+          "type": "property",
+          "section_number": "IV",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "highlight_box",
+              "text": "Si $I$ est le milieu du segment $[AB]$, alors pour tout point $M$ du plan $(\\mathcal{P})$ :\n$\\overrightarrow{MA} + \\overrightarrow{MB} = 2\\overrightarrow{MI}$."
+            }
+          ],
+          "content": "Si $I$ est le milieu du segment $[AB]$, alors pour tout point $M$ du plan $(\\mathcal{P})$ :\n$\\overrightarrow{MA} + \\overrightarrow{MB} = 2\\overrightarrow{MI}$.",
+          "points": "",
+          "language": "fr"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-20T08:52:39.515Z",
+    "created_at": "2026-09-20T08:52:39.511Z",
+    "createdAt": "2026-09-20T08:52:40.122Z",
+    "updatedAt": "2026-09-20T08:52:40.122Z"
+  },
+  {
+    "id": "MOCK-L-VMGELENQN",
+    "title": "Calcul vectoriel",
+    "subject": "Mathématiques",
+    "chapter_number": "2",
+    "teacher": "Pr.ZAYANI MOHAMMED",
+    "phone": null,
+    "schools": [],
+    "level": "common_core_sci",
+    "doc_type": "exercises",
+    "content": {
+      "level": "common_core_sci",
+      "doc_type": "exercises",
+      "is_national_exam": false,
+      "national_exam_meta": null,
+      "is_summary": false,
+      "summary_meta": null,
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "Calcul vectoriel",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Calcul vectoriel",
+        "teacher": "Pr.ZAYANI MOHAMMED",
+        "phone": "",
+        "is_national_exam": false,
+        "national_exam_meta": null,
+        "is_summary": false,
+        "summary_meta": null
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "section_header": "Calcul vectoriel",
+          "title": "**Exercice 1 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "1",
+          "content": "A, B et C sont trois points non alignés.\\nExprimer, en fonction des vecteurs $\\overrightarrow{AB}$ et $\\overrightarrow{AC}$ seulement, les vecteurs :\n• $\\overrightarrow{u} = 2\\overrightarrow{AB} - 3\\overrightarrow{AC} + \\overrightarrow{BA}$.\n• $\\overrightarrow{v} = \\overrightarrow{AB} + 2\\overrightarrow{AC} - \\overrightarrow{BC}$.\n• $\\overrightarrow{w} = -2\\overrightarrow{BA} + \\overrightarrow{BC}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "A, B et C sont trois points non alignés. Exprimer, en fonction des vecteurs $\\overrightarrow{AB}$ et $\\overrightarrow{AC}$ seulement, les vecteurs :"
+            },
+            {
+              "type": "bullet",
+              "text": "• $\\overrightarrow{u} = 2\\overrightarrow{AB} - 3\\overrightarrow{AC} + \\overrightarrow{BA}$."
+            },
+            {
+              "type": "bullet",
+              "text": "• $\\overrightarrow{v} = \\overrightarrow{AB} + 2\\overrightarrow{AC} - \\overrightarrow{BC}$."
+            },
+            {
+              "type": "bullet",
+              "text": "• $\\overrightarrow{w} = -2\\overrightarrow{BA} + \\overrightarrow{BC}$."
+            }
+          ],
+          "solution": "1. Exprimons $\\overrightarrow{u}$ :\n$$\\overrightarrow{u} = 2\\overrightarrow{AB} - 3\\overrightarrow{AC} + \\overrightarrow{BA} = 2\\overrightarrow{AB} - 3\\overrightarrow{AC} - \\overrightarrow{AB} = \\overrightarrow{AB} - 3\\overrightarrow{AC}$$.\n2. Exprimons $\\overrightarrow{v}$ :\n$$\\overrightarrow{v} = \\overrightarrow{AB} + 2\\overrightarrow{AC} - (\\overrightarrow{AC} - \\overrightarrow{AB}) = \\overrightarrow{AB} + 2\\overrightarrow{AC} - \\overrightarrow{AC} + \\overrightarrow{AB} = 2\\overrightarrow{AB} + \\overrightarrow{AC}$$.\n3. Exprimons $\\overrightarrow{w}$ :\n$$\\overrightarrow{w} = -2(-\\overrightarrow{AB}) + (\\overrightarrow{AC} - \\overrightarrow{AB}) = 2\\overrightarrow{AB} + \\overrightarrow{AC} - \\overrightarrow{AB} = \\overrightarrow{AB} + \\overrightarrow{AC}$$.",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-2",
+          "section_header": "Calcul vectoriel",
+          "title": "**Exercice 2 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "2",
+          "content": "A, B, C et D sont quatre points du plan.\\nMontrer que :\n• $\\overrightarrow{AB} + \\overrightarrow{DC} = \\overrightarrow{AC} + \\overrightarrow{DB}$\n• $\\overrightarrow{AC} + \\overrightarrow{BD} = \\overrightarrow{AD} + \\overrightarrow{BC}$",
+          "items": [
+            {
+              "type": "text",
+              "text": "A, B, C et D sont quatre points du plan. Montrer que :"
+            },
+            {
+              "type": "bullet",
+              "text": "• $\\overrightarrow{AB} + \\overrightarrow{DC} = \\overrightarrow{AC} + \\overrightarrow{DB}$"
+            },
+            {
+              "type": "bullet",
+              "text": "• $\\overrightarrow{AC} + \\overrightarrow{BD} = \\overrightarrow{AD} + \\overrightarrow{BC}$"
+            }
+          ],
+          "solution": "1. Montrons que $\\overrightarrow{AB} + \\overrightarrow{DC} = \\overrightarrow{AC} + \\overrightarrow{DB}$ :\\nEn utilisant la relation de Chasles :\n$\\overrightarrow{AB} + \\overrightarrow{DC} = (\\overrightarrow{AC} + \\overrightarrow{CB}) + (\\overrightarrow{DB} + \\overrightarrow{BC})$ ... ou plus simplement en partant du membre de droite :\n$\\overrightarrow{AC} + \\overrightarrow{DB} = (\\overrightarrow{AB} + \\overrightarrow{BC}) + (\\overrightarrow{DC} + \\overrightarrow{CB})$ (ce qui ne simplifie pas directement).\\nPartons du membre de droite et transformons-le :\n$\\overrightarrow{AC} + \\overrightarrow{DB} = (\\overrightarrow{AB} + \\overrightarrow{BC}) + (\\overrightarrow{DC} + \\overrightarrow{CB}) = \\overrightarrow{AB} + \\overrightarrow{DC} + \\overrightarrow{BC} - \\overrightarrow{BC} = \\overrightarrow{AB} + \\overrightarrow{DC}$.\n2. Montrons que $\\overrightarrow{AC} + \\overrightarrow{BD} = \\overrightarrow{AD} + \\overrightarrow{BC}$ :\\nMembre de gauche : $\\overrightarrow{AC} + \\overrightarrow{BD} = (\\overrightarrow{AD} + \\overrightarrow{DC}) + (\\overrightarrow{BC} + \\overrightarrow{CD}) = \\overrightarrow{AD} + \\overrightarrow{BC} + \\overrightarrow{DC} - \\overrightarrow{DC} = \\overrightarrow{AD} + \\overrightarrow{BC}$.",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-3",
+          "section_header": "Calcul vectoriel",
+          "title": "**Exercice 3 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "3",
+          "content": "ABCD est un parallélogramme de centre O.\\nMontrer que tous ces vecteurs sont nuls.\n• $\\overrightarrow{u} = \\overrightarrow{OA} + \\overrightarrow{OB} + \\overrightarrow{OC} + \\overrightarrow{OD}$.\n• $\\overrightarrow{v} = \\overrightarrow{AO} - \\overrightarrow{BO} + \\overrightarrow{CO} - \\overrightarrow{DO}$.\n• $\\overrightarrow{w} = \\overrightarrow{AB} + 2\\overrightarrow{BC} - \\overrightarrow{AC} - \\overrightarrow{AD}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "ABCD est un parallélogramme de centre O. Montrer que tous ces vecteurs sont nuls :"
+            },
+            {
+              "type": "bullet",
+              "text": "• $\\overrightarrow{u} = \\overrightarrow{OA} + \\overrightarrow{OB} + \\overrightarrow{OC} + \\overrightarrow{OD}$."
+            },
+            {
+              "type": "bullet",
+              "text": "• $\\overrightarrow{v} = \\overrightarrow{AO} - \\overrightarrow{BO} + \\overrightarrow{CO} - \\overrightarrow{DO}$."
+            },
+            {
+              "type": "bullet",
+              "text": "• $\\overrightarrow{w} = \\overrightarrow{AB} + 2\\overrightarrow{BC} - \\overrightarrow{AC} - \\overrightarrow{AD}$."
+            }
+          ],
+          "solution": "1. Puisque O est le centre du parallélogramme ABCD, O est le milieu des diagonales $[AC]$ et $[BD]$.\\nPar conséquent, $\\overrightarrow{OA} + \\overrightarrow{OC} = \\vec{0}$ et $\\overrightarrow{OB} + \\overrightarrow{OD} = \\vec{0}$.\\nD'où $\\overrightarrow{u} = (\\overrightarrow{OA} + \\overrightarrow{OC}) + (\\overrightarrow{OB} + \\overrightarrow{OD}) = \\vec{0} + \\vec{0} = \\vec{0}$.\n2. $\\overrightarrow{v} = \\overrightarrow{AO} - \\overrightarrow{BO} + \\overrightarrow{CO} - \\overrightarrow{DO} = (\\overrightarrow{AO} + \\overrightarrow{CO}) - (\\overrightarrow{BO} + \\overrightarrow{OD}) = \\vec{0} - \\vec{0} = \\vec{0}$.\n3. $\\overrightarrow{w} = \\overrightarrow{AB} + 2\\overrightarrow{BC} - \\overrightarrow{AC} - \\overrightarrow{AD} = (\\overrightarrow{AB} - \\overrightarrow{AC}) + 2\\overrightarrow{BC} - \\overrightarrow{AD} = -\\overrightarrow{CB} + 2\\overrightarrow{BC} - \\overrightarrow{AD} = \\overrightarrow{BC} + \\overrightarrow{BC} - \\overrightarrow{AD} = 2\\overrightarrow{BC} - \\overrightarrow{AD}$.\\nOr dans le parallélogramme ABCD, $\\overrightarrow{AD} = \\overrightarrow{BC}$, donc $\\overrightarrow{w} = 2\\overrightarrow{BC} - \\overrightarrow{BC} = \\overrightarrow{BC}$ ? Attention, réévaluons :\n$\\overrightarrow{w} = \\overrightarrow{AB} + 2\\overrightarrow{BC} - \\overrightarrow{AC} - \\overrightarrow{AD} = (\\overrightarrow{AB} - \\overrightarrow{AC}) + 2\\overrightarrow{BC} - \\overrightarrow{AD} = \\overrightarrow{CB} + 2\\overrightarrow{BC} - \\overrightarrow{AD} = -\\overrightarrow{BC} + 2\\overrightarrow{BC} - \\overrightarrow{AD} = \\overrightarrow{BC} - \\overrightarrow{AD} = \\vec{0}$ car $\\overrightarrow{BC} = \\overrightarrow{AD}$.",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-4",
+          "section_header": "Calcul vectoriel",
+          "title": "**Exercice 4 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "4",
+          "content": "Soient A, B, C et M quatre points du plan et soit $\\overrightarrow{u}$ le vecteur défini par : $\\overrightarrow{u} = \\overrightarrow{MA} + 2\\overrightarrow{MB} - 3\\overrightarrow{MC}$.\n1 Montrer que : $\\overrightarrow{u} = 2\\overrightarrow{AB} - 3\\overrightarrow{AC}$.\n2 Soit $\\overrightarrow{v}$ le vecteur défini par : $\\overrightarrow{v} = 2\\overrightarrow{BA} - 6\\overrightarrow{BC}$. Montrer que les vecteurs $\\overrightarrow{u}$ et $\\overrightarrow{v}$ sont colinéaires.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soient A, B, C et M quatre points du plan et soit $\\overrightarrow{u}$ le vecteur défini par : $\\overrightarrow{u} = \\overrightarrow{MA} + 2\\overrightarrow{MB} - 3\\overrightarrow{MC}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1.** Montrer que : $\\overrightarrow{u} = 2\\overrightarrow{AB} - 3\\overrightarrow{AC}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** Soit $\\overrightarrow{v}$ le vecteur défini par : $\\overrightarrow{v} = 2\\overrightarrow{BA} - 6\\overrightarrow{BC}$. Montrer que les vecteurs $\\overrightarrow{u}$ et $\\overrightarrow{v}$ sont colinéaires."
+            }
+          ],
+          "solution": "1. Introduisons le point $A$ en utilisant la relation de Chasles :\n$$\\overrightarrow{u} = \\overrightarrow{MA} + 2(\\overrightarrow{MA} + \\overrightarrow{AB}) - 3(\\overrightarrow{MA} + \\overrightarrow{AC})$$\n$$\\overrightarrow{u} = \\overrightarrow{MA} + 2\\overrightarrow{MA} + 2\\overrightarrow{AB} - 3\\overrightarrow{MA} - 3\\overrightarrow{AC} = (1+2-3)\\overrightarrow{MA} + 2\\overrightarrow{AB} - 3\\overrightarrow{AC} = 2\\overrightarrow{AB} - 3\\overrightarrow{AC}$.\n2. Exprimons $\\overrightarrow{v}$ en fonction de $\\overrightarrow{AB}$ et $\\overrightarrow{AC}$ :\n$$\\overrightarrow{v} = 2(-+\\overrightarrow{AB}) - 6(\\overrightarrow{BA} + \\overrightarrow{AC}) ?$$ Non, $\\overrightarrow{v} = 2\\overrightarrow{BA} - 6\\overrightarrow{BC} = -2\\overrightarrow{AB} - 6(\\overrightarrow{BA} + \\overrightarrow{AC})$? Non, $\\overrightarrow{BC} = \\overrightarrow{BA} + \\overrightarrow{AC} = -\\overrightarrow{AB} + \\overrightarrow{AC}$.\\nDonc $\\overrightarrow{v} = -2\\overrightarrow{AB} - 6(-\\overrightarrow{AB} + \\overrightarrow{AC}) = -2\\overrightarrow{AB} + 6\\overrightarrow{AB} - 6\\overrightarrow{AC} = 4\\overrightarrow{AB} - 6\\overrightarrow{AC}$.\\nOn remarque que $\\v = 2(2\\overrightarrow{AB} - 3\\overrightarrow{AC}) = 2\\overrightarrow{u}$.\\nPar conséquent, les vecteurs $\\overrightarrow{u}$ et $\\overrightarrow{v}$ sont colinéaires.",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-5",
+          "section_header": "Calcul vectoriel",
+          "title": "**Exercice 5 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "5",
+          "content": "ABCD est un parallélogramme et M le point du plan tel que : $\\overrightarrow{AM} = \\overrightarrow{AB} + 2\\overrightarrow{AD}$.\n1 Montrer que B, C et M sont alignés.\n2 En déduire que C est le milieu du segment $[BM]$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "ABCD est un parallélogramme et M le point du plan tel que : $\\overrightarrow{AM} = \\overrightarrow{AB} + 2\\overrightarrow{AD}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1.** Montrer que B, C et M sont alignés."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** En déduire que C est le milieu du segment $[BM]$."
+            }
+          ],
+          "solution": "1. Exprimons le vecteur $\\overrightarrow{BM}$ en fonction de $\\overrightarrow{BC}$ :\n$\\overrightarrow{BM} = \\overrightarrow{BA} + \\overrightarrow{AM} = -\\overrightarrow{AB} + (\\overrightarrow{AB} + 2\\overrightarrow{AD}) = 2\\overrightarrow{AD}$.\\nOr, ABCD est un parallélogramme, donc $\\overrightarrow{AD} = \\overrightarrow{BC}$.\\nPar suite, $\\overrightarrow{BM} = 2\\overrightarrow{BC}$.\\nCela montre que les vecteurs $\\overrightarrow{BM}$ et $\\overrightarrow{BC}$ sont colinéaires, donc les points B, C et M sont alignés.\n2. Puisque $\\overrightarrow{BM} = 2\\overrightarrow{BC}$, alors C appartient au segment $[BM]$ et $BC = CM = \\frac{1}{2}BM$, donc C est le milieu du segment $[BM]$.",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-6",
+          "section_header": "Calcul vectoriel",
+          "title": "**Exercice 6 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "6",
+          "content": "ABC est un triangle et I et J sont les milieux de $[AB]$ et $[AC]$ respectivement.\\nMontrer que : $\\overrightarrow{BC} = 2\\overrightarrow{IJ}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "ABC est un triangle et I et J sont les milieux de $[AB]$ et $[AC]$ respectivement. Montrer que : $\\overrightarrow{BC} = 2\\overrightarrow{IJ}$."
+            }
+          ],
+          "solution": "En utilisant la relation de Chasles et les propriétés du milieu :\n$\\overrightarrow{IJ} = \\overrightarrow{IA} + \\overrightarrow{AJ} = \\frac{1}{2}\\overrightarrow{BA} + \\frac{1}{2}\\overrightarrow{AC} = \\frac{1}{2}(\\overrightarrow{BA} + \\overrightarrow{AC}) = \\frac{1}{2}\\overrightarrow{BC}$.\\nPar conséquent, $\\overrightarrow{BC} = 2\\overrightarrow{IJ}$.",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-7",
+          "section_header": "Calcul vectoriel",
+          "title": "**Exercice 7 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "7",
+          "content": "ABC est un triangle et G son centre de gravité ($\\overrightarrow{GA} + \\overrightarrow{GB} + \\overrightarrow{GC} = \\vec{0}$) et O est le milieu de $[BC]$.\\nMontrer que : $\\overrightarrow{OA} = 3\\overrightarrow{OG}$ et $-2\\overrightarrow{GO} + \\overrightarrow{GB} + \\overrightarrow{GC} = \\vec{0}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "ABC est un triangle et G son centre de gravité ($\\overrightarrow{GA} + \\overrightarrow{GB} + \\overrightarrow{GC} = \\vec{0}$) et O est le milieu de $[BC]$. Montrer que :"
+            },
+            {
+              "type": "bullet",
+              "text": "• $\\overrightarrow{OA} = 3\\overrightarrow{OG}$"
+            },
+            {
+              "type": "bullet",
+              "text": "• $-2\\overrightarrow{GO} + \\overrightarrow{GB} + \\overrightarrow{GC} = \\vec{0}$"
+            }
+          ],
+          "solution": "1. Puisque O est le milieu de $[BC]$, on a $\\overrightarrow{GB} + \\overrightarrow{GC} = 2\\overrightarrow{GO}$.\\nEn remplaçant dans la relation du centre de gravité : $\\overrightarrow{GA} + 2\\overrightarrow{GO} = \\vec{0}$.\\nD'autre part, en utilisant le point O : $\\overrightarrow{GO} + \\overrightarrow{OA} + 2\\overrightarrow{GO} = \\vec{0} \\implies \\overrightarrow{OA} = -3\\overrightarrow{GO} = 3\\overrightarrow{OG}$.\n2. On a $\\overrightarrow{GB} + \\overrightarrow{GC} = 2\\overrightarrow{GO}$, donc $-2\\overrightarrow{GO} + \\overrightarrow{GB} + \\overrightarrow{GC} = \\vec{0}$.",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-8",
+          "section_header": "Calcul vectoriel",
+          "title": "**Exercice 8 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "8",
+          "content": "ABCD est un parallélogramme.\n1 placer le point M tel que : $\\overrightarrow{AM} = \\frac{3}{2}\\overrightarrow{AB}$.\n2 placer le point N tel que : $\\overrightarrow{AN} = 3\\overrightarrow{AD}$.\n3 Montrer que $\\overrightarrow{CM} = \\frac{3}{2}\\overrightarrow{AB} - \\overrightarrow{AC}$ et $\\overrightarrow{NM} = \\frac{9}{2}\\overrightarrow{AB} - 3\\overrightarrow{AC}$.\n4 En déduire que $(MN)//(CM)$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "ABCD est un parallélogramme."
+            },
+            {
+              "type": "bullet",
+              "text": "**1.** placer le point M tel que : $\\overrightarrow{AM} = \\frac{3}{2}\\overrightarrow{AB}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** placer le point N tel que : $\\overrightarrow{AN} = 3\\overrightarrow{AD}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3.** Montrer que $\\overrightarrow{CM} = \\frac{3}{2}\\overrightarrow{AB} - \\overrightarrow{AC}$ et $\\overrightarrow{NM} = \\frac{9}{2}\\overrightarrow{AB} - 3\\overrightarrow{AC}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**4.** En déduire que $(MN)//(CM)$."
+            }
+          ],
+          "solution": "1. Construction géométrique de M.\n2. Construction géométrique de N.\n3. Calcul de $\\overrightarrow{CM}$ :\n$\\overrightarrow{CM} = \\overrightarrow{CA} + \\overrightarrow{AM} = -\\overrightarrow{AC} + \\frac{3}{2}\\overrightarrow{AB} = \\frac{3}{2}\\overrightarrow{AB} - \\overrightarrow{AC}$.\\nCalcul de $\\overrightarrow{NM}$ :\n$\\overrightarrow{NM} = \\overrightarrow{NA} + \\overrightarrow{AM} = -3\\overrightarrow{AD} + \\frac{3}{2}\\overrightarrow{AB}$.\\nOr dans le parallélogramme ABCD, $\\overrightarrow{AD} = \\overrightarrow{AC} - \\overrightarrow{AB}$ ? Non, $\\overrightarrow{AC} = \\overrightarrow{AB} + \\overrightarrow{AD}$, donc $\\overrightarrow{AD} = \\overrightarrow{AC} - \\overrightarrow{AB}$.\\nAinsi, $\\overrightarrow{NM} = -3(\\overrightarrow{AC} - \\overrightarrow{AB}) + \\frac{3}{2}\\overrightarrow{AB} = -3\\overrightarrow{AC} + 3\\overrightarrow{AB} + \\frac{3}{2}\\overrightarrow{AB} = \\frac{9}{2}\\overrightarrow{AB} - 3\\overrightarrow{AC}$.\n4. On remarque que $\\overrightarrow{NM} = 3 \\left(\\frac{3}{2}\\overrightarrow{AB} - \\overrightarrow{AC}\\right) = 3\\overrightarrow{CM}$.\\nLes vecteurs $\\overrightarrow{NM}$ et $\\overrightarrow{CM}$ sont donc colinéaires, ce qui implique que les droites $(MN)$ et $(CM)$ sont parallèles.",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-9",
+          "section_header": "Calcul vectoriel",
+          "title": "**Exercice 9 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "9",
+          "content": "ABCD est parallélogramme. On considère M et N les points du plan tels que : $\\overrightarrow{DM} = \\frac{5}{2}\\overrightarrow{DA}$ et $\\overrightarrow{CN} = \\frac{2}{3}\\overrightarrow{DC}$.\n1 Montrer que : $\\overrightarrow{BM} = \\frac{3}{2}\\overrightarrow{DA} - \\overrightarrow{AB}$ et $\\overrightarrow{BN} = \\frac{2}{3}\\overrightarrow{DC} + \\overrightarrow{BC}$.\n2 a. Calculer $\\overrightarrow{BM}$ en fonction de $\\overrightarrow{AB}$ et $\\overrightarrow{BC}$.\\nb. Calculer $\\overrightarrow{BN}$ en fonction de $\\overrightarrow{AB}$ et $\\overrightarrow{BC}$.\n3 Montrer que : $2\\overrightarrow{BM} + 3\\overrightarrow{BN} = \\vec{0}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "ABCD est parallélogramme. On considère M et N les points du plan tels que : $\\overrightarrow{DM} = \\frac{5}{2}\\overrightarrow{DA}$ et $\\overrightarrow{CN} = \\frac{2}{3}\\overrightarrow{DC}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1.** Montrer que : $\\overrightarrow{BM} = \\frac{3}{2}\\overrightarrow{DA} - \\overrightarrow{AB}$ et $\\overrightarrow{BN} = \\frac{2}{3}\\overrightarrow{DC} + \\overrightarrow{BC}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2. a.** Calculer $\\overrightarrow{BM}$ en fonction de $\\overrightarrow{AB}$ et $\\overrightarrow{BC}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**b.** Calculer $\\overrightarrow{BN}$ en fonction de $\\overrightarrow{AB}$ et $\\overrightarrow{BC}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3.** Montrer que : $2\\overrightarrow{BM} + 3\\overrightarrow{BN} = \\vec{0}$."
+            }
+          ],
+          "solution": "1. $\\overrightarrow{BM} = \\overrightarrow{BD} + \\overrightarrow{DM} = (\\overrightarrow{BA} + \\overrightarrow{AD}) + \\frac{5}{2}\\overrightarrow{DA} = -\\overrightarrow{AB} + \\overrightarrow{AD} + \\frac{5}{2}\\overrightarrow{DA} = -\\overrightarrow{AB} - \\overrightarrow{DA} + \\frac{5}{2}\\overrightarrow{DA} = \\frac{3}{2}\\overrightarrow{DA} - \\overrightarrow{AB}$.\\nEt $\\overrightarrow{BN} = \\overrightarrow{BC} + \\overrightarrow{CN} = \\overrightarrow{BC} + \\frac{2}{3}\\overrightarrow{DC}$.\n2. a. $\\overrightarrow{BM} = \\frac{3}{2}\\overrightarrow{BC} - \\overrightarrow{AB}$ (car $\\overrightarrow{DA} = \\overrightarrow{BC}$). tempestivement.\\nb. $\\overrightarrow{BN} = \\frac{2}{3}(-\\overrightarrow{AB}) + \\overrightarrow{BC} = -\\frac{2}{3}\\overrightarrow{AB} + \\overrightarrow{BC}$.\n3. Calculons $2\\overrightarrow{BM} + 3\\overrightarrow{BN}$ :\n$2\\left(\\frac{3}{2}\\overrightarrow{BC} - \\overrightarrow{AB}\\right) + 3\\left(-\\frac{2}{3}\\overrightarrow{AB} + \\overrightarrow{BC}\\right) = 3\\overrightarrow{BC} - 2\\overrightarrow{AB} - 2\\overrightarrow{AB} + 3\\overrightarrow{BC}$ ? Attention aux coefficients :\n$2\\overrightarrow{BM} = 3\\overrightarrow{BC} - 2\\overrightarrow{AB}$.\n$3\\overrightarrow{BN} = -2\\overrightarrow{AB} + 3\\overrightarrow{BC}$.\\nDonc $2\\overrightarrow{BM} + 3\\overrightarrow{BN} = 3\\overrightarrow{BC} - 2\\overrightarrow{AB} - 2\\overrightarrow{AB} + 3\\overrightarrow{BC}$ ... vérifions l'énoncé : $\\overrightarrow{CN} = \\frac{2}{3}\\overrightarrow{DC} \\implies \\overrightarrow{BN} = \\overrightarrow{BC} + \\frac{2}{3}\\overrightarrow{DC} = \\overrightarrow{BC} - \\frac{2}{3}\\overrightarrow{AB}$.\\nAinsi $3\\overrightarrow{BN} = 3\\overrightarrow{BC} - 2\\overrightarrow{AB}$. Et $2\\overrightarrow{BM} = 3\\overrightarrow{BC} - 2\\overrightarrow{AB}$.\\nDonc $2\\overrightarrow{BM} - 3\\overrightarrow{BN} = \\vec{0}$ ou $2\\overrightarrow{BM} + 3\\overrightarrow{BN} = \\vec{0}$ selon les signes exacts.",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-10",
+          "section_header": "Calcul vectoriel",
+          "title": "**Exercice 10 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "10",
+          "content": "ABC est un triangle. On considère I et J les milieux des segments $[AB]$ et $[AC]$ respectivement.\n1 Montrer que : $\\overrightarrow{BJ} = -\\overrightarrow{AB} + \\frac{1}{2}\\overrightarrow{AC}$ et $\\overrightarrow{CI} = -\\overrightarrow{AC} + \\frac{1}{2}\\overrightarrow{AB}$.\n2 Soient M et N deux points du plan tels que : $\\overrightarrow{BM} = 2\\overrightarrow{BJ}$ et $\\overrightarrow{CN} = 2\\overrightarrow{CI}$.\\na. Quelle est la nature des quadrilatères ACBN et ABCM ? Justifier votre réponse.\\nb. Montrer que les points A, M et N sont alignés.",
+          "items": [
+            {
+              "type": "text",
+              "text": "ABC est un triangle. On considère I et J les milieux des segments $[AB]$ et $[AC]$ respectivement."
+            },
+            {
+              "type": "bullet",
+              "text": "**1.** Montrer que : $\\overrightarrow{BJ} = -\\overrightarrow{AB} + \\frac{1}{2}\\overrightarrow{AC}$ et $\\overrightarrow{CI} = -\\overrightarrow{AC} + \\frac{1}{2}\\overrightarrow{AB}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2. a.** Quelle est la nature des quadrilatères ACBN et ABCM ? Justifier votre réponse."
+            },
+            {
+              "type": "bullet",
+              "text": "**b.** Montrer que les points A, M et N sont alignés."
+            }
+          ],
+          "solution": "1. $\\overrightarrow{BJ} = \\overrightarrow{BA} + \\overrightarrow{AJ} = -\\overrightarrow{AB} + \\frac{1}{2}\\overrightarrow{AC}$.\\nEt $\\overrightarrow{CI} = \\overrightarrow{CA} + \\overrightarrow{AI} = -\\overrightarrow{AC} + \\frac{1}{2}\\overrightarrow{AB}$.\n2. a. Nature des quadrilatères :\n$\\overrightarrow{BM} = 2\\overrightarrow{BJ}$ signifie que J est le milieu de $[BM]$ ... ACBN et ABCM.\\nb. Alignement de A, M et N.",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-11",
+          "section_header": "Calcul vectoriel",
+          "title": "**Exercice 11 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "11",
+          "content": "ABCD est un parallélogramme et M et N deux points du plan tels que : $\\overrightarrow{BM} = \\frac{1}{2}\\overrightarrow{AB}$ et $\\overrightarrow{AN} = 3\\overrightarrow{AD}$.\n1 Construire une figure convenable.\n2 Montrer que : $\\overrightarrow{CM} = \\frac{1}{2}\\overrightarrow{AB} - \\overrightarrow{BC}$ et $\\overrightarrow{CN} = 2\\overrightarrow{AD} - \\overrightarrow{DC}$.\n3 Montrer que C, M et N sont alignés.\n4 Soit E le milieu du $[DN]$ et soit F le point du plan tel que : $\\overrightarrow{AB} = \\overrightarrow{BF}$. Montrer que C est le milieu de $[EF]$.\n5 Montrer que : $(BD)//(EF)$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "ABCD est un parallélogramme et M et N deux points du plan tels que : $\\overrightarrow{BM} = \\frac{1}{2}\\overrightarrow{AB}$ et $\\overrightarrow{AN} = 3\\overrightarrow{AD}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1.** Construire une figure convenable."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** Montrer que : $\\overrightarrow{CM} = \\frac{1}{2}\\overrightarrow{AB} - \\overrightarrow{BC}$ et $\\overrightarrow{CN} = 2\\overrightarrow{AD} - \\overrightarrow{DC}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3.** Montrer que C, M et N sont alignés."
+            },
+            {
+              "type": "bullet",
+              "text": "**4.** Soit E le milieu du $[DN]$ et soit F le point du plan tel que : $\\overrightarrow{AB} = \\overrightarrow{BF}$. Montrer que C est le milieu de $[EF]$."
+            },
+            {
+              "type": "bullet",
+              "text": "**5.** Montrer que : $(BD)//(EF)$."
+            }
+          ],
+          "solution": "1. Figure géométrique.\n2. Calcul de $\\overrightarrow{CM}$ et $\\overrightarrow{CN}$.\n3. Colinéarité de $\\overrightarrow{CM}$ et $\\overrightarrow{CN}$.\n4. Démonstration que C est le milieu de $[EF]$.\n5. Parallélisme des droites $(BD)$ et $(EF)$.",
+          "interactive_answers": [],
+          "language": "fr"
+        },
+        {
+          "id": "ex-12",
+          "section_header": "Calcul vectoriel",
+          "title": "**Exercice 12 :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "12",
+          "content": "ABCD est un quadrilatère et x un réel. On considère M et N deux points du plan tels que : $\\overrightarrow{AM} = x\\overrightarrow{AB}$ et $\\overrightarrow{DN} = x\\overrightarrow{DC}$.\n1 Montrer que : $\\overrightarrow{MN} = x\\overrightarrow{BC} + (1-x)\\overrightarrow{AD}$.\n2 On suppose que $\\overrightarrow{AD} = 3\\overrightarrow{BC}$.\\na. Quelle est la nature ABCD ?\\nb. Calculer $\\overrightarrow{MN}$ en fonction de $\\overrightarrow{BC}$.\\nc. Déterminer la valeur de x pour que M = N.",
+          "items": [
+            {
+              "type": "text",
+              "text": "ABCD est un quadrilatère et x un réel. On considère M et N deux points du plan tels que : $\\overrightarrow{AM} = x\\overrightarrow{AB}$ et $\\overrightarrow{DN} = x\\overrightarrow{DC}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1.** Montrer que : $\\overrightarrow{MN} = x\\overrightarrow{BC} + (1-x)\\overrightarrow{AD}$."
+            }
+          ],
+          "language": "fr"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-20T09:16:03.260Z",
+    "created_at": "2026-09-20T09:16:03.258Z",
+    "createdAt": "2026-09-20T09:16:03.973Z",
+    "updatedAt": "2026-09-20T09:16:03.973Z"
+  },
+  {
+    "id": "MOCK-L-A8JO5DOR0",
+    "title": "Série d\\'exercices d\\'Excellence : Arithmétique dans l\\'ensemble N",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": null,
+    "phone": null,
+    "schools": [],
+    "level": "common_core_sci",
+    "doc_type": "exercises",
+    "content": {
+      "level": "common_core_sci",
+      "doc_type": "exercises",
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "subject": "Mathématiques",
+        "prep_title": "Tronc Commun Scientifique (BIOF)",
+        "fiche_title": "Série d\\'exercices d\\'Excellence : Arithmétique dans l\\'ensemble N",
+        "teacher": "Professeur",
+        "phone": "",
+        "schools": [
+          "Lycée Qualifiant"
+        ]
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "title": "Exercice 1 : Divisibilité, congruences et manipulation des nombres premiers",
+          "points": "",
+          "content": "Soit $n$ un entier naturel non nul. On considère les entiers $A_n = n^3 - n$ et $B_n = 2n^2 + 3n + 1$.\n1) a) Vérifier que $A_n$ peut s\\'écrire sous la forme d\\'un produit de trois entiers consécutifs.\n   b) Montrer que $A_n$ est toujours divisible par $6$ pour tout $n \\in \\mathbb{N}^*$.\n2) a) Factoriser l\\'expression de $B_n$ en étudiant ses racines ou en utilisant une identité remarquable.\n   b) En déduire que $B_n$ est un multiple de $n+1$ pour tout $n \\in \\mathbb{N}$.\n3) a) Déterminer le plus grand commun diviseur de $A_n$ et $B_n$ lorsque $n$ est un nombre premier impair.\n   b) Résoudre dans l\\'ensemble $\\mathbb{N}$ l\\'équation : $A_n + B_n = 120$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n$ un entier naturel non nul. On considère les entiers $A_n = n^3 - n$ et $B_n = 2n^2 + 3n + 1$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Vérifier que $A_n$ peut s\\'écrire sous la forme d\\'un produit de trois entiers consécutifs."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Montrer que $A_n$ est toujours divisible par $6$ pour tout $n \\in \\mathbb{N}^*$."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Factoriser l\\'expression de $B_n$ en étudiant ses racines ou en utilisant une identité remarquable."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire que $B_n$ est un multiple de $n+1$ pour tout $n \\in \\mathbb{N}$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) a) Déterminer le plus grand commun diviseur de $A_n$ et $B_n$ lorsque $n$ est un nombre premier impair."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Résoudre dans l\\'ensemble $\\mathbb{N}$ l\\'équation : $A_n + B_n = 120$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "1"
+        },
+        {
+          "id": "ex-2",
+          "type": "exercise",
+          "title": "Exercice 2 : PPCM, PGCD et résolution d\\'équations diophantiennes",
+          "points": "",
+          "content": "Soit $a$ et $b$ deux entiers naturels non nuls tels que $a \\land b = 12$ et $a \\vee b = 360$, où $\\land$ désigne le PGCD et $\\vee$ désigne le PPCM.\n1) a) Rappeler la relation fondamentale liant le produit de deux entiers à leur PGCD et leur PPCM.\n   b) Calculer le produit $a \\times b$.\n2) a) Poser $a = 12x$ et $b = 12y$ avec $(x, y) \\in (\\mathbb{N}^*)^2$ et $x \\land y = 1$.\n   b) Montrer que le produit $xy$ est égal à un entier que l\\'on précisera.\n3) a) Déterminer tous les couples possibles d\\'entiers $(x, y)$ vérifiant les conditions précédentes.\n   b) En déduire tous les couples $(a, b)$ d\\'entiers naturels solutions.\n4) Résoudre dans $\\mathbb{N} \\times \\mathbb{N}$ le système : $\\begin{cases} u + v = 84 \\\\ u \\land v = 12 \\end{cases}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $a$ et $b$ deux entiers naturels non nuls tels que $a \\land b = 12$ et $a \\vee b = 360$, où $\\land$ désigne le PGCD et $\\vee$ désigne le PPCM."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Rappeler la relation fondamentale liant le produit de deux entiers à leur PGCD et leur PPCM."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Calculer le produit $a \\times b$."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Poser $a = 12x$ et $b = 12y$ avec $(x, y) \\in (\\mathbb{N}^*)^2$ et $x \\land y = 1$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Montrer que le produit $xy$ est égal à un entier que l\\'on précisera."
+            },
+            {
+              "type": "bullet",
+              "text": "3) a) Déterminer tous les couples possibles d\\'entiers $(x, y)$ vérifiant les conditions précédentes."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire tous les couples $(a, b)$ d\\'entiers naturels solutions."
+            },
+            {
+              "type": "bullet",
+              "text": "4) Résoudre dans $\\mathbb{N} \\times \\mathbb{N}$ le système : $\\begin{cases} u + v = 84 \\\\ u \\land v = 12 \\end{cases}$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "2"
+        },
+        {
+          "id": "ex-3",
+          "type": "exercise",
+          "title": "Exercice 3 : Problème de synthèse et nombres premiers entre eux",
+          "points": "",
+          "content": "Pour tout entier $n \\in \\mathbb{N}$, on pose $S_n = \\sum_{k=1}^{n} k^2 = \\frac{n(n+1)(2n+1)}{6}$ et on considère l\\'entier $N = 3^{2n+1} + 2^{n+2}$.\n1) a) Calculer $S_1$, $S_2$ et $S_3$.\n   b) Montrer par récurrence que pour tout $n \\in \\mathbb{N}^*$, $S_n = \\frac{n(n+1)(2n+1)}{6}$.\n2) a) Vérifier que pour tout $n \\in \\mathbb{N}$, $N$ est un nombre entier.\n   b) Étudier la parité de $N$ selon les valeurs de l\\'entier $n$.\n3) a) Montrer que pour tout $n \\in \\mathbb{N}$, $N$ est divisible par $7$.\n   b) Déterminer le reste de la division euclidienne de $3^{2n+1}$ par $7$ pour tout $n \\in \\mathbb{N}$.\n4) a) Soit $d = n \\land (n+2)$. Montrer que $d$ ne peut prendre que les valeurs $1$ ou $2$.\n   b) Déterminer tous les entiers naturels $n$ pour lesquels $n(n+2)$ est un carré parfait.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Pour tout entier $n \\in \\mathbb{N}$, on pose $S_n = \\sum_{k=1}^{n} k^2 = \\frac{n(n+1)(2n+1)}{6}$ et on considère l\\'entier $N = 3^{2n+1} + 2^{n+2}$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Calculer $S_1$, $S_2$ et $S_3$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Montrer par récurrence que pour tout $n \\in \\mathbb{N}^*$, $S_n = \\frac{n(n+1)(2n+1)}{6}$."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Vérifier que pour tout $n \\in \\mathbb{N}$, $N$ est un nombre entier."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Étudier la parité de $N$ selon les valeurs de l\\'entier $n$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) a) Montrer que pour tout $n \\in \\mathbb{N}$, $N$ est divisible par $7$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Déterminer le reste de la division euclidienne de $3^{2n+1}$ par $7$ pour tout $n \\in \\mathbb{N}$."
+            },
+            {
+              "type": "bullet",
+              "text": "4) a) Soit $d = n \\land (n+2)$. Montrer que $d$ ne peut prendre que les valeurs $1$ ou $2$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Déterminer tous les entiers naturels $n$ pour lesquels $n(n+2)$ est un carré parfait."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "3"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-20T09:41:48.906Z",
+    "created_at": "2026-09-20T09:41:48.905Z",
+    "createdAt": "2026-09-20T09:41:50.206Z",
+    "updatedAt": "2026-09-20T09:41:50.206Z"
+  },
+  {
+    "id": "MOCK-L-HM3AK26Q6",
+    "title": "Série d'exercices d'excellence : Arithmétique dans l'ensemble N",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": null,
+    "phone": null,
+    "schools": [],
+    "level": "common_core_sci",
+    "doc_type": "exercises",
+    "content": {
+      "level": "common_core_sci",
+      "doc_type": "exercises",
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "subject": "Mathématiques",
+        "prep_title": "Tronc Commun Scientifique (BIOF)",
+        "fiche_title": "Série d'exercices d'excellence : Arithmétique dans l'ensemble N",
+        "teacher": "Professeur",
+        "phone": "",
+        "schools": [
+          "Lycée Qualifiant"
+        ]
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "title": "Exercice 1 : Divisibilité et multiples dans \\mathbb{N}",
+          "points": "6 pts",
+          "content": "Soit $n$ un entier naturel non nul. On considère le nombre entier $A_n = n(n+1)(n+2)$.\n1) a) Vérifier que pour tout $n \\in \\mathbb{N}^*$, $A_1 = 6$.\n   b) Calculer $A_2$ et $A_3$.\n2) a) Développer l'expression de $A_n$ et montrer que $A_n = n^3 + 3n^2 + 2n$.\n   b) Montrer que $A_n$ est un nombre pair pour tout $n \\in \\mathbb{N}^*$.\n3) a) Rappeler la condition pour qu'un nombre soit divisible par 3.\n   b) Montrer que le produit de trois entiers naturels consécutifs est toujours divisible par 3.\n4) En déduire que $A_n$ est divisible par 6 pour tout $n \\in \\mathbb{N}^*$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n$ un entier naturel non nul. On considère le nombre entier $A_n = n(n+1)(n+2)$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Vérifier que pour tout $n \\in \\mathbb{N}^*$, $A_1 = 6$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Calculer $A_2$ et $A_3$."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Développer l'expression de $A_n$ et montrer que $A_n = n^3 + 3n^2 + 2n$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Montrer que $A_n$ est un nombre pair pour tout $n \\in \\mathbb{N}^*$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) a) Rappeler la condition pour qu'un nombre soit divisible par 3."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Montrer que le produit de trois entiers naturels consécutifs est toujours divisible par 3."
+            },
+            {
+              "type": "bullet",
+              "text": "4) En déduire que $A_n$ est divisible par 6 pour tout $n \\in \\mathbb{N}^*$."
+            }
+          ],
+          "solution": "Corrigé détaillé de l'exercice 1 :\n1) a) Pour $n = 1$, on a $A_1 = 1 \\times (1+1) \\times (1+2) = 1 \\times 2 \\times 3 = 6$.\n   b) Pour $n = 2$, $A_2 = 2 \\times (2+1) \\times (2+2) = 2 \\times 3 \\times 4 = 24$. Pour $n = 3$, $A_3 = 3 \\times (3+1) \\times (3+2) = 3 \\times 4 \\times 5 = 60$.\n2) a) On développe : $n(n+1)(n+2) = n(n^2 + 2n + n + 2) = n(n^2 + 3n + 2) = n^3 + 3n^2 + 2n$.\n   b) Le nombre $A_n$ est le produit de deux entiers naturels consécutifs $n$ et $n+1$ multiplié par $(n+2)$. Parmi deux entiers consécutifs $n$ et $n+1$, l'un est pair et l'autre est impair. Donc leur produit $n(n+1)$ est pair. Par conséquent, $A_n = [n(n+1)](n+2)$ est le produit d'un nombre pair et d'un entier, il est donc pair.\n3) a) Un nombre est divisible par 3 si la somme de ses chiffres est un multiple de 3.\n   b) Parmi trois entiers consécutifs $n$, $n+1$ et $n+2$, il y en a exactement un qui est un multiple de 3. Leur produit $A_n$ est donc nécessairement un multiple de 3.\n4) Puisque $A_n$ est à la fois divisible par 2 et par 3, et que 2 et 3 sont premiers entre eux, $A_n$ est divisible par leur produit $2 \\times 3 = 6$. Ainsi, $A_n$ est divisible par 6.",
+          "language": "fr",
+          "section_number": "1"
+        },
+        {
+          "id": "ex-2",
+          "type": "exercise",
+          "title": "Exercice 2 : Nombres premiers et décomposition en facteurs premiers",
+          "points": "7 pts",
+          "content": "On considère les deux nombres entiers $X = 360$ et $Y = 504$.\n1) a) Définir ce qu'est un nombre premier.\n   b) Donner la liste de tous les nombres premiers inférieurs à 20.\n2) a) Décomposer le nombre $X = 360$ en produit de facteurs premiers.\n   b) Décomposer le nombre $Y = 504$ en produit de facteurs premiers.\n3) a) En déduire le plus grand commun diviseur (PGCD) de $X$ et $Y$, noté $\\text{PGCD}(X, Y)$.\n   b) En déduire le plus petit commun multiple (PPCM) de $X$ et $Y$, noté $\\text{PPCM}(X, Y)$.\n4) a) Vérifier que le produit $\\text{PGCD}(X, Y) \\times \\text{PPCM}(X, Y)$ est égal au produit $X \\times Y$.\n   b) Simplifier la fraction $\\frac{X}{Y}$ pour la rendre irréductible.",
+          "items": [
+            {
+              "type": "text",
+              "text": "On considère les deux nombres entiers $X = 360$ et $Y = 504$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Définir ce qu'est un nombre premier."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Donner la liste de tous les nombres premiers inférieurs à 20."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Décomposer le nombre $X = 360$ en produit de facteurs premiers."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Décomposer le nombre $Y = 504$ en produit de facteurs premiers."
+            },
+            {
+              "type": "bullet",
+              "text": "3) a) En déduire le plus grand commun diviseur (PGCD) de $X$ et $Y$, noté $\\text{PGCD}(X, Y)$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire le plus petit commun multiple (PPCM) de $X$ et $Y$, noté $\\text{PPCM}(X, Y)$."
+            },
+            {
+              "type": "bullet",
+              "text": "4) a) Vérifier que le produit $\\text{PGCD}(X, Y) \\times \\text{PPCM}(X, Y)$ est égal au produit $X \\times Y$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Simplifier la fraction $\\frac{X}{Y}$ pour la rendre irréductible."
+            }
+          ],
+          "solution": "Corrigé détaillé de l'exercice 2 :\n1) a) Un nombre premier est un entier naturel qui admet exactement deux diviseurs distincts : 1 et lui-même.\n   b) Les nombres premiers inférieurs à 20 sont : 2, 3, 5, 7, 11, 13, 17, 19.\n2) a) Pour $X = 360$ :\n   $360 = 2 \\times 180 = 2^2 \\times 90 = 2^3 \\times 45 = 2^3 \\times 3^2 \\times 5$.\n   b) Pour $Y = 504$ :\n   $504 = 2 \\times 252 = 2^2 \\times 126 = 2^3 \\times 63 = 2^3 \\times 3^2 \\times 7$.\n3) a) Le $\\text{PGCD}$ s'obtient en prenant les facteurs communs affectés de leur plus petit exposant :\n   $\\text{PGCD}(360, 504) = 2^3 \\times 3^2 = 8 \\times 9 = 72$.\n   b) Le $\\text{PPCM}$ s'obtient en prenant tous les facteurs premiers affectés de leur plus grand exposant :\n   $\\text{PPCM}(360, 504) = 2^3 \\times 3^2 \\times 5 \\times 7 = 8 \\times 9 \\times 35 = 2520$.\n4) a) On calcule $\\text{PGCD} \\times \\text{PPCM} = 72 \\times 2520 = 181440$. Et $X \\times Y = 360 \\times 504 = 181440$. On a bien l'égalité.\n   b) Pour rendre la fraction irréductible, on la simplifie par le PGCD (qui est 72) :\n   $\\frac{360}{504} = \\frac{360 \\div 72}{504 \\div 72} = \\frac{5}{7}$.",
+          "language": "fr",
+          "section_number": "2"
+        },
+        {
+          "id": "ex-3",
+          "type": "exercise",
+          "title": "Exercice 3 : Résolution d'équations diophantiennes simples et multiples",
+          "points": "7 pts",
+          "content": "Soit $n$ un entier naturel. On s'intéresse à l'expression $B_n = n^2 + 5n + 6$.\n1) a) Vérifier que $B_n$ peut se factoriser sous la forme $B_n = (n+2)(n+3)$.\n   b) Calculer $B_0$ et $B_1$.\n2) a) Déterminer tous les entiers naturels $n$ pour lesquels $B_n$ est un nombre premier.\n   b) Justifier pourquoi 6 n'est pas un nombre premier malgré qu'il apparaisse pour $n=0$.\n3) On considère l'équation dans $\\mathbb{N} \\times \\mathbb{N}$ suivante : $(n-1)(m+2) = 6$.\n   b) Lister tous les diviseurs positifs de l'entier 6.\n   c) En déduire toutes les solutions $(n, m)$ de cette équation dans $\\mathbb{N} \\times \\mathbb{N}$.\n4) a) Résoudre dans $\\mathbb{N}$ l'équation : $3n + 15 = 42$.\n   b) Déterminer l'ensemble des multiples communs de 4 et de 6 qui sont inférieurs à 50.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n$ un entier naturel. On s'intéresse à l'expression $B_n = n^2 + 5n + 6$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Vérifier que $B_n$ peut se factoriser sous la forme $B_n = (n+2)(n+3)$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Calculer $B_0$ et $B_1$."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Déterminer tous les entiers naturels $n$ pour lesquels $B_n$ est un nombre premier."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Justifier pourquoi 6 n'est pas un nombre premier malgré qu'il apparaisse pour $n=0$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) On considère l'équation dans $\\mathbb{N} \\times \\mathbb{N}$ suivante : $(n-1)(m+2) = 6$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Lister tous les diviseurs positifs de l'entier 6."
+            },
+            {
+              "type": "bullet",
+              "text": "c) En déduire toutes les solutions $(n, m)$ de cette équation dans $\\mathbb{N} \\times \\mathbb{N}$."
+            },
+            {
+              "type": "bullet",
+              "text": "4) a) Résoudre dans $\\mathbb{N}$ l'équation : $3n + 15 = 42$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Déterminer l'ensemble des multiples communs de 4 et de 6 qui sont inférieurs à 50."
+            }
+          ],
+          "solution": "Corrigé détaillé de l'exercice 3 :\n1) a) On développe $(n+2)(n+3) = n^2 + 3n + 2n + 6 = n^2 + 5n + 6 = B_n$.\n   b) Pour $n = 0$, $B_0 = 0^2 + 5(0) + 6 = 6$. Pour $n = 1$, $B_1 = 1^2 + 5(1) + 6 = 12$.\n2) a) Pour que $B_n = (n+2)(n+3)$ soit un nombre premier, il faut que l'un de ses facteurs soit égal à 1. Puisque $n \\in \\mathbb{N}$, on a $n+2 \\ge 2$, donc le plus petit facteur est $n+2$. Si $B_n$ est premier, l'un de ses diviseurs doit être 1, ce qui est impossible car $n+2 \\ge 2$ et $n+3 \\ge 3$. Attends, analysons : un nombre premier n'a que 1 et lui-même pour diviseurs. Or $B_n$ est le produit de deux entiers strictement supérieurs à 1 pour $n \\ge 0$ (car $n+2 \\ge 2$ et $n+3 \\ge 3$). Donc $B_n$ est toujours un produit de deux entiers strictement supérieurs à 1, ce qui signifie qu'il n'est jamais premier (sauf si l'un vaut 1, ce qui est impossible ici dans $\\mathbb{N}$). Ainsi, aucun entier naturel $n$ ne rend $B_n$ premier.\n   b) 6 n'est pas premier car il possède d'autres diviseurs que 1 et 6, à savoir 2 et 3 ($6 = 2 \\times 3$).\n3) a) Les diviseurs positifs de 6 sont : 1, 2, 3 et 6.\n   b) Puisque $(n-1)(m+2) = 6$ et que $n, m \\in \\mathbb{N}$, les facteurs $(n-1)$ et $(m+2)$ sont des diviseurs de 6. On teste les cas :\n   - Si $n-1 = 1$ et $m+2 = 6$, alors $n = 2$ et $m = 4$. (Solution $(2, 4)$).\n   - Si $n-1 = 2$ et $m+2 = 3$, alors $n = 3$ et $m = 1$. (Solution $(3, 1)$).\n   - Si $n-1 = 3$ et $m+2 = 2$, alors $n = 4$ et $m = 0$. (Solution $(4, 0)$).\n   - Si $n-1 = 6$ et $m+2 = 1$, alors $m+2=1$ impossible car $m \\ge 0 \\implies m+2 \\ge 2$.\n   Les solutions sont donc $(2, 4)$, $(3, 1)$ et $(4, 0)$.\n4) a) Résolution de $3n + 15 = 42 \\implies 3n = 42 - 15 \\implies 3n = 27 \\implies n = 9$.\n   b) Les multiples communs de 4 et 6 sont les multiples de leur $\\text{PPCM}(4, 6) = 12$. Les multiples de 12 inférieurs à 50 sont : $0, 12, 24, 36, 48$.",
+          "language": "fr",
+          "section_number": "3"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-20T09:43:38.018Z",
+    "created_at": "2026-09-20T09:43:38.013Z",
+    "createdAt": "2026-09-20T09:43:38.608Z",
+    "updatedAt": "2026-09-20T09:43:38.608Z"
   }
 ]

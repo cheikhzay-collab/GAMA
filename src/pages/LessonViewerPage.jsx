@@ -300,8 +300,7 @@ const renderHomeworkBody = (text, isArabicMode, arabicFont, renderWithMath, secI
   const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
   const processedParts = parts.map((part, idx) => {
     if (idx % 2 === 1) {
-      // Inside math block: only replace literal \n if NOT followed by letters (e.g. KaTeX commands)
-      return part.replace(/\\n(?![a-zA-Z])/g, '\n');
+      return part.replace(/\\n(?!(?:eq|ne|notin|nabla|nsubseteq|nsupseteq|nexists|nparallel|natural|nearrow|nwarrow|ni|not|neg)\b)/gi, '\n');
     } else {
       // Outside math block: replace all literal \n with real newlines safely
       return part.replace(/\\n/g, '\n');
@@ -519,8 +518,7 @@ const calculateTotalPoints = (text, isArabicMode) => {
   const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
   const processedParts = parts.map((part, idx) => {
     if (idx % 2 === 1) {
-      // Inside math block: only replace literal \n if NOT followed by letters (e.g. KaTeX commands)
-      return part.replace(/\\n(?![a-zA-Z])/g, '\n');
+      return part.replace(/\\n(?!(?:eq|ne|notin|nabla|nsubseteq|nsupseteq|nexists|nparallel|natural|nearrow|nwarrow|ni|not|neg)\b)/gi, '\n');
     } else {
       // Outside math block: replace all literal \n with real newlines safely
       return part.replace(/\\n/g, '\n');
@@ -792,7 +790,7 @@ export default function LessonViewerPage() {
         let rawText = String(sec.content);
         const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
         const processedParts = parts.map((part, idx) => {
-          if (idx % 2 === 1) return part.replace(/\\n(?![a-zA-Z])/g, '\n');
+          if (idx % 2 === 1) return part.replace(/\\n(?!(?:eq|ne|notin|nabla|nsubseteq|nsupseteq|nexists|nparallel|natural|nearrow|nwarrow|ni|not|neg)\b)/gi, '\n');
           return part.replace(/\\n/g, '\n');
         });
         rawText = processedParts.join('').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
@@ -989,8 +987,7 @@ export default function LessonViewerPage() {
         const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
         const processedParts = parts.map((part, idx) => {
           if (idx % 2 === 1) {
-            // Inside math block: only replace literal \n if NOT followed by letters (e.g. KaTeX commands)
-            return part.replace(/\\n(?![a-zA-Z])/g, '\n');
+            return part.replace(/\\n(?!(?:eq|ne|notin|nabla|nsubseteq|nsupseteq|nexists|nparallel|natural|nearrow|nwarrow|ni|not|neg)\b)/gi, '\n');
           } else {
             // Outside math block: replace all literal \n with real newlines safely
             return part.replace(/\\n/g, '\n');

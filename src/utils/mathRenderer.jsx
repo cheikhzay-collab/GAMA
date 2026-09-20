@@ -91,8 +91,10 @@ export const repairMathExpression = (latex) => {
   // Convert parenthesized powers ^(xxx) to ^{xxx}
   repaired = repaired.replace(/\^\(([^)]+)\)/g, '^{$1}');
   
-  // 3. Convert multiplication asterisk * to \cdot
-  repaired = repaired.replace(/\*/g, '\\cdot');
+  // 3. Convert multiplication asterisk * to \cdot ONLY when used as binary multiplication
+  // Never convert superscript asterisks (e.g. \mathbb{R}^*, \mathbb{N}^*, x^*, ^{*})
+  repaired = repaired.replace(/(\\mathbb\{[A-Z]\})\*/g, '$1^*');
+  repaired = repaired.replace(/(?<!\^|\^\{)\*/g, '\\cdot');
   
   // 4. Convert division slashes to textbook fractions (\frac)
   // Case A: number/var / (expr) -> \frac{number/var}{expr}
@@ -636,8 +638,7 @@ export function renderWithMath(text) {
   const parts = rawText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
   const processedParts = parts.map((part, idx) => {
     if (idx % 2 === 1) {
-      // Inside math block: only replace literal \n if NOT followed by letters (e.g. KaTeX commands)
-      return part.replace(/\\n(?![a-zA-Z])/g, '\n');
+      return part.replace(/\\n(?!(?:eq|ne|notin|nabla|nsubseteq|nsupseteq|nexists|nparallel|natural|nearrow|nwarrow|ni|not|neg)\b)/gi, '\n');
     } else {
       // Outside math block: replace all literal \n with real newlines safely
       return part.replace(/\\n/g, '\n');
@@ -733,7 +734,7 @@ function renderWithMathInternal(text) {
   const normalised = normalisedTemp.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g)
     .map((part, idx) => {
       if (idx % 2 === 1) return part;
-      let cleanedPart = part.replace(/\\n(?![a-zA-Z])/g, '\n');
+      let cleanedPart = part.replace(/\\n(?!(?:eq|ne|notin|nabla|nsubseteq|nsupseteq|nexists|nparallel|natural|nearrow|nwarrow|ni|not|neg)\b)/gi, '\n');
       
       // Force line break after period followed by space and uppercase letter
       // NOTE: exclude when preceded by a digit (numbered list item like "1. Calculer") or single letter (like "A. Calculer")
