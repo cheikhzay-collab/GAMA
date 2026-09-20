@@ -129,8 +129,23 @@ const saveLocalStorageLessons = (lessons) => {
     }));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(lightweight));
   } catch (e) {
+    // Evict old drafts and stale per-lesson keys instead of truncating the list!
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(lessons.slice(0, 20)));
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('lconq_draft_') || key.startsWith('lconq_lesson_'))) {
+          localStorage.removeItem(key);
+        }
+      }
+      const ultraLight = lessons.map(l => ({
+        id: l.id,
+        title: l.title,
+        level: l.level || l.content?.level,
+        docType: l.docType || l.doc_type || l.content?.doc_type,
+        isActive: l.isActive !== undefined ? l.isActive : l.is_active,
+        updatedAt: l.updatedAt || l.updated_at
+      }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(ultraLight));
     } catch (_) {}
   }
 };
@@ -139,7 +154,18 @@ export const saveSingleLessonToLocalStorage = (lesson) => {
   if (!lesson?.id) return;
   try {
     localStorage.setItem(`lconq_lesson_${lesson.id}`, JSON.stringify(lesson));
-  } catch (_) {}
+  } catch (_) {
+    try {
+      // Evict other single lesson caches to free up space for current one
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('lconq_lesson_') && key !== `lconq_lesson_${lesson.id}`) {
+          localStorage.removeItem(key);
+        }
+      }
+      localStorage.setItem(`lconq_lesson_${lesson.id}`, JSON.stringify(lesson));
+    } catch (_) {}
+  }
 };
 
 export const getSingleLessonFromLocalStorage = (lessonId) => {
@@ -240,8 +266,8 @@ export const getAllLessons = async (options = {}) => {
     try {
       const neonRes = await neonList('lessons', 500);
       if (Array.isArray(neonRes.data) && neonRes.data.length > 0) {
-        // Filter out any ghost/empty rows
-        const validRows = neonRes.data.filter(r => (r.title && r.title !== 'Document') || (r.content?.sections?.length > 0));
+        // Keep all valid rows returned by Neon
+        const validRows = neonRes.data.filter(r => Boolean(r && (r.id || r.title)));
         const listToUse = validRows.length > 0 ? validRows : neonRes.data;
         const mapped = listToUse.map(mapDBToLesson);
         saveLocalStorageLessons(mapped);
@@ -570,6 +596,9 @@ export const updateLesson = async (lessonId, updates) => {
     };
     if (!neonPayload.title && updatedRecord?.title) {
       neonPayload.title = updatedRecord.title;
+    }
+    if (!neonPayload.title && updates.title) {
+      neonPayload.title = updates.title;
     }
     const neonRes = await neonUpsert('lessons', neonPayload, 'id');
     if (neonRes && neonRes.error) {

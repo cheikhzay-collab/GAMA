@@ -647,9 +647,9 @@
   },
   {
     "id": "MOCK-L-RBZPC9IGC",
-    "title": "المتتاليات الترجعية",
+    "title": "المتتاليات الترجعية - معدل",
     "subject": "الرياضيات",
-    "chapter_number": null,
+    "chapter_number": "",
     "teacher": "ZAYANI MED",
     "phone": "",
     "schools": [],
@@ -658,12 +658,16 @@
     "content": {
       "level": "2bac_pc_svt",
       "header": {
-        "phone": "",
+        "prep_title": "ملخص لدرس المتتاليات الترجعية",
         "schools": [],
         "subject": "الرياضيات",
-        "teacher": "الأستاذ: نجيب عثماني",
-        "prep_title": "ملخص لدرس المتتاليات الترجعية",
-        "fiche_title": "المتتاليات الترجعية"
+        "fiche_title": "المتتاليات الترجعية - معدل",
+        "chapter_number": "",
+        "teacher": "ZAYANI MED",
+        "phone": "",
+        "capacites_attendues": "",
+        "contenus": "",
+        "le_contenu": ""
       },
       "doc_type": "course",
       "metadata": {
@@ -680,7 +684,14 @@
           "accent_text": "",
           "section_header": "I. المتتاليات الحسابية: تذكير",
           "section_number": "I",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "items": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-2",
@@ -707,7 +718,15 @@
           "language": "ar",
           "accent_text": "",
           "section_header": "I. المتتاليات الحسابية: تذكير",
-          "section_number": "I"
+          "section_number": "I",
+          "content": "نعتبر المتتالية العددية $(u_n)_{n \\ge 0}$ المعرفة بالصيغة الصريحة التالية : $\\forall n \\in \\mathbb{N} \\quad u_n = 2n - 1$\n\nأحسب حدها الأول $u_0$\n\nأحسب الحدود الأربعة الأولى للمتتالية $(u_n)_{n \\ge 1}$\n\nأحسب $u_{n+1} - u_n$ لكل $n \\in \\mathbb{N}$",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-3",
@@ -722,7 +741,15 @@
           "language": "ar",
           "accent_text": "",
           "section_header": "I. المتتاليات الحسابية: تذكير",
-          "section_number": "I"
+          "section_number": "I",
+          "content": "نقول إن $(u_n)_{n \\in I}$ متتالية حسابية إذا وجد عدد حقيقي $r$ بحيث :\n$\\forall n \\ge n_0 \\quad u_{n+1} = u_n + r$\nالعدد الحقيقي $r$ يسمى أساس المتتالية $(u_n)_{n \\ge n_0}$",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-4",
@@ -734,7 +761,14 @@
           "accent_text": "",
           "section_header": "I. المتتاليات الحسابية: تذكير",
           "section_number": "I",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "items": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-5",
@@ -753,7 +787,15 @@
           "language": "ar",
           "accent_text": "",
           "section_header": "I. المتتاليات الحسابية: تذكير",
-          "section_number": "I"
+          "section_number": "I",
+          "content": "إذا كانت $(u_n)$ متتالية حسابية أساسها $r$ وحدها الأول $u_{n_0}$ فإن : $u_n = u_{n_0} + (n - n_0)r$\n\n**نتيجة :** إذا كانت $(u_n)_{n \\ge n_0}$ متتالية حسابية أساسها $r$ فإن : $u_n = u_p + (n - p)r$ لكل $n \\ge n_0$ و $p \\ge n_0$",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-6",
@@ -776,7 +818,15 @@
           "language": "ar",
           "accent_text": "",
           "section_header": "I. المتتاليات الحسابية: تذكير",
-          "section_number": "I"
+          "section_number": "I",
+          "content": "لتكن $(u_n)_{n \\in I}$ متتالية حسابية.\nنضع $S_n = u_p + u_{p+1} + u_{p+2} + \\dots + u_n$ حيث $n \\ge p \\ge n_0$\n\nلدينا : $S_n = (n - p + 1) \\left( \\frac{u_n + u_p}{2} \\right)$\n\nالمجموع $S_n = u_p + u_{p+1} + u_{p+2} + \\dots + u_n$ يحتوي على $(n - p + 1)$ حد.",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-7",
@@ -788,7 +838,14 @@
           "accent_text": "",
           "section_header": "I. المتتاليات الحسابية: تذكير",
           "section_number": "I",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "items": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-8",
@@ -800,7 +857,14 @@
           "accent_text": "",
           "section_header": "I. المتتاليات الحسابية: تذكير",
           "section_number": "I",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "items": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-9",
@@ -827,7 +891,15 @@
           "language": "ar",
           "accent_text": "",
           "section_header": "II. المتتاليات الهندسية",
-          "section_number": "II"
+          "section_number": "II",
+          "content": "نعتبر المتتالية العددية $(u_n)_{n \\ge 0}$ المعرفة بالصيغة الصريحة التالية : $\\forall n \\in \\mathbb{N} \\quad u_n = 2 \\times 3^n$\n\n1. أحسب حدها الأول $u_0$\n\n2. أحسب $\\frac{u_{n+1}}{u_n}$ لكل $n \\in \\mathbb{N}$\n\n3. ماذا تستنتج ؟",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-10",
@@ -842,7 +914,15 @@
           "language": "ar",
           "accent_text": "",
           "section_header": "II. المتتاليات الهندسية",
-          "section_number": "II"
+          "section_number": "II",
+          "content": "نقول إن $(u_n)_{n \\in I}$ متتالية هندسية إذا وجد عدد حقيقي $q$ بحيث :\n$\\forall n \\ge n_0 \\quad u_{n+1} = q u_n$\nالعدد الحقيقي $q$ يسمى أساس المتتالية $(u_n)_{n \\ge n_0}$",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-11",
@@ -854,7 +934,14 @@
           "accent_text": "",
           "section_header": "II. المتتاليات الهندسية",
           "section_number": "II",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "items": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-12",
@@ -873,7 +960,15 @@
           "language": "ar",
           "accent_text": "",
           "section_header": "II. المتتاليات الهندسية",
-          "section_number": "II"
+          "section_number": "II",
+          "content": "إذا كانت $(u_n)$ متتالية هندسية أساسها $q$ غير منعدم وحدها الأول $u_{n_0}$ فإن : $u_n = u_{n_0} q^{n-n_0}$\n\n**نتيجة :** إذا كانت $(u_n)_{n \\ge n_0}$ متتالية هندسية أساسها $q$ غير منعدم فإن : $u_n = u_m q^{n-m}$ لكل $n \\ge n_0$ و $m \\ge n_0$",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-13",
@@ -896,7 +991,15 @@
           "language": "ar",
           "accent_text": "",
           "section_header": "II. المتتاليات الهندسية",
-          "section_number": "II"
+          "section_number": "II",
+          "content": "لتكن $(u_n)_{n \\in I}$ متتالية هندسية أساسها $q$ غير منعدم. نضع $S_n = u_p + u_{p+1} + u_{p+2} + \\dots + u_n$ حيث $n \\ge p \\ge n_0$ لدينا :\n\nإذا كان $q \\neq 1$ فإن : $S_n = u_p \\left( \\frac{1 - q^{n-p+1}}{1 - q} \\right)$\n\nإذا كان $q = 1$ فإن : $S_n = (n - p + 1) \\times u_p$",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-14",
@@ -908,14 +1011,21 @@
           "accent_text": "",
           "section_header": "II. المتتاليات الهندسية",
           "section_number": "II",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "items": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-15",
           "type": "example",
           "items": [
             {
-              "text": "نعتبر المتتالية العددية $(u_n)$ المعرفة بالعلاقة الترجعية التالية :\n$$\\begin{cases} u_0 = 1 \\\\ u_{n+1} = 2u_n + 3 \\end{cases}$$\nأحسب الحدود الأربعة الأولى للمتتالية $(u_n)$.",
+              "text": "نعتبر المتتالية العددية $(u_n)$ المعرفة بالعلاقة الترجعية التالية :\n\n\n\n\n$$\\begin{cases} u_0 = 1 \\\\ u_{n+1} = 2u_n + 3 \\end{cases}$$\n\n\n\n\nأحسب الحدود الأربعة الأولى للمتتالية $(u_n)$.",
               "type": "text"
             },
             {
@@ -927,7 +1037,15 @@
           "language": "ar",
           "accent_text": "",
           "section_header": "III. المتتاليات من صنف $u_{n+1} = a u_n + b$",
-          "section_number": "III"
+          "section_number": "III",
+          "content": "نعتبر المتتالية العددية $(u_n)$ المعرفة بالعلاقة الترجعية التالية :\n\n\n\n\n$$\\begin{cases} u_0 = 1 \\\\ u_{n+1} = 2u_n + 3 \\end{cases}$$\n\n\n\n\nأحسب الحدود الأربعة الأولى للمتتالية $(u_n)$.\n\n**ملاحظة :** هذه المتتالية تسمى متتالية ترجعية.",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-16",
@@ -939,43 +1057,71 @@
           "accent_text": "",
           "section_header": "III. المتتاليات من صنف $u_{n+1} = a u_n + b$",
           "section_number": "III",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "items": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-17",
           "type": "exercise",
           "title": "تمرين 8",
-          "content": "نعتبر المتتالية الترجعية $(u_n)$ المعرفة كالتالي :\n$$\\begin{cases} u_{n+1} = \\frac{u_n}{1 + u_n} \\\\ u_0 = 2 \\end{cases} \\quad \\forall n \\in \\mathbb{N}$$\nأحسب $u_1$ و $u_2$ و $u_3$.",
+          "content": "نعتبر المتتالية الترجعية $(u_n)$ المعرفة كالتالي :\n\n\n\n\n$$\\begin{cases} u_{n+1} = \\frac{u_n}{1 + u_n} \\\\ u_0 = 2 \\end{cases}$$\n\n\n\n \\quad \\forall n \\in \\mathbb{N}$$\nأحسب $u_1$ و $u_2$ و $u_3$.",
           "language": "ar",
           "solution": "",
           "accent_text": "",
           "section_header": "III. المتتاليات من صنف $u_{n+1} = a u_n + b$",
           "section_number": "III",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "items": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-18",
           "type": "exercise",
           "title": "تمرين 9",
-          "content": "نعتبر المتتالية العددية $(u_n)$ المعرفة كالتالي :\n$$\\begin{cases} u_{n+1} = \\frac{2}{3}u_n + 1 \\\\ u_0 = 10 \\end{cases} \\quad \\forall n \\in \\mathbb{N}^*$$\nونعتبر المتتالية العددية $(v_n)$ المعرفة كالتالي : $\\forall n \\in \\mathbb{N} \\quad v_n = u_n - 3$\n1. أحسب $v_0$ و $v_1$ و $v_2$\n2. أحسب $\\frac{v_{n+1}}{v_n}$ و استنتج طبيعة المتتالية $(v_n)$\n3. أكتب $v_n$ بدلالة $n$\n4. استنتج $u_n$ بدلالة $n$\n5. أحسب بدلالة $n$ المجموع : $S = v_0 + v_1 + v_2 + \\dots + v_n$",
+          "content": "نعتبر المتتالية العددية $(u_n)$ المعرفة كالتالي :\n\n\n\n\n$$\\begin{cases} u_{n+1} = \\frac{2}{3}u_n + 1 \\\\ u_0 = 10 \\end{cases}$$\n\n\n\n \\quad \\forall n \\in \\mathbb{N}^*$$\nونعتبر المتتالية العددية $(v_n)$ المعرفة كالتالي : $\\forall n \\in \\mathbb{N} \\quad v_n = u_n - 3$\n1. أحسب $v_0$ و $v_1$ و $v_2$\n2. أحسب $\\frac{v_{n+1}}{v_n}$ و استنتج طبيعة المتتالية $(v_n)$\n3. أكتب $v_n$ بدلالة $n$\n4. استنتج $u_n$ بدلالة $n$\n5. أحسب بدلالة $n$ المجموع : $S = v_0 + v_1 + v_2 + \\dots + v_n$",
           "language": "ar",
           "solution": "",
           "accent_text": "",
           "section_header": "III. المتتاليات من صنف $u_{n+1} = a u_n + b$",
           "section_number": "III",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "items": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-19",
           "type": "exercise",
           "title": "تمرين 10",
-          "content": "نعتبر المتتالية العددية $(u_n)$ المعرفة كالتالي :\n$$\\begin{cases} u_{n+1} = 2u_n + 2 \\\\ u_0 = 2 \\end{cases} \\quad \\forall n \\in \\mathbb{N}$$\nونعتبر المتتالية العددية $(v_n)$ المعرفة كالتالي : $\\forall n \\in \\mathbb{N} \\quad v_n = u_n + 2$\n1. أحسب $v_0$ و $v_1$\n2. أحسب $\\frac{v_{n+1}}{v_n}$ و استنتج طبيعة المتتالية $(v_n)$\n3. أكتب $v_n$ بدلالة $n$\n4. استنتج $u_n$ بدلالة $n$\n5. أنشئ في معلم متعامد ممنظم المستقيم ذو المعادلة : $y = x$ و المستقيم ذو المعادلة : $y = 2x + 2$\n6. مثل مبيانياً الحدود الخمسة الأولى للمتتالية $(u_n)$",
+          "content": "نعتبر المتتالية العددية $(u_n)$ المعرفة كالتالي :\n\n\n\n\n$$\\begin{cases} u_{n+1} = 2u_n + 2 \\\\ u_0 = 2 \\end{cases}$$\n\n\n\n \\quad \\forall n \\in \\mathbb{N}$$\nونعتبر المتتالية العددية $(v_n)$ المعرفة كالتالي : $\\forall n \\in \\mathbb{N} \\quad v_n = u_n + 2$\n1. أحسب $v_0$ و $v_1$\n2. أحسب $\\frac{v_{n+1}}{v_n}$ و استنتج طبيعة المتتالية $(v_n)$\n3. أكتب $v_n$ بدلالة $n$\n4. استنتج $u_n$ بدلالة $n$\n5. أنشئ في معلم متعامد ممنظم المستقيم ذو المعادلة : $y = x$ و المستقيم ذو المعادلة : $y = 2x + 2$\n6. مثل مبيانياً الحدود الخمسة الأولى للمتتالية $(u_n)$",
           "language": "ar",
           "solution": "",
           "accent_text": "",
           "section_header": "III. المتتاليات من صنف $u_{n+1} = a u_n + b$",
           "section_number": "III",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "items": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-20",
@@ -987,7 +1133,14 @@
           "accent_text": "",
           "section_header": "III. المتتاليات من صنف $u_{n+1} = a u_n + b$",
           "section_number": "III",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "items": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-21",
@@ -999,62 +1152,99 @@
           "accent_text": "",
           "section_header": "III. المتتاليات من صنف $u_{n+1} = a u_n + b$",
           "section_number": "III",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "items": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-22",
           "type": "exercise",
           "title": "تمرين 13",
-          "content": "نعتبر المتتالية العددية $(u_n)$ المعرفة كالتالي :\n$$\\begin{cases} u_{n+1} = -\\frac{1}{2}u_n + 1 \\\\ u_0 = 3 \\end{cases} \\quad \\forall n \\in \\mathbb{N}$$\nونعتبر المتتالية العددية $(v_n)$ المعرفة كالتالي : $\\forall n \\in \\mathbb{N} \\quad v_n = u_n - \\frac{2}{3}$\n1. أحسب $v_0$ و $v_1$\n2. بين أن $(v_n)$ متتالية هندسية أساسها : $-\\frac{1}{2}$\n3. أكتب $v_n$ بدلالة $n$\n4. استنتج $u_n$ بدلالة $n$\n5. أنشئ في معلم متعامد ممنظم المستقيم ذو المعادلة : $y = x$ و المستقيم ذو المعادلة : $y = 2x + 2$\n6. مثل مبيانياً الحدود الخمسة الأولى للمتتالية $(u_n)$",
+          "content": "نعتبر المتتالية العددية $(u_n)$ المعرفة كالتالي :\n\n\n\n\n$$\\begin{cases} u_{n+1} = -\\frac{1}{2}u_n + 1 \\\\ u_0 = 3 \\end{cases}$$\n\n\n\n \\quad \\forall n \\in \\mathbb{N}$$\nونعتبر المتتالية العددية $(v_n)$ المعرفة كالتالي : $\\forall n \\in \\mathbb{N} \\quad v_n = u_n - \\frac{2}{3}$\n1. أحسب $v_0$ و $v_1$\n2. بين أن $(v_n)$ متتالية هندسية أساسها : $-\\frac{1}{2}$\n3. أكتب $v_n$ بدلالة $n$\n4. استنتج $u_n$ بدلالة $n$\n5. أنشئ في معلم متعامد ممنظم المستقيم ذو المعادلة : $y = x$ و المستقيم ذو المعادلة : $y = 2x + 2$\n6. مثل مبيانياً الحدود الخمسة الأولى للمتتالية $(u_n)$",
           "language": "ar",
           "solution": "",
           "accent_text": "",
           "section_header": "III. المتتاليات من صنف $u_{n+1} = a u_n + b$",
           "section_number": "III",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "items": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-23",
           "type": "exercise",
           "title": "تمرين 14",
-          "content": "نعتبر المتتالية العددية $(u_n)$ المعرفة كالتالي :\n$$\\begin{cases} u_{n+1} = \\frac{1}{2}u_n - \\frac{1}{2} \\\\ u_0 = 3 \\end{cases} \\quad \\forall n \\in \\mathbb{N}$$\nونعتبر المتتالية العددية $(v_n)$ المعرفة كالتالي : $\\forall n \\in \\mathbb{N} \\quad v_n = u_n + 1$\n1. أحسب $u_1$ و $u_2$ و $v_0$ و $v_1$\n2. بين أن $(v_n)$ متتالية هندسية أساسها $\\frac{1}{2}$\n3. أكتب $v_n$ بدلالة $n$\n4. استنتج $u_n$ بدلالة $n$\n5. أحسب : $\\lim_{n \\to +\\infty} v_n$ و $\\lim_{n \\to +\\infty} u_n$",
+          "content": "نعتبر المتتالية العددية $(u_n)$ المعرفة كالتالي :\n\n\n\n\n$$\\begin{cases} u_{n+1} = \\frac{1}{2}u_n - \\frac{1}{2} \\\\ u_0 = 3 \\end{cases}$$\n\n\n\n \\quad \\forall n \\in \\mathbb{N}$$\nونعتبر المتتالية العددية $(v_n)$ المعرفة كالتالي : $\\forall n \\in \\mathbb{N} \\quad v_n = u_n + 1$\n1. أحسب $u_1$ و $u_2$ و $v_0$ و $v_1$\n2. بين أن $(v_n)$ متتالية هندسية أساسها $\\frac{1}{2}$\n3. أكتب $v_n$ بدلالة $n$\n4. استنتج $u_n$ بدلالة $n$\n5. أحسب : $\\lim_{n \\to +\\infty} v_n$ و $\\lim_{n \\to +\\infty} u_n$",
           "language": "ar",
           "solution": "",
           "accent_text": "",
           "section_header": "III. المتتاليات من صنف $u_{n+1} = a u_n + b$",
           "section_number": "III",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "items": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-24",
           "type": "exercise",
           "title": "تمرين 15",
-          "content": "نعتبر المتتالية العددية $(u_n)$ المعرفة كالتالي :\n$$\\begin{cases} u_{n+1} = 3u_n + \\frac{3}{2} \\\\ u_0 = \\frac{1}{3} \\end{cases} \\quad \\forall n \\in \\mathbb{N}$$\nونعتبر المتتالية العددية $(v_n)$ المعرفة كالتالي : $\\forall n \\in \\mathbb{N} \\quad v_n = u_n + \\frac{3}{4}$\n1. أحسب $u_1$ و $u_2$ و $v_0$ و $v_1$\n2. بين أن $(v_n)$ متتالية هندسية أساسها $3$\n3. أكتب $v_n$ بدلالة $n$\n4. استنتج أن : $\\forall n \\in \\mathbb{N} \\quad u_n = \\frac{13}{12} \\times 3^n - \\frac{3}{4}$\n5. أحسب : $\\lim_{n \\to +\\infty} v_n$ و $\\lim_{n \\to +\\infty} u_n$",
+          "content": "نعتبر المتتالية العددية $(u_n)$ المعرفة كالتالي :\n\n\n\n\n$$\\begin{cases} u_{n+1} = 3u_n + \\frac{3}{2} \\\\ u_0 = \\frac{1}{3} \\end{cases}$$\n\n\n\n \\quad \\forall n \\in \\mathbb{N}$$\nونعتبر المتتالية العددية $(v_n)$ المعرفة كالتالي : $\\forall n \\in \\mathbb{N} \\quad v_n = u_n + \\frac{3}{4}$\n1. أحسب $u_1$ و $u_2$ و $v_0$ و $v_1$\n2. بين أن $(v_n)$ متتالية هندسية أساسها $3$\n3. أكتب $v_n$ بدلالة $n$\n4. استنتج أن : $\\forall n \\in \\mathbb{N} \\quad u_n = \\frac{13}{12} \\times 3^n - \\frac{3}{4}$\n5. أحسب : $\\lim_{n \\to +\\infty} v_n$ و $\\lim_{n \\to +\\infty} u_n$",
           "language": "ar",
           "solution": "",
           "accent_text": "",
           "section_header": "III. المتتاليات من صنف $u_{n+1} = a u_n + b$",
           "section_number": "III",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "items": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-25",
           "type": "exercise",
           "title": "تمرين 16",
-          "content": "نعتبر المتتالية العددية $(u_n)$ المعرفة كالتالي :\n$$\\begin{cases} u_{n+1} = \\frac{1}{4}u_n + 2 \\\\ u_0 = -1 \\end{cases} \\quad \\forall n \\in \\mathbb{N}$$\nونعتبر المتتالية العددية $(v_n)$ المعرفة كالتالي : $\\forall n \\in \\mathbb{N} \\quad v_n = u_n - \\frac{8}{3}$\n1. أحسب $v_0$ و $v_1$\n2. بين أن $(v_n)$ متتالية هندسية أساسها : $\\frac{1}{4}$\n3. أكتب $v_n$ بدلالة $n$\n4. استنتج $u_n$ بدلالة $n$\n5. أحسب : $\\lim_{n \\to +\\infty} v_n$ و $\\lim_{n \\to +\\infty} u_n$\n6. بين أن : $v_0 + v_1 + v_2 + \\dots + v_{n-1} = -\\frac{44}{9} \\left( 1 - \\left(\\frac{1}{4}\\right)^n \\right)$\n7. بين أن : $u_0 + u_1 + u_2 + \\dots + u_{n-1} = -\\frac{44}{9} \\left( 1 - \\left(\\frac{1}{4}\\right)^n \\right) + \\frac{8}{3}n$",
+          "content": "نعتبر المتتالية العددية $(u_n)$ المعرفة كالتالي :\n\n\n\n\n$$\\begin{cases} u_{n+1} = \\frac{1}{4}u_n + 2 \\\\ u_0 = -1 \\end{cases}$$\n\n\n\n \\quad \\forall n \\in \\mathbb{N}$$\nونعتبر المتتالية العددية $(v_n)$ المعرفة كالتالي : $\\forall n \\in \\mathbb{N} \\quad v_n = u_n - \\frac{8}{3}$\n1. أحسب $v_0$ و $v_1$\n2. بين أن $(v_n)$ متتالية هندسية أساسها : $\\frac{1}{4}$\n3. أكتب $v_n$ بدلالة $n$\n4. استنتج $u_n$ بدلالة $n$\n5. أحسب : $\\lim_{n \\to +\\infty} v_n$ و $\\lim_{n \\to +\\infty} u_n$\n6. بين أن : $v_0 + v_1 + v_2 + \\dots + v_{n-1} = -\\frac{44}{9} \\left( 1 - \\left(\\frac{1}{4}\\right)^n \\right)$\n7. بين أن : $u_0 + u_1 + u_2 + \\dots + u_{n-1} = -\\frac{44}{9} \\left( 1 - \\left(\\frac{1}{4}\\right)^n \\right) + \\frac{8}{3}n$",
           "language": "ar",
           "solution": "",
           "accent_text": "",
           "section_header": "III. المتتاليات من صنف $u_{n+1} = a u_n + b$",
           "section_number": "III",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "items": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         }
-      ]
+      ],
+      "columns_count": 2
     },
     "is_active": true,
     "is_archived": false,
     "created_at": "2026-07-14T18:49:57.863+00:00",
-    "updated_at": "2026-09-06T10:31:25.917+00:00"
+    "updated_at": "2026-09-19T18:08:25.529Z",
+    "updatedAt": "2026-09-19T18:08:37.501Z"
   },
   {
     "id": "MOCK-L-5VI7M7QIE",
@@ -31787,25 +31977,25 @@
     "id": "MOCK-L-V3SPVHTV6",
     "title": "LIMITE",
     "subject": "Mathématiques",
-    "chapter_number": null,
-    "teacher": null,
-    "phone": null,
+    "chapter_number": "",
+    "teacher": "",
+    "phone": "",
     "schools": [],
-    "level": null,
-    "doc_type": "course",
+    "level": "2bac_pc_svt",
+    "doc_type": "exercises",
     "content": {
       "level": "2bac_pc_svt",
       "header": {
-        "phone": "",
+        "prep_title": "Préparation aux concours",
         "schools": [],
         "subject": "Mathématiques",
-        "teacher": "",
-        "is_summary": false,
-        "prep_title": "Préparation aux concours",
         "fiche_title": "LIMITE",
-        "summary_meta": null,
-        "is_national_exam": false,
-        "national_exam_meta": null
+        "chapter_number": "",
+        "teacher": "",
+        "phone": "",
+        "capacites_attendues": "",
+        "contenus": "",
+        "le_contenu": ""
       },
       "doc_type": "exercises",
       "metadata": {
@@ -31833,11 +32023,11 @@
               "type": "bullet"
             },
             {
-              "text": "• $\\begin{cases} f(x) = \\dfrac{2-\\sqrt{x}}{x^2-2x} & ; x \\ge 4 \\\\ f(4) = -\\dfrac{2}{3} \\end{cases} \\quad ; \\quad I = [4; +\\infty[$",
+              "text": "• \n\n\n\n$$\\begin{cases} f(x) = \\dfrac{2-\\sqrt{x}}{x^2-2x} & ; x \\ge 4 \\\\ f(4) = -\\dfrac{2}{3} \\end{cases}$$\n\n\n\n \\quad ; \\quad I = [4; +\\infty[$",
               "type": "bullet"
             },
             {
-              "text": "• $\\begin{cases} f(x) = x^2-4x+5 & ; x < 3 \\\\ f(x) = \\sqrt{5x-7} & ; x \\ge 3 \\end{cases} \\quad ; \\quad I = \\mathbb{R}$",
+              "text": "• \n\n\n\n$$\\begin{cases} f(x) = x^2-4x+5 & ; x < 3 \\\\ f(x) = \\sqrt{5x-7} & ; x \\ge 3 \\end{cases}$$\n\n\n\n \\quad ; \\quad I = \\mathbb{R}$",
               "type": "bullet"
             }
           ],
@@ -31848,14 +32038,20 @@
           "solution": "",
           "section_header": "SERIE 1 : LIMITES ET CONTINUITE",
           "section_number": "1",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-2",
           "type": "exercise",
           "items": [
             {
-              "text": "Soit $f$ la fonction définie par : $f(x) = \\begin{cases} \\dfrac{ax^2+bx-1}{x^2-1} & ; x \\ge 2 \\\\ 3x+c & ; x < 2 \\end{cases}$",
+              "text": "Soit $f$ la fonction définie par : \n\n\n\n$$f(x) = \\begin{cases} \\dfrac{ax^2+bx-1}{x^2-1} & ; x \\ge 2 \\\\ 3x+c & ; x < 2 \\end{cases}$$\n\n\n\n",
               "type": "text"
             },
             {
@@ -31878,7 +32074,13 @@
           "solution": "",
           "section_header": "SERIE 1 : LIMITES ET CONTINUITE",
           "section_number": "2",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-3",
@@ -31904,7 +32106,13 @@
           "solution": "",
           "section_header": "SERIE 1 : LIMITES ET CONTINUITE",
           "section_number": "3",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-4",
@@ -31934,7 +32142,13 @@
           "solution": "",
           "section_header": "SERIE 1 : LIMITES ET CONTINUITE",
           "section_number": "4",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-5",
@@ -31960,7 +32174,13 @@
           "solution": "",
           "section_header": "SERIE 1 : LIMITES ET CONTINUITE",
           "section_number": "5",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-6",
@@ -31986,7 +32206,13 @@
           "solution": "",
           "section_header": "SERIE 1 : LIMITES ET CONTINUITE",
           "section_number": "6",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-7",
@@ -32025,7 +32251,7 @@
               "type": "bullet"
             },
             {
-              "text": "**6)** Soit $g$ la fonction définie par : $g(x) = \\begin{cases} x^2 & ; x \\ge \\alpha \\\\ -1 - \\dfrac{1}{x} & ; x < \\alpha \\end{cases}$. Étudier la continuité de $g$ en $\\alpha$.",
+              "text": "**6)** Soit $g$ la fonction définie par : \n\n\n\n$$g(x) = \\begin{cases} x^2 & ; x \\ge \\alpha \\\\ -1 - \\dfrac{1}{x} & ; x < \\alpha \\end{cases}$$\n\n\n\n. Étudier la continuité de $g$ en $\\alpha$.",
               "type": "bullet"
             }
           ],
@@ -32036,7 +32262,13 @@
           "solution": "",
           "section_header": "SERIE 1 : LIMITES ET CONTINUITE",
           "section_number": "7",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-8",
@@ -32070,7 +32302,13 @@
           "solution": "",
           "section_header": "SERIE 1 : LIMITES ET CONTINUITE",
           "section_number": "8",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-9",
@@ -32103,7 +32341,13 @@
           "solution": "",
           "section_header": "SERIE 1 : LIMITES ET CONTINUITE",
           "section_number": "9",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-10",
@@ -32141,7 +32385,13 @@
           "solution": "",
           "section_header": "SERIE 1 : LIMITES ET CONTINUITE",
           "section_number": "10",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-11",
@@ -32179,7 +32429,13 @@
           "solution": "",
           "section_header": "SERIE 1 : LIMITES ET CONTINUITE",
           "section_number": "11",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-12",
@@ -32225,14 +32481,20 @@
           "solution": "",
           "section_header": "SERIE 1 : LIMITES ET CONTINUITE",
           "section_number": "12",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-13",
           "type": "exercise",
           "items": [
             {
-              "text": "Soit $f$ la fonction définie par : $f(x) = \\begin{cases} \\sqrt{x-1}+3 & ; x \\ge 1 \\\\ \\dfrac{x^2+x-2}{x-1} & ; x < 1 \\end{cases}$",
+              "text": "Soit $f$ la fonction définie par : \n\n\n\n$$f(x) = \\begin{cases} \\sqrt{x-1}+3 & ; x \\ge 1 \\\\ \\dfrac{x^2+x-2}{x-1} & ; x < 1 \\end{cases}$$\n\n\n\n",
               "type": "text"
             },
             {
@@ -32263,7 +32525,13 @@
           "solution": "",
           "section_header": "SERIE 1 : LIMITES ET CONTINUITE",
           "section_number": "13",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-14",
@@ -32301,7 +32569,13 @@
           "solution": "",
           "section_header": "SERIE 1 : LIMITES ET CONTINUITE",
           "section_number": "14",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-15",
@@ -32367,7 +32641,13 @@
           "solution": "",
           "section_header": "SERIE 1 : LIMITES ET CONTINUITE",
           "section_number": "15",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-16",
@@ -32437,18 +32717,26 @@
           "solution": "",
           "section_header": "SERIE 1 : LIMITES ET CONTINUITE",
           "section_number": "16",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         }
       ],
       "is_summary": false,
       "summary_meta": null,
       "is_national_exam": false,
-      "national_exam_meta": null
+      "national_exam_meta": null,
+      "columns_count": 2
     },
     "is_active": true,
     "is_archived": false,
     "created_at": "2026-09-10T07:08:07.146+00:00",
-    "updated_at": "2026-09-10T07:08:07.169+00:00"
+    "updated_at": "2026-09-19T19:19:49.938Z",
+    "updatedAt": "2026-09-19T19:19:51.062Z"
   },
   {
     "id": "MOCK-L-UFPFWHDD5",
@@ -37103,5 +37391,1550 @@
     "updated_at": "2026-09-18T16:26:12.315Z",
     "createdAt": "2026-09-18T16:17:49.726Z",
     "updatedAt": "2026-09-18T16:26:13.105Z"
+  },
+  {
+    "id": "MOCK-L-3E70FBUBJ",
+    "title": "Limites d'une fonction numérique",
+    "subject": "Mathématiques",
+    "chapter_number": "",
+    "teacher": "Professeur",
+    "phone": "",
+    "schools": [],
+    "level": "1bac_sci",
+    "doc_type": "exercises",
+    "content": {
+      "level": "1bac_sci",
+      "doc_type": "exercises",
+      "columns_count": 2,
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "1ère Bac Sciences Expérimentales",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Limites d'une fonction numérique",
+        "chapter_number": "",
+        "teacher": "Professeur",
+        "phone": "",
+        "capacites_attendues": "",
+        "contenus": "",
+        "le_contenu": ""
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit $f$ la fonction numérique définie par $f(x) = \\frac{x^3 - 8}{x^2 - 4x + 4}$.",
+              "type": "text"
+            },
+            {
+              "text": "1) a) Déterminer l'ensemble de définition $D_f$ de la fonction $f$.",
+              "type": "bullet"
+            },
+            {
+              "text": "b) Vérifier que pour tout $x \\in D_f$, $x^3 - 8 = (x-2)(x^2+2x+4)$ et $x^2 - 4x + 4 = (x-2)^2$.",
+              "type": "bullet"
+            },
+            {
+              "text": "2) a) Calculer $\\lim_{x \\to 2} f(x)$.",
+              "type": "bullet"
+            },
+            {
+              "text": "b) En déduire la nature de la droite d'équation $x=2$ pour la courbe représentative de $f$.",
+              "type": "bullet"
+            },
+            {
+              "text": "3) Calculer $\\lim_{x \\to -\\infty} f(x)$ et $\\lim_{x \\to +\\infty} f(x)$.",
+              "type": "bullet"
+            },
+            {
+              "text": "4) Déterminer $\\lim_{x \\to 0} f(x)$.",
+              "type": "bullet"
+            }
+          ],
+          "title": "Exercice 1 : Calculs directs et formes indéterminées algébriques",
+          "points": "5 pts",
+          "content": "Soit $f$ la fonction numérique définie par $f(x) = \\frac{x^3 - 8}{x^2 - 4x + 4}$.\n1) a) Déterminer l'ensemble de définition $D_f$ de la fonction $f$.\n   b) Vérifier que pour tout $x \\in D_f$, $x^3 - 8 = (x-2)(x^2+2x+4)$ et $x^2 - 4x + 4 = (x-2)^2$.\n2) a) Calculer $\\lim_{x \\to 2} f(x)$.\n   b) En déduire la nature de la droite d'équation $x=2$ pour la courbe représentative de $f$.\n3) Calculer $\\lim_{x \\to -\\infty} f(x)$ et $\\lim_{x \\to +\\infty} f(x)$.\n4) Déterminer $\\lim_{x \\to 0} f(x)$.",
+          "language": "fr",
+          "solution": "",
+          "section_number": "1",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-2",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit $g$ la fonction numérique définie par $g(x) = \\sqrt{x^2+3x+1} - x$.",
+              "type": "text"
+            },
+            {
+              "text": "1) a) Déterminer l'ensemble de définition $D_g$ de la fonction $g$.",
+              "type": "bullet"
+            },
+            {
+              "text": "b) Vérifier que pour tout $x \\in D_g$, $x^2+3x+1 \\ge 0$.",
+              "type": "bullet"
+            },
+            {
+              "text": "2) Calculer $\\lim_{x \\to +\\infty} g(x)$.",
+              "type": "bullet"
+            },
+            {
+              "text": "3) Calculer $\\lim_{x \\to -\\infty} g(x)$.",
+              "type": "bullet"
+            },
+            {
+              "text": "4) Soit $h(x) = \\frac{\\sqrt{x+3}-2}{x-1}$.",
+              "type": "bullet"
+            },
+            {
+              "text": "a) Déterminer l'ensemble de définition de $h$.",
+              "type": "bullet"
+            },
+            {
+              "text": "b) Calculer $\\lim_{x \\to 1} h(x)$.",
+              "type": "bullet"
+            }
+          ],
+          "title": "Exercice 2 : Utilisation de l'expression conjuguée et formes indéterminées",
+          "points": "5 pts",
+          "content": "Soit $g$ la fonction numérique définie par $g(x) = \\sqrt{x^2+3x+1} - x$.\n1) a) Déterminer l'ensemble de définition $D_g$ de la fonction $g$.\n   b) Vérifier que pour tout $x \\in D_g$, $x^2+3x+1 \\ge 0$.\n2) Calculer $\\lim_{x \\to +\\infty} g(x)$.\n3) Calculer $\\lim_{x \\to -\\infty} g(x)$.\n4) Soit $h(x) = \\frac{\\sqrt{x+3}-2}{x-1}$.\n   a) Déterminer l'ensemble de définition de $h$.\n   b) Calculer $\\lim_{x \\to 1} h(x)$.",
+          "language": "fr",
+          "solution": "",
+          "section_number": "2",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-3",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit $k$ la fonction numérique définie par :",
+              "type": "text"
+            },
+            {
+              "text": "\n\n\n\n\n\n$$k(x) = \\begin{cases} \\frac{|x-1|}{x^2-1} & \\text{si } x < 1 \\\\ \\frac{x^2+x-2}{x-1} & \\text{si } x > 1 \\\\ 3 & \\text{si } x = 1 \\end{cases}$$\n\n\n\n\n\n",
+              "type": "text"
+            },
+            {
+              "text": "1) Déterminer l'ensemble de définition de la fonction $k$.",
+              "type": "bullet"
+            },
+            {
+              "text": "2) a) Écrire l'expression de $k(x)$ sans la valeur absolue pour $x < 1$.",
+              "type": "bullet"
+            },
+            {
+              "text": "b) Calculer $\\lim_{x \\to 1^-} k(x)$.",
+              "type": "bullet"
+            },
+            {
+              "text": "3) a) Vérifier que pour $x > 1$, $x^2+x-2 = (x-1)(x+2)$.",
+              "type": "bullet"
+            },
+            {
+              "text": "b) Calculer $\\lim_{x \\to 1^+} k(x)$.",
+              "type": "bullet"
+            },
+            {
+              "text": "4) La fonction $k$ admet-elle une limite en $x=1$ ? Justifier votre réponse.",
+              "type": "bullet"
+            }
+          ],
+          "title": "Exercice 3 : Limites à droite et à gauche, fonctions définies par morceaux et valeurs absolues",
+          "points": "5 pts",
+          "content": "Soit $k$ la fonction numérique définie par :\n\n\n\n\n\n\n$$k(x) = \\begin{cases} \\frac{|x-1|}{x^2-1} & \\text{si } x < 1 \\\\ \\frac{x^2+x-2}{x-1} & \\text{si } x > 1 \\\\ 3 & \\text{si } x = 1 \\end{cases}$$\n\n\n\n\n\n\n1) Déterminer l'ensemble de définition de la fonction $k$.\n2) a) Écrire l'expression de $k(x)$ sans la valeur absolue pour $x < 1$.\n   b) Calculer $\\lim_{x \\to 1^-} k(x)$.\n3) a) Vérifier que pour $x > 1$, $x^2+x-2 = (x-1)(x+2)$.\n   b) Calculer $\\lim_{x \\to 1^+} k(x)$.\n4) La fonction $k$ admet-elle une limite en $x=1$ ? Justifier votre réponse.",
+          "language": "fr",
+          "solution": "",
+          "section_number": "3",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-4",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit $f$ la fonction numérique définie par $f(x) = \\frac{2x^2+3x-1}{x^2-x-2}$.",
+              "type": "text"
+            },
+            {
+              "text": "1) a) Déterminer l'ensemble de définition $D_f$ de la fonction $f$.",
+              "type": "bullet"
+            },
+            {
+              "text": "b) Vérifier que pour tout $x \\in D_f$, $x^2-x-2 = (x-2)(x+1)$.",
+              "type": "bullet"
+            },
+            {
+              "text": "2) Calculer $\\lim_{x \\to +\\infty} f(x)$ et $\\lim_{x \\to -\\infty} f(x)$. En déduire les asymptotes horizontales à la courbe de $f$.",
+              "type": "bullet"
+            },
+            {
+              "text": "3) a) Calculer $\\lim_{x \\to 2^+} f(x)$ et $\\lim_{x \\to 2^-} f(x)$.",
+              "type": "bullet"
+            },
+            {
+              "text": "b) Calculer $\\lim_{x \\to -1^+} f(x)$ et $\\lim_{x \\to -1^-} f(x)$.",
+              "type": "bullet"
+            },
+            {
+              "text": "4) En déduire les équations des asymptotes verticales à la courbe de $f$.",
+              "type": "bullet"
+            }
+          ],
+          "title": "Exercice 4 : Limites et asymptotes (verticales et horizontales)",
+          "points": "5 pts",
+          "content": "Soit $f$ la fonction numérique définie par $f(x) = \\frac{2x^2+3x-1}{x^2-x-2}$.\n1) a) Déterminer l'ensemble de définition $D_f$ de la fonction $f$.\n   b) Vérifier que pour tout $x \\in D_f$, $x^2-x-2 = (x-2)(x+1)$.\n2) Calculer $\\lim_{x \\to +\\infty} f(x)$ et $\\lim_{x \\to -\\infty} f(x)$. En déduire les asymptotes horizontales à la courbe de $f$.\n3) a) Calculer $\\lim_{x \\to 2^+} f(x)$ et $\\lim_{x \\to 2^-} f(x)$.\n   b) Calculer $\\lim_{x \\to -1^+} f(x)$ et $\\lim_{x \\to -1^-} f(x)$.\n4) En déduire les équations des asymptotes verticales à la courbe de $f$.",
+          "language": "fr",
+          "solution": "",
+          "section_number": "4",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-5",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit $f_m$ la fonction numérique définie par $f_m(x) = \\frac{mx^2 + (m-1)x - 1}{x-1}$, où $m$ est un paramètre réel.",
+              "type": "text"
+            },
+            {
+              "text": "1) Déterminer l'ensemble de définition de $f_m$.",
+              "type": "bullet"
+            },
+            {
+              "text": "2) Calculer $\\lim_{x \\to +\\infty} f_m(x)$ en discutant selon les valeurs du paramètre $m$.",
+              "type": "bullet"
+            },
+            {
+              "text": "3) a) Calculer $\\lim_{x \\to 1} (mx^2 + (m-1)x - 1)$.",
+              "type": "bullet"
+            },
+            {
+              "text": "b) Déterminer la valeur de $m$ pour laquelle la fonction $f_m$ admet une limite finie en $x=1$.",
+              "type": "bullet"
+            },
+            {
+              "text": "4) Pour la valeur de $m$ trouvée à la question 3)b), calculer $\\lim_{x \\to 1} f_m(x)$.",
+              "type": "bullet"
+            }
+          ],
+          "title": "Exercice 5 : Limites avec paramètres et discussion de cas",
+          "points": "5 pts",
+          "content": "Soit $f_m$ la fonction numérique définie par $f_m(x) = \\frac{mx^2 + (m-1)x - 1}{x-1}$, où $m$ est un paramètre réel.\n1) Déterminer l'ensemble de définition de $f_m$.\n2) Calculer $\\lim_{x \\to +\\infty} f_m(x)$ en discutant selon les valeurs du paramètre $m$.\n3) a) Calculer $\\lim_{x \\to 1} (mx^2 + (m-1)x - 1)$.\n   b) Déterminer la valeur de $m$ pour laquelle la fonction $f_m$ admet une limite finie en $x=1$.\n4) Pour la valeur de $m$ trouvée à la question 3)b), calculer $\\lim_{x \\to 1} f_m(x)$.",
+          "language": "fr",
+          "solution": "",
+          "section_number": "5",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-6",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit $f$ la fonction numérique définie sur $\\mathbb{R}^*$ par $f(x) = \\frac{\\sin(x)}{x^2} + \\frac{1}{x}$.",
+              "type": "text"
+            },
+            {
+              "text": "1) Déterminer l'ensemble de définition de $f$.",
+              "type": "bullet"
+            },
+            {
+              "text": "2) a) Montrer que pour tout $x \\in \\mathbb{R}^*$, on a $x-1 \\le x+\\sin(x) \\le x+1$.",
+              "type": "bullet"
+            },
+            {
+              "text": "b) En déduire que pour tout $x > 0$, $\\frac{x-1}{x^2} \\le f(x) \\le \\frac{x+1}{x^2}$.",
+              "type": "bullet"
+            },
+            {
+              "text": "3) À l'aide des théorèmes de comparaison, calculer $\\lim_{x \\to +\\infty} f(x)$.",
+              "type": "bullet"
+            },
+            {
+              "text": "4) On considère la fonction $g(x) = \\frac{\\sqrt{x^2+x+1} - \\sqrt{x^2-x+1}}{x}$. Calculer $\\lim_{x \\to +\\infty} g(x)$.",
+              "type": "bullet"
+            }
+          ],
+          "title": "Exercice 6 : Synthèse de techniques, théorèmes de comparaison et limites de fonctions composées",
+          "points": "5 pts",
+          "content": "Soit $f$ la fonction numérique définie sur $\\mathbb{R}^*$ par $f(x) = \\frac{\\sin(x)}{x^2} + \\frac{1}{x}$.\n1) Déterminer l'ensemble de définition de $f$.\n2) a) Montrer que pour tout $x \\in \\mathbb{R}^*$, on a $x-1 \\le x+\\sin(x) \\le x+1$.\n   b) En déduire que pour tout $x > 0$, $\\frac{x-1}{x^2} \\le f(x) \\le \\frac{x+1}{x^2}$.\n3) À l'aide des théorèmes de comparaison, calculer $\\lim_{x \\to +\\infty} f(x)$.\n4) On considère la fonction $g(x) = \\frac{\\sqrt{x^2+x+1} - \\sqrt{x^2-x+1}}{x}$. Calculer $\\lim_{x \\to +\\infty} g(x)$.",
+          "language": "fr",
+          "solution": "",
+          "section_number": "6",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-19T18:06:15.912Z",
+    "createdAt": "2026-09-19T18:04:18.505Z",
+    "updatedAt": "2026-09-19T18:06:16.698Z"
+  },
+  {
+    "id": "MOCK-L-BE86UGVD9",
+    "title": "Série d'exercices : Arithmétique dans l'ensemble N",
+    "subject": "Mathématiques",
+    "chapter_number": "",
+    "teacher": "Professeur",
+    "phone": "",
+    "schools": [],
+    "level": "common_core_sci",
+    "doc_type": "exercises",
+    "content": {
+      "level": "common_core_sci",
+      "doc_type": "exercises",
+      "columns_count": 2,
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "Préparation aux concours",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Série d'exercices : Arithmétique dans l'ensemble N",
+        "chapter_number": "",
+        "teacher": "Professeur",
+        "phone": "",
+        "capacites_attendues": "",
+        "contenus": "",
+        "le_contenu": ""
+      },
+      "sections": [
+        {
+          "id": "sec-1",
+          "title": "Test",
+          "content": "Formula $x=1$",
+          "solution": "",
+          "items": [],
+          "language": "fr",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-19T18:24:21.453Z",
+    "createdAt": "2026-09-19T18:21:36.108Z",
+    "updatedAt": "2026-09-19T18:24:25.595Z"
+  },
+  {
+    "id": "MOCK-L-UIH18JMRC",
+    "title": "Arithmétique dans IN",
+    "subject": "Mathématiques",
+    "chapter_number": "",
+    "teacher": "",
+    "phone": "",
+    "schools": [],
+    "level": "common_core_sci",
+    "doc_type": "course",
+    "content": {
+      "level": "common_core_sci",
+      "doc_type": "course",
+      "is_national_exam": false,
+      "national_exam_meta": null,
+      "is_summary": false,
+      "summary_meta": null,
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "Ensemble des nombres entiers naturels et notions en arithmétique ℕ",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Arithmétique dans IN",
+        "chapter_number": "",
+        "teacher": "",
+        "phone": "",
+        "capacites_attendues": "",
+        "contenus": "",
+        "le_contenu": ""
+      },
+      "sections": [
+        {
+          "id": "sec-1",
+          "section_header": "I. Nombres pairs- Nombres impairs",
+          "title": "1. Activité d'introduction et définition de ℕ",
+          "type": "activity",
+          "section_number": "I",
+          "accent_text": "On note l’ensemble des nombres entiers naturels par $\\mathbb{N}$. On a $\\mathbb{N} = \\{0,1,2,3, \\dots\\}$ et $\\mathbb{N}^* = \\{1,2,3, \\dots\\}$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "On considère les nombres : $24, \\sqrt{19}, 1, 2017, 89, 1970, 8721, -8, \\sqrt{34}, 0, 5,4$."
+            },
+            {
+              "type": "bullet",
+              "text": "**1.** Parmi les nombres précédents trouver tous les nombres entiers naturels."
+            },
+            {
+              "type": "text",
+              "text": "Le nombre $24$ est un nombre entier naturel. On écrit $24 \\in \\mathbb{N}$ et on dit que $24$ appartient à $\\mathbb{N}$. Le nombre $\\sqrt{34}$ n'est pas un nombre entier naturel. On écrit $\\sqrt{34} \\notin \\mathbb{N}$ et on dit que $\\sqrt{34}$ n'appartient pas à $\\mathbb{N}$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** Tous les nombres pairs : Soit $a$ un nombre entier naturel. On dit que $a$ est un nombre pair s'il existe un entier naturel $k$ tel que : $a = 2k$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3.** Tous les nombres impairs : Soit $a$ un nombre entier naturel. On dit que $a$ est un nombre impair s'il existe un entier naturel $k$ tel que : $a = 2k + 1$."
+            }
+          ],
+          "content": "On considère les nombres : $24, \\sqrt{19}, 1, 2017, 89, 1970, 8721, -8, \\sqrt{34}, 0, 5,4$.\n**1.** Parmi les nombres précédents trouver tous les nombres entiers naturels.\nLe nombre $24$ est un nombre entier naturel. On écrit $24 \\in \\mathbb{N}$ et on dit que $24$ appartient à $\\mathbb{N}$. Le nombre $\\sqrt{34}$ n'est pas un nombre entier naturel. On écrit $\\sqrt{34} \\notin \\mathbb{N}$ et on dit que $\\sqrt{34}$ n'appartient pas à $\\mathbb{N}$.\n**2.** Tous les nombres pairs : Soit $a$ un nombre entier naturel. On dit que $a$ est un nombre pair s'il existe un entier naturel $k$ tel que : $a = 2k$.\n**3.** Tous les nombres impairs : Soit $a$ un nombre entier naturel. On dit que $a$ est un nombre impair s'il existe un entier naturel $k$ tel que : $a = 2k + 1$.",
+          "points": "",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "10pt",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "sec-2",
+          "section_header": "I. Nombres pairs- Nombres impairs",
+          "title": "**Application :**",
+          "type": "activity",
+          "section_number": "I",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soient $a$ et $b$ deux nombres de $\\mathbb{N}$ ($a \\ge b$). Compléter le tableau suivant :"
+            },
+            {
+              "type": "table",
+              "title": "Tableau de parité",
+              "table_data": {
+                "headers": [
+                  "a",
+                  "b",
+                  "a + b",
+                  "a - b",
+                  "a \\times b"
+                ],
+                "rows": [
+                  [
+                    "Pair",
+                    "Pair",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "Pair",
+                    "Impair",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "Impair",
+                    "Pair",
+                    "",
+                    "",
+                    ""
+                  ],
+                  [
+                    "Impair",
+                    "Impair",
+                    "",
+                    "",
+                    ""
+                  ]
+                ],
+                "alignment": []
+              },
+              "headers": [
+                "a",
+                "b",
+                "a + b",
+                "a - b",
+                "a \\times b"
+              ],
+              "rows": [
+                [
+                  "Pair",
+                  "Pair",
+                  "",
+                  "",
+                  ""
+                ],
+                [
+                  "Pair",
+                  "Impair",
+                  "",
+                  "",
+                  ""
+                ],
+                [
+                  "Impair",
+                  "Pair",
+                  "",
+                  "",
+                  ""
+                ],
+                [
+                  "Impair",
+                  "Impair",
+                  "",
+                  "",
+                  ""
+                ]
+              ]
+            }
+          ],
+          "content": "Soient $a$ et $b$ deux nombres de $\\mathbb{N}$ ($a \\ge b$). Compléter le tableau suivant :",
+          "points": "",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "10pt",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-1",
+          "section_header": "I. Nombres pairs- Nombres impairs",
+          "title": "**Exercice 1 de la série**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "1",
+          "content": "**1.** Cocher les cases convenables :\n- Multiples et divisibilité parmi : $2, 6, 11, 21, 0, 28, 14, 120$.\n**2.a.** Déterminer $M_4$ l’ensemble des multiples de $4$.\n**2.b.** Déterminer $M_6$ l’ensemble des multiples de $6$.\n**2.c.** En déduire le plus petit commun multiple de $4$ et $6$ (On le note $ppcm(4,6)$ ou $4 \\lor 6$).",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1.** Cocher les cases convenables pour les nombres $2, 6, 11, 21, 0, 28, 14, 120$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.a.** Déterminer $M_4$ l’ensemble des multiples de $4$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.b.** Déterminer $M_6$ l’ensemble des multiples de $6$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.c.** En déduire le plus petit commun multiple de $4$ et $6$ (On le note $ppcm(4,6)$ ou $4 \\lor 6$)."
+            }
+          ],
+          "solution": "1) Tableaux de cases à cocher.\n2.a) $M_4 = \\{0, 4, 8, 12, 16, 20, 24, \\dots\\}$\n2.b) $M_6 = \\{0, 6, 12, 18, 24, 30, \\dots\\}$\n2.c) $ppcm(4, 6) = 12$.",
+          "interactive_answers": [],
+          "language": "fr",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "10pt",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "sec-3",
+          "section_header": "II. Multiples d’un entier naturel- ppcm de deux entiers naturels",
+          "title": "**Définition :**",
+          "type": "definition",
+          "section_number": "II",
+          "accent_text": "Soient $a$ et $b$ deux entiers naturels. On dit que $b$ est multiple de $a$ s’il existe un entier naturel $k$ tel que: $b = ka$.",
+          "items": [
+            {
+              "type": "highlight_box",
+              "text": "Soient $a$ et $b$ deux entiers naturels. On dit que $b$ est multiple de $a$ s’il existe un entier naturel $k$ tel que: $b = ka$."
+            }
+          ],
+          "content": "Soient $a$ et $b$ deux entiers naturels. On dit que $b$ est multiple de $a$ s’il existe un entier naturel $k$ tel que: $b = ka$.",
+          "points": "",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "10pt",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "sec-4",
+          "section_header": "II. Multiples d’un entier naturel- ppcm de deux entiers naturels",
+          "title": "**Application :**",
+          "type": "activity",
+          "section_number": "II",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1.** Déterminer tous les multiples inférieurs à $50$ de $7$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** Déterminer $ppcm(5 ; 3)$, $ppcm(12 ; 18)$ et $ppcm(5 ; 20)$."
+            }
+          ],
+          "content": "**1.** Déterminer tous les multiples inférieurs à $50$ de $7$.\n**2.** Déterminer $ppcm(5 ; 3)$, $ppcm(12 ; 18)$ et $ppcm(5 ; 20)$.",
+          "points": "",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "10pt",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-2",
+          "section_header": "II. Multiples d’un entier naturel- ppcm de deux entiers naturels",
+          "title": "**Exercice d'application :**",
+          "type": "exercise",
+          "points": 0,
+          "section_number": "II",
+          "content": "Soient $a$, $b$ et $c$ trois entiers naturels.\\nMontrer que si $a$ est multiple de $b$ et $c$, alors il est un multiple de $2b - 3c$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soient $a$, $b$ et $c$ trois entiers naturels."
+            },
+            {
+              "type": "bullet",
+              "text": "Montrer que si $a$ est multiple de $b$ et $c$, alors il est un multiple de $2b - 3c$."
+            }
+          ],
+          "solution": "Puisque $a$ est multiple de $b$ et $c$, il existe des entiers $k_1$ et $k_2$ tels que $a = k_1 b$ et $a = k_2 c$. Par combinaison linéaire, toute expression de la forme $2b - 3c$ divise $a$ sous certaines conditions de divisibilité.",
+          "interactive_answers": [],
+          "language": "fr",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "10pt",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "sec-5",
+          "section_header": "III. Diviseurs d’un entier naturel- pgcd de deux entiers naturels",
+          "title": "1. Activité sur les diviseurs",
+          "type": "activity",
+          "section_number": "III",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "Cocher les cases convenables pour la divisibilité par $2, 3, 5, 7, 1$ des nombres : $14, 6, 49, 81, 495$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.a.** Déterminer $D_{12}$ l'ensemble des diviseurs de $12$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.b.** Déterminer $D_{18}$ l’ensemble des diviseurs de $18$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.c.** En déduire le plus grand commun diviseur de $12$ et $18$ (On le note $pgcd(12,18)$ ou $12 \\land 18$)."
+            }
+          ],
+          "content": "Cocher les cases convenables pour la divisibilité par $2, 3, 5, 7, 1$ des nombres : $14, 6, 49, 81, 495$.\n**2.a.** Déterminer $D_{12}$ l'ensemble des diviseurs de $12$.\n**2.b.** Déterminer $D_{18}$ l’ensemble des diviseurs de $18$.\n**2.c.** En déduire le plus grand commun diviseur de $12$ et $18$ (On le note $pgcd(12,18)$ ou $12 \\land 18$).",
+          "points": "",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "10pt",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "sec-6",
+          "section_header": "III. Diviseurs d’un entier naturel- pgcd de deux entiers naturels",
+          "title": "**Définition :**",
+          "type": "definition",
+          "section_number": "III",
+          "accent_text": "Soient $a$ et $b$ deux entiers naturels. On dit que $a$ est un diviseur de $b$ s’il existe un entier naturel $k$ tel que: $b = ka$, et on écrit $a/b$.",
+          "items": [
+            {
+              "type": "highlight_box",
+              "text": "Soient $a$ et $b$ deux entiers naturels. On dit que $a$ est un diviseur de $b$ s’il existe un entier naturel $k$ tel que: $b = ka$, et on écrit $a/b$."
+            }
+          ],
+          "content": "Soient $a$ et $b$ deux entiers naturels. On dit que $a$ est un diviseur de $b$ s’il existe un entier naturel $k$ tel que: $b = ka$, et on écrit $a/b$.",
+          "points": "",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "10pt",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "sec-7",
+          "section_header": "III. Diviseurs d’un entier naturel- pgcd de deux entiers naturels",
+          "title": "**Application :**",
+          "type": "activity",
+          "section_number": "III",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1.** Déterminer les diviseurs de $24$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** Déterminer $pgcd(8 ; 6)$, $pgcd(6 ; 26)$ et $pgcd(36 ; 9)$."
+            }
+          ],
+          "content": "**1.** Déterminer les diviseurs de $24$.\n**2.** Déterminer $pgcd(8 ; 6)$, $pgcd(6 ; 26)$ et $pgcd(36 ; 9)$.",
+          "points": "",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "10pt",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "sec-8",
+          "section_header": "III. Diviseurs d’un entier naturel- pgcd de deux entiers naturels",
+          "title": "Critères de divisibilité par $2, 3, 5, 9$",
+          "type": "content",
+          "section_number": "III",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "Un nombre est divisible par :"
+            },
+            {
+              "type": "bullet",
+              "text": "$2$ lorsque son chiffre des unités est pair."
+            },
+            {
+              "type": "bullet",
+              "text": "$5$ lorsque son chiffre des unités est $0$ soit $5$."
+            },
+            {
+              "type": "bullet",
+              "text": "$3$ lorsque la somme de ses chiffres est multiple de $3$."
+            },
+            {
+              "type": "bullet",
+              "text": "$9$ lorsque la somme de ses chiffres est multiple de $9$."
+            },
+            {
+              "type": "highlight_box",
+              "text": "• Le nombre $74250$ est divisible par $2$ et $5$ car son chiffre des unités est $0$.\n• Le nombre $74250$ est divisible par $3$ et $9$ car : $7 + 4 + 2 + 5 + 0 = 18$ est multiple de $3$ et $9$."
+            }
+          ],
+          "content": "Un nombre est divisible par :\n$2$ lorsque son chiffre des unités est pair.\n$5$ lorsque son chiffre des unités est $0$ soit $5$.\n$3$ lorsque la somme de ses chiffres est multiple de $3$.\n$9$ lorsque la somme de ses chiffres est multiple de $9$.\n• Le nombre $74250$ est divisible par $2$ et $5$ car son chiffre des unités est $0$.\n• Le nombre $74250$ est divisible par $3$ et $9$ car : $7 + 4 + 2 + 5 + 0 = 18$ est multiple de $3$ et $9$.",
+          "points": "",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "10pt",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "sec-9",
+          "section_header": "IV. Les nombres premiers",
+          "title": "**Activité & Définition :**",
+          "type": "definition",
+          "section_number": "IV",
+          "accent_text": "Un entier naturel $p$ supérieur ou égal à $2$ est dit premier, si ses seuls diviseurs sont $1$ et $p$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Déterminer $D_2, D_3, D_5, D_13$ et $D_{37}$. Que remarquez-vous ?"
+            },
+            {
+              "type": "highlight_box",
+              "text": "Un entier naturel $p$ supérieur ou égal à $2$ est dit premier, si ses seuls diviseurs sont $1$ et $p$."
+            }
+          ],
+          "content": "Déterminer $D_2, D_3, D_5, D_13$ et $D_{37}$. Que remarquez-vous ?\nUn entier naturel $p$ supérieur ou égal à $2$ est dit premier, si ses seuls diviseurs sont $1$ et $p$.",
+          "points": "",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "10pt",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "sec-10",
+          "section_header": "IV. Les nombres premiers",
+          "title": "**Application & Méthode de primalité :**",
+          "type": "activity",
+          "section_number": "IV",
+          "accent_text": "Pour étudier la primalité d’un entier naturel $n$, on cherche tous les nombres premiers $p$ qui vérifient : $p \\le \\sqrt{n}$. Si $n$ est divisible par un de ces nombres, alors il n’est pas premier.",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1.** Trouver les nombres premiers parmi les nombres suivants : $17, 45, 9, 41, 27, 11, 29$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** Montrer que le nombre $1000701$ n’est pas premier."
+            },
+            {
+              "type": "text",
+              "text": "**Exemple :** Montrons que $97$ est un nombre premier. On a : $\\sqrt{97} < 10$. Les nombres premiers inférieurs strictement à $10$ sont : $2, 3, 5$ et $7$. Puisque $97$ n'est pas divisible par les nombres $2, 3, 5$ et $7$, alors il est premier."
+            }
+          ],
+          "content": "**1.** Trouver les nombres premiers parmi les nombres suivants : $17, 45, 9, 41, 27, 11, 29$.\n**2.** Montrer que le nombre $1000701$ n’est pas premier.\n**Exemple :** Montrons que $97$ est un nombre premier. On a : $\\sqrt{97} < 10$. Les nombres premiers inférieurs strictement à $10$ sont : $2, 3, 5$ et $7$. Puisque $97$ n'est pas divisible par les nombres $2, 3, 5$ et $7$, alors il est premier.",
+          "points": "",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "10pt",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "sec-11",
+          "section_header": "V. Décomposition d’un entier naturel en produit de facteurs premiers",
+          "title": "1. Activité et Théorème principal",
+          "type": "theorem",
+          "section_number": "V",
+          "accent_text": "Tout entier naturel $n$ supérieur ou égal à $2$, se décompose de façon unique en un produit de facteurs premiers.",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1.** Vérifier que : $1400 = 2^3 \\times 5^2 \\times 7^1$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2.** Déterminer les entiers naturels $n$, $m$ et $p$ tels que : $3240 = 2^n \\times 3^m \\times 5^p$."
+            },
+            {
+              "type": "highlight_box",
+              "text": "Tout entier naturel $n$ supérieur ou égal à $2$, se décompose de façon unique en un produit de facteurs premiers."
+            }
+          ],
+          "content": "**1.** Vérifier que : $1400 = 2^3 \\times 5^2 \\times 7^1$.\n**2.** Déterminer les entiers naturels $n$, $m$ et $p$ tels que : $3240 = 2^n \\times 3^m \\times 5^p$.\nTout entier naturel $n$ supérieur ou égal à $2$, se décompose de façon unique en un produit de facteurs premiers.",
+          "points": "",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "10pt",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "sec-12",
+          "section_header": "V. Décomposition d’un entier naturel en produit de facteurs premiers",
+          "title": "**Définition et Propriétés du PGCD et PPCM :**",
+          "type": "definition",
+          "section_number": "V",
+          "accent_text": "Soient $a$ et $b$ deux entiers naturels. On dit que $a$ et $b$ sont premiers entre eux si $pgcd(a, b) = 1$.",
+          "items": [
+            {
+              "type": "highlight_box",
+              "text": "Soient $a$ et $b$ deux entiers naturels. On dit que $a$ et $b$ sont premiers entre eux si $pgcd(a, b) = 1$."
+            },
+            {
+              "type": "bullet",
+              "text": "On a $pgcd(5, 13) = 1$, donc $5$ et $13$ sont premiers entre eux."
+            },
+            {
+              "type": "bullet",
+              "text": "On a $pgcd(12, 30) = 6$, donc $12$ et $30$ ne sont pas premiers entre eux."
+            },
+            {
+              "type": "bullet",
+              "text": "Le PGCD de deux entiers naturels est le produit des facteurs communs entre les deux décompositions de ces deux entiers affectés du plus petit exposant."
+            },
+            {
+              "type": "bullet",
+              "text": "Le PPCM de deux entiers naturels est le produit des facteurs communs et non communs entre les deux décompositions de ces deux entiers affectés du plus grand exposant."
+            },
+            {
+              "type": "text",
+              "text": "**Exemple :** Calculons $pgcd(120, 45)$ et $ppcm(120, 45)$."
+            }
+          ],
+          "content": "Soient $a$ et $b$ deux entiers naturels. On dit que $a$ et $b$ sont premiers entre eux si $pgcd(a, b) = 1$.\nOn a $pgcd(5, 13) = 1$, donc $5$ et $13$ sont premiers entre eux.\nOn a $pgcd(12, 30) = 6$, donc $12$ et $30$ ne sont pas premiers entre eux.\nLe PGCD de deux entiers naturels est le produit des facteurs communs entre les deux décompositions de ces deux entiers affectés du plus petit exposant.\nLe PPCM de deux entiers naturels est le produit des facteurs communs et non communs entre les deux décompositions de ces deux entiers affectés du plus grand exposant.\n**Exemple :** Calculons $pgcd(120, 45)$ et $ppcm(120, 45)$.",
+          "points": "",
+          "language": "fr",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "10pt",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
+        }
+      ],
+      "columns_count": 2
+    },
+    "is_active": true,
+    "updated_at": "2026-09-19T18:24:48.860Z",
+    "created_at": "2026-09-19T18:21:53.126Z",
+    "createdAt": "2026-09-19T18:21:53.750Z",
+    "updatedAt": "2026-09-19T18:24:49.525Z"
+  },
+  {
+    "id": "MOCK-L-GJAZ4BG5R",
+    "title": "Arithmétique dans ℕ",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": "Pr. LATRACH Abdelkbir",
+    "phone": null,
+    "schools": [],
+    "level": "common_core_sci",
+    "doc_type": "exercises",
+    "content": {
+      "level": "common_core_sci",
+      "doc_type": "exercises",
+      "is_national_exam": false,
+      "national_exam_meta": null,
+      "is_summary": false,
+      "summary_meta": null,
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "Série d'activités et applications",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Arithmétique dans ℕ",
+        "teacher": "Pr. LATRACH Abdelkbir",
+        "phone": "",
+        "is_national_exam": false,
+        "national_exam_meta": null,
+        "is_summary": false,
+        "summary_meta": null
+      },
+      "sections": [
+        {
+          "id": "sec-1",
+          "section_header": "Série d'activités et applications",
+          "title": "**Activité ① :**",
+          "type": "activity",
+          "section_number": "I",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "On considère les nombres : $24$ ; $\\sqrt{19}$ ; $1$ ; $2021$ ; $89$ ; $1970$ ; $8721$ ; $-8$ ; $\\sqrt{34}$ ; $0$ ; $5,4$ ; $15$ ; $-12$ ; $88$ ; $2022$."
+            },
+            {
+              "type": "bullet",
+              "text": "**a)** Tous les nombres entiers naturels."
+            },
+            {
+              "type": "bullet",
+              "text": "**b)** Tous les nombres pairs."
+            },
+            {
+              "type": "bullet",
+              "text": "**c)** Tous les nombres impairs."
+            }
+          ],
+          "content": "On considère les nombres : $24$ ; $\\sqrt{19}$ ; $1$ ; $2021$ ; $89$ ; $1970$ ; $8721$ ; $-8$ ; $\\sqrt{34}$ ; $0$ ; $5,4$ ; $15$ ; $-12$ ; $88$ ; $2022$.\n**a)** Tous les nombres entiers naturels.\n**b)** Tous les nombres pairs.\n**c)** Tous les nombres impairs.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-2",
+          "section_header": "Série d'activités et applications",
+          "title": "**Application ① :**",
+          "type": "activity",
+          "section_number": "I",
+          "accent_text": "",
+          "content": "Soient $a$ et $b$ deux nombres de $\\mathbb{N}$ ($a \\ge b$). Compléter le tableau suivant :\n- $a$ Pair, $b$ Pair : $a+b$, $a-b$, $a \\times b$\n- $a$ Pair, $b$ Impair : $a+b$, $a-b$, $a \\times b$\n- $a$ Impair, $b$ Pair : $a+b$, $a-b$, $a \\times b$\n- $a$ Impair, $b$ Impair : $a+b$, $a-b$, $a \\times b$",
+          "solution": "",
+          "interactive_answers": [],
+          "items": [
+            {
+              "type": "text",
+              "text": "Soient $a$ et $b$ deux nombres de $\\mathbb{N}$ ($a \\ge b$). Compléter le tableau suivant :"
+            },
+            {
+              "type": "text",
+              "text": "- $a$ Pair, $b$ Pair : $a+b$, $a-b$, $a \\times b$"
+            },
+            {
+              "type": "text",
+              "text": "- $a$ Pair, $b$ Impair : $a+b$, $a-b$, $a \\times b$"
+            },
+            {
+              "type": "text",
+              "text": "- $a$ Impair, $b$ Pair : $a+b$, $a-b$, $a \\times b$"
+            },
+            {
+              "type": "text",
+              "text": "- $a$ Impair, $b$ Impair : $a+b$, $a-b$, $a \\times b$"
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-3",
+          "section_header": "Série d'activités et applications",
+          "title": "**Activité ② :**",
+          "type": "activity",
+          "section_number": "I",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1)** Déterminer $M_4$ l'ensemble de multiples de $4$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** Déterminer $M_6$ l'ensemble de multiples de $6$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3)** En déduire le plus petit commun multiple de $4$ et $6$ (On le note $\\text{ppcm}(4,6)$ ou $4 \\lor 6$)."
+            }
+          ],
+          "content": "**1)** Déterminer $M_4$ l'ensemble de multiples de $4$.\n**2)** Déterminer $M_6$ l'ensemble de multiples de $6$.\n**3)** En déduire le plus petit commun multiple de $4$ et $6$ (On le note $\\text{ppcm}(4,6)$ ou $4 \\lor 6$).",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-4",
+          "section_header": "Série d'activités et applications",
+          "title": "**Application ② :**",
+          "type": "activity",
+          "section_number": "I",
+          "accent_text": "",
+          "content": "Soient $a$ et $b$ trois entiers naturels. Montrer que si $a$ est multiple de $3$ et si $b$ est multiple de $4$, alors $4a + 3b$ est un multiple de $6$.",
+          "solution": "",
+          "interactive_answers": [],
+          "items": [
+            {
+              "type": "text",
+              "text": "Soient $a$ et $b$ trois entiers naturels. Montrer que si $a$ est multiple de $3$ et si $b$ est multiple de $4$, alors $4a + 3b$ est un multiple de $6$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-5",
+          "section_header": "Série d'activités et applications",
+          "title": "**Activité ③ :**",
+          "type": "activity",
+          "section_number": "I",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1)** Déterminer $D_{12}$ l'ensemble de diviseurs de $12$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** Déterminer $D_{18}$ l'ensemble de diviseurs de $18$."
+            },
+            {
+              "type": "bullet",
+              "text": "**3)** En déduire le plus grand commun diviseur de $12$ et $18$ (On le note $\\text{pgcd}(12,18)$ ou $12 \\land 18$)."
+            }
+          ],
+          "content": "**1)** Déterminer $D_{12}$ l'ensemble de diviseurs de $12$.\n**2)** Déterminer $D_{18}$ l'ensemble de diviseurs de $18$.\n**3)** En déduire le plus grand commun diviseur de $12$ et $18$ (On le note $\\text{pgcd}(12,18)$ ou $12 \\land 18$).",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-6",
+          "section_header": "Série d'activités et applications",
+          "title": "**Application ③ :**",
+          "type": "activity",
+          "section_number": "I",
+          "accent_text": "",
+          "content": "Montrer que le nombre $A = 2^n + 2^{n+1} + 2^{n+2} + 2^{n+3}$ est un multiple de $5$.",
+          "solution": "",
+          "interactive_answers": [],
+          "items": [
+            {
+              "type": "text",
+              "text": "Montrer que le nombre $A = 2^n + 2^{n+1} + 2^{n+2} + 2^{n+3}$ est un multiple de $5$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-7",
+          "section_header": "Série d'activités et applications",
+          "title": "**Activité ④ :**",
+          "type": "activity",
+          "section_number": "I",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "text",
+              "text": "Déterminer $D_2$, $D_3$, $D_5$, $D_{13}$ et $D_{37}$. Que remarquez-vous ?"
+            }
+          ],
+          "content": "Déterminer $D_2$, $D_3$, $D_5$, $D_{13}$ et $D_{37}$. Que remarquez-vous ?",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-8",
+          "section_header": "Série d'activités et applications",
+          "title": "**Application ④ :**",
+          "type": "activity",
+          "section_number": "I",
+          "accent_text": "",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "**1)** Trouver les nombres premiers parmi les nombres suivants : $17, 45, 9, 41, 27, 11, 29$."
+            },
+            {
+              "type": "bullet",
+              "text": "**2)** Montrer que le nombre $1000701$ n'est pas premier."
+            }
+          ],
+          "content": "**1)** Trouver les nombres premiers parmi les nombres suivants : $17, 45, 9, 41, 27, 11, 29$.\n**2)** Montrer que le nombre $1000701$ n'est pas premier.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-9",
+          "section_header": "Série d'activités et applications",
+          "title": "**Application ⑤ :**",
+          "type": "activity",
+          "section_number": "I",
+          "accent_text": "",
+          "content": "Décomposer en produits de facteurs premiers : $12$, $3520$, $4576$.",
+          "solution": "",
+          "interactive_answers": [],
+          "items": [
+            {
+              "type": "text",
+              "text": "Décomposer en produits de facteurs premiers : $12$, $3520$, $4576$."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-10",
+          "section_header": "Série d'activités et applications",
+          "title": "**Application ⑥ :**",
+          "type": "activity",
+          "section_number": "I",
+          "accent_text": "",
+          "content": "Décomposer en produit de facteurs premiers les nombres $123$ et $595$ puis déduire qu'ils sont premiers entre eux.",
+          "solution": "",
+          "interactive_answers": [],
+          "items": [
+            {
+              "type": "text",
+              "text": "Décomposer en produit de facteurs premiers les nombres $123$ et $595$ puis déduire qu'ils sont premiers entre eux."
+            }
+          ],
+          "points": "",
+          "language": "fr"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-19T18:27:52.124Z",
+    "created_at": "2026-09-19T18:27:52.120Z",
+    "createdAt": "2026-09-19T18:27:52.395Z",
+    "updatedAt": "2026-09-19T18:27:52.395Z"
+  },
+  {
+    "id": "MOCK-L-DOTTNW0WR",
+    "title": "Arithmétique dans $\\mathbb{N}$ - Série d'exercices",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": null,
+    "phone": null,
+    "schools": [],
+    "level": "common_core_sci",
+    "doc_type": "exercises",
+    "content": {
+      "level": "common_core_sci",
+      "doc_type": "exercises",
+      "is_national_exam": false,
+      "national_exam_meta": null,
+      "is_summary": false,
+      "summary_meta": null,
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "Préparation aux concours",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Arithmétique dans $\\mathbb{N}$ - Série d'exercices",
+        "teacher": "",
+        "phone": "",
+        "is_national_exam": false,
+        "national_exam_meta": null,
+        "is_summary": false,
+        "summary_meta": null
+      },
+      "sections": [
+        {
+          "id": "sec-1",
+          "type": "exercise",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n \\in \\mathbb{N}$. Étudier la parité de nombres suivants :"
+            },
+            {
+              "type": "text",
+              "text": "$4n + 300$ ; $14n + 111$ ; $731 \\times 432$ ;"
+            },
+            {
+              "type": "text",
+              "text": "$2^{n+1} + 15$ ; $4n^2 + 8n + 13$ ; $n(n+1)$ ;"
+            },
+            {
+              "type": "text",
+              "text": "$n^2 + 5n + 3$ ; $n(n+1)(n^2 + 5n + 3)$."
+            }
+          ],
+          "title": "Exercice 1",
+          "content": "Soit $n \\in \\mathbb{N}$. Étudier la parité de nombres suivants :\n$4n + 300$ ; $14n + 111$ ; $731 \\times 432$ ;\n$2^{n+1} + 15$ ; $4n^2 + 8n + 13$ ; $n(n+1)$ ;\n$n^2 + 5n + 3$ ; $n(n+1)(n^2 + 5n + 3)$.",
+          "solution": "1) Étude de la parité de $4n + 300$ :\\nOn a $4n + 300 = 2(2n + 150)$. Donc $4n + 300$ est pair.\n2) Étude de la parité de $14n + 111$ :\n$14n$ est pair (multiple de 2) et $111$ est impair. La somme d'un nombre pair et d'un nombre impair est impaire. Donc $14n + 111$ est impair.\n3) Étude de la parité de $731 \\times 432$ :\n$432$ est pair, donc le produit $731 \\times 432$ est pair.\n4) Étude de la parité de $2^{n+1} + 15$ :\\nPour $n \\in \\mathbb{N}$, $n+1 \\ge 1$, donc $2^{n+1}$ est pair. $15$ est impair. Leur somme est impaire. Donc $2^{n+1} + 15$ est impair.\n5) Étude de la parité de $4n^2 + 8n + 13$ :\n$4n^2 + 8n + 13 = 2(2n^2 + 4n + 6) + 1$, ce qui est de la forme $2k + 1$. Donc $4n^2 + 8n + 13$ est impair.\n6) Étude de la parité de $n(n+1)$ :\n$n$ et $n+1$ sont deux entiers naturels consécutifs, l'un d'eux est pair, donc leur produit $n(n+1)$ est pair.\n7) Étude de la parité de $n^2 + 5n + 3$ :\\nOn a $n^2 + 5n + 3 = n(n+1) + 4n + 3$. $n(n+1)$ est pair, $4n$ est pair, donc $n(n+1) + 4n$ est pair. En ajoutant $3$ (impair), on obtient un nombre impair. Donc $n^2 + 5n + 3$ est impair.\n8) Étude de la parité de $n(n+1)(n^2 + 5n + 3)$ :\\nPuisque $n(n+1)$ est pair, le produit par $n^2 + 5n + 3$ est pair.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-2",
+          "type": "exercise",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n \\in \\mathbb{N}$. On pose : $a = 2n + 4$ et $b = 6n + 11$."
+            },
+            {
+              "type": "bullet",
+              "text": "1. Étudier la parité de $a$ et $b$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Simplifier le nombre $(6n + 11)(-1)^{2n+4} - (2n + 4)(-1)^{6n+11}$."
+            },
+            {
+              "type": "bullet",
+              "text": "3. Montrer que $a^2 + (b + 1)^2$ est un multiple de $20$."
+            }
+          ],
+          "title": "Exercice 2",
+          "content": "Soit $n \\in \\mathbb{N}$. On pose : $a = 2n + 4$ et $b = 6n + 11$.\n1. Étudier la parité de $a$ et $b$.\n2. Simplifier le nombre $(6n + 11)(-1)^{2n+4} - (2n + 4)(-1)^{6n+11}$.\n3. Montrer que $a^2 + (b + 1)^2$ est un multiple de $20$.",
+          "solution": "1. Étude de la parité :\n- $a = 2n + 4 = 2(n + 2)$, donc $a$ est toujours pair.\n- $b = 6n + 11 = 2(3n + 5) + 1$, donc $b$ est toujours impair.\n2. Simplification du nombre :\n- $(-1)^{2n+4} = (-1)^{2(n+2)} = ((-1)^2)^{n+2} = 1^{n+2} = 1$.\n- $(-1)^{6n+11} = (-1)^{2(3n+5)+1} = ((-1)^2)^{3n+5} \\times (-1)^1 = 1 \\times (-1) = -1$.\\nLe nombre devient : $(6n + 11)(1) - (2n + 4)(-1) = 6n + 11 + 2n + 4 = 8n + 15$.\n3. Montrons que $a^2 + (b + 1)^2$ est un multiple de $20$ :\n- $a = 2n + 4$, donc $a^2 = (2n + 4)^2 = 4n^2 + 16n + 16$.\n- $b = 6n + 11$, donc $b + 1 = 6n + 12 = 6(n + 2)$.\n- $(b + 1)^2 = (6(n+2))^2 = 36(n^2 + 4n + 4) = 36n^2 + 144n + 144$.\\nAlors :\n$a^2 + (b+1)^2 = (4n^2 + 16n + 16) + (36n^2 + 144n + 144) = 40n^2 + 160n + 160 = 20(2n^2 + 8n + 8)$.\\nDonc $a^2 + (b+1)^2$ est un multiple de $20$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-3",
+          "type": "exercise",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n \\in \\mathbb{N}$. On pose : $a = 2^{n+3} - 5 \\times 2^n$ et $b = 7^{n+1} \\times 2^{n+3}$.\\nMontrer que $a$ est multiple de $3$ et que $56$ divise $b$."
+            }
+          ],
+          "title": "Exercice 3",
+          "content": "Soit $n \\in \\mathbb{N}$. On pose : $a = 2^{n+3} - 5 \\times 2^n$ et $b = 7^{n+1} \\times 2^{n+3}$.\\nMontrer que $a$ est multiple de $3$ et que $56$ divise $b$.",
+          "solution": "1. Montrons que $a$ est un multiple de $3$ :\n$a = 2^{n+3} - 5 \\times 2^n = 2^3 \\times 2^n - 5 \\times 2^n = 8 \\times 2^n - 5 \\times 2^n = (8 - 5) \\times 2^n = 3 \\times 2^n$.\\nPuisque $a = 3 \\times 2^n$ avec $2^n \\in \\mathbb{N}$, $a$ est un multiple de $3$.\n2. Montrons que $56$ divise $b$ :\\nOn a $56 = 7 \\times 8 = 7 \\times 2^3$.\n$b = 7^{n+1} \\times 2^{n+3} = 7^1 \\times 7^n \\times 2^3 \\times 2^n = (7 \\times 2^3) \\times (7^n \\times 2^n) = 56 \\times (14)^n$.\\nPuisque $14^n \\in \\mathbb{N}$, $56$ divise $b$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-4",
+          "type": "exercise",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "1. Déterminer le chiffre $a$ tel que le nombre $5a74$ soit divisible par $3$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Déterminer le chiffre $b$ tel que le nombre $815b$ soit divisible à la fois par $2$ et $9$."
+            },
+            {
+              "type": "bullet",
+              "text": "3. Déterminer le chiffre $c$ tel que le nombre $921c$ soit divisible par $3$ et non pas par $9$."
+            }
+          ],
+          "title": "Exercice 4",
+          "content": "1. Déterminer le chiffre $a$ tel que le nombre $5a74$ soit divisible par $3$.\n2. Déterminer le chiffre $b$ tel que le nombre $815b$ soit divisible à la fois par $2$ et $9$.\n3. Déterminer le chiffre $c$ tel que le nombre $921c$ soit divisible par $3$ et non pas par $9$.",
+          "solution": "1. Un nombre est divisible par $3$ si la somme de ses chiffres est un multiple de $3$.\\nLa somme des chiffres de $5a74$ est : $5 + a + 7 + 4 = 16 + a$.\\nLes valeurs possibles du chiffre $a$ sont dans $\\{0, 1, 2, 3, 4, 5, 6, 7, 8, 9\\}$.\n$16 + a$ est un multiple de $3$ pour $a \\in \\{2, 5, 8\\}$.\n2. Un nombre est divisible par $2$ si son dernier chiffre est pair, donc $b \\in \\0, 2, 4, 6, 8\\}$.\\nUn nombre est divisible par $9$ si la somme de ses chiffres est un multiple de $9$.\\nLa somme des chiffres de $815b$ est $8 + 1 + 5 + b = 14 + b$.\\nLe seul chiffre $b$ parmi $\\{0, 2, 4, 6, 8\\}$ tel que $14 + b$ soit un multiple de $9$ ($18$) est $b = 4$.\n3. Un nombre est divisible par $3$ si la somme de ses chiffres est un multiple de $3$.\\nLa somme des chiffres de $921c$ est $9 + 2 + 1 + c = 12 + c$.\n$12 + c$ est un multiple de $3$ pour $c \\in \\{0, 3, 6, 9\\}$.\\nIl ne doit pas être divisible par $9$ (la somme ne doit pas être un multiple de $9$).\\nPour $c = 0$, somme $= 12$ (non multiple de $9$).\\nPour $c = 3$, somme $= 15$ (non multiple de $9$).\\nPour $c = 6$, somme $= 18$ (multiple de $9$, à exclure).\\nPour $c = 9$, somme $= 21$ (non multiple de $9$).\\nDonc $c \\in \\{0, 3, 9\\}$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-5",
+          "type": "exercise",
+          "items": [
+            {
+              "type": "text",
+              "text": "Parmi la liste de nombres ci-dessous, indiquer ceux qui sont premiers : $25422$ ; $101$ ; $70107$ ; $137$ ; $15631$."
+            }
+          ],
+          "title": "Exercice 5",
+          "content": "Parmi la liste de nombres ci-dessous, indiquer ceux qui sont premiers : $25422$ ; $101$ ; $70107$ ; $137$ ; $15631$.",
+          "solution": "- $25422$ est pair (se termine par 2), donc il n'est pas premier.\n- $101$ : Testons les nombres premiers dont le carré est inférieur ou égal à $101$ ($\\sqrt{101} \\approx 10.04$, donc les nombres premiers $2, 3, 5, 7$).\n  - Non divisible par 2 (impair).\n  - $1 + 0 + 1 = 2$ (non divisible par 3).\n  - Ne se termine ni par 0 ni par 5 (non divisible par 5).\n  - $101 = 7 \\times 14 + 3$ (non divisible par 7).\n  Donc $101$ est premier.\n- $70107$ se termine par 7 (impair), mais la somme des chiffres est $7 + 0 + 1 + 0 + 7 = 15$, qui est divisible par $3$. Donc $70107$ n'est pas premier.\n- $137$ : $\\sqrt{137} \\approx 11.7$, testons $2, 3, 5, 7, 11$.\n  - Non divisible par 2, 3, 5.\n  - $137 = 7 \\times 19 + 4$ (non divisible par 7).\n  - $137 = 11 \\times 12 + 5$ (non divisible par 11).\n  Donc $137$ est premier.\n- $15631$ : Testons sa primalité. $\\sqrt{15631} \\approx 125.02$. On teste les nombres premiers jusqu'à 123. On remarque que $15631 = 73 \\times 214 + 9$... En testant par exemple la divisibilité, on trouve que $15631$ n'est pas premier (par exemple divisible par 13 ou autre, $15631 = 13 \\times 1202 + 5$ ou $15631 = 59 \\times 265 + 16$, en fait $15631 = 13 \\times 1202 + 5$, essayons $13 \\times 1202 = 15626 + 5$, non. Testons $11$: $1-5+6-3+1 = 0$, donc $15631$ est divisible par $11$ ($15631 = 11 \\times 1421$). Il n'est donc pas premier.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-6",
+          "type": "exercise",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n$ un entier naturel impair."
+            },
+            {
+              "type": "bullet",
+              "text": "1. Étudier la parité de $n^2 - 1$ et $n^2 + 1$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Montrer que $8$ divise $n^2 - 1$."
+            },
+            {
+              "type": "bullet",
+              "text": "3. En déduire que $16$ divise $n^4 - 1$."
+            }
+          ],
+          "title": "Exercice 6",
+          "content": "Soit $n$ un entier naturel impair.\n1. Étudier la parité de $n^2 - 1$ et $n^2 + 1$.\n2. Montrer que $8$ divise $n^2 - 1$.\n3. En déduire que $16$ divise $n^4 - 1$.",
+          "solution": "1. Étude de la parité :\\nPuisque $n$ est impair, il existe un entier $k \\in \\mathbb{N}$ tel que $n = 2k + 1$.\n- $n^2 - 1 = (2k + 1)^2 - 1 = 4k^2 + 4k + 1 - 1 = 4k^2 + 4k = 4k(k + 1)$.\\nPuisque $k(k+1)$ est pair ($k$ et $k+1$ consécutifs), $4k(k+1)$ est un multiple de $8$, donc $n^2 - 1$ est pair (et même un multiple de $4$).\n- $n^2 + 1 = (n^2 - 1) + 2$. Puisque $n^2 - 1$ est pair, $n^2 + 1$ est la somme de deux nombres pairs, donc $n^2 + 1$ est pair.\n2. Montrons que $8$ divise $n^2 - 1$ :\\nOn a $n^2 - 1 = 4k(k + 1)$. Or, $k(k + 1)$ est le produit de deux entiers naturels consécutifs, donc il est pair. Il existe donc un entier $m$ tel que $k(k+1) = 2m$.\\nPar conséquent, $n^2 - 1 = 4(2m) = 8m$. Ainsi, $8$ divise $n^2 - 1$.\n3. En déduire que $16$ divise $n^4 - 1$ :\\nOn a $n^4 - 1 = (n^2 - 1)(n^2 + 1)$.\\nD'après la question 1, $n^2 + 1$ est pair, donc il existe un entier $p$ tel que $n^2 + 1 = 2p$.\\nD'après la question 2, $8$ divise $n^2 - 1$, donc il existe un entier $q$ tel que $n^2 - 1 = 8q$.\\nAinsi, $n^4 - 1 = (8q)(2p) = 16qp$. Par conséquent, $16$ divise $n^4 - 1$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-7",
+          "type": "exercise",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "1. Vérifier que pour tout entier naturel $n$ :"
+            },
+            {
+              "type": "text",
+              "text": "$n^2 + 4n + 9 = (n + 3)(n + 1) + 6$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Déterminer toutes les valeurs de l'entier naturel $n$ pour que le nombre $n + 3$ divise $n^2 + 4n + 9$."
+            }
+          ],
+          "title": "Exercice 7",
+          "content": "1. Vérifier que pour tout entier naturel $n$ :\n$n^2 + 4n + 9 = (n + 3)(n + 1) + 6$.\n2. Déterminer toutes les valeurs de l'entier naturel $n$ pour que le nombre $n + 3$ divise $n^2 + 4n + 9$.",
+          "solution": "1. Vérifions l'égalité :\n$(n + 3)(n + 1) + 6 = n^2 + n + 3n + 3 + 6 = n^2 + 4n + 9$.\\nL'égalité est donc vraie pour tout $n \\in \\mathbb{N}$.\n2. Déterminons les valeurs de $n$ pour que $(n + 3)$ divise $(n^2 + 4n + 9)$ :\\nOn a $n^2 + 4n + 9 = (n + 3)(n + 1) + 6$.\\nPour que $(n + 3)$ divise $(n^2 + 4n + 9)$, il faut et il suffit que $(n + 3)$ divise $(n + 3)(n + 1) + 6$.\\nPuisque $(n + 3)$ divise $(n + 3)(n + 1)$, cela revient à dire que $(n + 3)$ doit diviser $6$.\\nLes diviseurs de $6$ dans $\\mathbb{N}$ sont : $1, 2, 3, 6$.\n- $n + 3 = 1 \\implies n = 1 - 3 = -2 \\notin \\mathbb{N}$.\n- $n + 3 = 2 \\implies n = 2 - 3 = -1 \\notin \\mathbb{N}$.\n- $n + 3 = 3 \\implies n = 3 - 3 = 0 \\in \\mathbb{N}$.\n- $n + 3 = 6 \\implies n = 6 - 3 = 3 \\in \\mathbb{N}$.\\nDonc les valeurs de $n$ cherchées sont $n \\in \\{0, 3\\}$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-8",
+          "type": "exercise",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soient $n$ et $m$ deux entiers naturels."
+            },
+            {
+              "type": "bullet",
+              "text": "1. Montrer que $m + n$ et $m - n$ ont la même parité."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Déterminer tous les nombres entiers $m$ et $n$ qui vérifient : $m^2 - n^2 = 12$."
+            }
+          ],
+          "title": "Exercice 8",
+          "content": "Soient $n$ et $m$ deux entiers naturels.\n1. Montrer que $m + n$ et $m - n$ ont la même parité.\n2. Déterminer tous les nombres entiers $m$ et $n$ qui vérifient : $m^2 - n^2 = 12$.",
+          "solution": "1. Montrons que $m + n$ et $m - n$ ont la même parité :\\nOn calcule leur différence : $(m + n) - (m - n) = 2n$, qui est un nombre pair.\\nLa différence de deux nombres étant paire, ils ont la même parité (soit tous les deux pairs, soit tous les deux impairs).\n2. Déterminons tous les entiers $m$ et $n$ tels que $m^2 - n^2 = 12$ :\\nOn a $m^2 - n^2 = (m - n)(m + n) = 12$.\\nPuisque $m$ et $n$ sont des entiers naturels, $(m - n)$ et $(m + n)$ sont des entiers de même parité (d'après la question 1).\\nLeur produit est $12$ (pair), donc $(m - n)$ et $(m + n)$ doivent être tous les deux pairs.\\nLes diviseurs de $12$ sous forme de paires $(A, B)$ avec $A = m - n$ et $B = m + n$ (où $A \\le B$ et $A, B$ pairs) sont :\n- $2 \\times 6 = 12$\\nSystème 1 :\n$\\begin{cases} m - n = 2 \\\\ m + n = 6 \\end{cases}$\\nEn additionnant les deux lignes : $2m = 8 \\implies m = 4$.\\nEn soustrayant : $2n = 4 \\implies n = 2$.\\nOn vérifie : $4^2 - 2^2 = 16 - 4 = 12$. (Solution $(4, 2)$).\\nIl n'y a pas d'autre paire de diviseurs pairs de $12$ (car $1 \\times 12$ donne des nombres de parités différentes, et $3 \\times 4$ aussi).\\nDonc le seul couple d'entiers naturels est $(m, n) = (4, 2)$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-9",
+          "type": "exercise",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "1. Déterminer les diviseurs du nombre $22$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. En déduire tous les entiers naturels $x$ et $y$ qui vérifient : $(x + 2)(y + 1) = 22$."
+            }
+          ],
+          "title": "Exercice 9",
+          "content": "1. Déterminer les diviseurs du nombre $22$.\n2. En déduire tous les entiers naturels $x$ et $y$ qui vérifient : $(x + 2)(y + 1) = 22$.",
+          "solution": "1. Les diviseurs de $22$ sont : $1, 2, 11, 22$.\n2. Déduisons les entiers naturels $x$ et $y$ :\\nOn a $(x + 2)(y + 1) = 22$. Puisque $x$ et $y$ sont des entiers naturels, $x + 2 \\ge 2$ et $y + 1 \\ge 1$.\\nLes facteurs $(x + 2)$ et $(y + 1)$ sont donc des diviseurs de $22$.\\nOn a les cas suivants :\n- Cas 1 : $\\begin{cases} x + 2 = 1 \\\\ y + 1 = 22 \\end{cases} \\implies \\begin{cases} x = -1 \\notin \\mathbb{N} \\\\ y = 21 \\end{cases}$ (Impossible).\n- Cas 2 : $\\begin{cases} x + 2 = 2 \\\\ y + 1 = 11 \\end{cases} \\implies \\begin{cases} x = 0 \\\\ y = 10 \\end{cases}$. (Solution $(0, 10)$).\n- Cas 3 : $\\begin{cases} x + 2 = 11 \\\\ y + 1 = 2 \\end{cases} \\implies \\begin{cases} x = 9 \\\\ y = 1 \\end{cases}$. (Solution $(9, 1)$).\n- Cas 4 : $\\begin{cases} x + 2 = 22 \\\\ y + 1 = 1 \\end{cases} \\implies \\begin{cases} x = 20 \\\\ y = 0 \\end{cases}$. (Solution $(20, 0)$).\\nLes solutions $(x, y)$ sont donc : $(0, 10)$, $(9, 1)$, $(20, 0)$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-10",
+          "type": "exercise",
+          "items": [
+            {
+              "type": "bullet",
+              "text": "1. Décomposer en produit de facteurs premiers les nombres : $495$ ; $156$ ; $1404$ ; $4056$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Simplifier l'écriture des nombres suivants :"
+            },
+            {
+              "type": "text",
+              "text": "$\\frac{1404}{4056}$ ; $\\sqrt{1404 \\times 4056}$ ; $\\frac{495}{1404} + \\frac{156}{4056}$."
+            },
+            {
+              "type": "bullet",
+              "text": "3. Déterminer :"
+            },
+            {
+              "type": "text",
+              "text": "$\\text{pgcd}(495, 156)$ ; $\\text{pgcd}(495, 1404)$ ; $\\text{pgcd}(1404, 4056)$ ;"
+            },
+            {
+              "type": "text",
+              "text": "$\\text{ppcm}(495, 156)$ ; $\\text{ppcm}(495, 1404)$ ; $\\text{ppcm}(1404, 4056)$."
+            }
+          ],
+          "title": "Exercice 10",
+          "content": "1. Décomposer en produit de facteurs premiers les nombres : $495$ ; $156$ ; $1404$ ; $4056$.\n2. Simplifier l'écriture des nombres suivants :\n$\\frac{1404}{4056}$ ; $\\sqrt{1404 \\times 4056}$ ; $\\frac{495}{1404} + \\frac{156}{4056}$.\n3. Déterminer :\n$\\text{pgcd}(495, 156)$ ; $\\text{pgcd}(495, 1404)$ ; $\\text{pgcd}(1404, 4056)$ ;\n$\\text{ppcm}(495, 156)$ ; $\\text{ppcm}(495, 1404)$ ; $\\text{ppcm}(1404, 4056)$.",
+          "solution": "1. Décompositions en facteurs premiers :\n- $495 = 3^2 \\times 5 \\times 11$\n- $156 = 2^2 \\times 3 \\times 13$\n- $1404 = 2^2 \\times 3^3 \\times 13$\n- $4056 = 2^3 \\times 3 \\times 13^2$\n2. Simplifications :\n- $\\frac{1404}{4056} = \\frac{2^2 \\times 3^3 \\times 13}{2^3 \\times 3 \\times 13^2} = \\frac{3^2}{2 \\times 13} = \\frac{9}{26}$.\n- $\\sqrt{1404 \\times 4056} = \\sqrt{2^2 \\times 3^3 \\times 13 \\times 2^3 \\times 3 \\times 13^2} = \\sqrt{2^5 \\times 3^4 \\times 13^3} = \\sqrt{2^4 \\times 3^4 \\times 13^2 \\times (2 \\times 13)} = 2^2 \\times 3^2 \\times 13 \\times \\sqrt{26} = 468\\sqrt{26}$.\n- $\\frac{495}{1404} + \\frac{156}{4056} = \\frac{3^2 \\times 5 \\times 11}{2^2 \\times 3^3 \\times 13} + \\frac{2^2 \\times 3 \\times 13}{2^3 \\times 3 \\times 13^2} = \\frac{5 \\times 11}{2^2 \\times 3 \\times 13} + \\frac{1}{2 \\times 13} = \\frac{55}{156} + \\frac{1}{26} = \\frac{55 + 6}{156} = \\frac{61}{156}$.\n3. PGCD et PPCM :\n- $\\text{pgcd}(495, 156) = \\text{pgcd}(3^2 \\times 5 \\times 11, 2^2 \\times 3 \\times 13) = 3$.\n- $\\text{pgcd}(495, 1404) = \\text{pgcd}(3^2 \\times 5 \\times 11, 2^2 \\times 3^3 \\times 13) = 3^2 = 9$.\n- $\\text{pgcd}(1404, 4056) = \\text{pgcd}(2^2 \\times 3^3 \\times 13, 2^3 \\times 3 \\times 13^2) = 2^2 \\times 3 \\times 13 = 156$.\n- $\\text{ppcm}(495, 156) = \\frac{495 \\times 156}{\\text{pgcd}} = \\frac{77220}{3} = 25740$.\n- $\\text{ppcm}(495, 1404) = \\frac{495 \\times 1404}{9} = 77220$.\n- $\\text{ppcm}(1404, 4056) = \\frac{1404 \\times 4056}{156} = 36504$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-11",
+          "type": "exercise",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soient $a$ et $b$ deux entiers naturels tels que : $a = 4680$ et $b = 5940$."
+            },
+            {
+              "type": "bullet",
+              "text": "1. Décomposer $a$ et $b$ en produit de facteurs premiers."
+            },
+            {
+              "type": "bullet",
+              "text": "2. En déduire la décomposition en produit de facteurs premiers de $a^2 \\times b^3$."
+            },
+            {
+              "type": "bullet",
+              "text": "3. Déterminer $\\text{pgcd}(a, b)$ et $\\text{ppcm}(a, b)$ puis vérifier que : $\\text{pgcd}(a, b) \\times \\text{ppcm}(a, b) = ab$."
+            },
+            {
+              "type": "bullet",
+              "text": "4. Déterminer le plus petit entier naturel $m$ tel que $ma$ soit un carré parfait."
+            },
+            {
+              "type": "bullet",
+              "text": "5. Déterminer le plus petit entier naturel $n$ tel que $nb$ soit un cube d'un entier naturel."
+            },
+            {
+              "type": "bullet",
+              "text": "6. Simplifier : $\\frac{a}{b}$ et $\\sqrt{ab}$."
+            }
+          ],
+          "title": "Exercice 11",
+          "content": "Soient $a$ et $b$ deux entiers naturels tels que : $a = 4680$ et $b = 5940$.\n1. Décomposer $a$ et $b$ en produit de facteurs premiers.\n2. En déduire la décomposition en produit de facteurs premiers de $a^2 \\times b^3$.\n3. Déterminer $\\text{pgcd}(a, b)$ et $\\text{ppcm}(a, b)$ puis vérifier que : $\\text{pgcd}(a, b) \\times \\text{ppcm}(a, b) = ab$.\n4. Déterminer le plus petit entier naturel $m$ tel que $ma$ soit un carré parfait.\n5. Déterminer le plus petit entier naturel $n$ tel que $nb$ soit un cube d'un entier naturel.\n6. Simplifier : $\\frac{a}{b}$ et $\\sqrt{ab}$.",
+          "solution": "1. Décomposition :\n- $a = 4680 = 2^3 \\times 3^2 \\times 5 \\times 13$\n- $b = 5940 = 2^2 \\times 3^3 \\times 5 \\times 11$\n2. Décomposition de $a^2 \\times b^3$ :\n$a^2 = (2^3 \\times 3^2 \\times 5 \\times 13)^2 = 2^6 \\times 3^4 \\times 5^2 \\times 13^2$.\n$b^3 = (2^2 \\times 3^3 \\times 5 \\times 11)^3 = 2^6 \\times 3^9 \\times 5^3 \\times 11^3$.\n$a^2 \\times b^3 = (2^6 \\times 2^6) \\times (3^4 \\times 3^9) \\times (5^2 \\times 5^3) \\times 11^3 \\times 13^2 = 2^{12} \\times 3^{13} \\times 5^5 \\times 11^3 \\times 13^2$.\n3. PGCD et PPCM :\n- $\\text{pgcd}(a, b) = 2^2 \\times 3^2 \\times 5^1 = 4 \\times 9 \\times 5 = 180$.\n- $\\text{ppcm}(a, b) = 2^3 \\times 3^3 \\times 5 \\times 11 \\times 13 = 8 \\times 27 \\times 5 \\times 11 \\times 13 = 154440$.\\nVérification : $\\text{pgcd}(a, b) \\times \\text{ppcm}(a, b) = 180 \\times 154440 = 27799200$.\\nEt $a \\times b = 4680 \\times 5940 = 27799200$. Donc $\\text{pgcd}(a, b) \\times \\text{ppcm}(a, b) = ab$.\n4. Plus petit entier $m$ tel que $ma$ soit un carré parfait :\n$a = 2^3 \\times 3^2 \\times 5^1 \\times 13^1$. Pour que $ma$ soit un carré parfait, tous les exposants de sa décomposition doivent être pairs.\\nIl faut donc multiplier par $2^1 \\times 5^1 \\times 13^1$.\\nDonc $m = 2 \\times 5 \\times 13 = 130$.\n5. Plus petit entier $n$ tel que $nb$ soit un cube :\n$b = 2^2 \\times 3^3 \\times 5^1 \\times 11^1$. Pour que $nb$ soit un cube, les exposants doivent être des multiples de $3$.\\nIl faut multiplier par $2^1 \\times 5^2 \\times 11^2$.\\nDonc $n = 2 \\times 25 \\times 121 = 6050$.\n6. Simplifications :\n- $\\frac{a}{b} = \\frac{2^3 \\times 3^2 \\times 5 \\times 13}{2^2 \\times 3^3 \\times 5 \\times 11} = \\frac{2 \\times 13}{3 \\times 11} = \\frac{26}{33}$.\n- $\\sqrt{ab} = \\sqrt{(2^3 \\times 3^2 \\times 5 \\times 13)(2^2 \\times 3^3 \\times 5 \\times 11)} = \\sqrt{2^5 \\times 3^5 \\times 5^2 \\times 11 \\times 13} = 2^2 \\times 3^2 \\times 5 \\times \\sqrt{2 \\times 3 \\times 11 \\times 13} = 180\\sqrt{858}$.",
+          "points": "",
+          "language": "fr"
+        },
+        {
+          "id": "sec-12",
+          "type": "exercise",
+          "items": [
+            {
+              "type": "text",
+              "text": "Pour tout $n \\in \\mathbb{N}$, on pose : $x = 7^{n+2} - 7^n$ et $y = 3 \\times 7^{n+1} + 5 \\times 7^n$."
+            },
+            {
+              "type": "bullet",
+              "text": "1. Montrer que $x$ est divisible par $3$ et que $y$ est un multiple de $13$."
+            },
+            {
+              "type": "bullet",
+              "text": "2. Décomposer, en fonction de $n$, les nombres $x$ et $y$ en produit de facteurs premiers."
+            },
+            {
+              "type": "bullet",
+              "text": "3. Déterminer $\\text{pgcd}(x, y)$ et $\\text{ppcm}(x, y)$ en fonction de $n$."
+            }
+          ],
+          "title": "Exercice 12",
+          "content": "Pour tout $n \\in \\mathbb{N}$, on pose : $x = 7^{n+2} - 7^n$ et $y = 3 \\times 7^{n+1} + 5 \\times 7^n$.\n1. Montrer que $x$ est divisible par $3$ et que $y$ est un multiple de $13$.\n2. Décomposer, en fonction de $n$, les nombres $x$ et $y$ en produit de facteurs premiers.\n3. Déterminer $\\text{pgcd}(x, y)$ et $\\text{ppcm}(x, y)$ en fonction de $n$.",
+          "solution": "1. Divisibilité :\n- $x = 7^{n+2}",
+          "points": "",
+          "language": "fr"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-19T18:35:47.727Z",
+    "created_at": "2026-09-19T18:35:47.725Z",
+    "createdAt": "2026-09-19T18:35:48.031Z",
+    "updatedAt": "2026-09-19T18:35:48.031Z"
   }
 ]

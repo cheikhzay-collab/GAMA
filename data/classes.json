@@ -412,12 +412,6 @@
         "lessonId": "MOCK-L-IXTS1UPU8"
       },
       {
-        "id": "prog_2b_04_mu6u4s2l",
-        "type": "course",
-        "title": "المتتاليات الترجعية",
-        "lessonId": "MOCK-L-RBZPC9IGC"
-      },
-      {
         "id": "prog_2b_05_mu6u4s2l",
         "type": "homework",
         "title": "Devoir Surveillé N° 1 (Semestre 1)",
@@ -461,7 +455,7 @@
       }
     ],
     "createdAt": "2026-08-16T09:00:49.968Z",
-    "updatedAt": "2026-09-18T10:48:08.849Z"
+    "updatedAt": "2026-09-19T18:58:30.292Z"
   },
   {
     "id": "TCSF-2",
@@ -1565,14 +1559,14 @@
     "language": "fr",
     "program": [
       {
-        "id": "prog_1789721410740_8ky9f",
+        "id": "prog_1789842411879_lczcu",
         "type": "course",
-        "title": "Notions sur l'arithmétique",
-        "lessonId": "MOCK-L-0CVZMFE8K"
+        "title": "Arithmétique dans IN",
+        "lessonId": "MOCK-L-UIH18JMRC"
       }
     ],
     "createdAt": "2026-08-16T08:34:12.103Z",
-    "updatedAt": "2026-09-18T09:48:30.824Z"
+    "updatedAt": "2026-09-19T18:27:03.644Z"
   },
   {
     "id": "TCSF-1",

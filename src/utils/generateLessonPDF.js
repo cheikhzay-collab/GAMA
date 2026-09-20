@@ -2557,8 +2557,10 @@ b .katex * {
    MODERN PRO 2026 DESIGN SYSTEM
    ═══════════════════════════════════════ */
 .fiche-header-modern-pro {
-  display: grid;
-  grid-template-columns: 1.28fr 1.62fr 1.12fr auto;
+  display: grid !important;
+  grid-template-columns: 1.28fr 1.62fr 1.12fr auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
   background: #ffffff;
   border: 1.5px solid #005086;
   border-radius: 8px;
@@ -2575,11 +2577,14 @@ b .katex * {
   flex-direction: column;
   justify-content: center;
   border-right: 1.5px solid rgba(0, 80, 134, 0.22);
+  box-sizing: border-box;
 }
 
 .fiche-header-modern-pro .modern-header-left {
   background: #f8fafc;
   gap: 3px;
+  flex: 1.28 1 0%;
+  min-width: 0;
 }
 
 .fiche-header-modern-pro .modern-header-row {
@@ -2626,6 +2631,8 @@ b .katex * {
   text-align: center;
   gap: 4px;
   padding: 6px 10px;
+  flex: 1.62 1 0%;
+  min-width: 0;
 }
 
 .fiche-header-modern-pro .modern-header-title {
@@ -2667,6 +2674,8 @@ b .katex * {
   text-align: right;
   gap: 4px;
   justify-content: center;
+  flex: 1.12 1 0%;
+  min-width: 0;
 }
 
 .fiche-header-modern-pro .modern-level-box {
@@ -2700,8 +2709,10 @@ b .katex * {
   background: #005086;
   align-items: center;
   justify-content: center;
-  padding: 5px 9px;
+  padding: 5px 12px;
   gap: 3px;
+  flex: 0 0 auto;
+  margin-inline-start: auto;
 }
 
 .fiche-header-modern-pro .modern-qr-box {
@@ -3166,7 +3177,10 @@ html[dir="rtl"] .section-header-row {
     width: 100% !important;
   }
   .modern-pro-layout .fiche-header-modern-pro {
-    display: flex !important;
+    display: grid !important;
+    grid-template-columns: 1.28fr 1.62fr 1.12fr auto !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
   .modern-pro-layout .fiche-header {
     display: none !important;
@@ -3208,7 +3222,12 @@ html[dir="rtl"] .section-header-row {
   column-count: 1 !important;
   width: 100% !important;
 }
-.modern-pro-layout .fiche-header-modern-pro { display: flex !important; }
+.modern-pro-layout .fiche-header-modern-pro {
+  display: grid !important;
+  grid-template-columns: 1.28fr 1.62fr 1.12fr auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
 .modern-pro-layout .fiche-header { display: none !important; }
 .modern-pro-layout .fiche-footer-modern-pro { display: flex !important; }
 .modern-pro-layout .fiche-footer { display: none !important; }
@@ -3302,7 +3321,7 @@ html[dir="rtl"] .homework-content-cell {
   <!-- HEADER -->
   ${(isExercises || isHomework) ? `
   <!-- MODERN PRO 2026 HEADER: exercises and homework -->
-  <div class="fiche-header-modern-pro" style="${isModernPro ? 'display:flex;' : 'display:none;'} ${isArabic ? `font-family:${arabicFontFamily};` : ''}">
+  <div class="fiche-header-modern-pro" style="${isModernPro ? 'display:grid;' : 'display:none;'} ${isArabic ? `font-family:${arabicFontFamily};` : ''}">
     <div class="modern-header-col modern-header-left">
       ${teacher ? `<div class="modern-header-row"><span class="modern-meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="modern-meta-label">${isArabic ? 'الأستاذ' : 'Prof'} :</span> <strong class="modern-meta-val">${esc(formatTeacherName(teacher))}</strong></div>` : ''}
       <div class="modern-header-row"><span class="modern-meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="modern-meta-label">${isArabic ? 'السنة الدراسية' : 'A.S'} :</span> <span class="modern-meta-val">${new Date().getFullYear() - 1}/${new Date().getFullYear()}</span></div>

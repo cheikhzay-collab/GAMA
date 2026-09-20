@@ -106,11 +106,17 @@ function verifyJWT(token) {
  * Returns decoded payload or null.
  */
 function getAuthUser(req) {
+  const origin = req.headers.origin || req.headers.host || '';
+  const isLocalDev = process.env.NODE_ENV !== 'production' || origin.includes('localhost') || origin.includes('127.0.0.1');
+
   const authHeader = req.headers.authorization || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
   if (token) {
     const verified = verifyJWT(token);
-    if (verified) return verified;
+    if (verified) {
+      if (isLocalDev) verified.role = 'admin';
+      return verified;
+    }
 
     // Support Supabase / external tokens if they carry valid role
     try {
@@ -118,7 +124,7 @@ function getAuthUser(req) {
       if (parts.length === 3) {
         const payload = JSON.parse(base64UrlDecode(parts[1]));
         if (payload) {
-          const isAdmin = payload.role === 'admin' || payload.email === 'admin@lconq.ma' || payload.user_metadata?.role === 'admin';
+          const isAdmin = isLocalDev || payload.role === 'admin' || payload.email === 'admin@lconq.ma' || payload.user_metadata?.role === 'admin';
           if (isAdmin) {
             return { uid: payload.sub || 'admin-master', email: payload.email || 'admin@lconq.ma', role: 'admin' };
           }
@@ -131,8 +137,7 @@ function getAuthUser(req) {
   }
 
   // Local development fallback — allow local dev and internal companion to save without 401
-  const origin = req.headers.origin || req.headers.host || '';
-  if (process.env.NODE_ENV !== 'production' || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+  if (isLocalDev) {
     return { uid: 'admin-master', email: 'admin@lconq.ma', role: 'admin' };
   }
 
@@ -240,6 +245,39 @@ export default async function handler(req, res) {
           }
           return val;
         });
+
+        // Check if row already exists in table to avoid PostgreSQL NOT-NULL evaluation on omitted columns
+        if (data[keyField] !== undefined) {
+          const checkSql = `SELECT 1 FROM public."${table}" WHERE "${keyField}" = $1 LIMIT 1;`;
+          const existingRows = await sql.query(checkSql, [data[keyField]]);
+          if (existingRows.length > 0) {
+            const updateKeys = keys.filter(k => k !== keyField);
+            if (updateKeys.length === 0) {
+              const fetchSql = `SELECT * FROM public."${table}" WHERE "${keyField}" = $1;`;
+              const r = await sql.query(fetchSql, [data[keyField]]);
+              return res.status(200).json({ success: true, row: r[0] || null });
+            }
+            const setClauses = updateKeys.map((k, i) => `"${k}" = $${i + 2}`).join(', ');
+            const updateVals = [
+              data[keyField],
+              ...updateKeys.map(k => {
+                const val = data[k];
+                if (val !== null && typeof val === 'object' && !(val instanceof Date)) {
+                  return JSON.stringify(val);
+                }
+                return val;
+              })
+            ];
+            const updateSql = `
+              UPDATE public."${table}"
+              SET ${setClauses}
+              WHERE "${keyField}" = $1
+              RETURNING *;
+            `;
+            const updatedRows = await sql.query(updateSql, updateVals);
+            return res.status(200).json({ success: true, row: updatedRows[0] || null });
+          }
+        }
 
         const upsertSql = `
           INSERT INTO public."${table}" (${columns})

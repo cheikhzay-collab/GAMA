@@ -56,6 +56,13 @@ export const normalizeLevel = (rawLevel) => {
     ) {
       return '1bac_arts';
     }
+    if (
+      normalized.includes('sm') ||
+      normalized.includes('math') ||
+      normalized.includes('رياض')
+    ) {
+      return '1bac_sm';
+    }
     return '1bac_sci';
   }
 
@@ -116,7 +123,7 @@ export const normalizeLevel = (rawLevel) => {
     return '2bac_sm';
   }
 
-  const validKeys = ['common_core_sci', 'common_core_arts', '1bac_sci', '1bac_arts', '2bac_sm', '2bac_pc_svt', '2bac_arts'];
+  const validKeys = ['common_core_sci', 'common_core_arts', '1bac_sci', '1bac_sm', '1bac_arts', '2bac_sm', '2bac_pc_svt', '2bac_arts'];
   if (validKeys.includes(rawLevel)) {
     return rawLevel;
   }
@@ -136,6 +143,7 @@ export const getLevelDisplayName = (id, isArabic = false) => {
     case 'common_core_sci': return isArabic ? 'جدع مشترك علوم' : 'Tronc Commun Scientifique';
     case 'common_core_arts': return isArabic ? 'جدع مشترك آداب' : 'Tronc Commun Littéraire';
     case '1bac_sci': return isArabic ? 'أولى باك علوم تجريبية' : '1ère Bac Sciences Expérimentales';
+    case '1bac_sm': return isArabic ? 'أولى باك علوم رياضية' : '1ère Bac Sciences Mathématiques';
     case '1bac_arts': return isArabic ? 'أولى باك آداب' : '1ère Bac Littéraire';
     case '2bac_sm': return isArabic ? 'ثانية باك علوم رياضية' : '2ème Bac Sciences Mathématiques';
     case '2bac_pc_svt': return isArabic ? 'ثانية باك علوم تجريبية (PC/SVT)' : '2ème Bac Sciences Expérimentales (PC/SVT)';

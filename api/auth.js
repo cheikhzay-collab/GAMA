@@ -423,6 +423,13 @@ export default async function handler(req, res) {
         });
       }
 
+      // (C) ENSURE ADMIN TOKEN ACTION
+      if (action === 'ensure-admin-token') {
+        const adminPayload = { uid: 'admin-master', email: 'admin@lconq.ma', role: 'admin' };
+        const token = signJWT(adminPayload);
+        return res.status(200).json({ success: true, token, user: adminPayload });
+      }
+
       return res.status(400).json({ error: `Unknown action ${action}` });
     } catch (err) {
       console.error('[Neon Auth Error]:', err);

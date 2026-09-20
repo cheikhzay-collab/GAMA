@@ -27,6 +27,8 @@ const getLevelLabel = (rawLevel) => {
       return 'Tronc Commun Lettres';
     case '1bac_sci':
       return '1ère Bac Sciences Expérimentales';
+    case '1bac_sm':
+      return '1ère Bac Sciences Mathématiques';
     case '1bac_arts':
       return '1ère Bac Lettres';
     case '2bac_sm':
@@ -395,7 +397,9 @@ ${sectionsContentText}
       const matchesSearch = l.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             l.teacher?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesLevel = selectedLevelFilter === 'Tous' || normalizeLevel(l.level) === selectedLevelFilter;
-      const matchesDocType = selectedDocTypeFilter === 'Tous' || l.docType === selectedDocTypeFilter;
+      const matchesDocType = selectedDocTypeFilter === 'Tous' || 
+                            l.docType === selectedDocTypeFilter ||
+                            (selectedDocTypeFilter === 'course' && (l.docType === 'summary' || !l.docType));
       const matchesStatus = statusFilter === 'all' || 
                             (statusFilter === 'active' && l.isActive) || 
                             (statusFilter === 'inactive' && !l.isActive);
@@ -812,6 +816,7 @@ ${sectionsContentText}
             <option value="common_core_sci">TC Scientifique</option>
             <option value="common_core_arts">TC Lettres</option>
             <option value="1bac_sci">1ère Bac Sciences</option>
+            <option value="1bac_sm">1ère Bac SM</option>
             <option value="1bac_arts">1ère Bac Lettres</option>
             <option value="2bac_sm">2ème Bac SM</option>
             <option value="2bac_pc_svt">2ème Bac PC/SVT</option>
@@ -827,9 +832,10 @@ ${sectionsContentText}
           >
             <option value="Tous">Tous les types</option>
             <option value="course">Cours (درس)</option>
+            <option value="summary">Résumé (ملخص درس)</option>
+            <option value="exercises">Exercices (تمارين)</option>
             <option value="homework">Devoirs (فرض محروس)</option>
             <option value="national">Examen National (امتحان وطني)</option>
-            <option value="exercises">Exercices (تمارين)</option>
             <option value="concours">Concours (مباراة)</option>
           </select>
 
