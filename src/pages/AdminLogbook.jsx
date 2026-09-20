@@ -646,6 +646,7 @@ export default function AdminLogbook() {
   
   // Form modal state
   const [modalOpen, setModalOpen] = useState(false);
+  const [isProgramOnlyMode, setIsProgramOnlyMode] = useState(false);
   const [editingEntry, setEditingEntry] = useState(null); // null for new entry
   const [formData, setFormData] = useState({
     date: formatLocalDate(),
@@ -1256,7 +1257,8 @@ export default function AdminLogbook() {
   };
 
   // Open "Add Séance" modal pre-filled with a specific program item
-  const handleOpenAddSpecificProgramItem = (item) => {
+  const handleOpenAddSpecificProgramItem = (item, isProgramOnly = true) => {
+    setIsProgramOnlyMode(isProgramOnly);
     setEditingEntry(null);
     let docTypeComponent = 'Cours';
     if (item.type === 'exercises') docTypeComponent = 'Exercices';
@@ -1310,8 +1312,9 @@ export default function AdminLogbook() {
     setModalOpen(true);
   };
 
-  // Open "Add Séance" modal pre-filled with the next planned item
+  // Open "Add Séance" modal pre-filled with the next planned item (Filters strictly to programme items)
   const handleOpenAddFromProgram = () => {
+    setIsProgramOnlyMode(true);
     const nextItem = getNextPlannedItem();
     if (!nextItem) {
       alert(isArMode ? "لقد تم إنجاز جميع دروس البرنامج المعتمد للقسم!" : "Tous les éléments du programme ont été complétés !");
@@ -1331,15 +1334,12 @@ export default function AdminLogbook() {
       return;
     }
 
-    handleOpenAddSpecificProgramItem(nextItem);
+    handleOpenAddSpecificProgramItem(nextItem, true);
   };
 
-  // Primary Add Séance handler (defaults to next program item if program is set)
+  // Primary Add Séance handler (allows creating a free session or choosing from any lesson/program item)
   const handleOpenAddModal = () => {
-    if (selectedClass && selectedClass.program && selectedClass.program.length > 0) {
-      handleOpenAddFromProgram();
-      return;
-    }
+    setIsProgramOnlyMode(false);
     setEditingEntry(null);
     setFormData({
       date: formatLocalDate(),
@@ -1357,6 +1357,7 @@ export default function AdminLogbook() {
 
 
   const handleOpenEditModal = (entry) => {
+    setIsProgramOnlyMode(false);
     setEditingEntry(entry);
     setFormData({
       date: entry.date,
@@ -2290,10 +2291,144 @@ export default function AdminLogbook() {
           )}
           
           {/* ── Class Header Block (Dotted print style at top) ── */}
-          <div className="glass-panel" style={{ padding: '1.5rem 2rem', borderRadius: '20px', marginBottom: '2rem', border: '1px solid var(--border)' }}>
+          <div className="glass-panel logbook-header-card">
+            <style dangerouslySetInnerHTML={{__html: `
+              .logbook-header-card {
+                padding: 1.5rem 2rem;
+                border-radius: 20px;
+                margin-bottom: 2rem;
+                border: 1px solid var(--border);
+                transition: all 0.3s ease;
+              }
+              .logbook-toolbar-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 1.25rem;
+              }
+              .logbook-actions-group {
+                display: flex;
+                gap: 0.65rem;
+                align-items: center;
+                flex-wrap: wrap;
+              }
+              .logbook-action-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.48rem;
+                height: 42px;
+                padding: 0 1.15rem;
+                border-radius: 12px;
+                font-size: 0.86rem;
+                font-weight: 750;
+                cursor: pointer;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                white-space: nowrap;
+                user-select: none;
+                text-decoration: none;
+                box-sizing: border-box;
+                border: 1.5px solid transparent;
+              }
+              .logbook-action-btn:hover {
+                transform: translateY(-2px);
+              }
+              .logbook-action-btn:active {
+                transform: translateY(0) scale(0.97);
+              }
+
+              /* Primary: Ajouter une séance */
+              .logbook-btn-primary {
+                background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+                color: #ffffff !important;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+              }
+              .logbook-btn-primary:hover {
+                box-shadow: 0 6px 20px rgba(79, 70, 229, 0.48);
+                background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+              }
+
+              /* Remplir auto: Emerald smart fill */
+              .logbook-btn-auto {
+                background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.16) 100%);
+                border: 1.5px solid rgba(16, 185, 129, 0.45);
+                color: var(--emerald, #10b981) !important;
+                box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12);
+              }
+              .logbook-btn-auto:hover {
+                background: linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(5, 150, 105, 0.26) 100%);
+                border-color: rgba(16, 185, 129, 0.65);
+                box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+              }
+
+              /* Programme & Progression: Violet subtle */
+              .logbook-btn-prog {
+                background: rgba(99, 102, 241, 0.08);
+                border: 1.5px solid rgba(99, 102, 241, 0.35);
+                color: var(--violet, #6366f1) !important;
+              }
+              .logbook-btn-prog:hover {
+                background: rgba(99, 102, 241, 0.16);
+                border-color: rgba(99, 102, 241, 0.55);
+              }
+
+              /* Imprimer: Neutral glass */
+              .logbook-btn-print {
+                background: rgba(255, 255, 255, 0.03);
+                border: 1.5px solid var(--border, rgba(255, 255, 255, 0.15));
+                color: var(--text-main, #0f172a) !important;
+              }
+              .logbook-btn-print:hover {
+                background: rgba(255, 255, 255, 0.08);
+                border-color: var(--border-hover, rgba(255, 255, 255, 0.3));
+              }
+
+              /* Responsive Rules for Mobile */
+              @media (max-width: 768px) {
+                .logbook-header-card {
+                  padding: 1.15rem 1rem !important;
+                  border-radius: 16px !important;
+                  margin-bottom: 1.25rem !important;
+                }
+                .logbook-toolbar-row {
+                  flex-direction: column !important;
+                  align-items: stretch !important;
+                  gap: 1rem !important;
+                }
+                .logbook-actions-group {
+                  display: grid !important;
+                  grid-template-columns: 1fr 1fr !important;
+                  gap: 0.55rem !important;
+                  width: 100% !important;
+                }
+                .logbook-action-btn {
+                  width: 100% !important;
+                  height: 44px !important;
+                  padding: 0 0.4rem !important;
+                  font-size: 0.82rem !important;
+                  border-radius: 11px !important;
+                }
+                .logbook-btn-label-long {
+                  display: none !important;
+                }
+                .logbook-btn-label-short {
+                  display: inline !important;
+                }
+              }
+              @media (min-width: 769px) {
+                .logbook-btn-label-long {
+                  display: inline !important;
+                }
+                .logbook-btn-label-short {
+                  display: none !important;
+                }
+              }
+            `}} />
             
             {/* Screen layout */}
-            <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div className="no-print logbook-toolbar-row">
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.3rem' }}>
                   <button 
@@ -2314,69 +2449,52 @@ export default function AdminLogbook() {
                 </p>
               </div>
 
-              {/* Action Buttons Toolbar */}
-              <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                {selectedClass && selectedClass.program && selectedClass.program.length > 0 && (
-                  <button
-                    onClick={() => setProgramDrawerOpen(true)}
-                    className="btn-outline"
-                    title={isArMode ? 'عرض البرنامج الرسمي ومؤشر التقدم' : 'Consulter le programme officiel et la progression'}
-                    style={{ 
-                      display: 'flex', alignItems: 'center', gap: '0.45rem', 
-                      fontSize: '0.85rem', padding: '0.55rem 1.05rem', borderRadius: '10px', 
-                      background: 'rgba(99, 102, 241, 0.06)', borderColor: 'rgba(99, 102, 241, 0.3)', 
-                      color: 'var(--violet)', fontWeight: 750
-                    }}
-                  >
-                    <ListOrdered size={16} /> 
-                    <span>{isArMode ? `البرنامج والتقدم (${selectedClass.program.length})` : `Programme & Progression (${selectedClass.program.length})`}</span>
-                  </button>
-                )}
-                
-                <button
-                  onClick={triggerPrint}
-                  className="btn-outline"
-                  title={isArMode ? 'طباعة دفتر النصوص' : 'Imprimer le cahier de textes'}
-                  style={{ 
-                    display: 'flex', alignItems: 'center', gap: '0.4rem', 
-                    fontSize: '0.85rem', padding: '0.55rem 1rem', borderRadius: '10px', 
-                    background: 'transparent', borderColor: 'var(--border)', color: 'var(--text-main)',
-                    fontWeight: 650
-                  }}
-                >
-                  <Printer size={16} /> 
-                  <span>{isArMode ? 'طباعة' : 'Imprimer'}</span>
-                </button>
-
+              {/* Action Buttons Toolbar - 2x2 on Mobile, Inline on Desktop */}
+              <div className="logbook-actions-group">
                 {selectedClass && selectedClass.program && selectedClass.program.length > 0 && (
                   <button
                     onClick={handleOpenAddFromProgram}
-                    className="btn-outline"
-                    title={isArMode ? 'تعبئة سريعة للحصة التالية من البرنامج' : 'Remplir automatiquement la prochaine séance du programme'}
-                    style={{ 
-                      display: 'flex', alignItems: 'center', gap: '0.4rem', 
-                      fontSize: '0.85rem', padding: '0.55rem 1.05rem', borderRadius: '10px',
-                      background: 'rgba(16, 185, 129, 0.08)', borderColor: 'rgba(16, 185, 129, 0.35)',
-                      color: 'var(--emerald)', fontWeight: 750
-                    }}
+                    className="logbook-action-btn logbook-btn-auto"
+                    title={isArMode ? 'تعبئة سريعة للحصة التالية من المقرر' : 'Remplir automatiquement la prochaine séance du programme'}
                   >
-                    <Sparkles size={15} /> 
-                    <span>{isArMode ? 'تعبئة من البرنامج' : 'Remplir auto'}</span>
+                    <Sparkles size={16} /> 
+                    <span>{isArMode ? 'تعبئة تلقائية' : 'Remplir auto'}</span>
                   </button>
                 )}
 
                 <button
                   onClick={handleOpenAddModal}
-                  className="btn"
-                  style={{ 
-                    display: 'flex', alignItems: 'center', gap: '0.45rem', 
-                    fontSize: '0.85rem', padding: '0.55rem 1.25rem', borderRadius: '10px',
-                    fontWeight: 800,
-                    boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)'
-                  }}
+                  className="logbook-action-btn logbook-btn-primary"
+                  title={isArMode ? 'إضافة حصة جديدة في دفتر النصوص' : 'Ajouter manuellement une séance au cahier de textes'}
                 >
-                  <Plus size={16} /> 
-                  <span>{isArMode ? 'إضافة حصة' : 'Ajouter une séance'}</span>
+                  <Plus size={17} strokeWidth={2.5} /> 
+                  <span className="logbook-btn-label-long">{isArMode ? 'إضافة حصة' : 'Ajouter une séance'}</span>
+                  <span className="logbook-btn-label-short">{isArMode ? 'إضافة حصة' : '+ Séance'}</span>
+                </button>
+
+                {selectedClass && selectedClass.program && selectedClass.program.length > 0 && (
+                  <button
+                    onClick={() => setProgramDrawerOpen(true)}
+                    className="logbook-action-btn logbook-btn-prog"
+                    title={isArMode ? 'عرض البرنامج الرسمي ومؤشر التقدم' : 'Consulter le programme officiel et la progression'}
+                  >
+                    <ListOrdered size={16} /> 
+                    <span className="logbook-btn-label-long">
+                      {isArMode ? `البرنامج والتقدم (${selectedClass.program.length})` : `Programme & Progression (${selectedClass.program.length})`}
+                    </span>
+                    <span className="logbook-btn-label-short">
+                      {isArMode ? `البرنامج (${selectedClass.program.length})` : `Prog. (${selectedClass.program.length})`}
+                    </span>
+                  </button>
+                )}
+                
+                <button
+                  onClick={triggerPrint}
+                  className="logbook-action-btn logbook-btn-print"
+                  title={isArMode ? 'طباعة دفتر النصوص' : 'Imprimer le cahier de textes'}
+                >
+                  <Printer size={16} /> 
+                  <span>{isArMode ? 'طباعة' : 'Imprimer'}</span>
                 </button>
               </div>
             </div>
@@ -3264,15 +3382,45 @@ export default function AdminLogbook() {
 
               {/* Programme / Lesson Selection */}
               <div className="input-group">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem', flexWrap: 'wrap', gap: '0.4rem' }}>
                   <label style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)' }}>
-                    {isArMode ? 'عنصر من برنامج القسم المعتمد (Programme) :' : 'Élément du programme officiel de la classe :'}
+                    {isProgramOnlyMode
+                      ? (isArMode ? 'عنصر من برنامج القسم المعتمد (المحتوى المقرر فقط) :' : 'Élément du programme officiel (Programme uniquement) :')
+                      : (isArMode ? 'عنصر من برنامج القسم أو المكتبة :' : 'Élément du programme ou des cours :')}
                   </label>
-                  {selectedClass && selectedClass.program && selectedClass.program.length > 0 && (
-                    <span style={{ fontSize: '0.72rem', color: 'var(--violet)', fontWeight: 700 }}>
-                      ⭐ {selectedClass.program.length} {isArMode ? 'عناصر مقررة' : 'éléments planifiés'}
-                    </span>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {selectedClass && selectedClass.program && selectedClass.program.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setIsProgramOnlyMode(prev => !prev)}
+                        title={isProgramOnlyMode ? (isArMode ? 'إظهار جميع وثائق ودروس المكتبة' : 'Afficher l\'ensemble des cours et séries') : (isArMode ? 'تحديد عناصر برنامج القسم فقط' : 'Restreindre au programme de la classe')}
+                        style={{
+                          fontSize: '0.72rem',
+                          fontWeight: 750,
+                          padding: '0.2rem 0.65rem',
+                          borderRadius: '8px',
+                          border: isProgramOnlyMode ? '1px solid rgba(16, 185, 129, 0.45)' : '1px solid var(--border)',
+                          background: isProgramOnlyMode ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255, 255, 255, 0.04)',
+                          color: isProgramOnlyMode ? 'var(--emerald)' : 'var(--text-muted)',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <Sparkles size={12} />
+                        {isProgramOnlyMode 
+                          ? (isArMode ? 'البرنامج فقط ✓' : 'Programme seul ✓') 
+                          : (isArMode ? 'تصفية بالبرنامج' : 'Filtrer par programme')}
+                      </button>
+                    )}
+                    {selectedClass && selectedClass.program && selectedClass.program.length > 0 && (
+                      <span style={{ fontSize: '0.72rem', color: 'var(--violet)', fontWeight: 700 }}>
+                        ⭐ {selectedClass.program.length} {isArMode ? 'عناصر' : 'éléments'}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <select
                   className="modal-input"
@@ -3281,22 +3429,22 @@ export default function AdminLogbook() {
                 >
                   <option value="">{isArMode ? '-- اختر عنصراً من برنامج القسم --' : '-- Sélectionner un élément du programme --'}</option>
                   
-                  {/* 1. Class Program Items (First Priority) */}
+                  {/* 1. Class Program Items (First Priority / Sole items if isProgramOnlyMode) */}
                   {selectedClass && selectedClass.program && selectedClass.program.length > 0 && (
                     <optgroup label={isArMode ? '⭐ برنامج القسم المعتمد (مرتب حسب التدرج)' : '⭐ Programme officiel de la classe'}>
                       {selectedClass.program.map((item, pIdx) => {
                         const status = getProgramItemStatus(item);
                         return (
                           <option key={`prog_${item.id}`} value={`prog_item_${item.id}`}>
-                            {pIdx + 1}. {item.title} {status.isDone ? '✓ (منجز)' : ''}
+                            {pIdx + 1}. {item.title} {status.isDone ? (isArMode ? '✓ (منجز)' : '✓ (Complété)') : ''}
                           </option>
                         );
                       })}
                     </optgroup>
                   )}
 
-                  {/* 2. Courses / الدروس */}
-                  {levelLessons.filter(l => l.docType === 'course' || (!l.docType && !l.isExam)).length > 0 && (
+                  {/* 2. Courses / الدروس - Only shown when not in program-only mode */}
+                  {!isProgramOnlyMode && levelLessons.filter(l => l.docType === 'course' || (!l.docType && !l.isExam)).length > 0 && (
                     <optgroup label={isArMode ? '📖 دروس وفصول إضافية' : '📖 Fiches de cours'}>
                       {levelLessons.filter(l => l.docType === 'course' || (!l.docType && !l.isExam)).map(l => (
                         <option key={l.id} value={l.id}>
@@ -3306,8 +3454,8 @@ export default function AdminLogbook() {
                     </optgroup>
                   )}
 
-                  {/* 3. Series & Exercises / سلاسل التمارين */}
-                  {levelLessons.filter(l => l.docType === 'exercises' || l.docType === 'series').length > 0 && (
+                  {/* 3. Series & Exercises - Only shown when not in program-only mode */}
+                  {!isProgramOnlyMode && levelLessons.filter(l => l.docType === 'exercises' || l.docType === 'series').length > 0 && (
                     <optgroup label={isArMode ? '📝 سلاسل تمارين إضافية' : '📝 Séries d\'exercices'}>
                       {levelLessons.filter(l => l.docType === 'exercises' || l.docType === 'series').map(l => (
                         <option key={l.id} value={l.id}>
@@ -3317,8 +3465,8 @@ export default function AdminLogbook() {
                     </optgroup>
                   )}
 
-                  {/* 4. Homeworks & Controls / الفروض والامتحانات */}
-                  {levelLessons.filter(l => l.docType === 'homework' || l.docType === 'exam' || l.docType === 'control' || l.isExam).length > 0 && (
+                  {/* 4. Homeworks & Controls - Only shown when not in program-only mode */}
+                  {!isProgramOnlyMode && levelLessons.filter(l => l.docType === 'homework' || l.docType === 'exam' || l.docType === 'control' || l.isExam).length > 0 && (
                     <optgroup label={isArMode ? '📑 فروض وامتحانات إضافية' : '📑 Devoirs & Contrôles'}>
                       {levelLessons.filter(l => l.docType === 'homework' || l.docType === 'exam' || l.docType === 'control' || l.isExam).map(l => (
                         <option key={l.id} value={l.id}>
@@ -3329,9 +3477,9 @@ export default function AdminLogbook() {
                   )}
                 </select>
                 <p style={{ marginTop: '0.4rem', fontSize: '0.72rem', color: 'var(--text-subtle)', margin: '0.35rem 0 0 0' }}>
-                  {isArMode 
-                    ? 'يتم استخراج عنوان الحصة والفقرات المنجزة تلقائياً من برنامج القسم المعني.' 
-                    : 'Les titres et sections sont extraits automatiquement à partir du programme de la classe.'}
+                  {isProgramOnlyMode 
+                    ? (isArMode ? '✨ يتم عرض عناصر برنامج القسم المعتمد فقط لتسهيل التعبئة السريعة والمباشرة.' : '✨ Seuls les éléments du programme officiel de la classe sont affichés pour un remplissage direct.')
+                    : (isArMode ? 'يتم استخراج عنوان الحصة والفقرات المنجزة تلقائياً من برنامج القسم المعني.' : 'Les titres et sections sont extraits automatiquement à partir du programme de la classe.')}
                 </p>
               </div>
 
