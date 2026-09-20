@@ -31,7 +31,19 @@ const SYSTEM_LEVELS = [
 
 import { normalizeLevel } from '../utils/levelHelpers';
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const handler = (e) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  return isMobile;
+}
+
 export default function AdminClassDetail() {
+  const isMobile = useIsMobile();
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -1580,7 +1592,7 @@ export default function AdminClassDetail() {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.6rem' }}>
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', width: isMobile ? '100%' : 'auto' }}>
           {activeTab === 'students' && (
             <>
               <button 
@@ -1862,22 +1874,24 @@ export default function AdminClassDetail() {
       </div>
 
       {/* Search Input for active tab */}
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', width: '100%', maxWidth: '350px' }}>
-          <Search size={17} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-          <input 
-            type="text" 
-            placeholder="Rechercher par nom ou code Massar..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ 
-              width: '100%', padding: '0.65rem 1rem 0.65rem 2.8rem', background: 'var(--bg-glass)', 
-              border: '1px solid var(--border)', borderRadius: '10px', color: 'var(--text-main)', outline: 'none',
-              fontSize: '0.85rem'
-            }}
-          />
+      {['students', 'homework', 'grades', 'competitions'].includes(activeTab) && (
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: '350px' }}>
+            <Search size={17} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <input 
+              type="text" 
+              placeholder="Rechercher par nom ou code Massar..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ 
+                width: '100%', padding: '0.65rem 1rem 0.65rem 2.8rem', background: 'var(--bg-glass)', 
+                border: '1px solid var(--border)', borderRadius: '10px', color: 'var(--text-main)', outline: 'none',
+                fontSize: '0.85rem'
+              }}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Tab 1: Students list */}
       {activeTab === 'students' && (
@@ -2171,16 +2185,16 @@ export default function AdminClassDetail() {
             const progressPct = programItems.length > 0 ? Math.round((completedCount / programItems.length) * 100) : 0;
             
             return (
-              <div className="glass-panel" style={{ padding: '2rem', display: 'flex', alignItems: 'center', gap: '2.5rem', border: '1px solid var(--border)', flexWrap: 'wrap' }}>
-                <div style={{ flex: 1, minWidth: '220px' }}>
-                  <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>Progression Globale du Programme</h3>
+              <div className="glass-panel" style={{ padding: isMobile ? '1.25rem' : '2rem', display: 'flex', alignItems: 'center', gap: isMobile ? '1rem' : '2.5rem', border: '1px solid var(--border)', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: isMobile ? '100%' : '220px' }}>
+                  <h3 style={{ margin: '0 0 0.5rem 0', fontSize: isMobile ? '1.1rem' : '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>Progression Globale du Programme</h3>
                   <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-muted)' }}>
                     Vous avez complété <strong>{completedCount}</strong> sur <strong>{programItems.length}</strong> éléments planifiés pour cette classe.
                   </p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
-                  <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(124, 58, 237, 0.05)', border: '4px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', position: 'relative' }}>
-                    <span style={{ fontSize: '1.5rem', fontWeight: 900, color: progressPct === 100 ? 'var(--emerald)' : 'var(--violet)' }}>{progressPct}%</span>
+                  <div style={{ width: isMobile ? '80px' : '100px', height: isMobile ? '80px' : '100px', borderRadius: '50%', background: 'rgba(124, 58, 237, 0.05)', border: '4px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', position: 'relative' }}>
+                    <span style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 900, color: progressPct === 100 ? 'var(--emerald)' : 'var(--violet)' }}>{progressPct}%</span>
                     <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '0.1rem' }}>Complété</span>
                   </div>
                 </div>
@@ -2189,10 +2203,10 @@ export default function AdminClassDetail() {
           })()}
 
           {/* List and Plan Section Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '2rem', alignItems: 'flex-start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px', gap: isMobile ? '1.25rem' : '2rem', alignItems: 'flex-start' }}>
             
             {/* 1. Ordered Program Timeline */}
-            <div className="glass-panel" style={{ padding: '1.5rem', border: '1px solid var(--border)', margin: 0 }}>
+            <div className="glass-panel" style={{ padding: isMobile ? '1rem' : '1.5rem', border: '1px solid var(--border)', margin: 0 }}>
               <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)', margin: '0 0 1.5rem 0' }}>Liste Ordonnée des Activités</h3>
               
               {(!classObj.program || classObj.program.length === 0) ? (
@@ -2211,11 +2225,12 @@ export default function AdminClassDetail() {
                         style={{
                           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                           background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border)',
-                          borderRadius: '12px', padding: '0.85rem 1.25rem', gap: '1rem',
+                          borderRadius: '12px', padding: isMobile ? '0.75rem 0.85rem' : '0.85rem 1.25rem', gap: isMobile ? '0.65rem' : '1rem',
+                          flexWrap: isMobile ? 'wrap' : 'nowrap',
                           transition: 'all 0.2s'
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.6rem' : '1rem', flex: 1, minWidth: 0 }}>
                           {/* Ordering Number */}
                           <div style={{
                             width: '28px', height: '28px', borderRadius: '50%',
@@ -2254,7 +2269,7 @@ export default function AdminClassDetail() {
                         </div>
 
                         {/* Actions (Reordering & Deleting) */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginLeft: isMobile ? 'auto' : 0 }}>
                           <button
                             type="button"
                             disabled={idx === 0}
@@ -2924,11 +2939,11 @@ export default function AdminClassDetail() {
 
                {/* Quick Grader (Numpad) Modal */}
       {showQuickGrader && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '1rem' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: isMobile ? '0.5rem' : '1rem' }}>
           <div className="glass-panel animate-scale-in" style={{
-            padding: '2rem', maxWidth: '900px', width: '100%', height: '95vh', maxHeight: '740px',
+            padding: isMobile ? '1.25rem 1rem' : '2rem', maxWidth: '900px', width: '100%', height: isMobile ? '94vh' : '95vh', maxHeight: '740px',
             border: '1px solid var(--border)', position: 'relative', margin: 'auto', display: 'flex', flexDirection: 'column',
-            overflow: 'hidden', borderRadius: '24px', background: '#18181b'
+            overflow: 'hidden', borderRadius: isMobile ? '16px' : '24px', background: '#18181b'
           }}>
             {/* Close Button */}
             <button 
@@ -3071,10 +3086,17 @@ export default function AdminClassDetail() {
               </div>
             ) : (
               /* Step 2: The Grader Dashboard */
-              <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '320px 1fr', gap: '2rem', overflow: 'hidden' }}>
+              <div style={{ flex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '320px 1fr', gap: isMobile ? '1rem' : '2rem', overflow: isMobile ? 'auto' : 'hidden' }}>
                 
                 {/* Left Column: Student Detail & Selector */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', borderRight: '1px solid var(--border)', paddingRight: '2rem', overflowY: 'auto' }}>
+                <div style={{
+                  display: 'flex', flexDirection: 'column', gap: isMobile ? '1rem' : '1.5rem',
+                  borderRight: isMobile ? 'none' : '1px solid var(--border)',
+                  borderBottom: isMobile ? '1px solid var(--border)' : 'none',
+                  paddingRight: isMobile ? 0 : '2rem',
+                  paddingBottom: isMobile ? '1rem' : 0,
+                  overflowY: isMobile ? 'visible' : 'auto'
+                }}>
                   
                   {/* Select Control Dropdown & change button */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border)' }}>

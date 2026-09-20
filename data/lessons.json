@@ -38936,5 +38936,256 @@
     "created_at": "2026-09-19T18:35:47.725Z",
     "createdAt": "2026-09-19T18:35:48.031Z",
     "updatedAt": "2026-09-19T18:35:48.031Z"
+  },
+  {
+    "id": "MOCK-L-QYJU97N2O",
+    "title": "Série d'exercices : Arithmétique dans l'ensemble N",
+    "subject": "Mathématiques",
+    "chapter_number": null,
+    "teacher": null,
+    "phone": null,
+    "schools": [],
+    "level": "common_core_sci",
+    "doc_type": "exercises",
+    "content": {
+      "level": "common_core_sci",
+      "doc_type": "exercises",
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "subject": "Mathématiques",
+        "prep_title": "Tronc Commun Scientifique (BIOF)",
+        "fiche_title": "Série d'exercices : Arithmétique dans l'ensemble N",
+        "teacher": "Professeur",
+        "phone": "",
+        "schools": [
+          "Lycée Qualifiant"
+        ]
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "title": "Exercice 1 : Divisibilité et multiples dans \\mathbb{N}",
+          "points": "",
+          "content": "Soit $n$ un entier naturel non nul. On considère les nombres entiers $A = 3n^2 + 3n$ et $B = n + 2$.\n1) a) Vérifier que $A peut se factoriser sous la forme $A = 3n(n + 1)$.\n   b) Montrer que le produit de deux entiers naturels consécutifs $n(n + 1)$ est toujours un nombre pair.\n2) a) En déduire que le nombre $A$ est un multiple de $6$ pour tout $n \\in \\mathbb{N}^*$.\n   b) Calculer le reste de la division euclidienne de $A$ par $3$.\n3) Déterminer tous les éléments $n$ de l'ensemble \\mathbb{N}^* tels que $B$ soit un diviseur de $12$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soit $n$ un entier naturel non nul. On considère les nombres entiers $A = 3n^2 + 3n$ et $B = n + 2$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Vérifier que $A peut se factoriser sous la forme $A = 3n(n + 1)$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Montrer que le produit de deux entiers naturels consécutifs $n(n + 1)$ est toujours un nombre pair."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) En déduire que le nombre $A$ est un multiple de $6$ pour tout $n \\in \\mathbb{N}^*$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Calculer le reste de la division euclidienne de $A$ par $3$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) Déterminer tous les éléments $n$ de l'ensemble \\mathbb{N}^* tels que $B$ soit un diviseur de $12$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "1"
+        },
+        {
+          "id": "ex-2",
+          "type": "exercise",
+          "title": "Exercice 2 : Nombres premiers et décomposition en facteurs premiers",
+          "points": "",
+          "content": "Soient $a$ et $b$ deux nombres entiers naturels définis par $a = 540$ et $b = 1260$.\n1) a) Déterminer la décomposition en produit de facteurs premiers du nombre $a$.\n   b) Déterminer la décomposition en produit de facteurs premiers du nombre $b$.\n2) a) En déduire le plus grand commun diviseur de $a$ et $b$, noté $\\text{PGCD}(a, b)$.\n   b) En déduire le plus petit commun multiple de $a$ et $b$, noté $\\text{PPCM}(a, b)$.\n3) Vérifier que le produit $\\text{PGCD}(a, b) \\times \\text{PPCM}(a, b)$ est égal au produit $a \\times b$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soient $a$ et $b$ deux nombres entiers naturels définis par $a = 540$ et $b = 1260$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Déterminer la décomposition en produit de facteurs premiers du nombre $a$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Déterminer la décomposition en produit de facteurs premiers du nombre $b$."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) En déduire le plus grand commun diviseur de $a$ et $b$, noté $\\text{PGCD}(a, b)$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire le plus petit commun multiple de $a$ et $b$, noté $\\text{PPCM}(a, b)$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) Vérifier que le produit $\\text{PGCD}(a, b) \\times \\text{PPCM}(a, b)$ est égal au produit $a \\times b$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "2"
+        },
+        {
+          "id": "ex-3",
+          "type": "exercise",
+          "title": "Exercice 3 : Plus grand commun diviseur et algorithme d'Euclide",
+          "points": "",
+          "content": "On considère les deux entiers naturels $X = 837$ et $Y = 252$.\n1) a) Appliquer l'algorithme d'Euclide pour déterminer le $\\text{PGCD}(837, 252)$ à l'aide d'une suite de divisions euclidiennes.\n   b) Écrire les égalités successives correspondant à chaque étape de cet algorithme.\n2) a) Montrer que les nombres $X$ et $Y$ ne sont pas premiers entre eux.\n   b) Simplifier la fraction $\\dfrac{252}{837}$ pour la rendre irréductible en utilisant le résultat de la question précédente.\n3) Résoudre dans l'ensemble $\\mathbb{N}$ l'équation : $\\text{PGCD}(X, k) = 27$, sachant que $k < 100$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "On considère les deux entiers naturels $X = 837$ et $Y = 252$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Appliquer l'algorithme d'Euclide pour déterminer le $\\text{PGCD}(837, 252)$ à l'aide d'une suite de divisions euclidiennes."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Écrire les égalités successives correspondant à chaque étape de cet algorithme."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Montrer que les nombres $X$ et $Y$ ne sont pas premiers entre eux."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Simplifier la fraction $\\dfrac{252}{837}$ pour la rendre irréductible en utilisant le résultat de la question précédente."
+            },
+            {
+              "type": "bullet",
+              "text": "3) Résoudre dans l'ensemble $\\mathbb{N}$ l'équation : $\\text{PGCD}(X, k) = 27$, sachant que $k < 100$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "3"
+        },
+        {
+          "id": "ex-4",
+          "type": "exercise",
+          "title": "Exercice 4 : Plus petit commun multiple et applications",
+          "points": "",
+          "content": "Soient $u$ et $v$ deux entiers naturels non nuls tels que $\\text{PGCD}(u, v) = 14$ et leur produit $u \\times v = 5880$.\n1) a) Rappeler la relation fondamentale liant le produit de deux entiers, leur $\\text{PGCD}$ et leur $\\text{PPCM}$.\n   b) En déduire la valeur du $\\text{PPCM}(u, v)$.\n2) a) Vérifier que $\\dfrac{u}{14}$ et $\\dfrac{v}{14}$ sont des nombres entiers premiers entre eux.\n   b) Déterminer toutes les couples possibles d'entiers $(u, v)$ avec $u \\le v$.\n3) Calculer le plus petit multiple commun de $u$ et $v$ lorsque $u = 42$ et $v = 70$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Soient $u$ et $v$ deux entiers naturels non nuls tels que $\\text{PGCD}(u, v) = 14$ et leur produit $u \\times v = 5880$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Rappeler la relation fondamentale liant le produit de deux entiers, leur $\\text{PGCD}$ et leur $\\text{PPCM}$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire la valeur du $\\text{PPCM}(u, v)$."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Vérifier que $\\dfrac{u}{14}$ et $\\dfrac{v}{14}$ sont des nombres entiers premiers entre eux."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Déterminer toutes les couples possibles d'entiers $(u, v)$ avec $u \\le v$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) Calculer le plus petit multiple commun de $u$ et $v$ lorsque $u = 42$ et $v = 70$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "4"
+        },
+        {
+          "id": "ex-5",
+          "type": "exercise",
+          "title": "Exercice 5 : Congruences modulo un entier",
+          "points": "",
+          "content": "On se place dans l'ensemble des entiers naturels. On considère le nombre entier $N = 7^n + 2$, où $n \\in \\mathbb{N}$.\n1) a) Calculer les restes de la division euclidienne des premières puissances de $7$ (de $7^0$ à $7^3$) par $5$.\n   b) Établir que, pour tout entier naturel $n$, $7^n$ a le même reste modulo $5$ que $2^n$ ou étudier la périodicité des restes de $7^n$ modulo $5$.\n2) a) Déterminer le reste de la division euclidienne de $7^{2024}$ par $5$.\n   b) En déduire le reste de la division euclidienne du nombre $N = 7^{2024} + 2$ par $5$.\n3) Montrer que pour tout entier $n \\in \\mathbb{N}$, le nombre $N$ ne peut pas être un multiple de $5$.",
+          "items": [
+            {
+              "type": "text",
+              "text": "On se place dans l'ensemble des entiers naturels. On considère le nombre entier $N = 7^n + 2$, où $n \\in \\mathbb{N}$."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Calculer les restes de la division euclidienne des premières puissances de $7$ (de $7^0$ à $7^3$) par $5$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Établir que, pour tout entier naturel $n$, $7^n$ a le même reste modulo $5$ que $2^n$ ou étudier la périodicité des restes de $7^n$ modulo $5$."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Déterminer le reste de la division euclidienne de $7^{2024}$ par $5$."
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire le reste de la division euclidienne du nombre $N = 7^{2024} + 2$ par $5$."
+            },
+            {
+              "type": "bullet",
+              "text": "3) Montrer que pour tout entier $n \\in \\mathbb{N}$, le nombre $N$ ne peut pas être un multiple de $5$."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "5"
+        },
+        {
+          "id": "ex-6",
+          "type": "exercise",
+          "title": "Exercice 6 : Problème de synthèse arithmétique",
+          "points": "",
+          "content": "Un fleuriste dispose de $315$ roses rouges et de $420$ roses blanches. Il souhaite confectionner des bouquets identiques (contenant le même nombre de roses rouges et le même nombre de roses blanches) en utilisant toutes ses fleurs.\n1) a) Peut-il faire un seul grand bouquet ? Justifier.\n   b) Peut-il faire $5$ bouquets identiques ? Vérifier en effectuant la division euclidienne.\n2) a) Quel est le nombre maximal de bouquets identiques que le fleuriste peut confectionner ?\n   b) En déduire le nombre de roses rouges et le nombre de roses blanches contenues dans chaque bouquet.\n3) Soit $m$ un entier naturel tel que $m = 2^3 \\times 3^2 \\times 5$. Déterminer le nombre total de diviseurs positifs de $m$ en utilisant sa décomposition en facteurs premiers.",
+          "items": [
+            {
+              "type": "text",
+              "text": "Un fleuriste dispose de $315$ roses rouges et de $420$ roses blanches. Il souhaite confectionner des bouquets identiques (contenant le même nombre de roses rouges et le même nombre de roses blanches) en utilisant toutes ses fleurs."
+            },
+            {
+              "type": "bullet",
+              "text": "1) a) Peut-il faire un seul grand bouquet ? Justifier."
+            },
+            {
+              "type": "bullet",
+              "text": "b) Peut-il faire $5$ bouquets identiques ? Vérifier en effectuant la division euclidienne."
+            },
+            {
+              "type": "bullet",
+              "text": "2) a) Quel est le nombre maximal de bouquets identiques que le fleuriste peut confectionner ?"
+            },
+            {
+              "type": "bullet",
+              "text": "b) En déduire le nombre de roses rouges et le nombre de roses blanches contenues dans chaque bouquet."
+            },
+            {
+              "type": "bullet",
+              "text": "3) Soit $m$ un entier naturel tel que $m = 2^3 \\times 3^2 \\times 5$. Déterminer le nombre total de diviseurs positifs de $m$ en utilisant sa décomposition en facteurs premiers."
+            }
+          ],
+          "solution": "",
+          "language": "fr",
+          "section_number": "6"
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-20T08:50:10.621Z",
+    "created_at": "2026-09-20T08:50:10.618Z",
+    "createdAt": "2026-09-20T08:50:11.052Z",
+    "updatedAt": "2026-09-20T08:50:11.052Z"
   }
 ]

@@ -1405,7 +1405,7 @@ export default function AdminExams() {
                 <p style={{ fontSize: '0.82rem', color: 'var(--text-subtle)', marginBottom: '0.75rem', fontWeight: 700 }}>
                   Sélectionnez un domaine à compiler :
                 </p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', maxHeight: 320, overflowY: 'auto', paddingRight: 4, marginBottom: '1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '0.5rem', maxHeight: 320, overflowY: 'auto', paddingRight: 4, marginBottom: '1.5rem' }}>
                   {topicList.map(([topic, qs]) => (
                     <button
                       key={topic}

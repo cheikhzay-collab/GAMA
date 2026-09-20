@@ -2730,7 +2730,7 @@ export default function AdminSettings() {
 
                   {/* Sub-Tab 1: Contact & Identité */}
                   {profileSubTab === 'contact' && (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="settings-field">
                         <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
                           Nom et Prénom du Directeur / Enseignant *
@@ -2754,7 +2754,7 @@ export default function AdminSettings() {
 
                   {/* Sub-Tab 2: Établissement & Ministère */}
                   {profileSubTab === 'school' && (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="settings-field" style={{ gridColumn: '1 / -1' }}>
                         <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
                           Nom de l&apos;Établissement / École *
@@ -2784,7 +2784,7 @@ export default function AdminSettings() {
 
                   {/* Sub-Tab 3: Données Pédagogiques & Web */}
                   {profileSubTab === 'pedagogy' && (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="settings-field">
                         <label className="settings-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', textTransform: 'none' }}>
                           Matière / Discipline

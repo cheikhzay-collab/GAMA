@@ -45,7 +45,11 @@ export default function BottomNav() {
     const indicator = indicatorRef.current;
     if (!nav || !indicator) return;
     const activeEl = nav.querySelector('.mob-nav-item.active');
-    if (!activeEl) return;
+    if (!activeEl) {
+      indicator.style.opacity = '0';
+      return;
+    }
+    indicator.style.opacity = '1';
     const navRect  = nav.getBoundingClientRect();
     const itemRect = activeEl.getBoundingClientRect();
     indicator.style.transform = `translateX(${itemRect.left - navRect.left + (itemRect.width - 40) / 2}px)`;

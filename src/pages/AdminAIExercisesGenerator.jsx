@@ -254,7 +254,19 @@ function robustParseAiJson(raw) {
   throw new Error("Erreur de décodage JSON : Les formules générées contiennent une syntaxe non reconnue. Veuillez relancer la génération.");
 }
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const handler = (e) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  return isMobile;
+}
+
 export default function AdminAIExercisesGenerator({ onBack }) {
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
 
   // ── Form State ──
@@ -840,8 +852,8 @@ RÈGLE TECHNIQUE CRITIQUE :
       {/* ── Main Layout: Config Form + Results / Showcase ── */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: generatedSheet ? '380px 1fr' : 'minmax(0, 1.15fr) minmax(0, 0.85fr)', 
-        gap: '2.25rem', 
+        gridTemplateColumns: isMobile ? '1fr' : (generatedSheet ? '380px 1fr' : 'minmax(0, 1.15fr) minmax(0, 0.85fr)'), 
+        gap: isMobile ? '1.5rem' : '2.25rem', 
         alignItems: 'start' 
       }}>
         
@@ -1117,7 +1129,7 @@ RÈGLE TECHNIQUE CRITIQUE :
                   {count} {language === 'ar' ? 'تمارين' : 'exercices'}
                 </span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)', gap: '0.5rem' }}>
                 {[1, 2, 3, 4, 5, 6].map(num => (
                   <button
                     key={num}
