@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Plus, Trash2, Settings, School, KeyRound, Eye, EyeOff, CheckCircle2, Sparkles, RefreshCw, Layers, MousePointerClick, Crown, Download, Sliders, FileText, Camera, MessageCircle, Volume2, BookOpen, Calendar, Palmtree, Pencil, Upload, ExternalLink, ShieldCheck, Cpu, Zap, Globe } from 'lucide-react';
+import { Plus, Trash2, Settings, School, KeyRound, Eye, EyeOff, CheckCircle2, Sparkles, RefreshCw, Layers, MousePointerClick, Crown, Download, Sliders, FileText, Camera, MessageCircle, Volume2, BookOpen, Calendar, Palmtree, Pencil, Upload, ExternalLink, ShieldCheck, Cpu, Zap, Globe, Loader2 } from 'lucide-react';
 import { getAllClasses } from '../services/classService';
 import { 
   getAiSettingsConfig, 
@@ -477,6 +477,7 @@ export default function AdminSettings() {
   const [logbookColorExercise, setLogbookColorExercise] = useState(() => localStorage.getItem('logbook_color_exercise') || '#d97706');
   const [logbookSubTab, setLogbookSubTab] = useState('timetable');
   const [logbookSaved, setLogbookSaved] = useState(false);
+  const [isSavingLogbook, setIsSavingLogbook] = useState(false);
 
   // Holiday form
   const [newHolLabel, setNewHolLabel] = useState('');
@@ -690,34 +691,43 @@ export default function AdminSettings() {
     e.target.value = '';
   };
 
-  const saveLogbookSettings = () => {
-    localStorage.setItem('teacher_schedule_current', JSON.stringify(logbookSchedule));
-    localStorage.setItem('school_holidays', JSON.stringify(logbookHolidays));
-    localStorage.setItem('logbook_ar_font', logbookArFont);
-    localStorage.setItem('logbook_fr_font', logbookFrFont);
-    localStorage.setItem('logbook_font_size', logbookFontSize);
-    localStorage.setItem('logbook_line_height', String(logbookLineHeight));
-    localStorage.setItem('logbook_color_ink', logbookColorInk);
-    localStorage.setItem('logbook_color_chapter', logbookColorChapter);
-    localStorage.setItem('logbook_color_axis', logbookColorAxis);
-    localStorage.setItem('logbook_color_exercise', logbookColorExercise);
+  const saveLogbookSettings = async () => {
+    setIsSavingLogbook(true);
+    try {
+      localStorage.setItem('teacher_schedule_current', JSON.stringify(logbookSchedule));
+      localStorage.setItem('school_holidays', JSON.stringify(logbookHolidays));
+      localStorage.setItem('logbook_ar_font', logbookArFont);
+      localStorage.setItem('logbook_fr_font', logbookFrFont);
+      localStorage.setItem('logbook_font_size', logbookFontSize);
+      localStorage.setItem('logbook_line_height', String(logbookLineHeight));
+      localStorage.setItem('logbook_color_ink', logbookColorInk);
+      localStorage.setItem('logbook_color_chapter', logbookColorChapter);
+      localStorage.setItem('logbook_color_axis', logbookColorAxis);
+      localStorage.setItem('logbook_color_exercise', logbookColorExercise);
 
-    // Persist to Cloud Database (Neon PostgreSQL & Supabase)
-    saveTeacherScheduleConfig(logbookSchedule).catch(e => console.warn('[AdminSettings] saveTeacherScheduleConfig error:', e));
-    saveSchoolHolidaysConfig(logbookHolidays).catch(e => console.warn('[AdminSettings] saveSchoolHolidaysConfig error:', e));
-    saveLogbookStyleConfig({
-      arFont: logbookArFont,
-      frFont: logbookFrFont,
-      fontSize: logbookFontSize,
-      lineHeight: logbookLineHeight,
-      colorInk: logbookColorInk,
-      colorChapter: logbookColorChapter,
-      colorAxis: logbookColorAxis,
-      colorExercise: logbookColorExercise
-    }).catch(e => console.warn('[AdminSettings] saveLogbookStyleConfig error:', e));
+      // Persist to Cloud Database (Neon PostgreSQL, Supabase & Companion DB)
+      await Promise.allSettled([
+        saveTeacherScheduleConfig(logbookSchedule),
+        saveSchoolHolidaysConfig(logbookHolidays),
+        saveLogbookStyleConfig({
+          arFont: logbookArFont,
+          frFont: logbookFrFont,
+          fontSize: logbookFontSize,
+          lineHeight: logbookLineHeight,
+          colorInk: logbookColorInk,
+          colorChapter: logbookColorChapter,
+          colorAxis: logbookColorAxis,
+          colorExercise: logbookColorExercise
+        })
+      ]);
 
-    setLogbookSaved(true);
-    setTimeout(() => setLogbookSaved(false), 2500);
+      setLogbookSaved(true);
+      setTimeout(() => setLogbookSaved(false), 3000);
+    } catch (err) {
+      console.error('[AdminSettings] Error saving logbook settings:', err);
+    } finally {
+      setIsSavingLogbook(false);
+    }
   };
 
   const [syncingAll, setSyncingAll] = useState(false);
@@ -3355,16 +3365,29 @@ export default function AdminSettings() {
                 )}
                 <button
                   type="button"
+                  disabled={isSavingLogbook}
                   onClick={saveLogbookSettings}
                   className="btn"
                   style={{
                     padding: '0.55rem 1.5rem',
                     borderRadius: '10px',
                     fontSize: '0.78rem',
-                    fontWeight: 700
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    opacity: isSavingLogbook ? 0.7 : 1,
+                    cursor: isSavingLogbook ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  Enregistrer
+                  {isSavingLogbook ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      <span>Enregistrement...</span>
+                    </>
+                  ) : (
+                    'Enregistrer'
+                  )}
                 </button>
               </div>
             </div>

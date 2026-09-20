@@ -13,7 +13,110 @@
       "classId": "2BACSPF-1"
     }
   },
-  "school_holidays": [],
+  "school_holidays": [
+    {
+      "id": "hol-1789139374176",
+      "label": "شثش\"",
+      "endDate": "2026-09-22",
+      "startDate": "2026-09-21"
+    },
+    {
+      "id": "hol-mowlid-2026",
+      "label": "عيد المولد النبوي الشريف",
+      "endDate": "2026-09-16",
+      "startDate": "2026-09-15"
+    },
+    {
+      "id": "hol-bainiya-1-2026",
+      "label": "عطلة الفترة البينية الأولى",
+      "endDate": "2026-10-27",
+      "startDate": "2026-10-20"
+    },
+    {
+      "id": "hol-marche-verte-2026",
+      "label": "ذكرى المسيرة الخضراء",
+      "endDate": "2026-11-06",
+      "startDate": "2026-11-06"
+    },
+    {
+      "id": "hol-independance-2026",
+      "label": "عيد الاستقلال",
+      "endDate": "2026-11-18",
+      "startDate": "2026-11-18"
+    },
+    {
+      "id": "hol-bainiya-2-2026",
+      "label": "عطلة الفترة البينية الثانية",
+      "endDate": "2026-12-15",
+      "startDate": "2026-12-08"
+    },
+    {
+      "id": "hol-nouvel-an-2027",
+      "label": "رأس السنة الميلادية",
+      "endDate": "2027-01-01",
+      "startDate": "2027-01-01"
+    },
+    {
+      "id": "hol-manifeste-2027",
+      "label": "ذكرى تقديم وثيقة الاستقلال",
+      "endDate": "2027-01-11",
+      "startDate": "2027-01-11"
+    },
+    {
+      "id": "hol-yennayer-2027",
+      "label": "رأس السنة الأمازيغية",
+      "endDate": "2027-01-14",
+      "startDate": "2027-01-14"
+    },
+    {
+      "id": "hol-mi-semestre-2027",
+      "label": "عطلة منتصف السنة الدراسية",
+      "endDate": "2027-02-02",
+      "startDate": "2027-01-26"
+    },
+    {
+      "id": "hol-bainiya-3-2027",
+      "label": "عطلة الفترة البينية الثالثة",
+      "endDate": "2027-03-23",
+      "startDate": "2027-03-16"
+    },
+    {
+      "id": "hol-aid-fitr-2027",
+      "label": "عطلة عيد الفطر السعيد",
+      "endDate": "2027-04-02",
+      "startDate": "2027-03-30"
+    },
+    {
+      "id": "hol-travail-2027",
+      "label": "عيد الشغل",
+      "endDate": "2027-05-01",
+      "startDate": "2027-05-01"
+    },
+    {
+      "id": "hol-bainiya-4-2027",
+      "label": "عطلة الفترة البينية الرابعة",
+      "endDate": "2027-05-11",
+      "startDate": "2027-05-04"
+    },
+    {
+      "id": "hol-aid-adha-2027",
+      "label": "عطلة عيد الأضحى المبارك",
+      "endDate": "2027-06-10",
+      "startDate": "2027-06-06"
+    },
+    {
+      "id": "hol-1er-moharram-2027",
+      "label": "فاتح محرم - رأس السنة الهجرية",
+      "endDate": "2027-06-26",
+      "startDate": "2027-06-26"
+    },
+    {
+      "id": "hol-1789748929892",
+      "label": "س-س-س(( س ",
+      "endDate": "2026-09-04",
+      "startDate": "2026-09-04"
+    }
+  ],
   "branding": {
     "bankRIB": "230 780 4567890123 0001 89",
     "profSOM": "",
@@ -46,11 +149,11 @@
   "logbook_style_settings": {
     "arFont": "UKIJ Merdane",
     "frFont": "Inter",
-    "colorInk": "#334155",
     "fontSize": "0.9rem",
-    "colorAxis": "#0639a7",
     "lineHeight": 20,
+    "colorInk": "#334155",
     "colorChapter": "#243f7f",
+    "colorAxis": "#0639a7",
     "colorExercise": "#d97706"
   },
   "logbook_entries": [

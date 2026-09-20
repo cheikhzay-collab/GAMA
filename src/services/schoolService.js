@@ -857,35 +857,46 @@ export const getOfficialMoroccanHolidays = (academicYear = '2026-2027') => {
  * Save School Holidays to Cloud DB (Neon + Supabase) and LocalStorage.
  */
 export const saveSchoolHolidaysConfig = async (holidays) => {
-  queryCache.invalidate('config_school_holidays');
   try { localStorage.setItem('school_holidays', JSON.stringify(holidays)); } catch (_) {}
 
-  // 1. Sync to Neon PostgreSQL
   try {
-    await neonSaveConfig('school_holidays', holidays);
-  } catch (err) {
-    console.warn('[Neon] Error saving school holidays:', err);
+    await queryCache.set('config_school_holidays', holidays);
+  } catch (_) {
+    queryCache.invalidate('config_school_holidays');
   }
+
+  const tasks = [];
+
+  // 1. Sync to Neon PostgreSQL
+  tasks.push(
+    neonSaveConfig('school_holidays', holidays).catch(err => {
+      console.warn('[Neon] Error saving school holidays:', err);
+    })
+  );
 
   // 2. Sync to Supabase
   if (supabase) {
-    try {
-      await supabase
+    tasks.push(
+      supabase
         .from('config')
         .upsert({
           key: 'school_holidays',
           value: holidays,
           updated_at: new Date().toISOString(),
-        });
-    } catch (err) {
-      console.warn('[Supabase] Error saving school holidays:', err);
-    }
+        }, { onConflict: 'key' })
+        .catch(err => {
+          console.warn('[Supabase] Error saving school holidays:', err);
+        })
+    );
   }
 
   // 3. Companion DB
-  try {
-    await localDb.post('/config', { school_holidays: holidays });
-  } catch (_) {}
+  tasks.push(
+    localDb.post('/config', { school_holidays: holidays }).catch(() => {})
+  );
+
+  await Promise.allSettled(tasks);
+  return { success: true };
 };
 
 /**
@@ -951,35 +962,46 @@ export const getTeacherAbsencesConfig = async (options = {}) => {
  * Save Teacher Absences / Leaves (الرخص والغيابات) to Cloud DB.
  */
 export const saveTeacherAbsencesConfig = async (absences) => {
-  queryCache.invalidate('config_teacher_absences');
   try { localStorage.setItem('teacher_absences', JSON.stringify(absences)); } catch (_) {}
 
-  // 1. Sync to Neon PostgreSQL
   try {
-    await neonSaveConfig('teacher_absences', absences);
-  } catch (err) {
-    console.warn('[Neon] Error saving teacher absences:', err);
+    await queryCache.set('config_teacher_absences', absences);
+  } catch (_) {
+    queryCache.invalidate('config_teacher_absences');
   }
+
+  const tasks = [];
+
+  // 1. Sync to Neon PostgreSQL
+  tasks.push(
+    neonSaveConfig('teacher_absences', absences).catch(err => {
+      console.warn('[Neon] Error saving teacher absences:', err);
+    })
+  );
 
   // 2. Sync to Supabase
   if (supabase) {
-    try {
-      await supabase
+    tasks.push(
+      supabase
         .from('config')
         .upsert({
           key: 'teacher_absences',
           value: absences,
           updated_at: new Date().toISOString(),
-        });
-    } catch (err) {
-      console.warn('[Supabase] Error saving teacher absences:', err);
-    }
+        }, { onConflict: 'key' })
+        .catch(err => {
+          console.warn('[Supabase] Error saving teacher absences:', err);
+        })
+    );
   }
 
   // 3. Companion DB
-  try {
-    await localDb.post('/config', { teacher_absences: absences });
-  } catch (_) {}
+  tasks.push(
+    localDb.post('/config', { teacher_absences: absences }).catch(() => {})
+  );
+
+  await Promise.allSettled(tasks);
+  return { success: true };
 };
 
 /**
@@ -988,20 +1010,30 @@ export const saveTeacherAbsencesConfig = async (absences) => {
 export const getTeacherScheduleConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
+  // Check local cache & last local update timestamp
+  let localSchedule = null;
+  let localUpdatedAt = 0;
+  try {
+    const raw = localStorage.getItem('teacher_schedule_current');
+    if (raw) localSchedule = JSON.parse(raw);
+    localUpdatedAt = parseInt(localStorage.getItem('teacher_schedule_updated_at') || '0', 10);
+  } catch (_) {}
+
   return queryCache.fetchWithCache('config_teacher_schedule', async () => {
+    let cloudVal = null;
+
     // 1. Neon PostgreSQL
     try {
       const neonVal = await neonGetConfig('teacher_schedule_current');
       if (neonVal && typeof neonVal === 'object' && Object.keys(neonVal).length > 0) {
-        try { localStorage.setItem('teacher_schedule_current', JSON.stringify(neonVal)); } catch (_) {}
-        return neonVal;
+        cloudVal = neonVal;
       }
     } catch (neonErr) {
       console.warn('[Neon] getTeacherScheduleConfig error:', neonErr.message);
     }
 
     // 2. Supabase
-    if (supabase) {
+    if (!cloudVal && supabase) {
       try {
         const { data, error } = await supabase
           .from('config')
@@ -1009,9 +1041,8 @@ export const getTeacherScheduleConfig = async (options = {}) => {
           .eq('key', 'teacher_schedule_current')
           .maybeSingle();
 
-        if (!error && data?.value && typeof data.value === 'object') {
-          try { localStorage.setItem('teacher_schedule_current', JSON.stringify(data.value)); } catch (_) {}
-          return data.value;
+        if (!error && data?.value && typeof data.value === 'object' && Object.keys(data.value).length > 0) {
+          cloudVal = data.value;
         }
       } catch (err) {
         console.warn('[Supabase] Failed to fetch teacher schedule:', err.message || err);
@@ -1019,25 +1050,35 @@ export const getTeacherScheduleConfig = async (options = {}) => {
     }
 
     // 3. Companion DB (Local Database)
-    try {
-      const config = await localDb.get('/config');
-      if (config && config.teacher_schedule_current && typeof config.teacher_schedule_current === 'object') {
-        try { localStorage.setItem('teacher_schedule_current', JSON.stringify(config.teacher_schedule_current)); } catch (_) {}
-        return config.teacher_schedule_current;
-      }
-    } catch (_) {}
+    if (!cloudVal) {
+      try {
+        const config = await localDb.get('/config');
+        if (config && config.teacher_schedule_current && typeof config.teacher_schedule_current === 'object' && Object.keys(config.teacher_schedule_current).length > 0) {
+          cloudVal = config.teacher_schedule_current;
+        }
+      } catch (_) {}
+    }
+
+    // Guard against race condition: if local was updated recently (< 5 mins) and not forceRefresh,
+    // preserve local changes so an in-flight or stale cloud query does not wipe them out.
+    const isRecentlyUpdatedLocally = localSchedule && (Date.now() - localUpdatedAt < 1000 * 60 * 5);
+    if (isRecentlyUpdatedLocally && !forceRefresh) {
+      return localSchedule;
+    }
+
+    if (cloudVal) {
+      try {
+        localStorage.setItem('teacher_schedule_current', JSON.stringify(cloudVal));
+      } catch (_) {}
+      return cloudVal;
+    }
 
     // 4. LocalStorage fallback
-    try {
-      const raw = localStorage.getItem('teacher_schedule_current');
-      return raw ? JSON.parse(raw) : {};
-    } catch (_) {
-      return {};
-    }
+    return localSchedule || {};
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
-    cacheTime: 1000 * 60 * 60
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 30
   });
 };
 
@@ -1045,35 +1086,51 @@ export const getTeacherScheduleConfig = async (options = {}) => {
  * Save Teacher Schedule / Timetable (جدول حصص الأستاذ) to Cloud DB.
  */
 export const saveTeacherScheduleConfig = async (schedule) => {
-  queryCache.invalidate('config_teacher_schedule');
-  try { localStorage.setItem('teacher_schedule_current', JSON.stringify(schedule)); } catch (_) {}
+  const now = Date.now();
+  try {
+    localStorage.setItem('teacher_schedule_current', JSON.stringify(schedule));
+    localStorage.setItem('teacher_schedule_updated_at', String(now));
+  } catch (_) {}
+
+  // Update queryCache directly with fresh data
+  try {
+    await queryCache.set('config_teacher_schedule', schedule);
+  } catch (_) {
+    queryCache.invalidate('config_teacher_schedule');
+  }
+
+  const tasks = [];
 
   // 1. Sync to Neon PostgreSQL
-  try {
-    await neonSaveConfig('teacher_schedule_current', schedule);
-  } catch (err) {
-    console.warn('[Neon] Error saving teacher schedule:', err);
-  }
+  tasks.push(
+    neonSaveConfig('teacher_schedule_current', schedule).catch(err => {
+      console.warn('[Neon] Error saving teacher schedule:', err);
+    })
+  );
 
   // 2. Sync to Supabase
   if (supabase) {
-    try {
-      await supabase
+    tasks.push(
+      supabase
         .from('config')
         .upsert({
           key: 'teacher_schedule_current',
           value: schedule,
           updated_at: new Date().toISOString(),
-        });
-    } catch (err) {
-      console.warn('[Supabase] Error saving teacher schedule:', err);
-    }
+        }, { onConflict: 'key' })
+        .catch(err => {
+          console.warn('[Supabase] Error saving teacher schedule:', err);
+        })
+    );
   }
 
   // 3. Companion DB
-  try {
-    await localDb.post('/config', { teacher_schedule_current: schedule });
-  } catch (_) {}
+  tasks.push(
+    localDb.post('/config', { teacher_schedule_current: schedule }).catch(() => {})
+  );
+
+  await Promise.allSettled(tasks);
+  return { success: true };
 };
 
 /**
@@ -1142,8 +1199,6 @@ export const getLogbookStyleConfig = async (options = {}) => {
  * Save Logbook Styling & Typography Settings to Cloud DB.
  */
 export const saveLogbookStyleConfig = async (settings) => {
-  queryCache.invalidate('config_logbook_style');
-
   // Update localStorage keys
   try {
     if (settings.arFont) localStorage.setItem('logbook_ar_font', settings.arFont);
@@ -1156,32 +1211,44 @@ export const saveLogbookStyleConfig = async (settings) => {
     if (settings.colorExercise) localStorage.setItem('logbook_color_exercise', settings.colorExercise);
   } catch (_) {}
 
-  // 1. Sync to Neon PostgreSQL
   try {
-    await neonSaveConfig('logbook_style_settings', settings);
-  } catch (err) {
-    console.warn('[Neon] Error saving logbook style settings:', err);
+    await queryCache.set('config_logbook_style', settings);
+  } catch (_) {
+    queryCache.invalidate('config_logbook_style');
   }
+
+  const tasks = [];
+
+  // 1. Sync to Neon PostgreSQL
+  tasks.push(
+    neonSaveConfig('logbook_style_settings', settings).catch(err => {
+      console.warn('[Neon] Error saving logbook style settings:', err);
+    })
+  );
 
   // 2. Sync to Supabase
   if (supabase) {
-    try {
-      await supabase
+    tasks.push(
+      supabase
         .from('config')
         .upsert({
           key: 'logbook_style_settings',
           value: settings,
           updated_at: new Date().toISOString(),
-        });
-    } catch (err) {
-      console.warn('[Supabase] Error saving logbook style settings:', err);
-    }
+        }, { onConflict: 'key' })
+        .catch(err => {
+          console.warn('[Supabase] Error saving logbook style settings:', err);
+        })
+    );
   }
 
   // 3. Companion DB
-  try {
-    await localDb.post('/config', { logbook_style_settings: settings });
-  } catch (_) {}
+  tasks.push(
+    localDb.post('/config', { logbook_style_settings: settings }).catch(() => {})
+  );
+
+  await Promise.allSettled(tasks);
+  return { success: true };
 };
 
 /**

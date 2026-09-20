@@ -509,7 +509,7 @@ export default function AdminLogbook() {
     setAbsenceEnd('');
   };
 
-  const handleSaveSettings = () => {
+  const handleSaveSettings = async () => {
     try {
       localStorage.setItem('teacher_schedule_current', JSON.stringify(tempSchedule));
       setSchedule(tempSchedule);
@@ -544,20 +544,22 @@ export default function AdminLogbook() {
       localStorage.setItem('logbook_color_exercise', tempColorExercise);
       setColorExercise(tempColorExercise);
 
-      // Persist to Cloud Database (Neon PostgreSQL & Supabase)
-      saveTeacherScheduleConfig(tempSchedule).catch(e => console.warn('[Logbook] saveTeacherScheduleConfig error:', e));
-      saveSchoolHolidaysConfig(tempHolidays).catch(e => console.warn('[Logbook] saveSchoolHolidaysConfig error:', e));
-      saveTeacherAbsencesConfig(tempAbsences).catch(e => console.warn('[Logbook] saveTeacherAbsencesConfig error:', e));
-      saveLogbookStyleConfig({
-        arFont: tempArFont,
-        frFont: tempFrFont,
-        fontSize: tempBaseFontSize,
-        lineHeight: tempGridLineHeight,
-        colorInk: tempColorInk,
-        colorChapter: tempColorChapter,
-        colorAxis: tempColorAxis,
-        colorExercise: tempColorExercise
-      }).catch(e => console.warn('[Logbook] saveLogbookStyleConfig error:', e));
+      // Persist to Cloud Database (Neon PostgreSQL, Supabase & Companion DB)
+      await Promise.allSettled([
+        saveTeacherScheduleConfig(tempSchedule),
+        saveSchoolHolidaysConfig(tempHolidays),
+        saveTeacherAbsencesConfig(tempAbsences),
+        saveLogbookStyleConfig({
+          arFont: tempArFont,
+          frFont: tempFrFont,
+          fontSize: tempBaseFontSize,
+          lineHeight: tempGridLineHeight,
+          colorInk: tempColorInk,
+          colorChapter: tempColorChapter,
+          colorAxis: tempColorAxis,
+          colorExercise: tempColorExercise
+        })
+      ]);
 
       setSettingsModalOpen(false);
       setSuccess(isArMode ? 'تم تحديث الإعدادات والجدول بنجاح وحفظها سحابياً!' : 'Paramètres enregistrés avec succès dans le cloud !');
