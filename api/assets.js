@@ -38,7 +38,7 @@ export default async function handler(req, res) {
 
   }
 
-  const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
+  const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED || process.env.VITE_NEON_DATABASE_URL;
   if (!databaseUrl) {
     return res.status(500).json({ error: 'NEON_DATABASE_URL is not configured' });
   }

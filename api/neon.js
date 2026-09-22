@@ -152,7 +152,7 @@ function getAuthUser(req) {
 let _sql = null;
 function getSql() {
   if (_sql) return _sql;
-  const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
+  const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED || process.env.VITE_NEON_DATABASE_URL;
   if (!databaseUrl) throw new Error('NEON_DATABASE_URL is not configured on server');
   _sql = neon(databaseUrl);
   return _sql;
