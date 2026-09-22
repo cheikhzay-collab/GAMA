@@ -170,6 +170,45 @@ export default function AdminLessonEdit() {
   
   // Sections state
   const [sections, setSections] = useState([]);
+  const isSavingRef = useRef(false);
+  const lastSavedSnapshotRef = useRef('');
+
+  // Deterministic serialization helper for unsaved-change tracking
+  const computeStateSnapshot = (customSections = null, customFields = {}) => {
+    const secList = customSections || sections;
+    return JSON.stringify({
+      title: (customFields.ficheTitle !== undefined ? customFields.ficheTitle : ficheTitle) || '',
+      subject: (customFields.subject !== undefined ? customFields.subject : subject) || '',
+      chapterNumber: (customFields.chapterNumber !== undefined ? customFields.chapterNumber : chapterNumber) || '',
+      teacher: (customFields.teacher !== undefined ? customFields.teacher : teacher) || '',
+      phone: (customFields.phone !== undefined ? customFields.phone : phone) || '',
+      prepTitle: (customFields.prepTitle !== undefined ? customFields.prepTitle : prepTitle) || '',
+      selectedLevel: (customFields.selectedLevel !== undefined ? customFields.selectedLevel : selectedLevel) || '',
+      docType: (customFields.docType !== undefined ? customFields.docType : docType) || '',
+      docLanguage: (customFields.docLanguage !== undefined ? customFields.docLanguage : docLanguage) || '',
+      schools: customFields.schools !== undefined ? customFields.schools : schools,
+      isActiveStatus: customFields.isActiveStatus !== undefined ? customFields.isActiveStatus : isActiveStatus,
+      columnsCount: customFields.columnsCount !== undefined ? customFields.columnsCount : columnsCount,
+      capacitesAttendues: (customFields.capacitesAttendues !== undefined ? customFields.capacitesAttendues : capacitesAttendues) || '',
+      contenus: (customFields.contenus !== undefined ? customFields.contenus : contenus) || '',
+      leContenu: (customFields.leContenu !== undefined ? customFields.leContenu : leContenu) || '',
+      sections: (secList || []).map(sec => ({
+        id: sec.id,
+        title: sec.title || '',
+        content: sec.content || '',
+        solution: sec.solution || '',
+        type: sec.type || '',
+        bgColor: sec.bgColor || sec.bg_color || '',
+        fontSize: sec.fontSize || sec.font_size || '',
+        lineHeight: sec.lineHeight || sec.line_height || '',
+        items: (sec.items || []).map(it => ({
+          type: it.type || '',
+          text: it.text || it.content || '',
+          src: it.src || it.url || ''
+        }))
+      }))
+    });
+  };
 
   // Active focused input/textarea for ribbon insertions
   const [activeFieldTarget, setActiveFieldTarget] = useState(null); // { secIdx, itemIdx, field: 'text'|'title'|'content'|'solution' }
@@ -262,31 +301,47 @@ export default function AdminLessonEdit() {
       setLoading(true);
       setError('');
       try {
-        const data = await getLessonById(id);
+        const data = await getLessonById(id, { forceRefresh: true });
         if (!data) {
           setError("Cette fiche de cours n'existe pas ou a été supprimée.");
         } else {
           setLesson(data);
           
           // Populate states
-          setFicheTitle(data.title || '');
-          setSubject(data.subject || 'Mathématiques');
-          setChapterNumber(data.chapterNumber || '');
-          setTeacher(data.teacher || '');
-          setPhone(data.phone || '');
-          setSchools(Array.isArray(data.schools) ? data.schools : (data.content?.header?.schools || []));
-          setIsActiveStatus(data.isActive !== undefined ? data.isActive : (data.is_active !== undefined ? data.is_active : true));
+          const initTitle = data.title || '';
+          const initSubject = data.subject || 'Mathématiques';
+          const initChapterNumber = data.chapterNumber || '';
+          const initTeacher = data.teacher || '';
+          const initPhone = data.phone || '';
+          const initSchools = Array.isArray(data.schools) ? data.schools : (data.content?.header?.schools || []);
+          const initIsActive = data.isActive !== undefined ? data.isActive : (data.is_active !== undefined ? data.is_active : true);
           
           const header = data.content?.header || {};
-          setPrepTitle(header.prep_title || 'Préparation aux concours');
-          setSelectedLevel(normalizeLevel(data.level || data.content?.level || '2bac_pc_svt'));
-          setDocType(data.docType || data.content?.doc_type || 'course');
-          setDocLanguage(data.content?.metadata?.language || header.metadata?.language || 'fr');
-          setColumnsCount(Number(data.content?.columns_count || data.columnsCount || 2));
+          const initPrepTitle = header.prep_title || 'Préparation aux concours';
+          const initLevel = normalizeLevel(data.level || data.content?.level || '2bac_pc_svt');
+          const initDocType = data.docType || data.content?.doc_type || 'course';
+          const initDocLang = data.content?.metadata?.language || header.metadata?.language || 'fr';
+          const initCols = Number(data.content?.columns_count || data.columnsCount || 2);
 
-          setCapacitesAttendues(header.capacites_attendues || '');
-          setContenus(header.contenus || '');
-          setLeContenu(header.le_contenu || '');
+          const initCapacites = header.capacites_attendues || '';
+          const initContenus = header.contenus || '';
+          const initLeContenu = header.le_contenu || '';
+          
+          setFicheTitle(initTitle);
+          setSubject(initSubject);
+          setChapterNumber(initChapterNumber);
+          setTeacher(initTeacher);
+          setPhone(initPhone);
+          setSchools(initSchools);
+          setIsActiveStatus(initIsActive);
+          setPrepTitle(initPrepTitle);
+          setSelectedLevel(initLevel);
+          setDocType(initDocType);
+          setDocLanguage(initDocLang);
+          setColumnsCount(initCols);
+          setCapacitesAttendues(initCapacites);
+          setContenus(initContenus);
+          setLeContenu(initLeContenu);
           
           const loadedSections = (data.content?.sections || []).map(sec => {
             const hasAr = /[\u0600-\u06FF]/.test((sec.title || '') + ' ' + (sec.content || '') + ' ' + (sec.solution || '') + ' ' + (sec.items || []).map(it => it.text || '').join(' '));
@@ -315,19 +370,39 @@ export default function AdminLessonEdit() {
             }
           }
 
+          // Establish clean baseline snapshot for unsaved-change tracking
+          lastSavedSnapshotRef.current = computeStateSnapshot(loadedSections, {
+            ficheTitle: initTitle,
+            subject: initSubject,
+            chapterNumber: initChapterNumber,
+            teacher: initTeacher,
+            phone: initPhone,
+            prepTitle: initPrepTitle,
+            selectedLevel: initLevel,
+            docType: initDocType,
+            docLanguage: initDocLang,
+            schools: initSchools,
+            isActiveStatus: initIsActive,
+            columnsCount: initCols,
+            capacitesAttendues: initCapacites,
+            contenus: initContenus,
+            leContenu: initLeContenu
+          });
+          setHasUnsavedChanges(false);
+
           // Check for any unsaved local recovery draft
           try {
-            const draftRaw = sessionStorage.getItem(`lconq_draft_${id}`);
+            const draftRaw = sessionStorage.getItem(`lconq_draft_${id}`) || localStorage.getItem(`lconq_draft_${id}`);
             if (draftRaw) {
               const draft = JSON.parse(draftRaw);
               if (draft?.draftTimestamp) {
                 const draftDate = new Date(draft.draftTimestamp);
                 const serverDate = new Date(data.updatedAt || data.updated_at || 0);
-                if (draftDate.getTime() > serverDate.getTime() + 5000) {
+                if (draftDate.getTime() > serverDate.getTime() + 15000) {
                   const shouldRestore = window.confirm(
                     isArMode
-                      ? "تم العثور على نسخة محلية أحدث لم يتم حفظها بعد في قاعدة البيانات. هل تود استرجاعها؟"
-                      : "Une version locale plus récente non enregistrée a été trouvée. Voulez-vous restaurer votre travail précédent ?"
+                      ? "تم العثور على مسودة محلية غير محفوظة في قاعدة البيانات. هل تود استرجاعها؟"
+                      : "Une version locale non enregistrée a été trouvée. Voulez-vous restaurer votre travail précédent ?"
                   );
                   if (shouldRestore) {
                     if (draft.ficheTitle !== undefined) setFicheTitle(draft.ficheTitle);
@@ -342,7 +417,13 @@ export default function AdminLessonEdit() {
                     if (draft.capacitesAttendues !== undefined) setCapacitesAttendues(draft.capacitesAttendues);
                     if (draft.contenus !== undefined) setContenus(draft.contenus);
                     setHasUnsavedChanges(true);
+                  } else {
+                    sessionStorage.removeItem(`lconq_draft_${id}`);
+                    localStorage.removeItem(`lconq_draft_${id}`);
                   }
+                } else {
+                  sessionStorage.removeItem(`lconq_draft_${id}`);
+                  localStorage.removeItem(`lconq_draft_${id}`);
                 }
               }
             }
@@ -363,10 +444,15 @@ export default function AdminLessonEdit() {
     if (id) fetchLessonData();
   }, [id]);
 
-  // Track unsaved modifications
+  // Track unsaved modifications against baseline snapshot
   useEffect(() => {
-    if (!isInitialLoadedRef.current) return;
-    setHasUnsavedChanges(true);
+    if (!isInitialLoadedRef.current || isSavingRef.current) return;
+    const currentSnapshot = computeStateSnapshot();
+    if (lastSavedSnapshotRef.current && currentSnapshot !== lastSavedSnapshotRef.current) {
+      setHasUnsavedChanges(true);
+    } else {
+      setHasUnsavedChanges(false);
+    }
   }, [
     ficheTitle, subject, chapterNumber, teacher, phone, prepTitle,
     selectedLevel, docType, docLanguage, schools, isActiveStatus,
@@ -375,7 +461,7 @@ export default function AdminLessonEdit() {
 
   // Auto-backup unsaved draft to sessionStorage for crash-resilience
   useEffect(() => {
-    if (!isInitialLoadedRef.current || !hasUnsavedChanges || !id) return;
+    if (!isInitialLoadedRef.current || isSavingRef.current || !hasUnsavedChanges || !id) return;
     const timer = setTimeout(() => {
       try {
         const draft = {
@@ -1011,6 +1097,7 @@ export default function AdminLessonEdit() {
       return;
     }
 
+    isSavingRef.current = true;
     setSaving(true);
     setError('');
     setSuccess('');
@@ -1031,7 +1118,6 @@ export default function AdminLessonEdit() {
           text: autoRepairMathText(it.text || it.content)
         }))
       }));
-      setSections(cleanedSections);
 
       const lessonData = {
         title: ficheTitle,
@@ -1062,13 +1148,34 @@ export default function AdminLessonEdit() {
             phone,
             capacites_attendues: capacitesAttendues,
             contenus: contenus,
-            le_contenu: leContenu
+            leContenu: leContenu
           },
           sections: cleanedSections
         }
       };
 
       const syncResult = await updateLesson(id, lessonData);
+      
+      // Update baseline snapshot to the exact saved state
+      lastSavedSnapshotRef.current = computeStateSnapshot(cleanedSections, {
+        ficheTitle,
+        subject,
+        chapterNumber,
+        teacher,
+        phone,
+        prepTitle,
+        selectedLevel,
+        docType,
+        docLanguage,
+        schools,
+        isActiveStatus,
+        columnsCount: Number(columnsCount),
+        capacitesAttendues,
+        contenus,
+        leContenu
+      });
+
+      setSections(cleanedSections);
       setLesson(prev => ({
         ...prev,
         ...lessonData,
@@ -1085,6 +1192,7 @@ export default function AdminLessonEdit() {
 
       try {
         sessionStorage.removeItem(`lconq_draft_${id}`);
+        localStorage.removeItem(`lconq_draft_${id}`);
       } catch (_) {}
 
       if (syncResult?.neonSuccess && syncResult?.localDbSuccess) {
@@ -1114,6 +1222,9 @@ export default function AdminLessonEdit() {
         : `Erreur lors de l'enregistrement dans la base de données : ${e.message}`);
     } finally {
       setSaving(false);
+      setTimeout(() => {
+        isSavingRef.current = false;
+      }, 300);
     }
   };
 

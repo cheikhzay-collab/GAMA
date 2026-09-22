@@ -347,12 +347,13 @@ export const getLessonById = async (lessonId, options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache(`lesson_detail_${lessonId}`, async () => {
-    // 1. Try direct Neon single query
+    // 1. Try direct Neon single query (Primary Cloud Database)
     try {
       const neonRes = await neonGet('lessons', lessonId, 'id');
       if (neonRes && neonRes.data) {
         const mapped = mapDBToLesson(neonRes.data);
         if (mapped) {
+          saveSingleLessonToLocalStorage(mapped);
           return mapped;
         }
       }
@@ -360,19 +361,32 @@ export const getLessonById = async (lessonId, options = {}) => {
       console.warn(`[Neon] Failed to fetch single lesson ${lessonId}:`, neonErr.message);
     }
 
+    // 2. Try single lesson from local storage (dedicated key with full content)
+    const singleLocal = getSingleLessonFromLocalStorage(lessonId);
+    if (singleLocal && singleLocal.content && Object.keys(singleLocal.content).length > 0) {
+      return singleLocal;
+    }
+
     // 3. Try Companion API
     try {
       const data = await localDb.get(`/lessons/${lessonId}`);
-      if (data) return mapDBToLesson(data);
+      if (data) {
+        const mapped = mapDBToLesson(data);
+        saveSingleLessonToLocalStorage(mapped);
+        return mapped;
+      }
     } catch {}
 
     // 4. Fallback to cached list
     const allLessons = await getAllLessons();
     const found = allLessons.find(l => l.id === lessonId);
+    if (found) {
+      saveSingleLessonToLocalStorage(found);
+    }
     return found || null;
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 3,
     cacheTime: 1000 * 60 * 60
   });
 };
@@ -451,15 +465,23 @@ export const updateLesson = async (lessonId, updates) => {
   // 1. LocalStorage first (direct, fast)
   const rawLessons = readRawLessons();
   const idx = rawLessons.findIndex(l => l.id === lessonId);
+  const singleStored = getSingleLessonFromLocalStorage(lessonId);
+  const fallbackContent = (singleStored && singleStored.content && Object.keys(singleStored.content).length > 0)
+    ? singleStored.content
+    : ((idx !== -1 && rawLessons[idx]?.content) ? rawLessons[idx].content : {});
+
   let updatedRecord = null;
   if (idx !== -1) {
     const original = rawLessons[idx];
+    const mergedContent = updates.content !== undefined
+      ? { ...fallbackContent, ...updates.content }
+      : fallbackContent;
+
     updatedRecord = {
       ...original,
       ...updates,
       content: {
-        ...(original.content || {}),
-        ...(updates.content || {}),
+        ...mergedContent,
         level: updates.level || updates.content?.level || original.level,
         doc_type: updates.docType || updates.content?.doc_type || original.docType
       },
@@ -471,11 +493,15 @@ export const updateLesson = async (lessonId, updates) => {
     saveLocalStorageLessons(rawLessons);
   } else {
     // If not in cache yet, create cached entry
+    const mergedContent = updates.content !== undefined
+      ? { ...fallbackContent, ...updates.content }
+      : fallbackContent;
+
     updatedRecord = {
       id: lessonId,
       ...updates,
       content: {
-        ...(updates.content || {}),
+        ...mergedContent,
         level: updates.level || updates.content?.level,
         doc_type: updates.docType || updates.content?.doc_type || 'course'
       },
@@ -492,9 +518,22 @@ export const updateLesson = async (lessonId, updates) => {
     saveSingleLessonToLocalStorage(updatedRecord);
   }
 
-  // 2. Invalidate cache after write
-  queryCache.invalidate('lessons_all');
+  // 2. Actively update in-memory cache & invalidate tags
+  queryCache.set(`lesson_detail_${lessonId}`, updatedRecord);
   queryCache.invalidate(`lesson_detail_${lessonId}`);
+  queryCache.invalidate('lessons_all');
+  queryCache.invalidate('lessons_active');
+
+  // Synchronize table cache in real-time so other views update instantly without stale delay
+  const cachedAll = queryCache.get('lessons_all');
+  if (Array.isArray(cachedAll)) {
+    const allIdx = cachedAll.findIndex(l => l.id === lessonId);
+    if (allIdx !== -1) {
+      const nextAll = [...cachedAll];
+      nextAll[allIdx] = { ...nextAll[allIdx], ...updatedRecord };
+      queryCache.set('lessons_all', nextAll);
+    }
+  }
 
   // 3. Build DB-shaped payload
   const dbUpdates = { updated_at: now };
