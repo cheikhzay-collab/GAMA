@@ -5413,20 +5413,21 @@
     "teacher": "ZAYANI MED",
     "phone": "",
     "schools": [],
-    "level": null,
-    "doc_type": "course",
+    "level": "common_core_sci",
+    "doc_type": "exercises",
     "content": {
-      "level": "tronc_commun",
+      "level": "common_core_sci",
       "header": {
-        "phone": "",
+        "prep_title": "Série 01",
         "schools": [],
         "subject": "Mathématiques",
-        "teacher": "ZAYANI MED",
-        "contenus": "",
-        "le_contenu": "",
-        "prep_title": "Série 01",
         "fiche_title": "Ensemble N et l'arithmétique",
-        "capacites_attendues": ""
+        "chapter_number": "",
+        "teacher": "ZAYANI MED",
+        "phone": "",
+        "capacites_attendues": "",
+        "contenus": "",
+        "le_contenu": ""
       },
       "doc_type": "exercises",
       "metadata": {
@@ -5464,7 +5465,11 @@
           "accent_text": "",
           "section_header": "Exercice 01",
           "section_number": "1",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bg_color": "#f0fdf4",
+          "font_size": "11pt",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-2",
@@ -5492,7 +5497,12 @@
           "accent_text": "",
           "section_header": "Exercice 02",
           "section_number": "2",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-3",
@@ -5516,7 +5526,12 @@
           "accent_text": "",
           "section_header": "Exercice 03",
           "section_number": "3",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-4",
@@ -5548,7 +5563,12 @@
           "accent_text": "",
           "section_header": "Exercice 04",
           "section_number": "4",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-5",
@@ -5580,7 +5600,12 @@
           "accent_text": "",
           "section_header": "Exercice 05",
           "section_number": "5",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "font_size": "10pt",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-6",
@@ -5620,7 +5645,12 @@
           "accent_text": "",
           "section_header": "Exercice 06",
           "section_number": "6",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "font_size": "11pt",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-7",
@@ -5656,7 +5686,12 @@
           "accent_text": "",
           "section_header": "Exercice 07",
           "section_number": "7",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "font_size": "11pt",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-8",
@@ -5687,7 +5722,13 @@
           "accent_text": "",
           "section_header": "Exercice 08",
           "section_number": "8",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-9",
@@ -5719,7 +5760,12 @@
           "accent_text": "",
           "section_header": "Exercice 09",
           "section_number": "9",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "font_size": "11pt",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-10",
@@ -5743,14 +5789,21 @@
           "accent_text": "",
           "section_header": "Exercice 10",
           "section_number": "10",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "font_size": "11pt",
+          "lineHeight": "",
+          "line_height": ""
         }
-      ]
+      ],
+      "columns_count": 2
     },
     "is_active": true,
     "is_archived": false,
     "created_at": "2026-09-02T17:56:35.066+00:00",
-    "updated_at": "2026-09-06T10:31:25.916+00:00"
+    "updated_at": "2026-09-22T09:42:39.834Z",
+    "updatedAt": "2026-09-22T09:42:40.911Z"
   },
   {
     "id": "MOCK-L-5SKQHVFR7",
@@ -17374,25 +17427,25 @@
     "id": "MOCK-L-BU4I0EVAA",
     "title": "Arithmétique dans N",
     "subject": "Arithmétique",
-    "chapter_number": null,
-    "teacher": "ZAYANI MED",
-    "phone": null,
+    "chapter_number": "",
+    "teacher": "Zayani Mohammed",
+    "phone": "",
     "schools": [],
-    "level": null,
+    "level": "common_core_sci",
     "doc_type": "course",
     "content": {
       "level": "common_core_sci",
       "header": {
-        "phone": "",
+        "prep_title": "Préparation aux concours",
         "schools": [],
         "subject": "Arithmétique",
-        "teacher": "Professeur : Y. Achab",
-        "is_summary": false,
-        "prep_title": "Préparation aux concours",
         "fiche_title": "Arithmétique dans N",
-        "summary_meta": null,
-        "is_national_exam": false,
-        "national_exam_meta": null
+        "chapter_number": "",
+        "teacher": "Zayani Mohammed",
+        "phone": "",
+        "capacites_attendues": "",
+        "contenus": "",
+        "le_contenu": ""
       },
       "doc_type": "course",
       "metadata": {
@@ -17420,7 +17473,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "",
-          "section_number": ""
+          "section_number": "",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-1",
@@ -17453,7 +17513,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "I. Nombres pairs - Nombres impairs",
-          "section_number": "I"
+          "section_number": "I",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-2",
@@ -17465,7 +17532,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "I. Nombres pairs - Nombres impairs",
-          "section_number": "I"
+          "section_number": "I",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "def-1",
@@ -17482,7 +17556,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "I. Nombres pairs - Nombres impairs",
-          "section_number": "I"
+          "section_number": "I",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-1",
@@ -17515,7 +17596,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "I. Nombres pairs - Nombres impairs",
-          "section_number": "I"
+          "section_number": "I",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "app-1",
@@ -17532,7 +17620,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "I. Nombres pairs - Nombres impairs",
-          "section_number": "I"
+          "section_number": "I",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-3",
@@ -17544,7 +17639,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "I. Nombres pairs - Nombres impairs",
-          "section_number": "I"
+          "section_number": "I",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "def-2",
@@ -17561,7 +17663,14 @@
           "language": "fr",
           "accent_text": "Soit $a$ un nombre entier naturel.",
           "section_header": "I. Nombres pairs - Nombres impairs",
-          "section_number": "I"
+          "section_number": "I",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-2",
@@ -17582,7 +17691,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "I. Nombres pairs - Nombres impairs",
-          "section_number": "I"
+          "section_number": "I",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "app-2",
@@ -17690,7 +17806,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "I. Nombres pairs - Nombres impairs",
-          "section_number": "I"
+          "section_number": "I",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-1-page2",
@@ -17712,7 +17835,13 @@
           "solution": "",
           "section_header": "I. Nombres pairs - Nombres impairs",
           "section_number": "I",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-4",
@@ -17724,7 +17853,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "II. Multiples d'un entier naturel - ppcm de deux entiers naturels",
-          "section_number": "II"
+          "section_number": "II",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "act-2",
@@ -17874,7 +18010,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "II. Multiples d'un entier naturel - ppcm de deux entiers naturels",
-          "section_number": "II"
+          "section_number": "II",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "def-3",
@@ -17891,7 +18034,14 @@
           "language": "fr",
           "accent_text": "Soient $a$ et $b$ deux entiers naturels.",
           "section_header": "II. Multiples d'un entier naturel - ppcm de deux entiers naturels",
-          "section_number": "II"
+          "section_number": "II",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-3",
@@ -17920,7 +18070,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "II. Multiples d'un entier naturel - ppcm de deux entiers naturels",
-          "section_number": "II"
+          "section_number": "II",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "app-3",
@@ -17945,7 +18102,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "II. Multiples d'un entier naturel - ppcm de deux entiers naturels",
-          "section_number": "II"
+          "section_number": "II",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-5",
@@ -17957,7 +18121,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "III. Diviseur d'un entier naturel - pgcd de deux entiers naturels",
-          "section_number": "III"
+          "section_number": "III",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "act-3",
@@ -18107,7 +18278,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "III. Diviseur d'un entier naturel - pgcd de deux entiers naturels",
-          "section_number": "III"
+          "section_number": "III",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "def-4",
@@ -18124,7 +18302,14 @@
           "language": "fr",
           "accent_text": "Soient $a$ et $b$ deux entiers naturels.",
           "section_header": "III. Diviseur d'un entier naturel - pgcd de deux entiers naturels",
-          "section_number": "III"
+          "section_number": "III",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-4",
@@ -18161,7 +18346,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "III. Diviseur d'un entier naturel - pgcd de deux entiers naturels",
-          "section_number": "III"
+          "section_number": "III",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "app-4",
@@ -18186,7 +18378,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "III. Diviseur d'un entier naturel - pgcd de deux entiers naturels",
-          "section_number": "III"
+          "section_number": "III",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-2-page3",
@@ -18220,7 +18419,13 @@
           "solution": "",
           "section_header": "III. Diviseur d'un entier naturel - pgcd de deux entiers naturels",
           "section_number": "III",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "prop-1",
@@ -18237,7 +18442,14 @@
           "language": "fr",
           "accent_text": "Soit $n$ un entier naturel. On dit que $n$ est divisible par :",
           "section_header": "III. Diviseur d'un entier naturel - pgcd de deux entiers naturels",
-          "section_number": "III"
+          "section_number": "III",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-5",
@@ -18262,7 +18474,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "III. Diviseur d'un entier naturel - pgcd de deux entiers naturels",
-          "section_number": "III"
+          "section_number": "III",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "app-5",
@@ -18291,7 +18510,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "III. Diviseur d'un entier naturel - pgcd de deux entiers naturels",
-          "section_number": "III"
+          "section_number": "III",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-6",
@@ -18303,7 +18529,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "IV. Les nombres premiers",
-          "section_number": "IV"
+          "section_number": "IV",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "act-4",
@@ -18320,7 +18553,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "IV. Les nombres premiers",
-          "section_number": "IV"
+          "section_number": "IV",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "def-5",
@@ -18337,7 +18577,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "IV. Les nombres premiers",
-          "section_number": "IV"
+          "section_number": "IV",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-6",
@@ -18358,7 +18605,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "IV. Les nombres premiers",
-          "section_number": "IV"
+          "section_number": "IV",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "rem-1",
@@ -18383,7 +18637,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "IV. Les nombres premiers",
-          "section_number": "IV"
+          "section_number": "IV",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-7",
@@ -18400,7 +18661,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "IV. Les nombres premiers",
-          "section_number": "IV"
+          "section_number": "IV",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "app-6",
@@ -18421,7 +18689,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "IV. Les nombres premiers",
-          "section_number": "IV"
+          "section_number": "IV",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "sec-7",
@@ -18433,7 +18708,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "V. Décomposition d'un entier naturel en produit de facteurs premiers",
-          "section_number": "V"
+          "section_number": "V",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "act-5",
@@ -18450,7 +18732,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "V. Décomposition d'un entier naturel en produit de facteurs premiers",
-          "section_number": "V"
+          "section_number": "V",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "theo-1",
@@ -18467,7 +18756,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "V. Décomposition d'un entier naturel en produit de facteurs premiers",
-          "section_number": "V"
+          "section_number": "V",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-8",
@@ -18488,7 +18784,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "V. Décomposition d'un entier naturel en produit de facteurs premiers",
-          "section_number": "V"
+          "section_number": "V",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "app-7",
@@ -18505,7 +18808,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "V. Décomposition d'un entier naturel en produit de facteurs premiers",
-          "section_number": "V"
+          "section_number": "V",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "theo-2",
@@ -18522,7 +18832,14 @@
           "language": "fr",
           "accent_text": "Soient $a$ et $b$ deux nombres entiers naturels.",
           "section_header": "V. Décomposition d'un entier naturel en produit de facteurs premiers",
-          "section_number": "V"
+          "section_number": "V",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-9",
@@ -18539,7 +18856,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "V. Décomposition d'un entier naturel en produit de facteurs premiers",
-          "section_number": "V"
+          "section_number": "V",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "theo-3",
@@ -18556,7 +18880,14 @@
           "language": "fr",
           "accent_text": "Soient $a$ et $b$ deux nombres entiers naturels.",
           "section_header": "V. Décomposition d'un entier naturel en produit de facteurs premiers",
-          "section_number": "V"
+          "section_number": "V",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-10",
@@ -18577,7 +18908,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "V. Décomposition d'un entier naturel en produit de facteurs premiers",
-          "section_number": "V"
+          "section_number": "V",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "app-8",
@@ -18606,7 +18944,14 @@
           "language": "fr",
           "accent_text": "",
           "section_header": "V. Décomposition d'un entier naturel en produit de facteurs premiers",
-          "section_number": "V"
+          "section_number": "V",
+          "solution": "",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-3-page4-1",
@@ -18636,7 +18981,13 @@
           "solution": "",
           "section_header": "V. Décomposition d'un entier naturel en produit de facteurs premiers",
           "section_number": "V",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-3-page4-2",
@@ -18666,18 +19017,26 @@
           "solution": "",
           "section_header": "V. Décomposition d'un entier naturel en produit de facteurs premiers",
           "section_number": "V",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         }
       ],
       "is_summary": false,
       "summary_meta": null,
       "is_national_exam": false,
-      "national_exam_meta": null
+      "national_exam_meta": null,
+      "columns_count": 2
     },
     "is_active": true,
     "is_archived": false,
     "created_at": "2026-09-05T12:27:16.288+00:00",
-    "updated_at": "2026-09-06T10:31:25.914+00:00"
+    "updated_at": "2026-09-22T09:42:15.413Z",
+    "updatedAt": "2026-09-22T09:42:16.573Z"
   },
   {
     "id": "MOCK-L-AZSZYYLBZ",
@@ -28734,25 +29093,25 @@
     "id": "MOCK-L-0CVZMFE8K",
     "title": "Notions sur l'arithmétique",
     "subject": "Mathématiques",
-    "chapter_number": null,
+    "chapter_number": "",
     "teacher": "ZAYANI MOHAMMED",
-    "phone": null,
+    "phone": "",
     "schools": [],
-    "level": null,
-    "doc_type": "course",
+    "level": "common_core_sci",
+    "doc_type": "exercises",
     "content": {
       "level": "common_core_sci",
       "header": {
-        "phone": "",
+        "prep_title": "SÉRIE D'EXERCICES",
         "schools": [],
         "subject": "Mathématiques",
-        "teacher": "ZAYANI MOHAMMED",
-        "is_summary": false,
-        "prep_title": "SÉRIE D'EXERCICES",
         "fiche_title": "Notions sur l'arithmétique",
-        "summary_meta": null,
-        "is_national_exam": false,
-        "national_exam_meta": null
+        "chapter_number": "",
+        "teacher": "ZAYANI MOHAMMED",
+        "phone": "",
+        "capacites_attendues": "",
+        "contenus": "",
+        "le_contenu": ""
       },
       "doc_type": "exercises",
       "metadata": {
@@ -28783,7 +29142,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "1",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-2",
@@ -28817,7 +29182,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "2",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-3",
@@ -28855,7 +29226,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "3",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-4",
@@ -28877,7 +29254,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "4",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-5",
@@ -29018,7 +29401,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "5",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-6",
@@ -29048,7 +29437,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "6",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-7",
@@ -29066,7 +29461,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "7",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-8",
@@ -29092,7 +29493,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "8",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-9",
@@ -29122,7 +29529,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "9",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-10",
@@ -29144,7 +29557,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "10",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-11",
@@ -29166,7 +29585,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "11",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-12",
@@ -29196,7 +29621,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "12",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-13",
@@ -29218,7 +29649,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "13",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-14",
@@ -29244,7 +29681,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "14",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-15",
@@ -29274,7 +29717,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "15",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-16",
@@ -29292,7 +29741,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "16",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-17",
@@ -29322,7 +29777,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "17",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-18",
@@ -29340,7 +29801,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "18",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-19",
@@ -29351,18 +29818,24 @@
               "type": "bullet"
             },
             {
-              "text": "**2.** Déterminer les couples $(a,b)$ des entiers naturels tels que : $(S) : \\begin{cases} a^2 - b^2 = 7344 \\\\ a \\wedge b = 12 \\end{cases}$.",
+              "text": "**2.** Déterminer les couples $(a,b)$ des entiers naturels tels que : \n\n\n\n$$(S) : \\begin{cases} a^2 - b^2 = 7344 \\\\ a \\wedge b = 12 \\end{cases}$$\n\n\n\n.",
               "type": "bullet"
             }
           ],
           "title": "**Exercice N° 19**",
           "points": 0,
-          "content": "**1.** Trouver toutes les solutions de l'équation : $(1) : x^2 - y^2 = 51$ dans $\\mathbb{N}^2$.\n**2.** Déterminer les couples $(a,b)$ des entiers naturels tels que : $(S) : \\begin{cases} a^2 - b^2 = 7344 \\\\ a \\wedge b = 12 \\end{cases}$.",
+          "content": "**1.** Trouver toutes les solutions de l'équation : $(1) : x^2 - y^2 = 51$ dans $\\mathbb{N}^2$.\n**2.** Déterminer les couples $(a,b)$ des entiers naturels tels que : \n\n\n\n$$(S) : \\begin{cases} a^2 - b^2 = 7344 \\\\ a \\wedge b = 12 \\end{cases}$$\n\n\n\n.",
           "language": "fr",
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "19",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-20",
@@ -29384,7 +29857,13 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "20",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         },
         {
           "id": "ex-21",
@@ -29406,18 +29885,26 @@
           "solution": "",
           "section_header": "Série d'exercices : Notions sur l'arithmétique",
           "section_number": "21",
-          "interactive_answers": []
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
         }
       ],
       "is_summary": false,
       "summary_meta": null,
       "is_national_exam": false,
-      "national_exam_meta": null
+      "national_exam_meta": null,
+      "columns_count": 2
     },
     "is_active": true,
     "is_archived": false,
     "created_at": "2026-09-08T09:38:49.789+00:00",
-    "updated_at": "2026-09-08T09:38:49.796+00:00"
+    "updated_at": "2026-09-22T09:39:39.043Z",
+    "updatedAt": "2026-09-22T09:39:40.973Z"
   },
   {
     "id": "MOCK-L-MKNJC3C3P",
