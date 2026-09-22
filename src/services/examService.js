@@ -1,8 +1,7 @@
 // src/services/examService.js
 // High-performance multi-tiered CRUD for exams with SWR caching and projection optimization.
-// Supabase -> LocalDb Companion -> LocalStorage -> Seed Fallback.
+// Neon PostgreSQL -> LocalDb Companion -> LocalStorage -> Seed Fallback.
 
-import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
 import { mapLegacySchoolToLevel } from '../utils/levelHelpers';
@@ -116,33 +115,7 @@ export const getAllExams = async (options = {}) => {
       console.warn('[Neon] getAllExams error:', neonErr.message);
     }
 
-    // 2. Supabase attempt (Try metadata view first, fallback to lightweight projection)
-    if (supabase) {
-      try {
-        let { data, error } = await supabase
-          .from('exams_metadata')
-          .select('*')
-          .order('date_added', { ascending: false });
 
-        if (error || !data) {
-          // Fallback to exams table with lightweight columns (skips questions JSON)
-          const fallback = await supabase
-            .from('exams')
-            .select('id, name, school, level, year, tier, pdf_url, is_active, is_archived, date_added, updated_at')
-            .order('date_added', { ascending: false });
-          data = fallback.data;
-          error = fallback.error;
-        }
-
-        if (!error && Array.isArray(data) && data.length > 0) {
-          const mapped = data.map(mapDBToExam);
-          saveLocalStorageExams(mapped);
-          return mapped;
-        }
-      } catch (err) {
-        console.warn('[Supabase] Failed to fetch exams:', err);
-      }
-    }
 
 
     // 2. Local Companion DB API fallback
@@ -199,22 +172,7 @@ export const getExamById = async (examId, options = {}) => {
       console.warn(`[Neon] Failed to fetch single exam ${examId}:`, neonErr.message);
     }
 
-    // 2. Fallback to Supabase
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('exams')
-          .select('*')
-          .eq('id', examId)
-          .maybeSingle();
 
-        if (!error && data) {
-          return mapDBToExam(data);
-        }
-      } catch (err) {
-        console.warn(`[Supabase] Failed to fetch single exam ${examId}:`, err);
-      }
-    }
 
     // 2. Try Local Companion API
     try {
@@ -295,14 +253,7 @@ export const addExam = async (examData) => {
     console.warn('[Neon] Could not sync addExam to Neon:', err.message);
   }
 
-  // 4. Sync to Supabase
-  if (supabase) {
-    try {
-      await supabase.from('exams').insert({ id, ...mapExamToDB({ ...examData, level: determinedLevel }) });
-    } catch (err) {
-      console.warn('[Supabase] Could not sync addExam to Supabase:', err.message);
-    }
-  }
+
 
   return id;
 };
@@ -372,14 +323,7 @@ export const updateExam = async (examId, updates) => {
     console.warn('[Neon] Could not sync updateExam to Neon:', err.message || err);
   }
 
-  // 4. Secondary Supabase Sync (non-blocking)
-  if (supabase) {
-    try {
-      await supabase.from('exams').update(dbUpdates).eq('id', examId);
-    } catch (err) {
-      console.warn('[Supabase] Could not sync updateExam to Supabase:', err.message);
-    }
-  }
+
 };
 
 /**
@@ -422,12 +366,5 @@ export const deleteExam = async (examId) => {
     console.warn('[Neon] Could not sync deleteExam to Neon:', err.message);
   }
 
-  // 3. Sync delete to Supabase
-  if (supabase) {
-    try {
-      await supabase.from('exams').delete().eq('id', examId);
-    } catch (err) {
-      console.warn('[Supabase] Could not sync deleteExam to Supabase:', err.message);
-    }
-  }
+
 };

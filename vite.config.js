@@ -168,10 +168,6 @@ export default defineConfig(({ mode }) => {
           if (id.includes('lucide')) {
             return 'vendor-icons';
           }
-          // ── Supabase client ───────────────────────────────────────
-          if (id.includes('@supabase')) {
-            return 'vendor-supabase';
-          }
           // ── QR & barcode ──────────────────────────────────────────
           if (id.includes('qrcode') || id.includes('jsqr') || id.includes('zxing')) {
             return 'vendor-qr';
@@ -211,7 +207,6 @@ export default defineConfig(({ mode }) => {
       'react-dom',
       'react-router-dom',
       'lucide-react',
-      '@supabase/supabase-js',
     ],
     exclude: [
       // These are loaded lazily — don't prebundle

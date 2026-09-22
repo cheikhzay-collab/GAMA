@@ -3,7 +3,7 @@
 // Highly resilient connector supporting Vite same-origin proxy (/companion-api),
 // direct localhost:5002, 127.0.0.1:5002, and Supabase fallback
 
-import { supabase } from '../lib/supabase';
+
 
 // Multi-tier candidate base URLs to guarantee connection across all environments
 const getCandidateBaseUrls = () => {
@@ -142,38 +142,6 @@ export const getExtractionTasks = async () => {
     console.warn('[ExtractionTaskService] Companion fetch error, falling back:', err.message);
   }
 
-  // Fallback: Supabase DB if enabled
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('extraction_tasks')
-        .select('id, file_name, file_type, page_count, provider, model, status, progress_percent, progress_message, attempts, max_attempts, error_message, created_at, updated_at, completed_at')
-        .order('created_at', { ascending: false });
-      if (!error && data) {
-        return data.map(row => ({
-          id: row.id,
-          fileName: row.file_name,
-          fileType: row.file_type,
-          pageCount: row.page_count,
-          provider: row.provider,
-          model: row.model,
-          status: row.status,
-          progressPercent: row.progress_percent,
-          progressMessage: row.progress_message,
-          attempts: row.attempts,
-          maxAttempts: row.max_attempts,
-          error: row.error_message,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at,
-          completedAt: row.completed_at,
-          hasResult: row.status === 'completed'
-        }));
-      }
-    } catch (sbErr) {
-      console.warn('[ExtractionTaskService] Supabase tasks query failed:', sbErr);
-    }
-  }
-
   // Fallback: localStorage
   try {
     const raw = localStorage.getItem('lconq_extraction_tasks') || '[]';
@@ -196,37 +164,7 @@ export const getExtractionTaskById = async (id) => {
     console.warn('[ExtractionTaskService] Companion getById error:', err.message);
   }
 
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('extraction_tasks')
-        .select('*')
-        .eq('id', id)
-        .single();
-      if (!error && data) {
-        return {
-          id: data.id,
-          fileName: data.file_name,
-          fileType: data.file_type,
-          pageCount: data.page_count,
-          provider: data.provider,
-          model: data.model,
-          status: data.status,
-          progressPercent: data.progress_percent,
-          progressMessage: data.progress_message,
-          attempts: data.attempts,
-          maxAttempts: data.max_attempts,
-          error: data.error_message,
-          result: data.result_json,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at,
-          completedAt: data.completed_at
-        };
-      }
-    } catch (sbErr) {
-      console.warn('[ExtractionTaskService] Supabase single task query failed:', sbErr);
-    }
-  }
+
 
   return null;
 };
@@ -297,9 +235,6 @@ export const deleteExtractionTask = async (id) => {
     });
     return res.ok;
   } catch (err) {
-    if (supabase) {
-      await supabase.from('extraction_tasks').delete().eq('id', id);
-    }
     return true;
   }
 };

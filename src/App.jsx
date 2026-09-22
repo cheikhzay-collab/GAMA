@@ -73,7 +73,7 @@ function GuestRoute({ children }) {
 }
 
 /**
- * OAuthRedirectGuard — detects when Supabase redirected back with a hash-based
+ * OAuthRedirectGuard — detects when OAuth provider redirected back with a hash-based
  * access_token (i.e. #access_token=...) and navigates to /dashboard once
  * the AuthContext has populated the user object.
  */

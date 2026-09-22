@@ -41,7 +41,8 @@ function groupCardsByContext(compiledCards, questionsPool) {
 }
 
 export default function StudyMode() {
-  const { user, exams, progress: allProgress, updateCardProgress, loadExamQuestions, supabaseEnabled } = useAuth();
+  const { user, exams, progress: allProgress, updateCardProgress, loadExamQuestions, neonEnabled, supabaseEnabled } = useAuth();
+  const isCloudDbEnabled = neonEnabled || supabaseEnabled;
   const [searchParams] = useSearchParams();
   const examId = searchParams.get('exam');
   const topicId = searchParams.get('topic');
@@ -86,7 +87,7 @@ export default function StudyMode() {
 
   // Lazy load questions for study session before initialization
   useEffect(() => {
-    if (!supabaseEnabled) return;
+    if (!isCloudDbEnabled) return;
     if (loadingQuestions) return;
 
     if (!sessionStarted) {
@@ -125,7 +126,7 @@ export default function StudyMode() {
           .finally(() => setLoadingQuestions(false));
       }
     }
-  }, [examId, topicId, sessionStarted, exams, loadExamQuestions, activeExamsList, supabaseEnabled, loadingQuestions]);
+  }, [examId, topicId, sessionStarted, exams, loadExamQuestions, activeExamsList, isCloudDbEnabled, loadingQuestions]);
 
   // Dynamically allow scrolling on selector dashboard, but lock it in study session focus mode
   useEffect(() => {
@@ -185,7 +186,7 @@ export default function StudyMode() {
     if (examId) {
       const exam = exams.find(e => e.id === examId);
       if (!exam) return;
-      if (supabaseEnabled && exam.questions === undefined) {
+      if (isCloudDbEnabled && exam.questions === undefined) {
         return; // wait for lazy loading to populate questions
       }
       if (!exam.questions || exam.questions.length === 0) {
@@ -196,7 +197,7 @@ export default function StudyMode() {
       }
     }
 
-    if (supabaseEnabled) {
+    if (isCloudDbEnabled) {
       if (topicId) {
         if (activeExamsList.some(e => e.questions === undefined)) return;
       } else if (!examId) {
@@ -346,7 +347,7 @@ export default function StudyMode() {
         setSessionCards(groupedCards);
       });
     }
-  }, [currentExam, examId, topicId, exams, allProgress, sessionCards, sessionStarted, activeExamsList, supabaseEnabled]);
+  }, [currentExam, examId, topicId, exams, allProgress, sessionCards, sessionStarted, activeExamsList, isCloudDbEnabled]);
   // ────────────────────────────────────────────────────────────────────────────
 
   const handleBackClick = () => {

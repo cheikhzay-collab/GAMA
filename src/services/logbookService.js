@@ -1,7 +1,7 @@
 // src/services/logbookService.js
 // Logbook CRUD utilities with Neon PostgreSQL cloud persistence and localStorage caching.
 import { neonGetConfig, neonSaveConfig } from '../lib/neon';
-import { supabase } from '../lib/supabase';
+
 
 const LOGBOOK_CONFIG_KEY = 'logbook_entries';
 
@@ -24,20 +24,7 @@ export const getLogbookEntries = async (classId) => {
     console.warn('[logbookService] Neon fetch failed, trying fallbacks:', err.message || err);
   }
 
-  // 2. Fallback to Supabase if Neon did not return data
-  if (!entries && supabase) {
-    try {
-      const { data } = await supabase
-        .from('config')
-        .select('value')
-        .eq('key', LOGBOOK_CONFIG_KEY)
-        .single();
-      if (data && Array.isArray(data.value)) {
-        entries = data.value;
-        localStorage.setItem(LOGBOOK_CONFIG_KEY, JSON.stringify(entries));
-      }
-    } catch (_) {}
-  }
+
 
   // 3. Fallback to localStorage cache
   if (!entries) {
@@ -73,16 +60,7 @@ const persistLogbookEntries = async (all) => {
     console.warn('[logbookService] Neon save warning:', err.message || err);
   }
 
-  // Cloud Supabase
-  if (supabase) {
-    try {
-      await supabase.from('config').upsert({
-        key: LOGBOOK_CONFIG_KEY,
-        value: all,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'key' });
-    } catch (_) {}
-  }
+
 };
 
 export const addLogbookEntry = async (entryData) => {

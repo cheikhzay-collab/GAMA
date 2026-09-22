@@ -8,7 +8,7 @@
  * - Images:     External images — StaleWhileRevalidate, 14 days, 50 entries
  * - App assets: JS/CSS chunks — StaleWhileRevalidate, 7 days
  * - LocalDB API: /api/* from companion — NetworkFirst with IDB fallback, 5 min
- * - Supabase:   NEVER cache (always network)
+ * - Neon API:   NEVER cache (always network)
  * - Auth:       NEVER cache (always network)
  */
 
@@ -63,12 +63,13 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// ── NEVER cache: Supabase API ──────────────────────────────────────────────
-// Caching Supabase responses would return stale auth/data.
+// ── NEVER cache: Neon Cloud Database & Auth API ────────────────────────────
+// Caching Neon responses would return stale auth/data.
 registerRoute(
   ({ url }) =>
-    url.hostname.includes('supabase.co') ||
-    url.hostname.includes('supabase.io'),
+    url.hostname.includes('neon.tech') ||
+    url.pathname.startsWith('/api/neon') ||
+    url.pathname.startsWith('/api/auth'),
   new NetworkOnly()
 );
 

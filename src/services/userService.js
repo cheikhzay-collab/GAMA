@@ -1,8 +1,7 @@
 // src/services/userService.js
 // CRUD for user profiles, progress, mock exam history, and activity.
-// Supports both Supabase and Local Companion API with graceful network error handling.
+// Supports Neon PostgreSQL and Local Companion API with graceful network error handling.
 
-import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
 import initialUsersData from '../../data/users.json';
@@ -132,24 +131,7 @@ export const createUserDoc = async (uid, userData) => {
     }).catch(err => console.warn('[Neon] Error syncing createUserDoc:', err.message));
   } catch (_) {}
 
-  // 3. Supabase
-  if (supabase) {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({
-          id: uid,
-          ...mapProfileToDB(userData),
-          updated_at: now,
-        }, { onConflict: 'id' });
 
-      if (error) {
-        console.warn('[Supabase] Failed to upsert profile, falling back locally:', error.message || error);
-      }
-    } catch (err) {
-      console.warn('[Supabase] Network error during createUserDoc:', err.message || err);
-    }
-  }
 
   // 3. Local Companion
   try {
@@ -184,21 +166,6 @@ export const getUserDoc = async (uid, options = {}) => {
       console.warn('[Neon] getUserDoc error:', neonErr.message);
     }
 
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', uid)
-          .maybeSingle();
-
-        if (!error && data) {
-          return mapDBToProfile(data);
-        }
-      } catch (err) {
-        console.warn('[Supabase] Network error during getUserDoc (offline fallback):', err.message || err);
-      }
-    }
 
     try {
       const list = await localDb.get('/users');
@@ -247,45 +214,7 @@ export const updateUserDoc = async (uid, updates) => {
     saveLocalStorageUsers(currentUsers);
   }
 
-  // 2. Supabase
-  if (supabase) {
-    try {
-      const dbUpdates = {};
-      if (updates.name !== undefined) dbUpdates.name = updates.name;
-      if (updates.email !== undefined) dbUpdates.email = updates.email;
-      if (updates.role !== undefined) dbUpdates.role = updates.role;
-      if (updates.tier !== undefined) dbUpdates.tier = updates.tier;
-      if (updates.xp !== undefined) dbUpdates.xp = updates.xp;
-      if (updates.streak !== undefined) dbUpdates.streak = updates.streak;
-      if (updates.rank !== undefined) dbUpdates.rank = updates.rank;
-      if (updates.total_students !== undefined) dbUpdates.total_students = updates.totalStudents;
-      if (updates.subscription !== undefined) dbUpdates.subscription = updates.subscription;
-      if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
-      if (updates.city !== undefined) dbUpdates.city = updates.city;
-      if (updates.school !== undefined) dbUpdates.school = updates.school;
-      if (updates.downloads !== undefined) dbUpdates.downloads = updates.downloads;
-      if (updates.crm !== undefined) dbUpdates.crm = updates.crm;
-      if (classId !== undefined) dbUpdates.class_id = classId;
-      dbUpdates.updated_at = now;
-
-      // Sync to Neon PostgreSQL
-      try {
-        neonSaveProfile({ id: uid, ...dbUpdates }).catch(err =>
-          console.warn('[Neon] Error syncing updateUserDoc:', err.message)
-        );
-      } catch (_) {}
-
-      const { error } = await supabase
-        .from('profiles')
-        .update(dbUpdates)
-        .eq('id', uid);
-
-      if (!error) return;
-      console.warn('[Supabase] Failed to update user profile, falling back locally:', error.message || error);
-    } catch (err) {
-      console.warn('[Supabase] Network error during updateUserDoc:', err.message || err);
-    }
-  }
+  
 
   // 3. Companion
   try {
@@ -313,23 +242,6 @@ export const setUserSubscription = async (uid, subscription, tier = 'premium') =
   queryCache.invalidate(`user_doc_${uid}`);
   queryCache.invalidate('users_all');
 
-  if (supabase) {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          tier,
-          subscription,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', uid);
-
-      if (!error) return;
-      console.warn('[Supabase] Failed to set subscription, falling back locally:', error.message || error);
-    } catch (err) {
-      console.warn('[Supabase] Network error during setUserSubscription:', err.message || err);
-    }
-  }
 
   try {
     await updateUserDoc(uid, { subscription, tier });
@@ -342,7 +254,7 @@ export const setUserSubscription = async (uid, subscription, tier = 'premium') =
 
 /**
  * Save/update a single question's SRS progress.
- * Neon-first with Supabase fallback.
+ * Neon PostgreSQL persistence with Local fallback.
  */
 export const saveQuestionProgress = async (uid, questionId, progressData) => {
   const now = new Date().toISOString();
@@ -376,31 +288,12 @@ export const saveQuestionProgress = async (uid, questionId, progressData) => {
     console.warn('[Neon] saveQuestionProgress error:', neonErr.message);
   }
 
-  // 2. Supabase fallback
-  if (!supabase) return;
-  try {
-    const { error } = await supabase
-      .from('progress')
-      .upsert({
-        user_id: uid,
-        question_id: questionId,
-        difficulty: progressData.difficulty,
-        stability: progressData.stability,
-        repetitions: progressData.repetitions,
-        ease_factor: progressData.easeFactor,
-        last_review_date: progressData.lastReviewDate,
-        next_review_date: progressData.nextReviewDate,
-        updated_at: now,
-      }, { onConflict: 'user_id,question_id' });
-    if (error) console.warn('[Supabase] Failed to save question progress:', error.message || error);
-  } catch (err) {
-    console.warn('[Supabase] Network error during saveQuestionProgress:', err.message || err);
-  }
+
 };
 
 /**
  * Fetch all progress cards for a user.
- * Neon-first with Supabase fallback.
+ * Neon PostgreSQL persistence with Local fallback.
  */
 export const getAllProgress = async (uid) => {
   const mapRow = (row) => ({
@@ -425,25 +318,14 @@ export const getAllProgress = async (uid) => {
     console.warn('[Neon] getAllProgress error:', neonErr.message);
   }
 
-  // 2. Supabase fallback
-  if (!supabase) return {};
-  try {
-    const { data, error } = await supabase.from('progress').select('*').eq('user_id', uid);
-    if (error || !data) return {};
-    const result = {};
-    data.forEach(row => { result[row.question_id] = mapRow(row); });
-    return result;
-  } catch (err) {
-    console.warn('[Supabase] Network error during getAllProgress:', err.message || err);
-    return {};
-  }
+
 };
 
 // ─── Mock Exam History ────────────────────────────────────────────────────────
 
 /**
  * Save a mock exam result.
- * Neon-first with Supabase fallback.
+ * Neon PostgreSQL persistence with Local fallback.
  */
 export const saveMockResult = async (uid, result) => {
   const date = result.date || new Date().toISOString();
@@ -467,32 +349,12 @@ export const saveMockResult = async (uid, result) => {
     console.warn('[Neon] saveMockResult error:', neonErr.message);
   }
 
-  // 2. Supabase fallback
-  if (!supabase) return;
-  try {
-    const { error } = await supabase.from('mock_history').insert({
-      user_id: uid,
-      exam_id: result.examId,
-      exam_name: result.examName,
-      school: result.school,
-      score: result.score,
-      max_score: result.maxScore,
-      pct: result.pct,
-      correct_count: result.correctCount,
-      wrong_count: result.wrongCount,
-      empty_count: result.emptyCount,
-      mode: result.mode,
-      date,
-    });
-    if (error) console.warn('[Supabase] Failed to save mock result:', error.message || error);
-  } catch (err) {
-    console.warn('[Supabase] Network error during saveMockResult:', err.message || err);
-  }
+
 };
 
 /**
  * Fetch all mock exam history for a user.
- * Neon-first with Supabase fallback.
+ * Neon PostgreSQL persistence with Local fallback.
  */
 export const getMockHistory = async (uid) => {
   const mapRow = (row) => ({
@@ -525,24 +387,14 @@ export const getMockHistory = async (uid) => {
     console.warn('[Neon] getMockHistory error:', neonErr.message);
   }
 
-  // 2. Supabase fallback
-  if (!supabase) return [];
-  try {
-    const { data, error } = await supabase
-      .from('mock_history').select('*').eq('user_id', uid).order('date', { ascending: false });
-    if (error || !data) return [];
-    return data.map(mapRow);
-  } catch (err) {
-    console.warn('[Supabase] Network error during getMockHistory:', err.message || err);
-    return [];
-  }
+
 };
 
 // ─── Daily Activity ───────────────────────────────────────────────────────────
 
 /**
  * Increment the daily activity counter.
- * Neon-first with Supabase fallback.
+ * Neon PostgreSQL persistence with Local fallback.
  */
 export const incrementDailyActivity = async (uid) => {
   const today = new Date().toISOString().split('T')[0];
@@ -563,24 +415,12 @@ export const incrementDailyActivity = async (uid) => {
     console.warn('[Neon] incrementDailyActivity error:', neonErr.message);
   }
 
-  // 2. Supabase fallback
-  if (!supabase) return;
-  try {
-    const { data, error } = await supabase
-      .from('activity').select('count').eq('user_id', uid).eq('date', today).maybeSingle();
-    if (error) { console.warn('[Supabase] Failed to fetch daily activity:', error.message); return; }
-    const count = data ? (data.count || 0) + 1 : 1;
-    const { error: upsertError } = await supabase
-      .from('activity').upsert({ user_id: uid, date: today, count }, { onConflict: 'user_id,date' });
-    if (upsertError) console.warn('[Supabase] Failed to increment daily activity:', upsertError.message);
-  } catch (err) {
-    console.warn('[Supabase] Network error during incrementDailyActivity:', err.message || err);
-  }
+
 };
 
 /**
  * Fetch the last N days of activity.
- * Neon-first with Supabase fallback.
+ * Neon PostgreSQL persistence with Local fallback.
  */
 export const getRecentActivity = async (uid, days = 90) => {
   const cutoffDate = new Date();
@@ -606,19 +446,7 @@ export const getRecentActivity = async (uid, days = 90) => {
     console.warn('[Neon] getRecentActivity error:', neonErr.message);
   }
 
-  // 2. Supabase fallback
-  if (!supabase) return {};
-  try {
-    const { data, error } = await supabase
-      .from('activity').select('*').eq('user_id', uid).gte('date', cutoffStr);
-    if (error || !data) return {};
-    const result = {};
-    data.forEach(row => { result[row.date] = row.count || 0; });
-    return result;
-  } catch (err) {
-    console.warn('[Supabase] Network error during getRecentActivity:', err.message || err);
-    return {};
-  }
+
 };
 
 /**
@@ -642,16 +470,7 @@ export const deleteUser = async (uid) => {
     console.warn('[Neon] deleteUser error:', neonErr.message);
   }
 
-  // 3. Supabase fallback
-  if (supabase) {
-    try {
-      const { error } = await supabase.rpc('delete_user', { uid });
-      if (!error) return true;
-      console.warn('[Supabase] RPC delete_user failed:', error.message || error);
-    } catch (err) {
-      console.warn('[Supabase] Network error during deleteUser:', err.message || err);
-    }
-  }
+
 
   // 4. Local Companion
   try {
@@ -681,33 +500,6 @@ export const getAllUsers = async (options = {}) => {
       console.warn('[Neon] getAllUsers error:', neonErr.message);
     }
 
-    if (supabase) {
-      try {
-        const { data: rpcData, error: rpcError } = await supabase.rpc('get_all_profiles');
-        if (!rpcError && Array.isArray(rpcData) && rpcData.length > 0) {
-          const mapped = rpcData.map(mapDBToProfile);
-          saveLocalStorageUsers(mapped);
-          return mapped;
-        }
-      } catch (rpcErr) {
-        console.warn('[Supabase] RPC get_all_profiles failed, trying direct select:', rpcErr.message || rpcErr);
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .order('joined', { ascending: false });
-
-        if (!error && Array.isArray(data) && data.length > 0) {
-          const mapped = data.map(mapDBToProfile);
-          saveLocalStorageUsers(mapped);
-          return mapped;
-        }
-      } catch (err) {
-        console.warn('[Supabase] Network error during getAllUsers (fallback to local):', err.message || err);
-      }
-    }
 
     try {
       const list = await localDb.get('/users');
@@ -745,32 +537,6 @@ export const getLeaderboard = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('leaderboard_all', async () => {
-    if (supabase) {
-      try {
-        const { data: rpcData, error: rpcError } = await supabase.rpc('get_leaderboard');
-        if (!rpcError && rpcData) {
-          return rpcData;
-        }
-      } catch (err) {
-        console.warn('[Supabase] RPC get_leaderboard failed, falling back to direct profiles query:', err.message || err);
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('name, xp, streak, tier, role')
-          .neq('role', 'admin')
-          .not('name', 'ilike', 'Directeur')
-          .order('xp', { ascending: false })
-          .limit(100);
-
-        if (!error && data) {
-          return data;
-        }
-      } catch (err) {
-        console.warn('[Supabase] Network error during getLeaderboard (fallback to local):', err.message || err);
-      }
-    }
 
     try {
       const list = await localDb.get('/users');
@@ -791,7 +557,7 @@ export const getLeaderboard = async (options = {}) => {
 
 /**
  * Log a user login.
- * Neon-first with Supabase fallback.
+ * Neon PostgreSQL persistence with Local fallback.
  */
 export const addLoginLog = async (uid) => {
   const id = `ll_${uid}_${Date.now()}`;
@@ -802,19 +568,12 @@ export const addLoginLog = async (uid) => {
   } catch (neonErr) {
     console.warn('[Neon] addLoginLog error:', neonErr.message);
   }
-  // 2. Supabase fallback
-  if (!supabase) return;
-  try {
-    const { error } = await supabase.from('login_logs').insert({ user_id: uid, logged_at: new Date().toISOString() });
-    if (error) console.warn('[Supabase] Failed to log user login:', error.message || error);
-  } catch (err) {
-    console.warn('[Supabase] Network error during addLoginLog:', err.message || err);
-  }
+
 };
 
 /**
  * Fetch login logs for a user.
- * Neon-first with Supabase fallback.
+ * Neon PostgreSQL persistence with Local fallback.
  */
 export const getLoginLogs = async (uid) => {
   const mapRow = row => ({ id: row.id, userId: row.user_id, loggedAt: row.logged_at });
@@ -832,22 +591,12 @@ export const getLoginLogs = async (uid) => {
   } catch (neonErr) {
     console.warn('[Neon] getLoginLogs error:', neonErr.message);
   }
-  // 2. Supabase fallback
-  if (!supabase) return [];
-  try {
-    const { data, error } = await supabase
-      .from('login_logs').select('*').eq('user_id', uid).order('logged_at', { ascending: false });
-    if (error || !data) return [];
-    return data.map(mapRow);
-  } catch (err) {
-    console.warn('[Supabase] Network error during getLoginLogs:', err.message || err);
-    return [];
-  }
+
 };
 
 /**
  * Fetch progress cards deltas since a timestamp.
- * Neon-first with Supabase fallback.
+ * Neon PostgreSQL persistence with Local fallback.
  */
 export const getProgressDeltas = async (uid, sinceTimestamp) => {
   const mapRow = row => ({
@@ -879,45 +628,21 @@ export const getProgressDeltas = async (uid, sinceTimestamp) => {
     console.warn('[Neon] getProgressDeltas error:', neonErr.message);
   }
 
-  // 2. Supabase fallback
-  if (!supabase) return {};
-  try {
-    let query = supabase.from('progress').select('*').eq('user_id', uid);
-    if (sinceTimestamp) query = query.gt('updated_at', sinceTimestamp);
-    const { data, error } = await query;
-    if (error || !data) return null;
-    const result = {};
-    data.forEach(row => { result[row.question_id] = mapRow(row); });
-    return result;
-  } catch (err) {
-    console.warn('[Supabase] Network error during getProgressDeltas:', err.message || err);
-    return null;
-  }
+
 };
 
 /**
  * Synchronize missing auth users with Neon profiles (Admin only).
- * Falls back to Supabase RPC if Neon doesn't have an equivalent.
+ * Neon profile synchronization stub.
  */
-export const syncStudentsWithSupabase = async () => {
-  // Neon doesn't have an RPC equivalent — this is a Supabase-specific migration tool.
-  if (!supabase) return { success: true, synchronized_count: 0, note: 'Neon-native — no sync needed' };
-  try {
-    const { data, error } = await supabase.rpc('sync_auth_users_to_profiles');
-    if (error) {
-      console.warn('[Supabase] Failed to synchronize students:', error.message || error);
-      return { success: false, synchronized_count: 0 };
-    }
-    return data;
-  } catch (err) {
-    console.warn('[Supabase] Network error during syncStudentsWithSupabase:', err.message || err);
-    return { success: false, synchronized_count: 0 };
-  }
+export const syncStudentsWithNeon = async () => {
+  return { success: true, synchronized_count: 0, note: 'Neon-native — no sync needed' };
 };
+export const syncStudentsWithSupabase = syncStudentsWithNeon;
 
 /**
  * Log a document/report download.
- * Neon-first with Supabase fallback.
+ * Neon PostgreSQL persistence with Local fallback.
  */
 export const logUserDownload = async (uid, downloadData) => {
   // 1. Try Neon — [FIX] Added Authorization header via neonAuthFetch
@@ -939,19 +664,5 @@ export const logUserDownload = async (uid, downloadData) => {
     console.warn('[Neon] logUserDownload error:', neonErr.message);
   }
 
-  // 2. Supabase fallback
-  if (!supabase) return;
-  try {
-    const { data, error: fetchErr } = await supabase
-      .from('profiles').select('downloads').eq('id', uid).maybeSingle();
-    if (fetchErr) { console.warn('[Supabase] Failed to fetch downloads:', fetchErr.message); return; }
-    const currentDownloads = Array.isArray(data?.downloads) ? data.downloads : [];
-    const newEntry = { ...downloadData, downloadedAt: new Date().toISOString() };
-    const updatedDownloads = [newEntry, ...currentDownloads].slice(0, 100);
-    const { error: updateErr } = await supabase
-      .from('profiles').update({ downloads: updatedDownloads }).eq('id', uid);
-    if (updateErr) console.warn('[Supabase] Failed to log download:', updateErr.message);
-  } catch (err) {
-    console.warn('[Supabase] Exception logging download:', err.message || err);
-  }
+
 };

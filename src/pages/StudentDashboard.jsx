@@ -26,6 +26,7 @@ export default function StudentDashboard() {
     trackDownload,
     loadExamQuestions,
     loading: authLoading,
+    neonEnabled,
     supabaseEnabled,
     schoolBranding
   } = useAuth();
@@ -166,7 +167,7 @@ export default function StudentDashboard() {
       let exam = exams.find(e => e.id === item.examId);
       
       // Try to load exam from database if not in active in-memory list
-      if (!exam && supabaseEnabled && item.examId) {
+      if (!exam && (neonEnabled || supabaseEnabled) && item.examId) {
         try {
           const { getExamById } = await import('../services/examService');
           exam = await getExamById(item.examId);
@@ -300,7 +301,7 @@ const wrongPenalty = Math.abs(rules.wrong || 0.25);
         try { win.close(); } catch { /* The print window may already be closed. */ }
       }
     }
-  }, [exams, profName, profPhone, profSite, loadExamQuestions, trackDownload, schoolBranding, supabaseEnabled]);
+  }, [exams, profName, profPhone, profSite, loadExamQuestions, trackDownload, schoolBranding, neonEnabled, supabaseEnabled]);
 
   const onNavigateToLevels = useCallback(() => navigate('/levels'), [navigate]);
   const onNavigateToScanner = useCallback(() => navigate('/scanner'), [navigate]);

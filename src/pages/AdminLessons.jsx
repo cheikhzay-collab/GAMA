@@ -608,7 +608,7 @@ ${sectionsContentText}
             <button
               onClick={() => fetchLessonsList(true)}
               disabled={isRefreshing}
-              title="Synchroniser immédiatement avec la base de données Supabase"
+              title="Synchroniser immédiatement avec la base de données Neon PostgreSQL"
               style={{
                 display: 'flex',
                 alignItems: 'center',

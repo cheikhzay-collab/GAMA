@@ -1,7 +1,6 @@
 // src/services/classService.js
 // Service for managing school classes and student assignments with SWR caching & fail-safe persistence.
 
-import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
 import initialClassesData from '../../data/classes.json';
@@ -105,23 +104,6 @@ export const getAllClasses = async (options = {}) => {
       console.warn('[Neon] getAllClasses error:', neonErr.message);
     }
 
-    // 2. Try Supabase
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('classes')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (!error && Array.isArray(data) && data.length > 0) {
-          const mapped = data.map(normalizeClass);
-          saveLocalStorageClasses(mapped);
-          return mapped;
-        }
-      } catch (err) {
-        console.warn('[Supabase] Failed to fetch classes:', err);
-      }
-    }
 
     // 2. Try LocalDB companion server
     // NOTE: LocalDB returns classes in camelCase (as saved), so normalizeClass handles both.
@@ -248,26 +230,7 @@ export const addClass = async (classData) => {
     updated_at: now
   }).catch(err => console.warn('[Neon] Could not sync addClass to Neon:', err.message));
 
-  // 4. Supabase (fire-and-forget)
-  if (supabase) {
-    supabase.from('classes').upsert({
-      id,
-      name: classData.name,
-      level: classData.level,
-      student_count: newClass.studentCount,
-      students: newClass.students,
-      competitions: newClass.competitions,
-      competition_grades: newClass.competitionGrades,
-      controls: newClass.controls,
-      grades: newClass.grades,
-      homework: newClass.homework,
-      language: newClass.language,
-      program: newClass.program,
-      updated_at: now
-    }).then(({ error }) => {
-      if (error) console.warn('[Supabase] Could not sync addClass to Supabase:', error.message);
-    });
-  }
+
 
   return id;
 };
@@ -349,12 +312,7 @@ export const updateClass = async (classId, updates) => {
     console.warn('[LocalDB] Could not sync updateClass to Companion server:', err.message);
   });
 
-  // 5. Supabase (non-blocking secondary cloud sync)
-  if (supabase) {
-    supabase.from('classes').update(dbUpdates).eq('id', classId).then(({ error }) => {
-      if (error) console.warn('[Supabase] Could not sync updateClass to Supabase:', error.message);
-    }).catch(err => console.warn('[Supabase] updateClass network warning:', err?.message));
-  }
+
 
   return classId;
 };
@@ -431,12 +389,7 @@ export const deleteClass = async (classId) => {
     console.warn('[Neon] Could not sync deleteClass to Neon:', err.message);
   });
 
-  // 4. Supabase (fire-and-forget)
-  if (supabase) {
-    supabase.from('classes').delete().eq('id', classId).then(({ error }) => {
-      if (error) console.warn('[Supabase] Could not sync deleteClass to Supabase:', error.message);
-    });
-  }
+
 
   return true;
 };

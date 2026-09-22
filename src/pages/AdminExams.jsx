@@ -98,7 +98,7 @@ export default function AdminExams() {
   const [downloadingOmrId, setDownloadingOmrId] = useState(null);
   const [syncSuccessMsg, setSyncSuccessMsg] = useState('');
 
-  // Auto-refresh from Supabase on mount
+  // Auto-refresh from Neon Cloud DB on mount
   useEffect(() => {
     if (refreshExams) {
       refreshExams({ forceRefresh: true });
@@ -482,7 +482,7 @@ export default function AdminExams() {
           <button
             onClick={handleManualSync}
             disabled={isRefreshingExams}
-            title="Synchroniser immédiatement avec la base de données Supabase"
+            title="Synchroniser immédiatement avec la base de données Neon PostgreSQL"
             style={{
               flex: isMobile ? 1 : 'none',
               display: 'flex',

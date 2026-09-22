@@ -118,7 +118,7 @@ function getAuthUser(req) {
       return verified;
     }
 
-    // Support Supabase / external tokens if they carry valid role
+    // Support external / legacy tokens if they carry valid role
     try {
       const parts = token.split('.');
       if (parts.length === 3) {

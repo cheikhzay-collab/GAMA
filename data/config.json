@@ -125,12 +125,12 @@
     "profName": "zayani Mohammed",
     "profSite": "www.lconq.ma",
     "fbPixelId": "",
-    "profEmail": "cheikh.zay@gmail.com",
+    "profEmail": "",
     "profPhone": "+212708072844",
-    "profSchool": "18 NOVEMBRE",
-    "profAcademy": "Fès-Meknès",
+    "profSchool": "18 NOVE",
+    "profAcademy": "",
     "profSubject": "Mathématiques",
-    "profDirection": "Moulay Yaâcoub",
+    "profDirection": "",
     "bankBeneficiary": "L'CONQ SARL",
     "profAcademicYear": "2025/2026"
   },
@@ -149,11 +149,11 @@
   "logbook_style_settings": {
     "arFont": "UKIJ Merdane",
     "frFont": "Inter",
-    "fontSize": "0.9rem",
-    "lineHeight": 20,
     "colorInk": "#334155",
-    "colorChapter": "#243f7f",
+    "fontSize": "0.9rem",
     "colorAxis": "#0639a7",
+    "lineHeight": 20,
+    "colorChapter": "#243f7f",
     "colorExercise": "#d97706"
   },
   "logbook_entries": [
@@ -349,7 +349,7 @@
     "pdfFontSize": "11pt",
     "pdfFontFamily": "Computer Modern Serif",
     "pdfPageMargins": "standard",
-    "pdfShowSidebar": true,
+    "pdfShowSidebar": false,
     "pdfTemplateStyle": "classic_latex",
     "pdfAvoidPageBreaks": true,
     "pdfForcePrintColors": true
@@ -372,7 +372,7 @@
     "scannerDirectCapture": true
   },
   "whatsapp_settings": {
-    "enabled": true,
+    "enabled": false,
     "message": "Bonjour, j'ai une question concernant la plateforme Gima.",
     "position": "right",
     "phoneNumber": "",

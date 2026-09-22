@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
 import { neonGet } from '../lib/neon';
 import { generateSubjectHTML, generateCorrectionHTML } from '../utils/generateExamPDF';
 
@@ -55,14 +54,6 @@ export default function PrintView() {
           if (res.data) examData = res.data;
         } catch (_) {}
 
-        if (!examData && supabase) {
-          const { data } = await supabase
-            .from('exams')
-            .select('*')
-            .eq('id', examId)
-            .maybeSingle();
-          if (data) examData = data;
-        }
 
         if (!examData) {
           throw new Error('Examen introuvable');

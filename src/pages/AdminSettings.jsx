@@ -122,7 +122,7 @@ export default function AdminSettings() {
   const [showOpenaiKey, setShowOpenaiKey] = useState(false);
   const [openaiKeySaved, setOpenaiKeySaved] = useState(false);
 
-  // Charger les paramètres IA distants depuis Supabase (config table) au montage
+  // Charger les paramètres IA distants depuis Neon Cloud DB (config table) au montage
   useEffect(() => {
     getAiSettingsConfig().then(remoteSettings => {
       if (remoteSettings && typeof remoteSettings === 'object') {
@@ -705,7 +705,7 @@ export default function AdminSettings() {
       localStorage.setItem('logbook_color_axis', logbookColorAxis);
       localStorage.setItem('logbook_color_exercise', logbookColorExercise);
 
-      // Persist to Cloud Database (Neon PostgreSQL, Supabase & Companion DB)
+      // Persist to Cloud Database (Neon PostgreSQL & Companion DB)
       await Promise.allSettled([
         saveTeacherScheduleConfig(logbookSchedule),
         saveSchoolHolidaysConfig(logbookHolidays),

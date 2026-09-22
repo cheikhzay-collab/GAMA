@@ -544,7 +544,7 @@ export default function AdminLogbook() {
       localStorage.setItem('logbook_color_exercise', tempColorExercise);
       setColorExercise(tempColorExercise);
 
-      // Persist to Cloud Database (Neon PostgreSQL, Supabase & Companion DB)
+      // Persist to Cloud Database (Neon PostgreSQL & Companion DB)
       await Promise.allSettled([
         saveTeacherScheduleConfig(tempSchedule),
         saveSchoolHolidaysConfig(tempHolidays),
@@ -724,7 +724,7 @@ export default function AdminLogbook() {
       console.error("Error loading schedule settings from cache:", e);
     }
 
-    // Fetch latest data from Cloud Database (Neon / Supabase)
+    // Fetch latest data from Cloud Database (Neon PostgreSQL)
     const syncFromCloud = async () => {
       try {
         const [cloudSched, cloudHols, cloudAbs, cloudStyle] = await Promise.all([

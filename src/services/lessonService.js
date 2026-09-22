@@ -2,7 +2,6 @@
 // High-performance resilient CRUD for lessons with SWR caching and direct single-lesson fetching.
 // Supabase -> Local Companion API -> LocalStorage -> Seed Fallback.
 
-import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
 import { neonSaveLesson, neonDeleteLesson, neonList, neonGet } from '../lib/neon';
@@ -277,33 +276,7 @@ export const getAllLessons = async (options = {}) => {
       console.warn('[Neon] getAllLessons error:', neonErr.message);
     }
 
-    // 2. Try Supabase metadata view (ultra-fast projection, excludes heavy content jsonb)
-    if (supabase) {
-      try {
-        let { data, error } = await supabase
-          .from('lessons_metadata')
-          .select('*')
-          .order('created_at', { ascending: false });
 
-        if (error || !data) {
-          // Fallback to lessons table with lightweight columns
-          const fallback = await supabase
-            .from('lessons')
-            .select('id, title, subject, chapter_number, teacher, phone, schools, level, doc_type, is_active, is_archived, created_at, updated_at')
-            .order('created_at', { ascending: false });
-          data = fallback.data;
-          error = fallback.error;
-        }
-
-        if (!error && Array.isArray(data) && data.length > 0) {
-          const mapped = data.map(mapDBToLesson);
-          saveLocalStorageLessons(mapped);
-          return mapped;
-        }
-      } catch (err) {
-        console.warn('[Supabase] Failed to fetch lessons:', err);
-      }
-    }
 
     // 3. Try Local Companion DB API (port 5002)
     try {
@@ -380,44 +353,11 @@ export const getLessonById = async (lessonId, options = {}) => {
       if (neonRes && neonRes.data) {
         const mapped = mapDBToLesson(neonRes.data);
         if (mapped) {
-          // If sections are missing or empty in Neon, check Supabase fallback to self-heal
-          if ((!mapped.content?.sections || mapped.content.sections.length === 0) && supabase) {
-            try {
-              const { data: sbData } = await supabase
-                .from('lessons')
-                .select('*')
-                .eq('id', lessonId)
-                .maybeSingle();
-              if (sbData && sbData.content?.sections && sbData.content.sections.length > 0) {
-                const healed = mapDBToLesson(sbData);
-                // Background self-heal Neon
-                neonSaveLesson(mapLessonToDB({ ...healed, id: lessonId })).catch(() => {});
-                return healed;
-              }
-            } catch (_) {}
-          }
           return mapped;
         }
       }
     } catch (neonErr) {
       console.warn(`[Neon] Failed to fetch single lesson ${lessonId}:`, neonErr.message);
-    }
-
-    // 2. Try direct Supabase single query
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('lessons')
-          .select('*')
-          .eq('id', lessonId)
-          .maybeSingle();
-
-        if (!error && data) {
-          return mapDBToLesson(data);
-        }
-      } catch (err) {
-        console.warn(`[Supabase] Failed to fetch single lesson ${lessonId}:`, err);
-      }
     }
 
     // 3. Try Companion API
@@ -497,16 +437,7 @@ export const addLesson = async (lessonData) => {
     console.warn('[LocalDB] Could not sync addLesson to companion:', err.message);
   }
 
-  // 4. Supabase (Legacy non-blocking background sync)
-  if (supabase) {
-    try {
-      Promise.resolve(supabase.from('lessons').insert(dbLesson)).catch(err => {
-        console.warn('[Supabase legacy network notice]:', err?.message);
-      });
-    } catch (err) {
-      console.warn('[Supabase legacy sync notice]:', err?.message);
-    }
-  }
+
 
   return id;
 };
@@ -630,20 +561,7 @@ export const updateLesson = async (lessonId, updates) => {
     console.warn('[LocalDB] Could not sync updateLesson:', err.message);
   }
 
-  // 5. Supabase (Legacy non-blocking background sync)
-  if (supabase) {
-    try {
-      Promise.resolve(supabase.from('lessons').update(dbUpdates).eq('id', lessonId))
-        .then(({ error } = {}) => {
-          if (error) console.warn('[Supabase legacy sync notice]:', error.message);
-        })
-        .catch(err => {
-          console.warn('[Supabase legacy network notice]:', err?.message);
-        });
-    } catch (err) {
-      console.warn('[Supabase legacy sync notice]:', err?.message);
-    }
-  }
+
 
   return { 
     success: true, 
@@ -688,13 +606,5 @@ export const deleteLesson = async (lessonId) => {
     console.warn('[Neon] Error syncing deleteLesson:', err);
   }
 
-  // 4. Supabase
-  if (supabase) {
-    try {
-      const { error } = await supabase.from('lessons').delete().eq('id', lessonId);
-      if (error) console.warn('[Supabase] Could not sync deleteLesson:', error.message);
-    } catch (err) {
-      console.warn('[Supabase] deleteLesson network error:', err.message);
-    }
-  }
+
 };

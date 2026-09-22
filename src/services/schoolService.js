@@ -1,8 +1,7 @@
 // src/services/schoolService.js
 // Service for schools list and per-school branding with SWR caching.
-// Supports both Supabase and Local Companion API with graceful network error handling.
+// Supports Neon PostgreSQL and Local Companion API with graceful network error handling.
 
-import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
 import { neonSaveConfig, neonGetConfig } from '../lib/neon';
@@ -37,26 +36,6 @@ export const getSchoolsConfig = async (options = {}) => {
       console.warn('[Neon] getSchoolsConfig error:', neonErr.message);
     }
 
-    // 2. Try Supabase
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('config')
-          .select('value')
-          .eq('key', 'schools')
-          .maybeSingle();
-
-        if (!error && data?.value) {
-          const val = data.value || {};
-          return {
-            schools: val.schools || DEFAULT_SCHOOLS,
-            branding: val.branding || {},
-          };
-        }
-      } catch (err) {
-        console.warn('[Supabase] Failed to fetch schools config:', err.message || err);
-      }
-    }
 
     try {
       const config = await localDb.get('/config');
@@ -88,22 +67,6 @@ export const saveSchoolsConfig = async (schools, branding) => {
     console.warn('[Neon] Error saving schools config:', err);
   }
 
-  if (supabase) {
-    try {
-      const { error } = await supabase
-        .from('config')
-        .upsert({
-          key: 'schools',
-          value: { schools, branding },
-          updated_at: new Date().toISOString(),
-        });
-
-      if (!error) return;
-      console.warn('[Supabase] Failed to save schools config remote:', error.message || error);
-    } catch (err) {
-      console.warn('[Supabase] Network error saving schools config:', err.message || err);
-    }
-  }
 
   try {
     await localDb.post('/config', { schools_config: { schools, branding } });
@@ -127,20 +90,6 @@ export const getBrandingConfig = async (options = {}) => {
       console.warn('[Neon] getBrandingConfig error:', neonErr.message);
     }
 
-    // 2. Try Supabase
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('config')
-          .select('value')
-          .eq('key', 'branding')
-          .maybeSingle();
-
-        if (!error && data) return data.value;
-      } catch (err) {
-        console.warn('[Supabase] Failed to fetch branding config:', err.message || err);
-      }
-    }
 
     try {
       const config = await localDb.get('/config');
@@ -168,22 +117,6 @@ export const saveBrandingConfig = async (branding) => {
     console.warn('[Neon] Error saving branding config:', err);
   }
 
-  if (supabase) {
-    try {
-      const { error } = await supabase
-        .from('config')
-        .upsert({
-          key: 'branding',
-          value: branding,
-          updated_at: new Date().toISOString(),
-        });
-
-      if (!error) return;
-      console.warn('[Supabase] Failed to save branding remote:', error.message || error);
-    } catch (err) {
-      console.warn('[Supabase] Network error saving branding config:', err.message || err);
-    }
-  }
 
   try {
     await localDb.post('/config', { branding });
@@ -199,18 +132,12 @@ export const getFlashcardSettingsConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_flashcard_settings', async () => {
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('config')
-          .select('value')
-          .eq('key', 'flashcard_settings')
-          .maybeSingle();
-
-        if (!error && data) return data.value;
-      } catch (err) {
-        console.warn('[Supabase] Failed to fetch flashcard settings:', err.message || err);
-      }
+    // 1. Try Neon PostgreSQL
+    try {
+      const neonVal = await neonGetConfig('flashcard_settings');
+      if (neonVal !== null && neonVal !== undefined) return neonVal;
+    } catch (neonErr) {
+      console.warn('[Neon] Error fetching flashcard_settings:', neonErr.message);
     }
 
     try {
@@ -239,22 +166,6 @@ export const saveFlashcardSettingsConfig = async (settings) => {
     console.warn('[Neon] Error saving flashcard settings:', err);
   }
 
-  if (supabase) {
-    try {
-      const { error } = await supabase
-        .from('config')
-        .upsert({
-          key: 'flashcard_settings',
-          value: settings,
-          updated_at: new Date().toISOString(),
-        });
-
-      if (!error) return;
-      console.warn('[Supabase] Failed to save flashcard settings remote:', error.message || error);
-    } catch (err) {
-      console.warn('[Supabase] Network error saving flashcard settings:', err.message || err);
-    }
-  }
 
   try {
     await localDb.post('/config', { flashcard_settings: settings });
@@ -270,18 +181,12 @@ export const getPdfSettingsConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_pdf_settings', async () => {
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('config')
-          .select('value')
-          .eq('key', 'pdf_settings')
-          .maybeSingle();
-
-        if (!error && data) return data.value;
-      } catch (err) {
-        console.warn('[Supabase] Failed to fetch PDF settings:', err.message || err);
-      }
+    // 1. Try Neon PostgreSQL
+    try {
+      const neonVal = await neonGetConfig('pdf_settings');
+      if (neonVal !== null && neonVal !== undefined) return neonVal;
+    } catch (neonErr) {
+      console.warn('[Neon] Error fetching pdf_settings:', neonErr.message);
     }
 
     try {
@@ -310,22 +215,6 @@ export const savePdfSettingsConfig = async (settings) => {
     console.warn('[Neon] Error saving PDF settings:', err);
   }
 
-  if (supabase) {
-    try {
-      const { error } = await supabase
-        .from('config')
-        .upsert({
-          key: 'pdf_settings',
-          value: settings,
-          updated_at: new Date().toISOString(),
-        });
-
-      if (!error) return;
-      console.warn('[Supabase] Failed to save PDF settings remote:', error.message || error);
-    } catch (err) {
-      console.warn('[Supabase] Network error saving PDF settings:', err.message || err);
-    }
-  }
 
   try {
     await localDb.post('/config', { pdf_settings: settings });
@@ -341,18 +230,12 @@ export const getOmrScannerSettingsConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_omr_scanner_settings', async () => {
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('config')
-          .select('value')
-          .eq('key', 'omr_scanner_settings')
-          .maybeSingle();
-
-        if (!error && data) return data.value;
-      } catch (err) {
-        console.warn('[Supabase] Failed to fetch OMR scanner settings:', err.message || err);
-      }
+    // 1. Try Neon PostgreSQL
+    try {
+      const neonVal = await neonGetConfig('omr_scanner_settings');
+      if (neonVal !== null && neonVal !== undefined) return neonVal;
+    } catch (neonErr) {
+      console.warn('[Neon] Error fetching omr_scanner_settings:', neonErr.message);
     }
 
     try {
@@ -381,22 +264,6 @@ export const saveOmrScannerSettingsConfig = async (settings) => {
     console.warn('[Neon] Error saving OMR scanner settings:', err);
   }
 
-  if (supabase) {
-    try {
-      const { error } = await supabase
-        .from('config')
-        .upsert({
-          key: 'omr_scanner_settings',
-          value: settings,
-          updated_at: new Date().toISOString(),
-        });
-
-      if (!error) return;
-      console.warn('[Supabase] Failed to save OMR scanner settings remote:', error.message || error);
-    } catch (err) {
-      console.warn('[Supabase] Network error saving OMR scanner settings:', err.message || err);
-    }
-  }
 
   try {
     await localDb.post('/config', { omr_scanner_settings: settings });
@@ -412,18 +279,12 @@ export const getWhatsAppSettingsConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_whatsapp_settings', async () => {
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('config')
-          .select('value')
-          .eq('key', 'whatsapp_settings')
-          .maybeSingle();
-
-        if (!error && data) return data.value;
-      } catch (err) {
-        console.warn('[Supabase] Failed to fetch WhatsApp settings:', err.message || err);
-      }
+    // 1. Try Neon PostgreSQL
+    try {
+      const neonVal = await neonGetConfig('whatsapp_settings');
+      if (neonVal !== null && neonVal !== undefined) return neonVal;
+    } catch (neonErr) {
+      console.warn('[Neon] Error fetching whatsapp_settings:', neonErr.message);
     }
 
     try {
@@ -452,22 +313,6 @@ export const saveWhatsAppSettingsConfig = async (settings) => {
     console.warn('[Neon] Error saving WhatsApp settings:', err);
   }
 
-  if (supabase) {
-    try {
-      const { error } = await supabase
-        .from('config')
-        .upsert({
-          key: 'whatsapp_settings',
-          value: settings,
-          updated_at: new Date().toISOString(),
-        });
-
-      if (!error) return;
-      console.warn('[Supabase] Failed to save WhatsApp settings remote:', error.message || error);
-    } catch (err) {
-      console.warn('[Supabase] Network error saving WhatsApp settings:', err.message || err);
-    }
-  }
 
   try {
     await localDb.post('/config', { whatsapp_settings: settings });
@@ -483,18 +328,12 @@ export const getPlansConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_plans', async () => {
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('config')
-          .select('value')
-          .eq('key', 'plans')
-          .maybeSingle();
-
-        if (!error && data && Array.isArray(data.value)) return data.value;
-      } catch (err) {
-        console.warn('[Supabase] Failed to fetch plans config:', err.message || err);
-      }
+    // 1. Try Neon PostgreSQL
+    try {
+      const neonVal = await neonGetConfig('plans');
+      if (neonVal !== null && neonVal !== undefined) return neonVal;
+    } catch (neonErr) {
+      console.warn('[Neon] Error fetching plans:', neonErr.message);
     }
 
     try {
@@ -525,22 +364,6 @@ export const savePlansConfig = async (plans) => {
     console.warn('[Neon] Error saving plans config:', err);
   }
 
-  if (supabase) {
-    try {
-      const { error } = await supabase
-        .from('config')
-        .upsert({
-          key: 'plans',
-          value: plans,
-          updated_at: new Date().toISOString(),
-        });
-
-      if (!error) return;
-      console.warn('[Supabase] Failed to save plans remote:', error.message || error);
-    } catch (err) {
-      console.warn('[Supabase] Network error saving plans config:', err.message || err);
-    }
-  }
 
   try {
     await localDb.post('/config', { plans });
@@ -558,18 +381,12 @@ export const getLandingArConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_landing_ar', async () => {
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('config')
-          .select('value')
-          .eq('key', 'landing_ar_settings')
-          .maybeSingle();
-
-        if (!error && data) return data.value;
-      } catch (err) {
-        console.warn('[Supabase] Failed to fetch landing AR settings:', err.message || err);
-      }
+    // 1. Try Neon PostgreSQL
+    try {
+      const neonVal = await neonGetConfig('landing_ar_settings');
+      if (neonVal !== null && neonVal !== undefined) return neonVal;
+    } catch (neonErr) {
+      console.warn('[Neon] Error fetching landing_ar_settings:', neonErr.message);
     }
 
     try {
@@ -598,22 +415,6 @@ export const saveLandingArConfig = async (landingConfig) => {
     console.warn('[Neon] Error saving landing AR config:', err);
   }
 
-  if (supabase) {
-    try {
-      const { error } = await supabase
-        .from('config')
-        .upsert({
-          key: 'landing_ar_settings',
-          value: landingConfig,
-          updated_at: new Date().toISOString(),
-        });
-
-      if (!error) return;
-      console.warn('[Supabase] Failed to save landing AR settings remote:', error.message || error);
-    } catch (err) {
-      console.warn('[Supabase] Network error saving landing AR settings:', err.message || err);
-    }
-  }
 
   try {
     await localDb.post('/config', { landing_ar_settings: landingConfig });
@@ -629,18 +430,12 @@ export const getAiSettingsConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_ai_settings', async () => {
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('config')
-          .select('value')
-          .eq('key', 'ai_settings')
-          .maybeSingle();
-
-        if (!error && data?.value) return data.value;
-      } catch (err) {
-        console.warn('[Supabase] Failed to fetch AI settings:', err.message || err);
-      }
+    // 1. Try Neon PostgreSQL
+    try {
+      const neonVal = await neonGetConfig('ai_settings');
+      if (neonVal !== null && neonVal !== undefined) return neonVal;
+    } catch (neonErr) {
+      console.warn('[Neon] Error fetching ai_settings:', neonErr.message);
     }
 
     try {
@@ -657,7 +452,7 @@ export const getAiSettingsConfig = async (options = {}) => {
 };
 
 /**
- * Save AI Engine & API Keys settings to Supabase config table.
+ * Save AI Engine & API Keys settings to Neon PostgreSQL config table.
  */
 export const saveAiSettingsConfig = async (settings) => {
   queryCache.invalidate('config_ai_settings');
@@ -669,22 +464,6 @@ export const saveAiSettingsConfig = async (settings) => {
     console.warn('[Neon] Error saving AI settings:', err);
   }
 
-  if (supabase) {
-    try {
-      const { error } = await supabase
-        .from('config')
-        .upsert({
-          key: 'ai_settings',
-          value: settings,
-          updated_at: new Date().toISOString(),
-        });
-
-      if (!error) return;
-      console.warn('[Supabase] Failed to save AI settings remote:', error.message || error);
-    } catch (err) {
-      console.warn('[Supabase] Network error saving AI settings:', err.message || err);
-    }
-  }
 
   try {
     await localDb.post('/config', { ai_settings: settings });
@@ -711,23 +490,6 @@ export const getSchoolHolidaysConfig = async (options = {}) => {
       console.warn('[Neon] getSchoolHolidaysConfig error:', neonErr.message);
     }
 
-    // 2. Supabase
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('config')
-          .select('value')
-          .eq('key', 'school_holidays')
-          .maybeSingle();
-
-        if (!error && Array.isArray(data?.value) && data.value.length > 0) {
-          try { localStorage.setItem('school_holidays', JSON.stringify(data.value)); } catch (_) {}
-          return data.value;
-        }
-      } catch (err) {
-        console.warn('[Supabase] Failed to fetch school holidays:', err.message || err);
-      }
-    }
 
     // 3. Companion DB (Local Database)
     try {
@@ -854,7 +616,7 @@ export const getOfficialMoroccanHolidays = (academicYear = '2026-2027') => {
 };
 
 /**
- * Save School Holidays to Cloud DB (Neon + Supabase) and LocalStorage.
+ * Save School Holidays to Cloud DB (Neon PostgreSQL) and LocalStorage.
  */
 export const saveSchoolHolidaysConfig = async (holidays) => {
   try { localStorage.setItem('school_holidays', JSON.stringify(holidays)); } catch (_) {}
@@ -874,21 +636,6 @@ export const saveSchoolHolidaysConfig = async (holidays) => {
     })
   );
 
-  // 2. Sync to Supabase
-  if (supabase) {
-    tasks.push(
-      supabase
-        .from('config')
-        .upsert({
-          key: 'school_holidays',
-          value: holidays,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'key' })
-        .catch(err => {
-          console.warn('[Supabase] Error saving school holidays:', err);
-        })
-    );
-  }
 
   // 3. Companion DB
   tasks.push(
@@ -917,23 +664,6 @@ export const getTeacherAbsencesConfig = async (options = {}) => {
       console.warn('[Neon] getTeacherAbsencesConfig error:', neonErr.message);
     }
 
-    // 2. Supabase
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('config')
-          .select('value')
-          .eq('key', 'teacher_absences')
-          .maybeSingle();
-
-        if (!error && Array.isArray(data?.value) && data.value.length > 0) {
-          try { localStorage.setItem('teacher_absences', JSON.stringify(data.value)); } catch (_) {}
-          return data.value;
-        }
-      } catch (err) {
-        console.warn('[Supabase] Failed to fetch teacher absences:', err.message || err);
-      }
-    }
 
     // 3. Companion DB (Local Database)
     try {
@@ -979,21 +709,6 @@ export const saveTeacherAbsencesConfig = async (absences) => {
     })
   );
 
-  // 2. Sync to Supabase
-  if (supabase) {
-    tasks.push(
-      supabase
-        .from('config')
-        .upsert({
-          key: 'teacher_absences',
-          value: absences,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'key' })
-        .catch(err => {
-          console.warn('[Supabase] Error saving teacher absences:', err);
-        })
-    );
-  }
 
   // 3. Companion DB
   tasks.push(
@@ -1032,22 +747,6 @@ export const getTeacherScheduleConfig = async (options = {}) => {
       console.warn('[Neon] getTeacherScheduleConfig error:', neonErr.message);
     }
 
-    // 2. Supabase
-    if (!cloudVal && supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('config')
-          .select('value')
-          .eq('key', 'teacher_schedule_current')
-          .maybeSingle();
-
-        if (!error && data?.value && typeof data.value === 'object' && Object.keys(data.value).length > 0) {
-          cloudVal = data.value;
-        }
-      } catch (err) {
-        console.warn('[Supabase] Failed to fetch teacher schedule:', err.message || err);
-      }
-    }
 
     // 3. Companion DB (Local Database)
     if (!cloudVal) {
@@ -1108,21 +807,6 @@ export const saveTeacherScheduleConfig = async (schedule) => {
     })
   );
 
-  // 2. Sync to Supabase
-  if (supabase) {
-    tasks.push(
-      supabase
-        .from('config')
-        .upsert({
-          key: 'teacher_schedule_current',
-          value: schedule,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'key' })
-        .catch(err => {
-          console.warn('[Supabase] Error saving teacher schedule:', err);
-        })
-    );
-  }
 
   // 3. Companion DB
   tasks.push(
@@ -1150,20 +834,6 @@ export const getLogbookStyleConfig = async (options = {}) => {
       console.warn('[Neon] getLogbookStyleConfig error:', neonErr.message);
     }
 
-    // 2. Supabase
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('config')
-          .select('value')
-          .eq('key', 'logbook_style_settings')
-          .maybeSingle();
-
-        if (!error && data?.value) return data.value;
-      } catch (err) {
-        console.warn('[Supabase] Failed to fetch logbook style config:', err.message || err);
-      }
-    }
 
     // 3. Companion DB (Local Database)
     try {
@@ -1226,21 +896,6 @@ export const saveLogbookStyleConfig = async (settings) => {
     })
   );
 
-  // 2. Sync to Supabase
-  if (supabase) {
-    tasks.push(
-      supabase
-        .from('config')
-        .upsert({
-          key: 'logbook_style_settings',
-          value: settings,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'key' })
-        .catch(err => {
-          console.warn('[Supabase] Error saving logbook style settings:', err);
-        })
-    );
-  }
 
   // 3. Companion DB
   tasks.push(
@@ -1268,20 +923,6 @@ export const getClassesSettingsConfig = async (options = {}) => {
       console.warn('[Neon] getClassesSettingsConfig error:', neonErr.message);
     }
 
-    // 2. Supabase
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('config')
-          .select('value')
-          .eq('key', 'classes_settings')
-          .maybeSingle();
-
-        if (!error && data?.value) return data.value;
-      } catch (err) {
-        console.warn('[Supabase] Failed to fetch classes settings:', err.message || err);
-      }
-    }
 
     // 3. LocalStorage fallback
     try {
@@ -1311,20 +952,6 @@ export const saveClassesSettingsConfig = async (settings) => {
     console.warn('[Neon] Error saving classes settings:', err);
   }
 
-  // 2. Sync to Supabase
-  if (supabase) {
-    try {
-      await supabase
-        .from('config')
-        .upsert({
-          key: 'classes_settings',
-          value: settings,
-          updated_at: new Date().toISOString(),
-        });
-    } catch (err) {
-      console.warn('[Supabase] Error saving classes settings:', err);
-    }
-  }
 
   // 3. Companion DB
   try {
@@ -1334,7 +961,7 @@ export const saveClassesSettingsConfig = async (settings) => {
 
 /**
  * Master Bidirectional Synchronization for Schedule & All System Settings
- * Synchronizes Neon PostgreSQL, Supabase, and LocalStorage / Companion DB in one unified operation.
+ * Synchronizes Neon PostgreSQL and LocalStorage / Companion DB in one unified operation.
  */
 export const syncAllConfigsAndSchedule = async () => {
   const syncResults = {
@@ -1357,7 +984,7 @@ export const syncAllConfigsAndSchedule = async () => {
       getWhatsAppSettingsConfig({ forceRefresh: true })
     ]);
 
-    // 2. Save & mirror to Supabase and Companion DB
+    // 2. Save & mirror to Companion DB
     if (cloudSched.status === 'fulfilled' && cloudSched.value) {
       await saveTeacherScheduleConfig(cloudSched.value);
       syncResults.scheduleSlots = Object.keys(cloudSched.value).length;

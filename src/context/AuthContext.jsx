@@ -1,19 +1,17 @@
 import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
 import { onAuthChange, loginWithEmail, logoutUser, registerStudent, loginWithGoogle, getCurrentSessionUser } from '../services/authService';
-import { getUserDoc, createUserDoc, updateUserDoc, saveQuestionProgress, getProgressDeltas, saveMockResult, getMockHistory, incrementDailyActivity, getRecentActivity, getAllUsers, setUserSubscription, getLeaderboard, addLoginLog, syncStudentsWithSupabase, logUserDownload } from '../services/userService';
+import { getUserDoc, createUserDoc, updateUserDoc, deleteUser, saveQuestionProgress, getProgressDeltas, saveMockResult, getMockHistory, incrementDailyActivity, getRecentActivity, getAllUsers, setUserSubscription, getLeaderboard, addLoginLog, logUserDownload } from '../services/userService';
 import { getAllExams, addExam as dbAddExam, updateExam as dbUpdateExam, deleteExam as dbDeleteExam, toggleExamStatus as dbToggleExamStatus, toggleArchiveExam as dbToggleArchiveExam, getExamQuestionsOnly } from '../services/examService';
 import { getSchoolsConfig, saveSchoolsConfig, getBrandingConfig, saveBrandingConfig, getFlashcardSettingsConfig, saveFlashcardSettingsConfig, getPdfSettingsConfig, savePdfSettingsConfig, getOmrScannerSettingsConfig, saveOmrScannerSettingsConfig, getWhatsAppSettingsConfig, saveWhatsAppSettingsConfig, getPlansConfig, savePlansConfig } from '../services/schoolService';
 
 import { sanitizeInputString, validatePhoneNumber } from '../utils/security';
 import { mapLegacySchoolToLevel } from '../utils/levelHelpers';
-import { supabase } from '../lib/supabase';
 
 
 
-// ── Supabase availability guard ───────────────────────────────────────────────
-// If VITE_SUPABASE_URL is not set (e.g. local dev without .env.local),
-// the app falls back gracefully to localStorage-only mode.
-const SUPABASE_ENABLED = !!import.meta.env.VITE_SUPABASE_URL;
+// ── Neon PostgreSQL Cloud DB availability guard ───────────────────────────────
+const NEON_ENABLED = true; // Neon PostgreSQL Cloud DB is active
+const SUPABASE_ENABLED = NEON_ENABLED; // Backward-compatibility alias
 
 const safeSetItem = (key, value) => {
   try {
@@ -313,7 +311,7 @@ const computeStudentStats = (exams, progress, leaderboard, user) => {
   let rank;
   const userXp = user?.xp || 0;
 
-  if (SUPABASE_ENABLED && leaderboard && leaderboard.length > 0) {
+  if (NEON_ENABLED && leaderboard && leaderboard.length > 0) {
     totalStudents = leaderboard.length;
     const userIndex = leaderboard.findIndex(u => u.name === user?.name || u.email === user?.email);
     if (userIndex !== -1) {
@@ -344,8 +342,8 @@ export function AuthProvider({ children }) {
     return saved ? JSON.parse(saved) : null;
   });
   const [upgradedPlan, setUpgradedPlan] = useState(null);
-  // Initialize loading to true if Supabase is enabled so we can check and verify the session first
-  const [loading, setLoading] = useState(SUPABASE_ENABLED);
+  // Initialize loading to true if Neon is enabled so we can check and verify the session first
+  const [loading, setLoading] = useState(NEON_ENABLED);
   const [isOnline, setIsOnline] = useState(() => navigator.onLine);
 
   // Progress state for SRS: { [questionId]: { difficulty, stability, repetitions, easeFactor, lastReviewDate, nextReviewDate } }
@@ -532,7 +530,7 @@ export function AuthProvider({ children }) {
       import('../utils/facebookPixel').then(m => m.initFacebookPixel());
     }
 
-    if (SUPABASE_ENABLED) {
+    if (NEON_ENABLED) {
       try {
         await saveBrandingConfig({
           profName: name,
@@ -552,17 +550,17 @@ export function AuthProvider({ children }) {
           fbPixelId: pixelId
         });
       } catch (e) {
-        console.error('[Supabase] Failed to save branding config:', e);
+        console.error('[Neon] Failed to save branding config:', e);
       }
     }
   };
 
   const updateFlashcardSettingsConfig = async (settings) => {
-    if (SUPABASE_ENABLED) {
+    if (NEON_ENABLED) {
       try {
         await saveFlashcardSettingsConfig(settings);
       } catch (e) {
-        console.error('[Supabase] Failed to save flashcard settings config:', e);
+        console.error('[Neon] Failed to save flashcard settings config:', e);
       }
     }
     localStorage.setItem('card_reveal_mode', settings.cardRevealMode);
@@ -577,11 +575,11 @@ export function AuthProvider({ children }) {
   };
 
   const updatePdfSettingsConfig = async (settings) => {
-    if (SUPABASE_ENABLED) {
+    if (NEON_ENABLED) {
       try {
         await savePdfSettingsConfig(settings);
       } catch (e) {
-        console.error('[Supabase] Failed to save PDF settings config:', e);
+        console.error('[Neon] Failed to save PDF settings config:', e);
       }
     }
     localStorage.setItem('pdf_page_margins', settings.pdfPageMargins);
@@ -594,11 +592,11 @@ export function AuthProvider({ children }) {
   };
 
   const updateOmrScannerSettingsConfig = async (settings) => {
-    if (SUPABASE_ENABLED) {
+    if (NEON_ENABLED) {
       try {
         await saveOmrScannerSettingsConfig(settings);
       } catch (e) {
-        console.error('[Supabase] Failed to save OMR scanner settings config:', e);
+        console.error('[Neon] Failed to save OMR scanner settings config:', e);
       }
     }
     localStorage.setItem('scanner_direct_capture_enabled', settings.scannerDirectCapture ? 'true' : 'false');
@@ -629,42 +627,18 @@ export function AuthProvider({ children }) {
     setWhatsappSettings(settings);
     localStorage.setItem('whatsappSettings', JSON.stringify(settings));
 
-    if (SUPABASE_ENABLED) {
+    if (NEON_ENABLED) {
       try {
         await saveWhatsAppSettingsConfig(settings);
       } catch (e) {
-        console.error('[Supabase] Failed to save WhatsApp settings config:', e);
+        console.error('[Neon] Failed to save WhatsApp settings config:', e);
       }
     }
   };
 
-  // ── Supabase Auth listener ───────────────────────────────────────────────
-  // Stays in sync with Supabase Auth state changes (login, logout, token refresh).
-  // On sign-in, enriches the local user state with database profile data.
+  // ── Neon PostgreSQL Auth listener ──────────────────────────────────────────
   useEffect(() => {
-    if (!SUPABASE_ENABLED) {
-      setTimeout(() => setLoading(false), 0);
-      return;
-    }
-
     let active = true;
-
-    // Safety net: force loading to false if auth doesn't resolve within 3 seconds
-    const safetyTimeout = setTimeout(() => {
-      console.warn('[Auth] Auth state resolution timed out. Forcing loading screen dismissal.');
-      if (active) {
-        // Offline fallback: restore from cached user if we haven't loaded yet
-        const cached = localStorage.getItem('user');
-        if (cached) {
-          try {
-            setUser(JSON.parse(cached));
-          } catch (err) {
-            console.warn('[Auth] Failed to parse cached user on timeout:', err);
-          }
-        }
-        setLoading(false);
-      }
-    }, 8000);
 
     const initializeAuthAndListen = async () => {
       try {
@@ -676,220 +650,43 @@ export function AuthProvider({ children }) {
           return;
         }
 
-        if (!supabase) {
-          if (active) setLoading(false);
-          return;
-        }
-
-        // 2. Fallback to Supabase if present
-        const { data: { user: serverUser }, error: sessionErr } = await supabase.auth.getUser();
-        
-        if (sessionErr) {
-          // If the session is missing, check if we have a locally cached user
-          if (sessionErr.message === 'Auth session missing!') {
-            if (active) {
-              // FIX: If we have a Neon token, don't clear the user state.
-              // The user is authenticated via Neon, not Supabase.
-              const neonToken = localStorage.getItem('gama_auth_token');
-              if (neonToken) {
-                console.log('[Auth] Supabase session missing but Neon token exists — preserving Neon auth state.');
-                const cached = localStorage.getItem('user');
-                if (cached) {
-                  try { setUser(JSON.parse(cached)); } catch { /* ignore */ }
-                }
-                return;
-              }
-              const cached = localStorage.getItem('user');
-              if (cached && !navigator.onLine) {
-                try {
-                  setUser(JSON.parse(cached));
-                } catch {
-                  setUser(null);
-                }
-              } else {
-                setUser(null);
-                localStorage.removeItem('user');
-              }
-            }
-            return;
-          }
-          
-          // Differentiate between actual expired/invalid auth credentials vs network reachability issues
-          const isAuthError = sessionErr.status === 400 || 
-                              sessionErr.status === 401 || 
-                              sessionErr.status === 403 || 
-                              sessionErr.status === 422 || 
-                              sessionErr.message?.includes('JWT') || 
-                              sessionErr.message?.includes('token') || 
-                              sessionErr.message?.includes('session');
-          
-          if (isAuthError) {
-            // FIX: Only clear session if there is no Neon token.
-            // Supabase JWT/session errors should NOT affect Neon-authenticated users.
-            const neonToken = localStorage.getItem('gama_auth_token');
-            if (neonToken) {
-              console.warn('[Auth] Supabase auth error ignored — user has Neon token. Preserving session.', sessionErr.message);
-              const cached = localStorage.getItem('user');
-              if (cached && active) {
-                try { setUser(JSON.parse(cached)); } catch { /* ignore */ }
-              }
-              return;
-            }
-            console.warn('[Auth] Expired or invalid session detected on startup. Clearing stale user cache:', sessionErr.message);
-            if (active) {
-              clearLocalSessionData();
-            }
-            return;
-          }
-          
-          // Otherwise, it is a network connectivity error or temporary reachability issue
-          console.warn('[Auth] Network reachability issue during session recovery; preserving offline cached state:', sessionErr.message);
-          if (active) {
-            const cached = localStorage.getItem('user');
-            if (cached) {
-              try {
-                setUser(JSON.parse(cached));
-              } catch (err) {
-                console.warn('[Auth] Failed to parse cached user:', err);
-              }
-            }
-          }
-          return;
-        }
-        
-        // Wrap into session-like shape for compatibility with the code below
-        const session = serverUser ? { user: serverUser } : null;
-
-        if (session?.user && active) {
-          const supabaseUser = session.user;
-          let profile = await getUserDoc(supabaseUser.id);
-          if (!profile && active) {
-            // Auto-create profile if missing (e.g. first-time Google OAuth)
-            const defaultProfile = {
-              name:         supabaseUser.user_metadata?.name || supabaseUser.user_metadata?.full_name || split_part_email(supabaseUser.email) || 'Élève',
-              email:        supabaseUser.email,
-              role:         'student',
-              tier:         'premium',
-              xp:           0,
-              streak:       0,
-              rank:         null,
-              totalStudents: 1200,
-              joined:       new Date().toISOString(),
-              subscription: null,
-            };
-            try {
-              await createUserDoc(supabaseUser.id, defaultProfile);
-              profile = { ...defaultProfile, uid: supabaseUser.id, id: supabaseUser.id };
-            } catch (createErr) {
-              console.warn('[Supabase] Failed to auto-create user profile:', createErr.message);
-            }
-          }
-
-          if (profile && active) {
-            const enriched = {
-              uid:          supabaseUser.id,
-              id:           supabaseUser.id,
-              name:         profile.name || supabaseUser.user_metadata?.name || supabaseUser.user_metadata?.full_name || 'Élève',
-              email:        supabaseUser.email,
-              role:         profile.role || 'student',
-              tier:         'premium',
-              xp:           profile.xp   || 0,
-              streak:       profile.streak || 0,
-              rank:         profile.rank  || null,
-              totalStudents: profile.totalStudents || 1200,
-              subscription: profile.subscription || null,
-              phone:        profile.phone || supabaseUser.user_metadata?.phone || '',
-              city:         profile.city  || supabaseUser.user_metadata?.city  || '',
-              school:       profile.school || supabaseUser.user_metadata?.school || '',
-            };
-            setUser(enriched);
-
-            // Log session access log entry
-            if (SUPABASE_ENABLED && !sessionStorage.getItem('logged_this_session')) {
-              addLoginLog(supabaseUser.id).catch(err => console.warn('[Auth] Failed to add access log:', err));
-              sessionStorage.setItem('logged_this_session', '1');
-            }
+        // 2. Offline fallback: check cached user
+        const cached = localStorage.getItem('user');
+        if (cached && active) {
+          try {
+            setUser(JSON.parse(cached));
+          } catch (_) {
+            setUser(null);
           }
         } else if (active) {
-          // No user session found
           setUser(null);
         }
-      } catch (e) {
-        console.warn('[Auth] Network error or exception during initial session recovery:', e.message);
-        if (active) {
-          const isNetworkError = !navigator.onLine ||
-                                 e.name === 'TypeError' ||
-                                 e.message?.includes('Failed to fetch') ||
-                                 e.message?.includes('NetworkError') ||
-                                 e.message?.includes('network') ||
-                                 e.message?.includes('timeout') ||
-                                 e.message?.includes('Load failed');
-
-          if (isNetworkError) {
-            console.log('[Auth] Network unreachable on startup; preserving offline cached session.');
-            const cached = localStorage.getItem('user');
-            if (cached) {
-              try {
-                setUser(JSON.parse(cached));
-              } catch (err) {
-                console.warn('[Auth] Failed to parse cached user:', err);
-              }
-            }
-          } else {
-            setUser(null);
-            localStorage.removeItem('user');
-          }
+      } catch (err) {
+        console.warn('[Auth] Error during session recovery:', err.message);
+        const cached = localStorage.getItem('user');
+        if (cached && active) {
+          try { setUser(JSON.parse(cached)); } catch (_) { setUser(null); }
         }
       } finally {
-        clearTimeout(safetyTimeout);
         if (active) {
           setLoading(false);
         }
       }
     };
 
-    // Run session recovery
     initializeAuthAndListen();
 
-    // 2. Subscribe to subsequent auth changes
+    // Subscribe to auth token changes
     const unsubscribe = onAuthChange(async (event, session) => {
-      // Ignore initial session event since we just recovered it
-      if (event === 'INITIAL_SESSION') return;
-
-      try {
-        const supabaseUser = session?.user || null;
-        if (supabaseUser) {
-          let profile = await getUserDoc(supabaseUser.id);
-          if (profile && active) {
-            const enriched = {
-              uid:          supabaseUser.id,
-              id:           supabaseUser.id,
-              name:         profile.name || supabaseUser.user_metadata?.name || supabaseUser.user_metadata?.full_name || 'Élève',
-              email:        supabaseUser.email,
-              role:         profile.role || 'student',
-              tier:         'premium',
-              xp:           profile.xp   || 0,
-              streak:       profile.streak || 0,
-              rank:         profile.rank  || null,
-              totalStudents: profile.totalStudents || 1200,
-              subscription: profile.subscription || null,
-              phone:        profile.phone || supabaseUser.user_metadata?.phone || '',
-              city:         profile.city  || supabaseUser.user_metadata?.city  || '',
-              school:       profile.school || supabaseUser.user_metadata?.school || '',
-            };
-            setUser(enriched);
-          }
-        } else if (event === 'SIGNED_OUT' && active) {
-          clearLocalSessionData();
-        }
-      } catch (e) {
-        console.warn('[Auth] Error handling subsequent auth change:', e.message);
+      if (session?.user && active) {
+        setUser(session.user);
+      } else if (event === 'SIGNED_OUT' && active) {
+        clearLocalSessionData();
       }
     });
 
     return () => {
       active = false;
-      clearTimeout(safetyTimeout);
       unsubscribe();
     };
   }, []);
@@ -899,7 +696,7 @@ export function AuthProvider({ children }) {
 
   const { exams: initialExams, needsSave } = loadAndMigrateExams();
   const [exams, setExams] = useState(() => {
-    if (SUPABASE_ENABLED) {
+    if (NEON_ENABLED) {
       const cached = localStorage.getItem('exams');
       if (cached) {
         try {
@@ -1020,16 +817,16 @@ export function AuthProvider({ children }) {
   const [leaderboard, setLeaderboard] = useState([]);
 
   // FIX #4: Track last incrementDailyActivity call per-session to avoid
-  // sending a Supabase request on every single card answer.
+  // sending a database request on every single card answer.
   const lastActivityCallRef = React.useRef(0);
 
   const refreshLeaderboard = useCallback(async () => {
-    if (!SUPABASE_ENABLED) return;
+    if (!NEON_ENABLED) return;
     try {
       const data = await getLeaderboard();
       setLeaderboard(data || []);
     } catch (e) {
-      console.warn('[Supabase] Failed to refresh leaderboard:', e.message);
+      console.warn('[Neon] Failed to refresh leaderboard:', e.message);
     }
   }, []);
 
@@ -1040,7 +837,7 @@ export function AuthProvider({ children }) {
       ...result
     };
     
-    if (SUPABASE_ENABLED && (user?.uid || user?.id)) {
+    if (NEON_ENABLED && (user?.uid || user?.id)) {
       const userId = user.uid || user.id;
       try {
         await saveMockResult(userId, newResult);
@@ -1048,7 +845,7 @@ export function AuthProvider({ children }) {
         const dbHistory = await getMockHistory(userId);
         setMockExamHistory(dbHistory);
       } catch (e) {
-        console.error('[Supabase] Failed to save mock result:', e);
+        console.error('[Neon] Failed to save mock result:', e);
       }
     } else {
       setMockExamHistory(prev => [
@@ -1062,7 +859,7 @@ export function AuthProvider({ children }) {
 
 
   const syncOfflineData = useCallback(async () => {
-    if (!SUPABASE_ENABLED || !user || !navigator.onLine) return;
+    if (!NEON_ENABLED || !user || !navigator.onLine) return;
     const userId = user.uid || user.id;
     if (!userId) return;
 
@@ -1094,7 +891,7 @@ export function AuthProvider({ children }) {
   }, [user]);
 
   const logout = useCallback(() => {
-    if (SUPABASE_ENABLED && (user?.uid || user?.id)) {
+    if (NEON_ENABLED && (user?.uid || user?.id)) {
       // Async fire-and-forget: do not await remote signOut so local session clears instantly
       logoutUser().catch(err => console.warn('[Auth] Remote signOut failed:', err));
     }
@@ -1133,134 +930,11 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // Handle global 401 Unauthorized events from Supabase client fetch wrapper
-  useEffect(() => {
-    const handleUnauthorized = () => {
-      // FIX: Don't logout if user is authenticated via Neon token.
-      // Supabase 401s are expected when using Neon-only auth.
-      const neonToken = localStorage.getItem('gama_auth_token');
-      if (neonToken) {
-        console.warn('[Auth] Supabase 401 ignored — user is authenticated via Neon token.');
-        return;
-      }
-      console.warn('[Auth] Received unauthorized event from Supabase client. Logging out...');
-      logout();
-    };
-    window.addEventListener('supabase-auth-unauthorized', handleUnauthorized);
-    return () => window.removeEventListener('supabase-auth-unauthorized', handleUnauthorized);
-  }, [logout]);
 
-
-  // ── Online/Offline listener to trigger sync ──────────────────────────────
-  useEffect(() => {
-    const handleOnline = () => {
-      setIsOnline(true);
-      syncOfflineData();
-    };
-    const handleOffline = () => {
-      setIsOnline(false);
-    };
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, [syncOfflineData]);
-
-  // ── Periodically verify and refresh session to prevent token expiration ──
-  useEffect(() => {
-    if (!SUPABASE_ENABLED || !user) return;
-    
-    // Check every 10 minutes
-    const REFRESH_INTERVAL = 10 * 60 * 1000;
-    
-    const checkAndRefreshSession = async () => {
-      try {
-        if (supabase) {
-          const { data: { session }, error } = await supabase.auth.getSession();
-          if (error) throw error;
-          
-          if (session) {
-            const expiresAt = session.expires_at; // unix timestamp in seconds
-            const nowSeconds = Math.floor(Date.now() / 1000);
-            
-            // If session expires in less than 15 minutes (900 seconds), trigger a refresh
-            if (expiresAt - nowSeconds < 900) {
-              // Mutex/Lock implementation for multi-tab setups:
-              // Acquire a lock key in localStorage to prevent other tabs from attempting refresh concurrently
-              const nowMs = Date.now();
-              const lock = localStorage.getItem('supabase_refresh_lock');
-              
-              if (lock && (nowMs - parseInt(lock, 10)) < 15000) {
-                console.log('[Auth] Another tab is currently refreshing the session. Skipping.');
-                return;
-              }
-              
-              // Set the lock with a timestamp
-              localStorage.setItem('supabase_refresh_lock', String(nowMs));
-              
-              try {
-                console.log('[Auth] Session near expiry, refreshing...');
-                const { error: refreshError } = await supabase.auth.refreshSession();
-                if (refreshError) throw refreshError;
-                console.log('[Auth] Session refreshed successfully.');
-              } finally {
-                // Release lock immediately
-                localStorage.removeItem('supabase_refresh_lock');
-              }
-            }
-          }
-        }
-      } catch (err) {
-        console.warn('[Auth] Periodic session refresh check failed:', err.message);
-        if (err.message?.includes('refresh_token') || err.message?.includes('invalid_grant')) {
-          console.warn('[Auth] Refresh token is invalid. Logging out...');
-          await logout();
-          window.location.href = '/login?expired=1';
-        }
-      }
-    };
-    
-    const timeoutId = setTimeout(checkAndRefreshSession, 60_000);
-    const intervalId = setInterval(checkAndRefreshSession, REFRESH_INTERVAL);
-    
-    return () => {
-      clearTimeout(timeoutId);
-      clearInterval(intervalId);
-    };
-  }, [user, logout]);
-
-  // ── Sync session when the tab becomes active/visible ──
-  useEffect(() => {
-    if (!SUPABASE_ENABLED || !user) return;
-
-    const handleVisibilityChange = async () => {
-      if (document.visibilityState === 'visible') {
-        const neonToken = localStorage.getItem('gama_auth_token');
-        if (neonToken) return; // Neon-authenticated users don't have a Supabase auth session
-
-        console.log('[Auth] Tab became visible. Syncing session from storage...');
-        try {
-          if (supabase) {
-            // getSession reads the latest session from localStorage and updates the client memory
-            await supabase.auth.getSession();
-          }
-        } catch (err) {
-          console.warn('[Auth] Failed to sync session on visibility change:', err);
-        }
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [user]);
 
 
   const [users, setUsers] = useState(() => {
-    if (SUPABASE_ENABLED) return [];
+    if (NEON_ENABLED) return [];
     return [
       { id: '1', name: 'Youssef Alaoui', email: 'youssef@massar.ma', tier: 'freemium', joined: '2026-05-10', xp: 450 },
       { id: '2', name: 'Sara Bennani', email: 'premium@lconq.ma', tier: 'premium', joined: '2026-05-01', xp: 8450 },
@@ -1311,32 +985,20 @@ export function AuthProvider({ children }) {
       if (neonUser) {
         setUser(neonUser);
         safeSetItem('user', JSON.stringify(neonUser));
-        // FIX: Return early — do NOT fall through to Supabase login.
+        // FIX: Return early — do NOT fall through to fallback login.
         // Neon auth succeeded; running Supabase login would call the same
         // endpoint again and could overwrite the Neon token or fail silently.
         return neonUser;
       }
     } catch (neonErr) {
-      // If Neon specifically rejected credentials, throw — no fallback to Supabase
+      // If Neon specifically rejected credentials, throw — no fallback login
       // because they share the same loginWithEmail function and would produce
       // the same error (wrong credentials).
       console.warn('[Neon Auth] login failed:', neonErr.message);
       throw neonErr;
     }
 
-    // This path is only reached if neonUser was null/undefined (should not happen normally)
-    // Kept as a safety net.
-    if (SUPABASE_ENABLED && !localStorage.getItem('gama_auth_token')) {
-      try {
-        const sbUser = await loginWithEmail(email, password);
-        setUser(sbUser);
-        return sbUser;
-      } catch (sbErr) {
-        throw sbErr;
-      }
-    }
-
-    // 3. Fallback when remote services are offline
+    // 2. Fallback when remote services are offline (local mock credentials)
     if (email === 'admin@lconq.ma' && password === 'admin123') {
       const mockAdmin = {
         id: 'local-admin-id',
@@ -1371,7 +1033,7 @@ export function AuthProvider({ children }) {
   };
 
   const loginGoogle = async () => {
-    if (SUPABASE_ENABLED) {
+    if (NEON_ENABLED) {
       return await loginWithGoogle();
     } else {
       throw new Error('Connexion Google non disponible actuellement.');
@@ -1480,7 +1142,7 @@ export function AuthProvider({ children }) {
   }, [exams]);
 
   const updateUserTier = async (userId, newTier) => {
-    if (SUPABASE_ENABLED) {
+    if (NEON_ENABLED) {
       try {
         await updateUserDoc(userId, { tier: newTier });
         setUsers(prev => prev.map(u => u.id === userId || u.uid === userId ? { ...u, tier: newTier } : u));
@@ -1488,7 +1150,7 @@ export function AuthProvider({ children }) {
           setUser(u => ({ ...u, tier: newTier }));
         }
       } catch (e) {
-        console.error('[Supabase] Failed to update user tier:', e);
+        console.error('[Neon] Failed to update user tier:', e);
       }
     } else {
       setUsers(users.map(u => u.id === userId ? { ...u, tier: newTier } : u));
@@ -1511,7 +1173,7 @@ export function AuthProvider({ children }) {
     if (updates.city !== undefined) sanitizedUpdates.city = sanitizeInputString(updates.city);
     if (updates.school !== undefined) sanitizedUpdates.school = sanitizeInputString(updates.school);
 
-    if (SUPABASE_ENABLED && (user?.uid || user?.id)) {
+    if (NEON_ENABLED && (user?.uid || user?.id)) {
       const userId = user.uid || user.id;
       try {
         await updateUserDoc(userId, sanitizedUpdates);
@@ -1520,11 +1182,7 @@ export function AuthProvider({ children }) {
         console.warn("[Auth] Failed to update profiles table, falling back to auth metadata:", dbErr.message);
         try {
           // Attempt to update Supabase auth metadata as a fallback
-          if (supabase) {
-            await supabase.auth.updateUser({
-              data: { phone: sanitizedUpdates.phone, city: sanitizedUpdates.city }
-            });
-          }
+          
         } catch (authErr) {
           console.warn("[Auth] Failed to update auth metadata:", authErr.message);
         }
@@ -1670,7 +1328,7 @@ export function AuthProvider({ children }) {
       endDate: endDate.toISOString()
     };
 
-    if (SUPABASE_ENABLED) {
+    if (NEON_ENABLED) {
       try {
         await setUserSubscription(userId, subscription, 'premium');
         setUsers(prev => prev.map(u => u.id === userId || u.uid === userId ? { ...u, tier: 'premium', subscription } : u));
@@ -1678,7 +1336,7 @@ export function AuthProvider({ children }) {
           setUser(u => ({ ...u, tier: 'premium', subscription }));
         }
       } catch (e) {
-        console.error('[Supabase] Failed to activate subscription:', e);
+        console.error('[Neon] Failed to activate subscription:', e);
       }
     } else {
       const updatedUsers = users.map(u => {
@@ -1702,7 +1360,7 @@ export function AuthProvider({ children }) {
   };
 
   const cancelSubscription = async (userId) => {
-    if (SUPABASE_ENABLED) {
+    if (NEON_ENABLED) {
       try {
         await setUserSubscription(userId, null, 'freemium');
         setUsers(prev => prev.map(u => u.id === userId || u.uid === userId ? { ...u, tier: 'freemium', subscription: null } : u));
@@ -1710,7 +1368,7 @@ export function AuthProvider({ children }) {
           setUser(u => ({ ...u, tier: 'freemium', subscription: null }));
         }
       } catch (e) {
-        console.error('[Supabase] Failed to cancel subscription:', e);
+        console.error('[Neon] Failed to cancel subscription:', e);
       }
     } else {
       const updatedUsers = users.map(u => {
@@ -1734,7 +1392,7 @@ export function AuthProvider({ children }) {
   };
 
   const updateStudentCRM = async (userId, crmData) => {
-    if (SUPABASE_ENABLED) {
+    if (NEON_ENABLED) {
       try {
         await updateUserDoc(userId, { crm: crmData });
         setUsers(prev => prev.map(u => u.id === userId || u.uid === userId ? { ...u, crm: crmData } : u));
@@ -1742,7 +1400,7 @@ export function AuthProvider({ children }) {
           setUser(u => ({ ...u, crm: crmData }));
         }
       } catch (e) {
-        console.error('[Supabase] Failed to update student CRM:', e);
+        console.error('[Neon] Failed to update student CRM:', e);
         throw e;
       }
     } else {
@@ -1754,17 +1412,12 @@ export function AuthProvider({ children }) {
   };
 
   const deleteStudent = async (userId) => {
-    if (SUPABASE_ENABLED) {
-      try {
-        const { error } = await supabase.rpc('delete_user', { uid: userId });
-        if (error) throw error;
-        setUsers(prev => prev.filter(u => u.id !== userId && u.uid !== userId));
-      } catch (e) {
-        console.error('[Supabase] Failed to delete user:', e);
-        throw e;
-      }
-    } else {
-      setUsers(prev => prev.filter(u => u.id !== userId));
+    try {
+      await deleteUser(userId);
+      setUsers(prev => prev.filter(u => u.id !== userId && u.uid !== userId));
+    } catch (e) {
+      console.error('[Neon] Failed to delete user:', e);
+      throw e;
     }
   };
 
@@ -1954,9 +1607,9 @@ export function AuthProvider({ children }) {
         nextReviewDate: nextReviewDate.toISOString()
       };
 
-      if (SUPABASE_ENABLED && (user?.uid || user?.id)) {
+      if (NEON_ENABLED && (user?.uid || user?.id)) {
         saveQuestionProgress(user.uid || user.id, questionId, updatedCardState).catch(e => {
-          console.error('[Supabase] Failed to save card progress:', e);
+          console.error('[Neon] Failed to save card progress:', e);
           try {
             const queue = JSON.parse(localStorage.getItem('unsynced_progress') || '{}');
             queue[questionId] = {
@@ -1989,14 +1642,14 @@ export function AuthProvider({ children }) {
     dailyActivity[todayStr] = (dailyActivity[todayStr] || 0) + 1;
     safeSetItem('dailyActivity', JSON.stringify(dailyActivity));
 
-    if (SUPABASE_ENABLED && (user?.uid || user?.id)) {
+    if (NEON_ENABLED && (user?.uid || user?.id)) {
       // FIX #4: Debounce — only call incrementDailyActivity once per minute max.
       // Previously called on every single card answer, flooding the network on mobile.
       const now = Date.now();
       if (now - lastActivityCallRef.current > 60_000) {
         lastActivityCallRef.current = now;
         incrementDailyActivity(user.uid || user.id).catch(e =>
-          console.error('[Supabase] Failed to increment daily activity:', e)
+          console.error('[Neon] Failed to increment daily activity:', e)
         );
       }
     }
@@ -2006,9 +1659,9 @@ export function AuthProvider({ children }) {
       const xpGain = quality * 10;
       const newXp = (user.xp || 0) + xpGain;
       setUser(u => ({ ...u, xp: newXp }));
-      if (SUPABASE_ENABLED && (user.uid || user.id)) {
+      if (NEON_ENABLED && (user.uid || user.id)) {
         updateUserDoc(user.uid || user.id, { xp: newXp }).catch(e =>
-          console.error('[Supabase] Failed to update XP in database:', e)
+          console.error('[Neon] Failed to update XP in database:', e)
         );
       }
     }
@@ -2042,7 +1695,7 @@ export function AuthProvider({ children }) {
     safeSetItem('schoolBranding', JSON.stringify(schoolBranding));
   }, [schoolBranding]);
 
-  // ── Database Syncing (Supabase or Local Companion API) ──────────────────────
+  // ── Database Syncing (Neon PostgreSQL & Local Companion API) ──────────────────────
   useEffect(() => {
 
     const loadConfigAndExams = async () => {
@@ -2151,7 +1804,7 @@ export function AuthProvider({ children }) {
         if (fbExams && fbExams.length > 0) {
           finalExams = fbExams;
         } else {
-          // Require Supabase data — do not fall back to local mock exams
+          // Require Neon cloud data — do not fall back to local mock exams
           finalExams = fbExams || [];
         }
         setExams(finalExams);
@@ -2159,7 +1812,7 @@ export function AuthProvider({ children }) {
         // Questions are loaded on demand by the study/exam screens.
         // Avoid downloading every question bank during app startup.
       } catch (e) {
-        console.warn('[Supabase] Error syncing config/exams:', e.message);
+        console.warn('[Neon] Error syncing config/exams:', e.message);
       }
     };
 
@@ -2168,7 +1821,7 @@ export function AuthProvider({ children }) {
 
   // Fetch User-specific data (progress, history, activity, leaderboard) when a student logs in
   useEffect(() => {
-    if (!SUPABASE_ENABLED || !user || user.role === 'admin') return;
+    if (!NEON_ENABLED || !user || user.role === 'admin') return;
 
     const loadStudentData = async () => {
       const userId = user.uid || user.id;
@@ -2214,81 +1867,18 @@ export function AuthProvider({ children }) {
           localStorage.setItem('reviewDates', JSON.stringify(dates));
         }
       } catch (e) {
-        console.warn('[Supabase] Error loading student progress:', e.message);
+        console.warn('[Neon] Error loading student progress:', e.message);
       }
     };
 
     loadStudentData();
   // FIX #3: Depend only on the user ID, NOT the whole user object.
   // Previously, any XP/streak update to `user` triggered a full re-sync
-  // (4 Supabase queries at once), causing request floods on mobile.
+  // (multiple database queries at once), causing request floods on mobile.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid, user?.id]);
 
-  // Real-time listener for profile upgrades (e.g. manager activating premium)
-  useEffect(() => {
-    if (!SUPABASE_ENABLED || !user) return;
-    const userId = user.uid || user.id;
-    if (!userId || userId === 'mock_student' || userId === 'mock_google_student' || userId === 'admin') return;
 
-    // FIX #2: Removed `plans` from the dependency array.
-    // Previously, any change to `plans` (which happens on every config sync) would
-    // teardown and recreate the websocket channel. On mobile, this caused dozens of
-    // orphaned websocket connections to accumulate, exhausting Supabase connection
-    // limits and blocking all subsequent API requests.
-    // We now read plans via plansRef.current inside the callback instead.
-    const channel = supabase
-      .channel(`profile-realtime-${userId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `id=eq.${userId}`,
-        },
-        (payload) => {
-          const newProfile = payload.new;
-          if (newProfile) {
-            // Check if user tier was upgraded from non-premium (or freemium) to premium
-            setUser(prevUser => {
-              if (prevUser && prevUser.tier !== 'premium' && newProfile.tier === 'premium') {
-                // Find the new plan details to display in the celebration modal
-                // Use plansRef.current to avoid stale closure without adding plans as dependency
-                const currentPlans = plansRef.current;
-                const planId = newProfile.subscription?.planId || 'plan_lconq';
-                const plan = currentPlans.find(p => p.id === planId) || currentPlans[0] || {
-                  name: "Premium L'Conq",
-                  durationDays: 30
-                };
-                
-                // Trigger global success modal
-                setUpgradedPlan(plan);
-              }
-              
-              // Return new state
-              return {
-                ...prevUser,
-                tier: newProfile.tier,
-                subscription: newProfile.subscription,
-                phone: newProfile.phone || prevUser.phone,
-                city: newProfile.city || prevUser.city,
-                xp: newProfile.xp !== undefined ? newProfile.xp : prevUser.xp,
-                streak: newProfile.streak !== undefined ? newProfile.streak : prevUser.streak,
-                rank: newProfile.rank !== undefined ? newProfile.rank : prevUser.rank
-              };
-            });
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  // FIX #2: Only re-subscribe when the user ID changes, NOT on every plans update.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid, user?.id]);
 
   const refreshAdminData = useCallback(async () => {
     if (user?.role !== 'admin') return;
@@ -2303,12 +1893,11 @@ export function AuthProvider({ children }) {
   }, [user?.role]);
 
   const syncStudentsList = useCallback(async () => {
-    if (!SUPABASE_ENABLED || user?.role !== 'admin') return { success: false, synchronized_count: 0 };
+    if (!NEON_ENABLED || user?.role !== 'admin') return { success: false, synchronized_count: 0 };
     try {
-      const result = await syncStudentsWithSupabase();
-      // Reload admin users list after sync
+      // Reload admin users list directly from Neon
       await refreshAdminData();
-      return result;
+      return { success: true, synchronized_count: 0, note: 'Neon-native — synced from cloud database' };
     } catch (e) {
       console.error('[Auth] Failed to sync students list:', e);
       throw e;
@@ -2327,11 +1916,11 @@ export function AuthProvider({ children }) {
     const updatedDownloads = [newEntry, ...(user.downloads || [])].slice(0, 100);
     setUser(prev => ({ ...prev, downloads: updatedDownloads }));
     
-    if (SUPABASE_ENABLED) {
+    if (NEON_ENABLED) {
       try {
         await logUserDownload(userId, downloadData);
       } catch (e) {
-        console.warn('[Supabase] Failed to log download:', e);
+        console.warn('[Neon] Failed to log download:', e);
       }
     } else {
       const updatedUsers = users.map(u => {
@@ -2347,18 +1936,15 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Live online status heartbeat (pings Supabase to update updated_at every 2 minutes)
+  // Live online status heartbeat (updates updated_at every 5 minutes)
   useEffect(() => {
-    if (!SUPABASE_ENABLED || !user || (!user.uid && !user.id) || user.role === 'admin') return;
+    if (!user || (!user.uid && !user.id) || user.role === 'admin') return;
     
     const sendHeartbeat = async () => {
       try {
         const userId = user.uid || user.id;
-        if (supabase) {
-          await supabase
-            .from('profiles')
-            .update({ updated_at: new Date().toISOString() })
-            .eq('id', userId);
+        if (userId) {
+          await updateUserDoc(userId, { updated_at: new Date().toISOString() });
         }
       } catch (err) {
         console.warn('[Heartbeat] Failed to update online status:', err);
@@ -2366,10 +1952,7 @@ export function AuthProvider({ children }) {
     };
     
     sendHeartbeat();
-    // FIX #4: Increased from 2 min to 5 min to reduce network pressure on mobile.
-    // The heartbeat only updates `updated_at` for online status; 5 min precision is sufficient.
-    const interval = setInterval(sendHeartbeat, 5 * 60 * 1000); // 5 minutes
-    
+    const interval = setInterval(sendHeartbeat, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [user?.uid, user?.id]);
 
@@ -2387,11 +1970,11 @@ export function AuthProvider({ children }) {
     if (name && !schools.includes(name)) {
       const updatedSchools = [...schools, name];
       setSchools(updatedSchools);
-      if (SUPABASE_ENABLED) {
+      if (NEON_ENABLED) {
         try {
           await saveSchoolsConfig(updatedSchools, schoolBranding);
         } catch (e) {
-          console.error('[Supabase] Failed to add school config:', e);
+          console.error('[Neon] Failed to add school config:', e);
         }
       }
     }
@@ -2403,11 +1986,11 @@ export function AuthProvider({ children }) {
     delete updatedBranding[name];
     setSchools(updatedSchools);
     setSchoolBranding(updatedBranding);
-    if (SUPABASE_ENABLED) {
+    if (NEON_ENABLED) {
       try {
         await saveSchoolsConfig(updatedSchools, updatedBranding);
       } catch (e) {
-        console.error('[Supabase] Failed to remove school config:', e);
+        console.error('[Neon] Failed to remove school config:', e);
       }
     }
   };
@@ -2423,11 +2006,11 @@ export function AuthProvider({ children }) {
     setSchools(updatedSchools);
     setSchoolBranding(updatedBranding);
     setExams(prev => prev.map(e => e.school === oldName ? { ...e, school: newName } : e));
-    if (SUPABASE_ENABLED) {
+    if (NEON_ENABLED) {
       try {
         await saveSchoolsConfig(updatedSchools, updatedBranding);
       } catch (e) {
-        console.error('[Supabase] Failed to rename school config:', e);
+        console.error('[Neon] Failed to rename school config:', e);
       }
     }
   };
@@ -2435,11 +2018,11 @@ export function AuthProvider({ children }) {
   const updateSchoolBranding = async (name, patch) => {
     const updatedBranding = { ...schoolBranding, [name]: { ...(schoolBranding[name] || {}), ...patch } };
     setSchoolBranding(updatedBranding);
-    if (SUPABASE_ENABLED) {
+    if (NEON_ENABLED) {
       try {
         await saveSchoolsConfig(schools, updatedBranding);
       } catch (e) {
-        console.error('[Supabase] Failed to update school branding:', e);
+        console.error('[Neon] Failed to update school branding:', e);
       }
     }
   };
@@ -2468,7 +2051,7 @@ export function AuthProvider({ children }) {
         return questions;
       })
       .catch((err) => {
-        console.error('[Supabase] Failed to load questions for exam:', examId, err);
+        console.error('[Neon] Failed to load questions for exam:', examId, err);
         throw err;
       })
       .finally(() => {
@@ -2493,7 +2076,8 @@ export function AuthProvider({ children }) {
       leaderboard, refreshLeaderboard,
       isExamLocked,
       loadExamQuestions,
-      supabaseEnabled: SUPABASE_ENABLED,
+      neonEnabled: NEON_ENABLED,
+      supabaseEnabled: NEON_ENABLED,
       refreshAdminData,
       syncStudentsList,
       trackDownload,
