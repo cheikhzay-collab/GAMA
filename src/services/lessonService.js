@@ -1,6 +1,6 @@
 // src/services/lessonService.js
 // High-performance resilient CRUD for lessons with SWR caching and direct single-lesson fetching.
-// Supabase -> Local Companion API -> LocalStorage -> Seed Fallback.
+// Neon PostgreSQL -> Local Companion API -> LocalStorage -> Seed Fallback.
 
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
@@ -443,7 +443,7 @@ export const addLesson = async (lessonData) => {
 };
 
 /**
- * Update dynamic fields of a lesson and persist to LocalStorage, Companion, and Supabase.
+ * Update dynamic fields of a lesson and persist to LocalStorage, Companion, and Neon PostgreSQL.
  */
 export const updateLesson = async (lessonId, updates) => {
   const now = new Date().toISOString();

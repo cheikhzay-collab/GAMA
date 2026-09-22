@@ -41,16 +41,16 @@ const safeParseJSON = (val, fallback) => {
 };
 
 /**
- * Normalizes a class object from ANY source (Supabase snake_case, LocalDB camelCase, or localStorage).
+ * Normalizes a class object from ANY source (Neon snake_case, LocalDB camelCase, or localStorage).
  * This is the single source of truth for class shape normalization.
  */
 const normalizeClass = (row) => {
   if (!row) return null;
 
-  // Support both snake_case (Supabase) and camelCase (LocalDB/localStorage)
+  // Support both snake_case (Neon/PostgreSQL) and camelCase (LocalDB/localStorage)
   const parsedStudents = safeParseJSON(row.students, []);
   const parsedGrades = safeParseJSON(row.grades, {});
-  // competitionGrades can come as camelCase (local) or snake_case (Supabase)
+  // competitionGrades can come as camelCase (local) or snake_case (Neon)
   const parsedCompGrades = safeParseJSON(
     row.competitionGrades ?? row.competition_grades,
     {}
@@ -61,7 +61,7 @@ const normalizeClass = (row) => {
   const parsedProgram = safeParseJSON(row.program, []);
 
   const studentsList = Array.isArray(parsedStudents) ? parsedStudents : [];
-  // Support both snake_case (Supabase) and camelCase (LocalDB/localStorage)
+  // Support both snake_case (Neon/PostgreSQL) and camelCase (LocalDB/localStorage)
   const count = row.student_count ?? row.studentCount ?? studentsList.length;
 
   return {
@@ -82,7 +82,7 @@ const normalizeClass = (row) => {
   };
 };
 
-// Keep mapDBToClass as an alias for Supabase rows (pure snake_case source)
+// Keep mapDBToClass as an alias for database rows (pure snake_case source)
 const mapDBToClass = normalizeClass;
 
 /**

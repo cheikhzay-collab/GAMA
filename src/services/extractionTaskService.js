@@ -1,7 +1,7 @@
 // src/services/extractionTaskService.js
 // Client service for Managing Asynchronous Lesson Extraction Tasks
 // Highly resilient connector supporting Vite same-origin proxy (/companion-api),
-// direct localhost:5002, 127.0.0.1:5002, and Supabase fallback
+// direct localhost:5002, 127.0.0.1:5002, and Neon Cloud API fallback
 
 
 
