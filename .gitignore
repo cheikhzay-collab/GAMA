@@ -13,6 +13,7 @@ dist-ssr
 *.local
 dev-dist
 scratch
+data/assets/*.json
 
 # Environment variables (Firebase credentials — NEVER commit these)
 .env

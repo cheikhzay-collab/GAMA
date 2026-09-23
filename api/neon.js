@@ -17,6 +17,7 @@ const ALLOWED_TABLES = [
   'activity',
   'extraction_tasks',
   'login_logs',
+  'assets',
 ];
 
 // Read-only tables: GET requests to these will get long cache headers

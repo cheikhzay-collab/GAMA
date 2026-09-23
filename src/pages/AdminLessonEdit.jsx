@@ -21,6 +21,7 @@ import FloatingLatexPalette from '../components/FloatingLatexPalette';
 import { solveExerciseWithAI, filterBaremeByDocType } from '../utils/aiExerciseSolver';
 import { renderWithMath, autoRepairMathText } from '../utils/mathRenderer';
 import { normalizeLevel, getLevelDisplayName } from '../utils/levelHelpers';
+import { uploadAsset } from '../services/storageService';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
@@ -1051,7 +1052,14 @@ export default function AdminLessonEdit() {
   };
 
   // Direct Image Insertion Handler (Paste, Drag&Drop, Upload, Camera)
-  const handleDirectImageInsert = (dataUrl, alt = 'Figure') => {
+  const handleDirectImageInsert = async (dataUrl, alt = 'Figure') => {
+    setHasUnsavedChanges(true);
+    let finalUrl = dataUrl;
+    try {
+      const pathName = `lessons/${id || 'draft'}/${Date.now()}_fig.png`;
+      finalUrl = await uploadAsset(dataUrl, pathName);
+    } catch (_) {}
+
     let targetSecIdx = activeFieldTarget?.secIdx;
     if (targetSecIdx === undefined || targetSecIdx === null || !sections[targetSecIdx]) {
       targetSecIdx = sections.length > 0 ? sections.length - 1 : 0;
@@ -1059,13 +1067,13 @@ export default function AdminLessonEdit() {
     
     if (sections.length === 0) {
       const newSec = {
-        id: 'sec-img-1',
-        title: 'Section avec Figure',
+        id: 'sec-img-' + Date.now(),
+        title: isArMode ? 'قسم مع شكل توضيحي' : 'Section avec Figure',
         type: 'content',
         section_number: '',
         section_header: '',
         accent_text: '',
-        items: [{ type: 'image', url: dataUrl, alt, width_pct: 80, align: 'center' }],
+        items: [{ type: 'image', url: finalUrl, alt, width_pct: 80, align: 'center', position: 'after' }],
         language: docLanguage
       };
       setSections([newSec]);
@@ -1078,10 +1086,11 @@ export default function AdminLessonEdit() {
       const items = Array.isArray(sec.items) ? [...sec.items] : [];
       const newImageItem = {
         type: 'image',
-        url: dataUrl,
+        url: finalUrl,
         alt,
         width_pct: 80,
-        align: 'center'
+        align: 'center',
+        position: 'after'
       };
       items.push(newImageItem);
       sec.items = items;
@@ -1207,6 +1216,10 @@ export default function AdminLessonEdit() {
         setSuccess(isArMode 
           ? `✓ تم الحفظ في قاعدة البيانات المحلية [${nowFormatted}] (المزامنة السحابية ستكتمل تلقائياً عند عودة الاتصال)` 
           : `✓ Enregistré dans la base locale [${nowFormatted}] (Sync Cloud dès reconnexion)`);
+      } else if (syncResult?.neonError) {
+        setError(isArMode 
+          ? `تنبيه: تم حفظ التعديل محلياً فقط. تعذرت المزامنة مع Neon: ${syncResult.neonError}` 
+          : `Attention : Enregistré en local uniquement. Échec de synchronisation Neon : ${syncResult.neonError}`);
       } else {
         setSuccess(isArMode 
           ? `✓ تم حفظ التعديلات في الذاكرة المؤقتة [${nowFormatted}]` 
@@ -2580,12 +2593,18 @@ export default function AdminLessonEdit() {
                     </button>
                     <ImageDropZone
                       compact
-                      onImageInsert={(dataUrl, alt) => {
+                      onImageInsert={async (dataUrl, alt) => {
+                        setHasUnsavedChanges(true);
+                        let finalUrl = dataUrl;
+                        try {
+                          const pathName = `lessons/${id || 'draft'}/${Date.now()}_sec_${secIdx}.png`;
+                          finalUrl = await uploadAsset(dataUrl, pathName);
+                        } catch (_) {}
                         setSections(prev => {
                           const next = [...prev];
                           const sec = { ...next[secIdx] };
                           const items = Array.isArray(sec.items) ? [...sec.items] : [];
-                          items.push({ type: 'image', url: dataUrl, alt, width_pct: 80, align: 'center', position: 'after' });
+                          items.push({ type: 'image', url: finalUrl, alt, width_pct: 80, align: 'center', position: 'after' });
                           sec.items = items;
                           next[secIdx] = sec;
                           return next;

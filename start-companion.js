@@ -22,29 +22,49 @@ if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-// Helpers for reading/writing JSON files
+// Helpers for reading/writing JSON files with memory caching and debounced disk writes
+const memoryCache = new Map();
+const pendingWrites = new Map();
+
 const readDataFile = (fileName, defaultValue = []) => {
+  if (memoryCache.has(fileName)) {
+    return memoryCache.get(fileName);
+  }
   const filePath = path.join(DATA_DIR, fileName);
   if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, JSON.stringify(defaultValue, null, 2), 'utf8');
+    fs.writeFileSync(filePath, JSON.stringify(defaultValue), 'utf8');
+    memoryCache.set(fileName, defaultValue);
     return defaultValue;
   }
   try {
     const content = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(content);
+    const parsed = JSON.parse(content);
+    memoryCache.set(fileName, parsed);
+    return parsed;
   } catch (err) {
     console.error(`[Companion] Error reading ${fileName}:`, err);
+    memoryCache.set(fileName, defaultValue);
     return defaultValue;
   }
 };
 
 const writeDataFile = (fileName, data) => {
+  memoryCache.set(fileName, data);
   const filePath = path.join(DATA_DIR, fileName);
-  try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-  } catch (err) {
-    console.error(`[Companion] Error writing ${fileName}:`, err);
+  if (pendingWrites.has(fileName)) {
+    clearTimeout(pendingWrites.get(fileName));
   }
+  const timer = setTimeout(() => {
+    pendingWrites.delete(fileName);
+    try {
+      fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8', (err) => {
+        if (err) console.error(`[Companion] Error writing ${fileName}:`, err);
+      });
+    } catch (err) {
+      console.error(`[Companion] Error writing ${fileName}:`, err);
+    }
+  }, 100);
+  pendingWrites.set(fileName, timer);
 };
 
 // Seed defaults
@@ -288,6 +308,57 @@ const server = http.createServer(async (req, res) => {
       sendJSON(res, 500, { success: false, error: err.message });
     }
     return;
+  }
+
+  // ── Local Assets Storage Endpoints (/api/assets) ──────────────────────────
+  if (pathname === '/api/assets') {
+    const ASSETS_DIR = path.join(DATA_DIR, 'assets');
+    if (!fs.existsSync(ASSETS_DIR)) {
+      fs.mkdirSync(ASSETS_DIR, { recursive: true });
+    }
+
+    if (req.method === 'GET') {
+      const assetPath = parsedUrl.searchParams.get('path');
+      if (!assetPath) {
+        sendJSON(res, 400, { error: 'Missing path' });
+        return;
+      }
+      const safeFileName = encodeURIComponent(assetPath).replace(/%/g, '_');
+      const metaFilePath = path.join(ASSETS_DIR, `${safeFileName}.json`);
+      if (fs.existsSync(metaFilePath)) {
+        try {
+          const meta = JSON.parse(fs.readFileSync(metaFilePath, 'utf8'));
+          const base64Data = (meta.data || '').replace(/^data:image\/[^;]+;base64,/, '');
+          const buffer = Buffer.from(base64Data, 'base64');
+          res.writeHead(200, {
+            'Content-Type': meta.mimeType || 'image/png',
+            'Cache-Control': 'public, max-age=31536000, immutable'
+          });
+          res.end(buffer);
+          return;
+        } catch (_) {}
+      }
+      sendJSON(res, 404, { error: 'Asset not found locally' });
+      return;
+    }
+
+    if (req.method === 'POST') {
+      try {
+        const payload = await getBody(req);
+        const { path: assetPath, data, mimeType = 'image/png' } = payload || {};
+        if (!assetPath || !data) {
+          sendJSON(res, 400, { error: 'Missing path or data' });
+          return;
+        }
+        const safeFileName = encodeURIComponent(assetPath).replace(/%/g, '_');
+        const metaFilePath = path.join(ASSETS_DIR, `${safeFileName}.json`);
+        fs.writeFileSync(metaFilePath, JSON.stringify({ path: assetPath, data, mimeType, updatedAt: new Date().toISOString() }), 'utf8');
+        sendJSON(res, 200, { success: true, publicUrl: `/api/assets?path=${encodeURIComponent(assetPath)}` });
+      } catch (err) {
+        sendJSON(res, 500, { error: err.message });
+      }
+      return;
+    }
   }
 
   // ── Database Exams Endpoints ──────────────────────────────────────────────

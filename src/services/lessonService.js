@@ -560,9 +560,15 @@ export const updateLesson = async (lessonId, updates) => {
   let neonError = null;
   try {
     const { neonUpsert } = await import('../lib/neon');
+    const fullDbRecord = updatedRecord ? mapLessonToDB(updatedRecord) : {};
     const neonPayload = {
       id: lessonId,
-      ...dbUpdates
+      ...fullDbRecord,
+      ...dbUpdates,
+      content: {
+        ...((fullDbRecord && fullDbRecord.content) || {}),
+        ...(dbUpdates.content || {})
+      }
     };
     if (!neonPayload.title && updatedRecord?.title) {
       neonPayload.title = updatedRecord.title;

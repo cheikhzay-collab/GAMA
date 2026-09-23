@@ -35700,7 +35700,7 @@
   },
   {
     "id": "MOCK-L-77V5FQA3V",
-    "title": "درس الاتصال والنهايات - تجربة حفظ بالعربية - TEST SUCCESS",
+    "title": "درس الاتصال والنه!ايات - تجربة ! حفظ بالعربية - TEST SUCCESS",
     "subject": "Mathématiques",
     "chapter_number": "",
     "teacher": "Pr. Latrach Abdelkbir",
@@ -35719,7 +35719,7 @@
         "prep_title": "Préparation aux concours",
         "schools": [],
         "subject": "Mathématiques",
-        "fiche_title": "درس الاتصال والنهايات - تجربة حفظ بالعربية - TEST SUCCESS",
+        "fiche_title": "درس الاتصال والنه!ايات - تجربة ! حفظ بالعربية - TEST SUCCESS",
         "chapter_number": "",
         "teacher": "Pr. Latrach Abdelkbir",
         "phone": "",
@@ -35730,14 +35730,14 @@
       "sections": [
         {
           "id": "sec-1",
-          "title": "مفهوم الاتصال في نقطة",
-          "content": "لتكن $ دالة معرفة على مجال مفتوح...\n\nExemple vérifié de test de persistance.",
-          "solution": "",
           "items": [],
-          "language": "ar",
+          "title": "مفهوم الاتصال في نقطة",
           "bgColor": "transparent",
+          "content": "لتكن $ دالة معرفة على مجال مفتوح...\n\nExemple vérifié de test de persistance.",
           "bg_color": "transparent",
           "fontSize": "",
+          "language": "ar",
+          "solution": "",
           "font_size": "",
           "lineHeight": "",
           "line_height": ""
@@ -35745,9 +35745,9 @@
       ]
     },
     "is_active": true,
-    "updated_at": "2026-09-22T10:49:35.251Z",
+    "updated_at": "2026-09-22T11:45:27.870Z",
     "createdAt": "2026-09-22T09:23:13.061Z",
-    "updatedAt": "2026-09-22T10:49:37.344Z"
+    "updatedAt": "2026-09-22T11:45:33.653Z"
   },
   {
     "id": "test-lesson-check",

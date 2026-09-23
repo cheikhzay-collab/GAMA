@@ -326,3 +326,16 @@ BEGIN
   );
 END;
 $$;
+
+-- 16. Assets Table (For storing uploaded figures, photos, and files)
+CREATE TABLE IF NOT EXISTS public.assets (
+  id text PRIMARY KEY,
+  path text UNIQUE NOT NULL,
+  data text NOT NULL,
+  mime_type text DEFAULT 'image/png',
+  size bigint DEFAULT 0,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now())
+);
+CREATE INDEX IF NOT EXISTS idx_assets_path ON public.assets(path);
+

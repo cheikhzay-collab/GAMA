@@ -4,9 +4,9 @@
 const getHost = () => (typeof window !== 'undefined' && window.location && window.location.hostname) ? window.location.hostname : '127.0.0.1';
 const BASE_URL = `http://${getHost()}:5002/api`;
 const PING_URL = `http://${getHost()}:5002/ping`;
-const PROBE_TIMEOUT_MS = 750;
-const REQUEST_TIMEOUT_MS = 3000;
-const OFFLINE_COOLDOWN_MS = 30000;
+const PROBE_TIMEOUT_MS = 2000;
+const REQUEST_TIMEOUT_MS = 15000;
+const OFFLINE_COOLDOWN_MS = 5000;
 const GET_CACHE_TTL_MS = 2000;
 
 let companionAvailable = null;

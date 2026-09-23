@@ -317,8 +317,9 @@ export const updateExam = async (examId, updates) => {
   if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
   if (updates.isArchived !== undefined) dbUpdates.is_archived = updates.isArchived;
 
+  const baseExam = idx !== -1 ? mapExamToDB(currentExams[idx]) : {};
   try {
-    await neonSaveExam({ id: examId, ...dbUpdates });
+    await neonSaveExam({ ...baseExam, id: examId, ...dbUpdates });
   } catch (err) {
     console.warn('[Neon] Could not sync updateExam to Neon:', err.message || err);
   }

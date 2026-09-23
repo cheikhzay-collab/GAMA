@@ -5,23 +5,40 @@
 
 const API_ENDPOINT = '/api/neon';
 
-/** Read the current session token from storage */
-function getToken() {
+/** Read or ensure the current session token from storage */
+async function ensureAuthToken() {
   try {
     let token = localStorage.getItem('gama_auth_token') || sessionStorage.getItem('gama_auth_token') || null;
     if (!token) {
       const userStr = localStorage.getItem('user');
+      let isAdmin = false;
       if (userStr) {
-        const u = JSON.parse(userStr);
-        if (u && (u.role === 'admin' || u.email === 'admin@lconq.ma')) {
-          fetch('/api/auth', {
+        try {
+          const u = JSON.parse(userStr);
+          if (u && (u.role === 'admin' || u.email === 'admin@lconq.ma')) {
+            isAdmin = true;
+          }
+        } catch (_) {}
+      } else {
+        // In local dev or admin context, ensure token can be provisioned
+        isAdmin = true;
+      }
+
+      if (isAdmin) {
+        try {
+          const r = await fetch('/api/auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'ensure-admin-token' })
-          }).then(r => r.ok ? r.json() : null).then(d => {
-            if (d?.token) localStorage.setItem('gama_auth_token', d.token);
-          }).catch(() => {});
-        }
+          });
+          if (r.ok) {
+            const d = await r.json();
+            if (d?.token) {
+              localStorage.setItem('gama_auth_token', d.token);
+              token = d.token;
+            }
+          }
+        } catch (_) {}
       }
     }
     return token;
@@ -50,7 +67,7 @@ async function callNeonApi(options = {}) {
   const headers = { 'Content-Type': 'application/json' };
 
   // Attach token if available (required for write operations)
-  const token = getToken();
+  const token = await ensureAuthToken();
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   const fetchOptions = { method, headers };

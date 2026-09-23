@@ -1,26 +1,32 @@
 // src/services/storageService.js
-// Direct image/asset storage connected to Neon PostgreSQL via /api/assets.
-// Gracefully handles data URLs and file conversions without Supabase.
+// Multi-tier asset storage: Neon Cloud -> Local Companion -> Inline Base64 Fallback.
 
 /**
- * Uploads an asset (file/blob) to Neon /api/assets.
- * @param {File|Blob} file - The file to upload.
- * @param {string} path - The destination path (e.g. 'questions/exam1/fig1.png').
- * @returns {Promise<string>} - The public URL of the stored asset.
+ * Uploads an asset (file/blob or base64 data url) to Neon /api/assets or Companion server.
+ * @param {File|Blob|string} fileOrDataUrl - The file or base64 data URL to upload.
+ * @param {string} path - The destination path (e.g. 'lessons/MOCK-1/fig1.png').
+ * @param {string} [mimeType='image/png'] - MIME type.
+ * @returns {Promise<string>} - The public URL of the stored asset or fallback data URL.
  */
-export const uploadAsset = async (file, path) => {
-  if (!file) throw new Error('No file provided');
+export const uploadAsset = async (fileOrDataUrl, path, mimeType = 'image/png') => {
+  if (!fileOrDataUrl) throw new Error('No file or data provided');
 
-  // Convert File/Blob to Base64
-  const base64Data = await new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+  let base64Data = '';
+  if (typeof fileOrDataUrl === 'string') {
+    base64Data = fileOrDataUrl;
+    const match = base64Data.match(/^data:([^;]+);base64,/);
+    if (match && match[1]) mimeType = match[1];
+  } else {
+    base64Data = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(fileOrDataUrl);
+    });
+    if (fileOrDataUrl.type) mimeType = fileOrDataUrl.type;
+  }
 
-  const mimeType = file.type || 'image/png';
-
+  // 1. Try standard /api/assets (Neon via Serverless / Vite proxy)
   try {
     const response = await fetch('/api/assets', {
       method: 'POST',
@@ -32,15 +38,37 @@ export const uploadAsset = async (file, path) => {
       }),
     });
 
-    if (!response.ok) {
-      const errJson = await response.json().catch(() => ({}));
-      throw new Error(errJson.error || 'Failed to upload asset');
+    if (response.ok) {
+      const json = await response.json();
+      if (json.publicUrl) return json.publicUrl;
     }
-
-    const json = await response.json();
-    return json.publicUrl || base64Data;
   } catch (err) {
-    console.warn('[Storage] Remote asset upload failed, falling back to base64 data URL:', err.message);
-    return base64Data;
+    console.warn('[Storage] Remote asset upload to /api/assets failed:', err.message);
   }
+
+  // 2. Try Local Companion Server on port 5002
+  try {
+    const host = (typeof window !== 'undefined' && window.location && window.location.hostname) ? window.location.hostname : '127.0.0.1';
+    const compResponse = await fetch(`http://${host}:5002/api/assets`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        path,
+        data: base64Data,
+        mimeType,
+      }),
+    });
+
+    if (compResponse.ok) {
+      const json = await compResponse.json();
+      if (json.publicUrl) return json.publicUrl;
+    }
+  } catch (err) {
+    console.warn('[Storage] Companion asset upload failed:', err.message);
+  }
+
+  // 3. Fallback to inline Base64 Data URL if servers are unreachable
+  return base64Data;
 };
+
+export const uploadAssetData = uploadAsset;
