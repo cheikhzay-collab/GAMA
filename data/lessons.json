@@ -35811,5 +35811,59 @@
     "updated_at": "2026-09-22T10:46:28.231Z",
     "createdAt": "2026-09-22T10:46:28.881Z",
     "updatedAt": "2026-09-22T10:46:28.881Z"
+  },
+  {
+    "id": "MOCK-TC-MATH-01",
+    "title": "Fiche 01 : Logique Mathématique",
+    "subject": "Mathématiques",
+    "chapter_number": "",
+    "teacher": "",
+    "phone": "",
+    "schools": [],
+    "level": "2bac_pc_svt",
+    "doc_type": "course",
+    "content": {
+      "level": "2bac_pc_svt",
+      "doc_type": "course",
+      "columns_count": 2,
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "Préparation aux concours",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Fiche 01 : Logique Mathématique",
+        "chapter_number": "",
+        "teacher": "",
+        "phone": "",
+        "capacites_attendues": "",
+        "contenus": "",
+        "leContenu": ""
+      },
+      "sections": [
+        {
+          "id": "sec-1-content",
+          "title": "Nouvelle Section de Cours",
+          "type": "content",
+          "section_number": "",
+          "section_header": "",
+          "content": "UGY",
+          "solution": "",
+          "items": [],
+          "language": "fr",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        }
+      ]
+    },
+    "is_active": true,
+    "updated_at": "2026-09-23T15:54:48.051Z",
+    "createdAt": "2026-09-23T15:54:48.786Z",
+    "updatedAt": "2026-09-23T15:54:48.786Z"
   }
 ]
