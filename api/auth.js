@@ -1,4 +1,4 @@
-﻿// api/auth.js
+// api/auth.js
 // High-performance direct Neon Authentication API
 // Supports: Login, Register, Session validation (JWT), and Profile retrieval.
 // Uses neon() HTTP driver â€” zero TCP overhead, ideal for serverless cold starts.
@@ -154,10 +154,12 @@ function setCorsHeaders(req, res) {
  * Get the neon SQL function â€” cached per module (singleton).
  * Uses HTTP driver: no TCP handshake overhead, ideal for serverless.
  */
+const DEFAULT_DATABASE_URL = 'postgresql://neondb_owner:npg_UXp0JqHP3DnI@ep-red-hall-zaw1rhs0-pooler.c-2.eu-west-2.aws.neon.tech/neondb?sslmode=require';
+
 let _sql = null;
 function getSql() {
   if (_sql) return _sql;
-  const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED || process.env.VITE_NEON_DATABASE_URL;
+  const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED || process.env.VITE_NEON_DATABASE_URL || DEFAULT_DATABASE_URL;
   if (!databaseUrl) throw new Error('NEON_DATABASE_URL is not configured');
   _sql = neon(databaseUrl);
   return _sql;

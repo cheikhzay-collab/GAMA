@@ -9,38 +9,52 @@ const API_ENDPOINT = '/api/neon';
 async function ensureAuthToken() {
   try {
     let token = localStorage.getItem('gama_auth_token') || sessionStorage.getItem('gama_auth_token') || null;
-    if (!token) {
-      const userStr = localStorage.getItem('user');
-      let isAdmin = false;
-      if (userStr) {
-        try {
-          const u = JSON.parse(userStr);
-          if (u && (u.role === 'admin' || u.email === 'admin@lconq.ma')) {
-            isAdmin = true;
-          }
-        } catch (_) {}
-      } else {
-        // In local dev or admin context, ensure token can be provisioned
-        isAdmin = true;
-      }
-
-      if (isAdmin) {
-        try {
-          const r = await fetch('/api/auth', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'ensure-admin-token' })
-          });
-          if (r.ok) {
-            const d = await r.json();
-            if (d?.token) {
-              localStorage.setItem('gama_auth_token', d.token);
-              token = d.token;
-            }
-          }
-        } catch (_) {}
-      }
+    const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+    const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    let isAdmin = isAdminRoute;
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        if (u && (u.role === 'admin' || u.email === 'admin@lconq.ma')) {
+          isAdmin = true;
+        }
+      } catch (_) {}
+    } else {
+      isAdmin = true;
     }
+
+    let hasAdminToken = false;
+    if (token) {
+      try {
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          let b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+          while (b64.length % 4) b64 += '=';
+          const payload = JSON.parse(atob(b64));
+          if (payload && payload.role === 'admin' && (!payload.exp || Math.floor(Date.now() / 1000) < payload.exp)) {
+            hasAdminToken = true;
+          }
+        }
+      } catch (_) {}
+    }
+
+    if (isAdmin && !hasAdminToken) {
+      try {
+        const r = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'ensure-admin-token' })
+        });
+        if (r.ok) {
+          const d = await r.json();
+          if (d?.token) {
+            localStorage.setItem('gama_auth_token', d.token);
+            token = d.token;
+          }
+        }
+      } catch (_) {}
+    }
+
     return token;
   } catch (_) {
     return null;

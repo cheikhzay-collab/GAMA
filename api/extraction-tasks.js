@@ -1,4 +1,4 @@
-﻿// api/extraction-tasks.js
+// api/extraction-tasks.js
 // Dedicated Vercel Serverless Function & Cloud Task Queue for Lesson Extraction
 // Connects directly to Neon PostgreSQL (public.extraction_tasks)
 import { neon } from '@neondatabase/serverless';
@@ -31,10 +31,12 @@ function setCorsHeaders(req, res) {
   );
 }
 
+const DEFAULT_DATABASE_URL = 'postgresql://neondb_owner:npg_UXp0JqHP3DnI@ep-red-hall-zaw1rhs0-pooler.c-2.eu-west-2.aws.neon.tech/neondb?sslmode=require';
+
 let _sql = null;
 function getSql() {
   if (_sql) return _sql;
-  const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED || process.env.VITE_NEON_DATABASE_URL;
+  const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED || process.env.VITE_NEON_DATABASE_URL || DEFAULT_DATABASE_URL;
   if (!databaseUrl) throw new Error('NEON_DATABASE_URL is not configured on server');
   _sql = neon(databaseUrl);
   return _sql;

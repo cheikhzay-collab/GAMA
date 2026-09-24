@@ -423,6 +423,7 @@ export const addLesson = async (lessonData) => {
   const rawLessons = readRawLessons().filter(l => l.id !== id);
   rawLessons.unshift(mapped);
   saveLocalStorageLessons(rawLessons);
+  saveSingleLessonToLocalStorage(mapped);
 
   // 2. Invalidate + seed in-memory cache
   queryCache.invalidate('lessons_all');
