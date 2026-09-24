@@ -1,4 +1,4 @@
-// api/neon.js
+﻿// api/neon.js
 // High-performance Vercel Serverless Function for Neon PostgreSQL
 // Uses neon() HTTP driver (no TCP handshake, no connection setup latency)
 // Connection Pooling is handled server-side via Neon Pooler URL
@@ -32,7 +32,7 @@ const CACHE_TTL = {
   NONE:    0,
 };
 
-// [M-1 FIX] Whitelist of allowed filter columns per table — prevents column injection
+// [M-1 FIX] Whitelist of allowed filter columns per table â€” prevents column injection
 const ALLOWED_FILTER_COLUMNS = {
   lessons:    ['is_active', 'is_archived', 'level', 'subject', 'doc_type', 'class_id'],
   exams:      ['is_active', 'is_archived', 'level', 'tier'],
@@ -137,7 +137,7 @@ function getAuthUser(req) {
     } catch (_) {}
   }
 
-  // Local development fallback — allow local dev and internal companion to save without 401
+  // Local development fallback â€” allow local dev and internal companion to save without 401
   if (isLocalDev) {
     return { uid: 'admin-master', email: 'admin@lconq.ma', role: 'admin' };
   }
@@ -146,7 +146,7 @@ function getAuthUser(req) {
 }
 
 /**
- * Get the neon SQL function — cached per invocation (module-level singleton).
+ * Get the neon SQL function â€” cached per invocation (module-level singleton).
  * The neon() HTTP driver doesn't need connect/disconnect, making it ideal
  * for serverless cold starts (saves ~150ms per request vs Client).
  */
@@ -170,7 +170,7 @@ function getCacheTtl(table, method) {
 }
 
 export default async function handler(req, res) {
-  // ── CORS Headers ──────────────────────────────────────────────────────────
+  // â”€â”€ CORS Headers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   setCorsHeaders(req, res);
 
   if (req.method === 'OPTIONS') {
@@ -186,7 +186,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // ── 1. POST / PUT Requests (Mutations & Queries) ─────────────────────────
+    // â”€â”€ 1. POST / PUT Requests (Mutations & Queries) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (req.method === 'POST' || req.method === 'PUT') {
       // [C-2, C-3 FIX] All write operations require a valid authenticated user
       const authUser = getAuthUser(req);
@@ -197,18 +197,18 @@ export default async function handler(req, res) {
       const body = req.body || {};
       const action = body.action || (body.sql ? 'query' : null);
 
-      // (A) Raw SQL Query — [C-2 FIX] admin only
+      // (A) Raw SQL Query â€” [C-2 FIX] admin only
       if (action === 'query') {
         if (authUser.role !== 'admin') {
           return res.status(403).json({ error: 'Admin access required for raw SQL' });
         }
         const { sql: rawSql, params = [] } = body;
         if (!rawSql) return res.status(400).json({ error: 'Missing sql statement' });
-        const rows = await sql(rawSql, params);
+        const rows = await sql.query(rawSql, params);
         return res.status(200).json({ rows, rowCount: rows.length });
       }
 
-      // (B) Table Upsert — [C-3 FIX] enforce ownership: non-admins can only write their own rows
+      // (B) Table Upsert â€” [C-3 FIX] enforce ownership: non-admins can only write their own rows
       if (action === 'upsert') {
         const { table, data, keyField = 'id' } = body;
         if (!table || !ALLOWED_TABLES.includes(table)) {
@@ -250,12 +250,12 @@ export default async function handler(req, res) {
         // Check if row already exists in table to avoid PostgreSQL NOT-NULL evaluation on omitted columns
         if (data[keyField] !== undefined) {
           const checkSql = `SELECT 1 FROM public."${table}" WHERE "${keyField}" = $1 LIMIT 1;`;
-          const existingRows = await sql(checkSql, [data[keyField]]);
+          const existingRows = await sql.query(checkSql, [data[keyField]]);
           if (existingRows.length > 0) {
             const updateKeys = keys.filter(k => k !== keyField);
             if (updateKeys.length === 0) {
               const fetchSql = `SELECT * FROM public."${table}" WHERE "${keyField}" = $1;`;
-              const r = await sql(fetchSql, [data[keyField]]);
+              const r = await sql.query(fetchSql, [data[keyField]]);
               return res.status(200).json({ success: true, row: r[0] || null });
             }
             const setClauses = updateKeys.map((k, i) => `"${k}" = $${i + 2}`).join(', ');
@@ -275,7 +275,7 @@ export default async function handler(req, res) {
               WHERE "${keyField}" = $1
               RETURNING *;
             `;
-            const updatedRows = await sql(updateSql, updateVals);
+            const updatedRows = await sql.query(updateSql, updateVals);
             return res.status(200).json({ success: true, row: updatedRows[0] || null });
           }
         }
@@ -288,11 +288,11 @@ export default async function handler(req, res) {
           RETURNING *;
         `;
 
-        const rows = await sql(upsertSql, values);
+        const rows = await sql.query(upsertSql, values);
         return res.status(200).json({ success: true, row: rows[0] });
       }
 
-      // (C) Table Delete — [C-3 FIX] admin only for delete
+      // (C) Table Delete â€” [C-3 FIX] admin only for delete
       if (action === 'delete') {
         if (authUser.role !== 'admin') {
           return res.status(403).json({ error: 'Admin access required for deletions' });
@@ -306,14 +306,14 @@ export default async function handler(req, res) {
         }
 
         const deleteSql = `DELETE FROM public."${table}" WHERE "${keyField}" = $1 RETURNING *;`;
-        const rows = await sql(deleteSql, [id]);
+        const rows = await sql.query(deleteSql, [id]);
         return res.status(200).json({ success: true, deleted: rows.length > 0 });
       }
 
       return res.status(400).json({ error: `Unknown action '${action}'` });
     }
 
-    // ── 2. GET Requests (Fetches & Health Checks) ────────────────────────────
+    // â”€â”€ 2. GET Requests (Fetches & Health Checks) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (req.method === 'GET') {
       const { table, id, keyField = 'id', limit = 200, filter, filterVal } = req.query || {};
 
@@ -342,11 +342,11 @@ export default async function handler(req, res) {
       // Single item fetch
       if (id !== undefined && id !== null && id !== '') {
         const fetchSql = `SELECT * FROM public."${queryTable}" WHERE "${keyField}" = $1 LIMIT 1;`;
-        const rows = await sql(fetchSql, [id]);
+        const rows = await sql.query(fetchSql, [id]);
         return res.status(200).json({ row: rows[0] || null });
       }
 
-      // Filtered list query — [M-1 FIX] validate filter column against whitelist
+      // Filtered list query â€” [M-1 FIX] validate filter column against whitelist
       if (filter && ALLOWED_TABLES.includes(queryTable)) {
         const allowedCols = ALLOWED_FILTER_COLUMNS[queryTable] || [];
         if (!allowedCols.includes(filter)) {
@@ -354,21 +354,26 @@ export default async function handler(req, res) {
         }
         const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 100, 1), 1000);
         const filteredSql = `SELECT * FROM public."${queryTable}" WHERE "${filter}" = $1 LIMIT $2;`;
-        const rows = await sql(filteredSql, [filterVal, parsedLimit]);
+        const rows = await sql.query(filteredSql, [filterVal, parsedLimit]);
         return res.status(200).json({ rows, rowCount: rows.length });
       }
 
       // List query with limit
       const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 100, 1), 1000);
       const listSql = `SELECT * FROM public."${queryTable}" LIMIT $1;`;
-      const rows = await sql(listSql, [parsedLimit]);
+      const rows = await sql.query(listSql, [parsedLimit]);
       return res.status(200).json({ rows, rowCount: rows.length });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
-    // [M-4 FIX] Log details server-side, return generic message to client
+    // [M-4 FIX] Log details server-side, return real error in dev / generic in production
     console.error('[Neon Serverless Error]:', err);
-    return res.status(500).json({ error: 'Database error. Please try again later.' });
+    const isDev = process.env.NODE_ENV !== 'production';
+    return res.status(500).json({
+      error: isDev ? (err.message || 'Database error') : 'Database error. Please try again later.',
+      ...(isDev && { detail: err.detail || err.hint || undefined }),
+    });
   }
 }
+

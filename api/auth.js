@@ -1,7 +1,7 @@
-// api/auth.js
+﻿// api/auth.js
 // High-performance direct Neon Authentication API
 // Supports: Login, Register, Session validation (JWT), and Profile retrieval.
-// Uses neon() HTTP driver — zero TCP overhead, ideal for serverless cold starts.
+// Uses neon() HTTP driver â€” zero TCP overhead, ideal for serverless cold starts.
 import { neon } from '@neondatabase/serverless';
 import crypto from 'crypto';
 
@@ -76,7 +76,7 @@ function verifyJWT(token) {
 }
 
 // Password hashing using native PBKDF2 (secure, standard, zero external packages)
-// [M-3 FIX] Raised iterations from 10,000 → 310,000 (NIST SP 800-132 recommendation for SHA-512)
+// [M-3 FIX] Raised iterations from 10,000 â†’ 310,000 (NIST SP 800-132 recommendation for SHA-512)
 const PBKDF2_ITERATIONS = 310_000;
 
 function hashPassword(password) {
@@ -87,9 +87,9 @@ function hashPassword(password) {
 
 function verifyPassword(password, stored) {
   if (!stored) return false;
-  // [H-4 FIX] Removed plain-text comparison fallback — all passwords must be PBKDF2-hashed
+  // [H-4 FIX] Removed plain-text comparison fallback â€” all passwords must be PBKDF2-hashed
   if (!stored.includes(':')) {
-    // Account has legacy/unhashed password — force them to reset (deny login)
+    // Account has legacy/unhashed password â€” force them to reset (deny login)
     return false;
   }
   const parts = stored.split(':');
@@ -104,7 +104,7 @@ function verifyPassword(password, stored) {
 }
 
 // [H-5 FIX] Simple in-memory rate limiter for login endpoint
-// Tracks failed attempts per IP — resets after 15 minutes
+// Tracks failed attempts per IP â€” resets after 15 minutes
 const loginAttempts = new Map();
 const RATE_LIMIT_MAX = 10;        // max failed attempts
 const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
@@ -151,7 +151,7 @@ function setCorsHeaders(req, res) {
 }
 
 /**
- * Get the neon SQL function — cached per module (singleton).
+ * Get the neon SQL function â€” cached per module (singleton).
  * Uses HTTP driver: no TCP handshake overhead, ideal for serverless.
  */
 let _sql = null;
@@ -178,7 +178,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: err.message });
   }
 
-  // ── 1. GET /api/auth (Session verification) ──────────────────────────────
+  // â”€â”€ 1. GET /api/auth (Session verification) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (req.method === 'GET') {
     const authHeader = req.headers.authorization || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
@@ -211,7 +211,7 @@ export default async function handler(req, res) {
     }
 
     try {
-      const rows = await sql(
+      const rows = await sql.query(
         'SELECT id, name, email, role, tier, xp, streak, rank, total_students, phone, city, school, class_id, subscription FROM public.profiles WHERE id = $1 LIMIT 1;',
         [decoded.uid]
       );
@@ -241,11 +241,11 @@ export default async function handler(req, res) {
       });
     } catch (err) {
       console.error('[Neon Auth Session Error]:', err);
-      return res.status(500).json({ error: 'Erreur lors de la vérification de session.' });
+      return res.status(500).json({ error: 'Erreur lors de la vÃ©rification de session.' });
     }
   }
 
-  // ── 2. POST /api/auth (Register, Login) ──────────────────────────────────
+  // â”€â”€ 2. POST /api/auth (Register, Login) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (req.method === 'POST') {
     const { action, email, password, name } = req.body || {};
 
@@ -308,11 +308,11 @@ export default async function handler(req, res) {
         const normalizedEmail = email.toLowerCase().trim();
         const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
         if (checkRateLimit(clientIp)) {
-          return res.status(429).json({ error: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.' });
+          return res.status(429).json({ error: 'Trop de tentatives de connexion. RÃ©essayez dans 15 minutes.' });
         }
 
         // Query Neon Database for user
-        const rows = await sql(
+        const rows = await sql.query(
           'SELECT * FROM public.profiles WHERE LOWER(email) = $1 LIMIT 1;',
           [normalizedEmail]
         );
@@ -341,7 +341,7 @@ export default async function handler(req, res) {
         } else {
           // If no password set yet, set current password as password_hash
           const hashed = hashPassword(password);
-          await sql('UPDATE public.profiles SET password_hash = $1 WHERE id = $2;', [hashed, user.id]);
+          await sql.query('UPDATE public.profiles SET password_hash = $1 WHERE id = $2;', [hashed, user.id]);
         }
 
         resetRateLimit(clientIp);
@@ -379,20 +379,20 @@ export default async function handler(req, res) {
         }
 
         // Check if user already exists
-        const existing = await sql(
+        const existing = await sql.query(
           'SELECT id FROM public.profiles WHERE LOWER(email) = $1 LIMIT 1;',
           [normalizedEmail]
         );
 
         if (existing.length > 0) {
-          return res.status(400).json({ error: 'Cette adresse email est déjà enregistrée. Essayez de vous connecter.' });
+          return res.status(400).json({ error: 'Cette adresse email est dÃ©jÃ  enregistrÃ©e. Essayez de vous connecter.' });
         }
 
         const newId = 'u_' + crypto.randomBytes(8).toString('hex');
         const passwordHash = hashPassword(password);
         const now = new Date().toISOString();
 
-        await sql(
+        await sql.query(
           `INSERT INTO public.profiles 
            (id, name, email, role, tier, xp, streak, total_students, password_hash, joined, created_at, updated_at) 
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10, $10);`,
@@ -421,9 +421,10 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: `Unknown action ${action}` });
     } catch (err) {
       console.error('[Neon Auth Error]:', err);
-      return res.status(500).json({ error: 'Une erreur interne est survenue. Réessayez plus tard.' });
+      return res.status(500).json({ error: 'Une erreur interne est survenue. RÃ©essayez plus tard.' });
     }
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
 }
+

@@ -414,7 +414,7 @@ export default async function handler(req, res) {
 
     if (id) {
       try {
-        const rows = await sql(
+        const rows = await sql.query(
           `SELECT 
              id, file_name, file_type, page_count, provider, model, status, 
              progress_percent, progress_message, attempts, max_attempts, 
@@ -457,7 +457,7 @@ export default async function handler(req, res) {
     // List all tasks (newest first)
     try {
       // Auto-reap zombie tasks stuck in 'processing' for > 2 minutes
-      await sql(
+      await sql.query(
         `UPDATE public.extraction_tasks 
          SET status = 'failed', 
              progress_percent = 0, 
@@ -468,7 +468,7 @@ export default async function handler(req, res) {
            AND updated_at < NOW() - INTERVAL '2 minutes'`
       ).catch(() => {});
 
-      const rows = await sql(
+      const rows = await sql.query(
         `SELECT 
            id, file_name, file_type, page_count, provider, model, status, 
            progress_percent, progress_message, attempts, max_attempts, 
@@ -516,7 +516,7 @@ export default async function handler(req, res) {
       if (!targetId) return res.status(400).json({ error: 'ID manquant' });
 
       try {
-        await sql(
+        await sql.query(
           `UPDATE public.extraction_tasks 
            SET status = COALESCE($1, status),
                progress_percent = COALESCE($2, progress_percent),
@@ -549,7 +549,7 @@ export default async function handler(req, res) {
       if (!targetId) return res.status(400).json({ error: 'ID manquant' });
 
       try {
-        await sql(
+        await sql.query(
           `UPDATE public.extraction_tasks 
            SET status = 'pending', attempts = 0, progress_percent = 0, 
                progress_message = 'Nouvelle tentative programmÃ©e...', 
@@ -573,7 +573,7 @@ export default async function handler(req, res) {
     const apiKey = body.apiKey || process.env.GEMINI_API_KEY || '';
 
     try {
-      await sql(
+      await sql.query(
         `INSERT INTO public.extraction_tasks (
            id, file_name, file_type, page_count, provider, model, status, 
            progress_percent, progress_message, attempts, max_attempts, 
@@ -612,7 +612,7 @@ export default async function handler(req, res) {
             extractedWithModel: usedModel
           };
 
-          await sql(
+          await sql.query(
             `UPDATE public.extraction_tasks 
              SET status = 'completed', progress_percent = 100, 
                  progress_message = 'Fiche extraite avec succÃ¨s !', 
@@ -636,7 +636,7 @@ export default async function handler(req, res) {
           });
         } catch (extractErr) {
           console.error('[Server Extraction Error]:', extractErr.message);
-          await sql(
+          await sql.query(
             `UPDATE public.extraction_tasks 
              SET status = 'failed', progress_percent = 0, 
                  error_message = $1, progress_message = 'Ã‰chec de l''extraction', 
@@ -677,7 +677,7 @@ export default async function handler(req, res) {
   if (req.method === 'DELETE') {
     if (!id) return res.status(400).json({ error: 'ID manquant' });
     try {
-      await sql(`DELETE FROM public.extraction_tasks WHERE id = $1`, [id]);
+      await sql.query(`DELETE FROM public.extraction_tasks WHERE id = $1`, [id]);
       return res.status(200).json({ success: true });
     } catch (err) {
       return res.status(500).json({ error: err.message });
@@ -686,4 +686,5 @@ export default async function handler(req, res) {
 
   return res.status(405).json({ error: 'Method Not Allowed' });
 }
+
 

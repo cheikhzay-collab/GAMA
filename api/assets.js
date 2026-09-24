@@ -1,6 +1,6 @@
-// api/assets.js
+﻿// api/assets.js
 // Storage endpoint for image & document assets using Neon PostgreSQL.
-// Uses neon() HTTP driver — zero TCP overhead, ideal for serverless cold starts.
+// Uses neon() HTTP driver â€” zero TCP overhead, ideal for serverless cold starts.
 import { neon } from '@neondatabase/serverless';
 
 export const config = {
@@ -15,7 +15,7 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://lconq.ma,https:
   .split(',').map(o => o.trim()).filter(Boolean);
 
 /**
- * Get the neon SQL function — cached per module (singleton).
+ * Get the neon SQL function â€” cached per module (singleton).
  * Uses HTTP driver: no TCP handshake overhead, ideal for serverless.
  */
 let _sql = null;
@@ -58,12 +58,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    // ── 1. GET /api/assets?path=... (Serve image) ───────────────────────────
+    // â”€â”€ 1. GET /api/assets?path=... (Serve image) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (req.method === 'GET') {
       const { path } = req.query || {};
       if (!path) return res.status(400).json({ error: 'Missing path' });
 
-      const rows = await sql('SELECT data, mime_type FROM public.assets WHERE path = $1 LIMIT 1;', [path]);
+      const rows = await sql.query('SELECT data, mime_type FROM public.assets WHERE path = $1 LIMIT 1;', [path]);
       if (rows.length === 0) {
         return res.status(404).json({ error: 'Asset not found' });
       }
@@ -77,7 +77,7 @@ export default async function handler(req, res) {
       return res.status(200).send(buffer);
     }
 
-    // ── 2. POST /api/assets (Upload image) ──────────────────────────────────
+    // â”€â”€ 2. POST /api/assets (Upload image) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (req.method === 'POST') {
       const { path, data, mimeType = 'image/png' } = req.body || {};
       if (!path || !data) {
@@ -98,7 +98,7 @@ export default async function handler(req, res) {
         RETURNING path;
       `;
 
-      await sql(insertSql, [id, path, data, mimeType, size]);
+      await sql.query(insertSql, [id, path, data, mimeType, size]);
       const publicUrl = `/api/assets?path=${encodeURIComponent(path)}`;
 
       return res.status(200).json({ success: true, publicUrl });
@@ -110,3 +110,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: err.message || 'Asset storage error' });
   }
 }
+
