@@ -1,7 +1,7 @@
 // api/assets.js
-// Storage endpoint for image & document assets using Neon PostgreSQL
-// Handles uploads and serving of question figures, logos, and files
-import { Client } from '@neondatabase/serverless';
+// Storage endpoint for image & document assets using Neon PostgreSQL.
+// Uses neon() HTTP driver — zero TCP overhead, ideal for serverless cold starts.
+import { neon } from '@neondatabase/serverless';
 
 export const config = {
   api: {
@@ -13,6 +13,19 @@ export const config = {
 
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://lconq.ma,https://www.lconq.ma')
   .split(',').map(o => o.trim()).filter(Boolean);
+
+/**
+ * Get the neon SQL function — cached per module (singleton).
+ * Uses HTTP driver: no TCP handshake overhead, ideal for serverless.
+ */
+let _sql = null;
+function getSql() {
+  if (_sql) return _sql;
+  const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED || process.env.VITE_NEON_DATABASE_URL;
+  if (!databaseUrl) throw new Error('NEON_DATABASE_URL is not configured');
+  _sql = neon(databaseUrl);
+  return _sql;
+}
 
 export default async function handler(req, res) {
   const origin = req.headers.origin || '';
@@ -35,29 +48,27 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
-
   }
 
-  const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED || process.env.VITE_NEON_DATABASE_URL;
-  if (!databaseUrl) {
-    return res.status(500).json({ error: 'NEON_DATABASE_URL is not configured' });
-  }
-
-  const client = new Client(databaseUrl);
+  let sql;
   try {
-    await client.connect();
+    sql = getSql();
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
 
+  try {
     // ── 1. GET /api/assets?path=... (Serve image) ───────────────────────────
     if (req.method === 'GET') {
       const { path } = req.query || {};
       if (!path) return res.status(400).json({ error: 'Missing path' });
 
-      const result = await client.query('SELECT data, mime_type FROM public.assets WHERE path = $1 LIMIT 1;', [path]);
-      if (result.rows.length === 0) {
+      const rows = await sql('SELECT data, mime_type FROM public.assets WHERE path = $1 LIMIT 1;', [path]);
+      if (rows.length === 0) {
         return res.status(404).json({ error: 'Asset not found' });
       }
 
-      const { data, mime_type } = result.rows[0];
+      const { data, mime_type } = rows[0];
       const base64Content = data.includes(',') ? data.split(',')[1] : data;
       const buffer = Buffer.from(base64Content, 'base64');
 
@@ -76,7 +87,7 @@ export default async function handler(req, res) {
       const id = 'asset_' + Math.random().toString(36).substring(2, 11);
       const size = Buffer.byteLength(data, 'utf8');
 
-      const sql = `
+      const insertSql = `
         INSERT INTO public.assets (id, path, data, mime_type, size, updated_at)
         VALUES ($1, $2, $3, $4, $5, NOW())
         ON CONFLICT (path) DO UPDATE SET
@@ -87,7 +98,7 @@ export default async function handler(req, res) {
         RETURNING path;
       `;
 
-      await client.query(sql, [id, path, data, mimeType, size]);
+      await sql(insertSql, [id, path, data, mimeType, size]);
       const publicUrl = `/api/assets?path=${encodeURIComponent(path)}`;
 
       return res.status(200).json({ success: true, publicUrl });
@@ -97,7 +108,5 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error('[Neon Assets Error]:', err);
     return res.status(500).json({ error: err.message || 'Asset storage error' });
-  } finally {
-    await client.end().catch(() => {});
   }
 }

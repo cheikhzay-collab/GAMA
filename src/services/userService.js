@@ -5,7 +5,7 @@
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
 import initialUsersData from '../../data/users.json';
-import { neonSaveProfile, neonGet, neonList, neonUpsert } from '../lib/neon';
+import { neonSaveProfile, neonGet, neonList, neonUpsert, neonListFiltered } from '../lib/neon';
 
 const STORAGE_KEY = 'lconq_users_db';
 
@@ -124,14 +124,15 @@ export const createUserDoc = async (uid, userData) => {
 
   // 2. Sync to Neon PostgreSQL
   try {
-    neonSaveProfile({
+    await neonSaveProfile({
       id: uid,
       ...mapProfileToDB(userData),
+      created_at: userData.joined || now,
       updated_at: now,
-    }).catch(err => console.warn('[Neon] Error syncing createUserDoc:', err.message));
-  } catch (_) {}
-
-
+    });
+  } catch (err) {
+    console.warn('[Neon] Error syncing createUserDoc:', err.message);
+  }
 
   // 3. Local Companion
   try {
@@ -144,7 +145,7 @@ export const createUserDoc = async (uid, userData) => {
     };
     await localDb.post('/users', dbUser);
   } catch (err) {
-    // companion offline fallback
+    // companion offline fallback — silent
   }
 };
 
@@ -166,20 +167,21 @@ export const getUserDoc = async (uid, options = {}) => {
       console.warn('[Neon] getUserDoc error:', neonErr.message);
     }
 
-
+    // 2. Local Companion
     try {
       const list = await localDb.get('/users');
       const found = list.find(u => u.id === uid || u.uid === uid);
       if (found) return mapDBToProfile(found);
     } catch (err) {}
 
+    // 3. LocalStorage fallback
     const localList = getLocalStorageUsers();
     if (localList) {
       const found = localList.find(u => u.id === uid || u.uid === uid);
       if (found) return found;
     }
 
-    // Seed fallback
+    // 4. Seed fallback
     if (Array.isArray(initialUsersData)) {
       const seedFound = initialUsersData.find(u => u.id === uid || u.uid === uid);
       if (seedFound) return mapDBToProfile(seedFound);
@@ -193,6 +195,9 @@ export const getUserDoc = async (uid, options = {}) => {
   });
 };
 
+/**
+ * Update specific fields on a user profile.
+ */
 export const updateUserDoc = async (uid, updates) => {
   queryCache.invalidate(`user_doc_${uid}`);
   queryCache.invalidate('users_all');
@@ -214,9 +219,22 @@ export const updateUserDoc = async (uid, updates) => {
     saveLocalStorageUsers(currentUsers);
   }
 
-  
+  // 2. Sync to Neon PostgreSQL
+  try {
+    const dbUpdates = {
+      id: uid,
+      ...mapProfileToDB(updates),
+      ...(classId !== undefined ? { class_id: classId } : {}),
+      updated_at: now,
+    };
+    // Remove undefined values to avoid overwriting existing data with null
+    Object.keys(dbUpdates).forEach(k => dbUpdates[k] === undefined && delete dbUpdates[k]);
+    await neonSaveProfile(dbUpdates);
+  } catch (neonErr) {
+    console.warn('[Neon] updateUserDoc sync error:', neonErr.message || neonErr);
+  }
 
-  // 3. Companion
+  // 3. Local Companion
   try {
     const list = await localDb.get('/users');
     const cIdx = list.findIndex(u => u.id === uid || u.uid === uid);
@@ -242,7 +260,6 @@ export const setUserSubscription = async (uid, subscription, tier = 'premium') =
   queryCache.invalidate(`user_doc_${uid}`);
   queryCache.invalidate('users_all');
 
-
   try {
     await updateUserDoc(uid, { subscription, tier });
   } catch (err) {
@@ -259,8 +276,7 @@ export const setUserSubscription = async (uid, subscription, tier = 'premium') =
 export const saveQuestionProgress = async (uid, questionId, progressData) => {
   const now = new Date().toISOString();
 
-  // 1. Neon — [FIX] progress.id is bigint (auto-increment), conflict on (user_id, question_id)
-  //    Use raw SQL INSERT ... ON CONFLICT instead of generic upsert with string id.
+  // 1. Neon — progress.id is bigint (auto-increment), conflict on (user_id, question_id)
   try {
     const res = await neonAuthFetch({
       action: 'query',
@@ -287,8 +303,6 @@ export const saveQuestionProgress = async (uid, questionId, progressData) => {
   } catch (neonErr) {
     console.warn('[Neon] saveQuestionProgress error:', neonErr.message);
   }
-
-
 };
 
 /**
@@ -296,6 +310,8 @@ export const saveQuestionProgress = async (uid, questionId, progressData) => {
  * Neon PostgreSQL persistence with Local fallback.
  */
 export const getAllProgress = async (uid) => {
+  if (!uid) return {};
+
   const mapRow = (row) => ({
     difficulty: row.difficulty,
     stability: row.stability,
@@ -305,9 +321,8 @@ export const getAllProgress = async (uid) => {
     nextReviewDate: row.next_review_date,
   });
 
-  // 1. Try Neon — [M-5 FIX] single filtered GET request (removed useless double-fetch)
+  // 1. Try Neon — single filtered GET request
   try {
-    const { neonListFiltered } = await import('../lib/neon');
     const neonRes = await neonListFiltered('progress', 'user_id', uid, 2000);
     if (Array.isArray(neonRes.data) && neonRes.data.length > 0) {
       const result = {};
@@ -318,7 +333,8 @@ export const getAllProgress = async (uid) => {
     console.warn('[Neon] getAllProgress error:', neonErr.message);
   }
 
-
+  // Safe fallback: return empty object (not undefined)
+  return {};
 };
 
 // ─── Mock Exam History ────────────────────────────────────────────────────────
@@ -330,7 +346,7 @@ export const getAllProgress = async (uid) => {
 export const saveMockResult = async (uid, result) => {
   const date = result.date || new Date().toISOString();
 
-  // 1. Try Neon — [FIX] mock_history.id is bigint (auto-increment) — use INSERT without id
+  // 1. Try Neon — mock_history.id is bigint (auto-increment) — use INSERT without id
   try {
     const res = await neonAuthFetch({
       action: 'query',
@@ -348,8 +364,6 @@ export const saveMockResult = async (uid, result) => {
   } catch (neonErr) {
     console.warn('[Neon] saveMockResult error:', neonErr.message);
   }
-
-
 };
 
 /**
@@ -357,6 +371,8 @@ export const saveMockResult = async (uid, result) => {
  * Neon PostgreSQL persistence with Local fallback.
  */
 export const getMockHistory = async (uid) => {
+  if (!uid) return [];
+
   const mapRow = (row) => ({
     id: row.id,
     examId: row.exam_id,
@@ -372,7 +388,7 @@ export const getMockHistory = async (uid) => {
     date: row.date,
   });
 
-  // 1. Try Neon — [FIX] Added Authorization header via neonAuthFetch
+  // 1. Try Neon
   try {
     const res = await neonAuthFetch({
       action: 'query',
@@ -387,7 +403,8 @@ export const getMockHistory = async (uid) => {
     console.warn('[Neon] getMockHistory error:', neonErr.message);
   }
 
-
+  // Safe fallback: return empty array
+  return [];
 };
 
 // ─── Daily Activity ───────────────────────────────────────────────────────────
@@ -397,9 +414,10 @@ export const getMockHistory = async (uid) => {
  * Neon PostgreSQL persistence with Local fallback.
  */
 export const incrementDailyActivity = async (uid) => {
+  if (!uid) return;
   const today = new Date().toISOString().split('T')[0];
 
-  // 1. Try Neon — [FIX] activity.id is bigint (auto-increment). Use INSERT ON CONFLICT (user_id, date)
+  // 1. Try Neon — activity.id is bigint (auto-increment). Use INSERT ON CONFLICT (user_id, date)
   try {
     const res = await neonAuthFetch({
       action: 'query',
@@ -408,14 +426,10 @@ export const incrementDailyActivity = async (uid) => {
         ON CONFLICT (user_id, date) DO UPDATE SET count = public.activity.count + 1`,
       params: [uid, today]
     });
-    if (res.ok) {
-      return;
-    }
+    if (res.ok) return;
   } catch (neonErr) {
     console.warn('[Neon] incrementDailyActivity error:', neonErr.message);
   }
-
-
 };
 
 /**
@@ -423,11 +437,13 @@ export const incrementDailyActivity = async (uid) => {
  * Neon PostgreSQL persistence with Local fallback.
  */
 export const getRecentActivity = async (uid, days = 90) => {
+  if (!uid) return {};
+
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - days);
   const cutoffStr = cutoffDate.toISOString().split('T')[0];
 
-  // 1. Try Neon — [FIX] Added Authorization header via neonAuthFetch
+  // 1. Try Neon
   try {
     const res = await neonAuthFetch({
       action: 'query',
@@ -436,7 +452,7 @@ export const getRecentActivity = async (uid, days = 90) => {
     });
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data.rows) && data.rows.length >= 0) {
+      if (Array.isArray(data.rows)) {
         const result = {};
         data.rows.forEach(row => { result[row.date] = row.count || 0; });
         return result;
@@ -446,7 +462,8 @@ export const getRecentActivity = async (uid, days = 90) => {
     console.warn('[Neon] getRecentActivity error:', neonErr.message);
   }
 
-
+  // Safe fallback: return empty object
+  return {};
 };
 
 /**
@@ -462,17 +479,19 @@ export const deleteUser = async (uid) => {
   const filtered = currentUsers.filter(u => u.id !== uid && u.uid !== uid);
   saveLocalStorageUsers(filtered);
 
-  // 2. Neon delete — [FIX] Added Authorization header via neonAuthFetch
+  // 2. Neon delete
   try {
     const res = await neonAuthFetch({ action: 'delete', table: 'profiles', id: uid, keyField: 'id' });
-    if (res.ok) return true;
+    if (res.ok) {
+      // Also delete from local companion
+      try { await localDb.delete('/users', uid); } catch (_) {}
+      return true;
+    }
   } catch (neonErr) {
     console.warn('[Neon] deleteUser error:', neonErr.message);
   }
 
-
-
-  // 4. Local Companion
+  // 3. Local Companion fallback
   try {
     await localDb.delete('/users', uid);
     return true;
@@ -500,7 +519,7 @@ export const getAllUsers = async (options = {}) => {
       console.warn('[Neon] getAllUsers error:', neonErr.message);
     }
 
-
+    // 2. Local Companion
     try {
       const list = await localDb.get('/users');
       if (Array.isArray(list) && list.length > 0) {
@@ -510,12 +529,13 @@ export const getAllUsers = async (options = {}) => {
       }
     } catch (err) {}
 
+    // 3. LocalStorage cache
     const cache = getLocalStorageUsers();
     if (Array.isArray(cache) && cache.length > 0) {
       return cache;
     }
 
-    // Ultimate seed fallback from bundled Moroccan students
+    // 4. Seed fallback from bundled Moroccan students
     if (Array.isArray(initialUsersData) && initialUsersData.length > 0) {
       const mapped = initialUsersData.map(mapDBToProfile);
       saveLocalStorageUsers(mapped);
@@ -532,12 +552,27 @@ export const getAllUsers = async (options = {}) => {
 
 /**
  * Fetch the public leaderboard of top 100 students with SWR caching.
+ * Now tries Neon first, then local fallbacks.
  */
 export const getLeaderboard = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('leaderboard_all', async () => {
+    // 1. Try Neon PostgreSQL (sorted by XP server-side)
+    try {
+      const neonRes = await neonList('profiles', 100);
+      if (Array.isArray(neonRes.data) && neonRes.data.length > 0) {
+        return neonRes.data
+          .map(mapDBToProfile)
+          .filter(u => u.role !== 'admin')
+          .sort((a, b) => (b.xp || 0) - (a.xp || 0))
+          .slice(0, 100);
+      }
+    } catch (neonErr) {
+      console.warn('[Neon] getLeaderboard error:', neonErr.message);
+    }
 
+    // 2. Local Companion fallback
     try {
       const list = await localDb.get('/users');
       return list
@@ -557,27 +592,30 @@ export const getLeaderboard = async (options = {}) => {
 
 /**
  * Log a user login.
- * Neon PostgreSQL persistence with Local fallback.
+ * Neon PostgreSQL persistence.
  */
 export const addLoginLog = async (uid) => {
+  if (!uid) return;
   const id = `ll_${uid}_${Date.now()}`;
-  // 1. Try Neon — table login_logs now exists with TEXT id (created via MCP)
+  // Try Neon — table login_logs with TEXT id
   try {
     await neonUpsert('login_logs', { id, user_id: uid, logged_at: new Date().toISOString() }, 'id');
     return;
   } catch (neonErr) {
     console.warn('[Neon] addLoginLog error:', neonErr.message);
   }
-
 };
 
 /**
  * Fetch login logs for a user.
- * Neon PostgreSQL persistence with Local fallback.
+ * Neon PostgreSQL persistence with safe fallback.
  */
 export const getLoginLogs = async (uid) => {
+  if (!uid) return [];
+
   const mapRow = row => ({ id: row.id, userId: row.user_id, loggedAt: row.logged_at });
-  // 1. Try Neon — [FIX] Added Authorization header via neonAuthFetch
+
+  // 1. Try Neon
   try {
     const res = await neonAuthFetch({
       action: 'query',
@@ -592,13 +630,17 @@ export const getLoginLogs = async (uid) => {
     console.warn('[Neon] getLoginLogs error:', neonErr.message);
   }
 
+  // Safe fallback
+  return [];
 };
 
 /**
  * Fetch progress cards deltas since a timestamp.
- * Neon PostgreSQL persistence with Local fallback.
+ * Neon PostgreSQL persistence with safe fallback.
  */
 export const getProgressDeltas = async (uid, sinceTimestamp) => {
+  if (!uid) return {};
+
   const mapRow = row => ({
     difficulty: row.difficulty,
     stability: row.stability,
@@ -609,7 +651,7 @@ export const getProgressDeltas = async (uid, sinceTimestamp) => {
     updatedAt: row.updated_at
   });
 
-  // 1. Try Neon — [FIX] Added Authorization header via neonAuthFetch
+  // 1. Try Neon
   try {
     const sql = sinceTimestamp
       ? 'SELECT * FROM public.progress WHERE user_id = $1 AND updated_at > $2'
@@ -628,7 +670,8 @@ export const getProgressDeltas = async (uid, sinceTimestamp) => {
     console.warn('[Neon] getProgressDeltas error:', neonErr.message);
   }
 
-
+  // Safe fallback
+  return {};
 };
 
 /**
@@ -642,10 +685,12 @@ export const syncStudentsWithSupabase = syncStudentsWithNeon;
 
 /**
  * Log a document/report download.
- * Neon PostgreSQL persistence with Local fallback.
+ * Neon PostgreSQL persistence.
  */
 export const logUserDownload = async (uid, downloadData) => {
-  // 1. Try Neon — [FIX] Added Authorization header via neonAuthFetch
+  if (!uid) return;
+
+  // 1. Try Neon — fetch current downloads then update
   try {
     const res = await neonAuthFetch({
       action: 'query',
@@ -663,6 +708,4 @@ export const logUserDownload = async (uid, downloadData) => {
   } catch (neonErr) {
     console.warn('[Neon] logUserDownload error:', neonErr.message);
   }
-
-
 };

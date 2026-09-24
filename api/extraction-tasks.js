@@ -1,4 +1,4 @@
-// api/extraction-tasks.js
+﻿// api/extraction-tasks.js
 // Dedicated Vercel Serverless Function & Cloud Task Queue for Lesson Extraction
 // Connects directly to Neon PostgreSQL (public.extraction_tasks)
 import { neon } from '@neondatabase/serverless';
@@ -40,33 +40,33 @@ function getSql() {
   return _sql;
 }
 
-// ── Moroccan Curriculum System Prompt ─────────────────────────────────────────
-const SYSTEM_PROMPT = `Tu es un Professeur Agrégé de mathématiques et Inspecteur Pédagogique, expert en manuels scolaires marocains (niveaux Tronc Commun, 1ère Bac, 2ème Bac — filières SM, PC/SVT, Arts, SGC).
-Tu analyses des fiches de cours, chapitres de manuel, séries d'exercices, devoirs surveillés ou épreuves d'examen fournis en PDF ou image.
-Ton objectif UNIQUE est de produire un JSON structuré représentant FIDÈLEMENT, INTÉGRALEMENT et INTELLIGEMMENT le contenu pédagogique du document.
+// â”€â”€ Moroccan Curriculum System Prompt â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const SYSTEM_PROMPT = `Tu es un Professeur AgrÃ©gÃ© de mathÃ©matiques et Inspecteur PÃ©dagogique, expert en manuels scolaires marocains (niveaux Tronc Commun, 1Ã¨re Bac, 2Ã¨me Bac â€” filiÃ¨res SM, PC/SVT, Arts, SGC).
+Tu analyses des fiches de cours, chapitres de manuel, sÃ©ries d'exercices, devoirs surveillÃ©s ou Ã©preuves d'examen fournis en PDF ou image.
+Ton objectif UNIQUE est de produire un JSON structurÃ© reprÃ©sentant FIDÃˆLEMENT, INTÃ‰GRALEMENT et INTELLIGEMMENT le contenu pÃ©dagogique du document.
 
 Directives absolues :
-1. DÉTECTION DU NIVEAU ("header.detected_level") : "common_core_sci", "common_core_arts", "1bac_sci", "1bac_arts", "2bac_sm", "2bac_pc_svt", "2bac_arts".
-2. DÉTECTION DU TYPE ("header.doc_type") : "course", "exercises", "homework", "summary", "national", "concours".
-3. CONSERVATION DE LA LANGUE : si en arabe -> extraire en arabe. Si en français -> extraire en français.
-4. SYNTAXE LATEX : tout symbole mathématique DOIT être encadré par $...$ ou $$...$$. Ne pas utiliser \\cline, utiliser \\hline.
-5. EXHAUSTIVITÉ ABSOLUE : extraire l'intégralité des sections, définitions, théorèmes et exercices sans rien omettre.`;
+1. DÃ‰TECTION DU NIVEAU ("header.detected_level") : "common_core_sci", "common_core_arts", "1bac_sci", "1bac_arts", "2bac_sm", "2bac_pc_svt", "2bac_arts".
+2. DÃ‰TECTION DU TYPE ("header.doc_type") : "course", "exercises", "homework", "summary", "national", "concours".
+3. CONSERVATION DE LA LANGUE : si en arabe -> extraire en arabe. Si en franÃ§ais -> extraire en franÃ§ais.
+4. SYNTAXE LATEX : tout symbole mathÃ©matique DOIT Ãªtre encadrÃ© par $...$ ou $$...$$. Ne pas utiliser \\cline, utiliser \\hline.
+5. EXHAUSTIVITÃ‰ ABSOLUE : extraire l'intÃ©gralitÃ© des sections, dÃ©finitions, thÃ©orÃ¨mes et exercices sans rien omettre.`;
 
 const MOROCCAN_SOLVE_ADDENDUM = `
-🎯 RÈGLES DE RÉSOLUTION OFFICIELLES (INSPECTEUR PÉDAGOGIQUE MAROCAIN) :
-Pour chaque exercice dans le champ "solution", fournis un corrigé mathématique rigoureux respectant le programme officiel marocain. Pas de règle de L'Hôpital.`;
+ðŸŽ¯ RÃˆGLES DE RÃ‰SOLUTION OFFICIELLES (INSPECTEUR PÃ‰DAGOGIQUE MAROCAIN) :
+Pour chaque exercice dans le champ "solution", fournis un corrigÃ© mathÃ©matique rigoureux respectant le programme officiel marocain. Pas de rÃ¨gle de L'HÃ´pital.`;
 
 const NO_SOLUTION_ADDENDUM = `
-⚠️ INSTRUCTION EXTRACTION SANS RÉSOLUTION :
-Laisse le champ "solution" vide ("") et "interactive_answers" comme tableau vide []. Ne résous rien.`;
+âš ï¸ INSTRUCTION EXTRACTION SANS RÃ‰SOLUTION :
+Laisse le champ "solution" vide ("") et "interactive_answers" comme tableau vide []. Ne rÃ©sous rien.`;
 
 function buildExtractionUserPrompt(pageCount, solveSolutions, preExtractedPdfText = '') {
   const pageNote = pageCount && pageCount > 1
-    ? `⚠️ CE DOCUMENT COMPORTE ${pageCount} PAGES. Tu DOIS IMPÉRATIVEMENT extraire l'intégralité de CHAQUE page de 1 à ${pageCount}.`
-    : `⚠️ Tu DOIS IMPÉRATIVEMENT extraire l'intégralité absolue du document du début à la fin.`;
+    ? `âš ï¸ CE DOCUMENT COMPORTE ${pageCount} PAGES. Tu DOIS IMPÃ‰RATIVEMENT extraire l'intÃ©gralitÃ© de CHAQUE page de 1 Ã  ${pageCount}.`
+    : `âš ï¸ Tu DOIS IMPÃ‰RATIVEMENT extraire l'intÃ©gralitÃ© absolue du document du dÃ©but Ã  la fin.`;
 
   const textFusion = preExtractedPdfText && preExtractedPdfText.trim()
-    ? `\n\n📄 TEXTE BRUT DU PDF :\n"""\n${preExtractedPdfText.trim()}\n"""\n`
+    ? `\n\nðŸ“„ TEXTE BRUT DU PDF :\n"""\n${preExtractedPdfText.trim()}\n"""\n`
     : '';
 
   return `${pageNote}
@@ -75,7 +75,7 @@ Extrais tout le document et retourne un JSON avec la structure :
 {
   "header": {
     "fiche_title": "Titre du document",
-    "subject": "Mathématiques",
+    "subject": "MathÃ©matiques",
     "detected_level": "2bac_pc_svt",
     "doc_type": "course"
   },
@@ -92,7 +92,7 @@ Extrais tout le document et retourne un JSON avec la structure :
 }`;
 }
 
-// ─── JSON Repair & Sanitization Pipeline ──────────────────────────────────────
+// â”€â”€â”€ JSON Repair & Sanitization Pipeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const repairTruncatedJson = (str) => {
   if (!str) return str;
@@ -296,7 +296,7 @@ function parseJsonWithResilience(rawText) {
       lastError = err;
     }
   }
-  throw new Error(`Échec d'analyse du JSON produit par l'IA : ${lastError?.message || 'JSON invalide'}`);
+  throw new Error(`Ã‰chec d'analyse du JSON produit par l'IA : ${lastError?.message || 'JSON invalide'}`);
 }
 
 // Serverless extraction execution using Gemini
@@ -372,7 +372,7 @@ async function executeGeminiExtraction({ base64Data, fileType, pageCount, apiKey
         .map(p => p.text || '')
         .join('');
 
-      if (!textParts.trim()) throw new Error(`Réponse vide retournée par [${modelToUse}].`);
+      if (!textParts.trim()) throw new Error(`RÃ©ponse vide retournÃ©e par [${modelToUse}].`);
 
       const parsed = parseJsonWithResilience(textParts);
       console.log(`[Server Extraction] Success with model [${modelToUse}]!`);
@@ -384,7 +384,7 @@ async function executeGeminiExtraction({ base64Data, fileType, pageCount, apiKey
     }
   }
 
-  throw new Error(`Tous les modèles de secours ont échoué : ${failureLog.join(' | ')}`);
+  throw new Error(`Tous les modÃ¨les de secours ont Ã©chouÃ© : ${failureLog.join(' | ')}`);
 }
 
 export default async function handler(req, res) {
@@ -406,7 +406,7 @@ export default async function handler(req, res) {
   const id = url.searchParams.get('id') || (req.body && req.body.id) || null;
   const action = url.searchParams.get('action') || (req.body && req.body.action) || null;
 
-  // ── 1. GET Requests ─────────────────────────────────────────────────────────
+  // â”€â”€ 1. GET Requests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (req.method === 'GET') {
     if (action === 'ping') {
       return res.status(200).json({ status: 'online', mode: 'server' });
@@ -414,7 +414,7 @@ export default async function handler(req, res) {
 
     if (id) {
       try {
-        const rows = await sql.query(
+        const rows = await sql(
           `SELECT 
              id, file_name, file_type, page_count, provider, model, status, 
              progress_percent, progress_message, attempts, max_attempts, 
@@ -426,7 +426,7 @@ export default async function handler(req, res) {
         );
 
         if (!rows || rows.length === 0) {
-          return res.status(404).json({ error: 'Tâche introuvable' });
+          return res.status(404).json({ error: 'TÃ¢che introuvable' });
         }
 
         const row = rows[0];
@@ -457,18 +457,18 @@ export default async function handler(req, res) {
     // List all tasks (newest first)
     try {
       // Auto-reap zombie tasks stuck in 'processing' for > 2 minutes
-      await sql.query(
+      await sql(
         `UPDATE public.extraction_tasks 
          SET status = 'failed', 
              progress_percent = 0, 
-             error_message = 'Interrompu : Le traitement a dépassé le délai. Veuillez relancer.', 
-             progress_message = 'Échec : Délai dépassé', 
+             error_message = 'Interrompu : Le traitement a dÃ©passÃ© le dÃ©lai. Veuillez relancer.', 
+             progress_message = 'Ã‰chec : DÃ©lai dÃ©passÃ©', 
              updated_at = NOW() 
          WHERE status = 'processing' 
            AND updated_at < NOW() - INTERVAL '2 minutes'`
       ).catch(() => {});
 
-      const rows = await sql.query(
+      const rows = await sql(
         `SELECT 
            id, file_name, file_type, page_count, provider, model, status, 
            progress_percent, progress_message, attempts, max_attempts, 
@@ -506,7 +506,7 @@ export default async function handler(req, res) {
     }
   }
 
-  // ── 2. POST Requests (Create, Update, or Retry) ─────────────────────────────
+  // â”€â”€ 2. POST Requests (Create, Update, or Retry) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (req.method === 'POST') {
     const body = req.body || {};
 
@@ -516,7 +516,7 @@ export default async function handler(req, res) {
       if (!targetId) return res.status(400).json({ error: 'ID manquant' });
 
       try {
-        await sql.query(
+        await sql(
           `UPDATE public.extraction_tasks 
            SET status = COALESCE($1, status),
                progress_percent = COALESCE($2, progress_percent),
@@ -549,10 +549,10 @@ export default async function handler(req, res) {
       if (!targetId) return res.status(400).json({ error: 'ID manquant' });
 
       try {
-        await sql.query(
+        await sql(
           `UPDATE public.extraction_tasks 
            SET status = 'pending', attempts = 0, progress_percent = 0, 
-               progress_message = 'Nouvelle tentative programmée...', 
+               progress_message = 'Nouvelle tentative programmÃ©e...', 
                error_message = NULL, updated_at = NOW() 
            WHERE id = $1`,
           [targetId]
@@ -573,7 +573,7 @@ export default async function handler(req, res) {
     const apiKey = body.apiKey || process.env.GEMINI_API_KEY || '';
 
     try {
-      await sql.query(
+      await sql(
         `INSERT INTO public.extraction_tasks (
            id, file_name, file_type, page_count, provider, model, status, 
            progress_percent, progress_message, attempts, max_attempts, 
@@ -605,17 +605,17 @@ export default async function handler(req, res) {
           const sections = parsed?.sections || parsed?.items || parsed?.exercises || [];
           const headerSummary = {
             ficheTitle: header.fiche_title || header.title || fileName,
-            subject: header.subject || 'Mathématiques',
+            subject: header.subject || 'MathÃ©matiques',
             detectedLevel: header.detected_level || '2bac_pc_svt',
             docType: header.doc_type || 'course',
             sectionsCount: sections.length,
             extractedWithModel: usedModel
           };
 
-          await sql.query(
+          await sql(
             `UPDATE public.extraction_tasks 
              SET status = 'completed', progress_percent = 100, 
-                 progress_message = 'Fiche extraite avec succès !', 
+                 progress_message = 'Fiche extraite avec succÃ¨s !', 
                  result_json = $1, header_summary = $2, 
                  completed_at = NOW(), updated_at = NOW() 
              WHERE id = $3`,
@@ -629,17 +629,17 @@ export default async function handler(req, res) {
               fileName,
               status: 'completed',
               progressPercent: 100,
-              progressMessage: 'Fiche extraite avec succès !',
+              progressMessage: 'Fiche extraite avec succÃ¨s !',
               headerSummary,
               hasResult: true
             }
           });
         } catch (extractErr) {
           console.error('[Server Extraction Error]:', extractErr.message);
-          await sql.query(
+          await sql(
             `UPDATE public.extraction_tasks 
              SET status = 'failed', progress_percent = 0, 
-                 error_message = $1, progress_message = 'Échec de l''extraction', 
+                 error_message = $1, progress_message = 'Ã‰chec de l''extraction', 
                  updated_at = NOW() 
              WHERE id = $2`,
             [extractErr.message, taskId]
@@ -673,11 +673,11 @@ export default async function handler(req, res) {
     }
   }
 
-  // ── 3. DELETE Requests ──────────────────────────────────────────────────────
+  // â”€â”€ 3. DELETE Requests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (req.method === 'DELETE') {
     if (!id) return res.status(400).json({ error: 'ID manquant' });
     try {
-      await sql.query(`DELETE FROM public.extraction_tasks WHERE id = $1`, [id]);
+      await sql(`DELETE FROM public.extraction_tasks WHERE id = $1`, [id]);
       return res.status(200).json({ success: true });
     } catch (err) {
       return res.status(500).json({ error: err.message });
@@ -686,3 +686,4 @@ export default async function handler(req, res) {
 
   return res.status(405).json({ error: 'Method Not Allowed' });
 }
+

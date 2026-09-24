@@ -204,7 +204,7 @@ export default async function handler(req, res) {
         }
         const { sql: rawSql, params = [] } = body;
         if (!rawSql) return res.status(400).json({ error: 'Missing sql statement' });
-        const rows = await sql.query(rawSql, params);
+        const rows = await sql(rawSql, params);
         return res.status(200).json({ rows, rowCount: rows.length });
       }
 
@@ -250,12 +250,12 @@ export default async function handler(req, res) {
         // Check if row already exists in table to avoid PostgreSQL NOT-NULL evaluation on omitted columns
         if (data[keyField] !== undefined) {
           const checkSql = `SELECT 1 FROM public."${table}" WHERE "${keyField}" = $1 LIMIT 1;`;
-          const existingRows = await sql.query(checkSql, [data[keyField]]);
+          const existingRows = await sql(checkSql, [data[keyField]]);
           if (existingRows.length > 0) {
             const updateKeys = keys.filter(k => k !== keyField);
             if (updateKeys.length === 0) {
               const fetchSql = `SELECT * FROM public."${table}" WHERE "${keyField}" = $1;`;
-              const r = await sql.query(fetchSql, [data[keyField]]);
+              const r = await sql(fetchSql, [data[keyField]]);
               return res.status(200).json({ success: true, row: r[0] || null });
             }
             const setClauses = updateKeys.map((k, i) => `"${k}" = $${i + 2}`).join(', ');
@@ -275,7 +275,7 @@ export default async function handler(req, res) {
               WHERE "${keyField}" = $1
               RETURNING *;
             `;
-            const updatedRows = await sql.query(updateSql, updateVals);
+            const updatedRows = await sql(updateSql, updateVals);
             return res.status(200).json({ success: true, row: updatedRows[0] || null });
           }
         }
@@ -288,7 +288,7 @@ export default async function handler(req, res) {
           RETURNING *;
         `;
 
-        const rows = await sql.query(upsertSql, values);
+        const rows = await sql(upsertSql, values);
         return res.status(200).json({ success: true, row: rows[0] });
       }
 
@@ -306,7 +306,7 @@ export default async function handler(req, res) {
         }
 
         const deleteSql = `DELETE FROM public."${table}" WHERE "${keyField}" = $1 RETURNING *;`;
-        const rows = await sql.query(deleteSql, [id]);
+        const rows = await sql(deleteSql, [id]);
         return res.status(200).json({ success: true, deleted: rows.length > 0 });
       }
 
@@ -342,7 +342,7 @@ export default async function handler(req, res) {
       // Single item fetch
       if (id !== undefined && id !== null && id !== '') {
         const fetchSql = `SELECT * FROM public."${queryTable}" WHERE "${keyField}" = $1 LIMIT 1;`;
-        const rows = await sql.query(fetchSql, [id]);
+        const rows = await sql(fetchSql, [id]);
         return res.status(200).json({ row: rows[0] || null });
       }
 
@@ -354,14 +354,14 @@ export default async function handler(req, res) {
         }
         const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 100, 1), 1000);
         const filteredSql = `SELECT * FROM public."${queryTable}" WHERE "${filter}" = $1 LIMIT $2;`;
-        const rows = await sql.query(filteredSql, [filterVal, parsedLimit]);
+        const rows = await sql(filteredSql, [filterVal, parsedLimit]);
         return res.status(200).json({ rows, rowCount: rows.length });
       }
 
       // List query with limit
       const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 100, 1), 1000);
       const listSql = `SELECT * FROM public."${queryTable}" LIMIT $1;`;
-      const rows = await sql.query(listSql, [parsedLimit]);
+      const rows = await sql(listSql, [parsedLimit]);
       return res.status(200).json({ rows, rowCount: rows.length });
     }
 

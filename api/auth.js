@@ -1,8 +1,8 @@
 // api/auth.js
 // High-performance direct Neon Authentication API
 // Supports: Login, Register, Session validation (JWT), and Profile retrieval.
-// Zero dependence on Supabase.
-import { Client } from '@neondatabase/serverless';
+// Uses neon() HTTP driver — zero TCP overhead, ideal for serverless cold starts.
+import { neon } from '@neondatabase/serverless';
 import crypto from 'crypto';
 
 // Minimal JWT generation using native Node.js crypto (zero extra npm dependencies)
@@ -95,13 +95,9 @@ function verifyPassword(password, stored) {
   const parts = stored.split(':');
   if (parts.length !== 2) return false;
   const [salt, originalHash] = parts;
-  // Support both old (10k) and new (310k) iteration counts by checking hash length
-  // Old hashes used 10000 iterations; detect by trying 310k first, fallback to 10k
+  // Try new iterations first (310k)
   const hashNew = crypto.pbkdf2Sync(password, salt, PBKDF2_ITERATIONS, 64, 'sha512').toString('hex');
-  if (crypto.timingSafeEqual(Buffer.from(hashNew), Buffer.from(originalHash.padEnd(hashNew.length, '0').slice(0, hashNew.length)))) {
-    // Try new iterations
-    return hashNew === originalHash;
-  }
+  if (hashNew === originalHash) return true;
   // Fallback to legacy 10k iterations (for existing users, will be re-hashed on next login)
   const hashLegacy = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
   return hashLegacy === originalHash;
@@ -154,12 +150,32 @@ function setCorsHeaders(req, res) {
   );
 }
 
+/**
+ * Get the neon SQL function — cached per module (singleton).
+ * Uses HTTP driver: no TCP handshake overhead, ideal for serverless.
+ */
+let _sql = null;
+function getSql() {
+  if (_sql) return _sql;
+  const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED || process.env.VITE_NEON_DATABASE_URL;
+  if (!databaseUrl) throw new Error('NEON_DATABASE_URL is not configured');
+  _sql = neon(databaseUrl);
+  return _sql;
+}
+
 export default async function handler(req, res) {
   setCorsHeaders(req, res);
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
+  }
+
+  let sql;
+  try {
+    sql = getSql();
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
   }
 
   // ── 1. GET /api/auth (Session verification) ──────────────────────────────
@@ -194,24 +210,17 @@ export default async function handler(req, res) {
       });
     }
 
-    const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED || process.env.VITE_NEON_DATABASE_URL;
-    if (!databaseUrl) {
-      return res.status(500).json({ error: 'NEON_DATABASE_URL is not configured' });
-    }
-
-    const client = new Client(databaseUrl);
     try {
-      await client.connect();
-      const query = await client.query(
+      const rows = await sql(
         'SELECT id, name, email, role, tier, xp, streak, rank, total_students, phone, city, school, class_id, subscription FROM public.profiles WHERE id = $1 LIMIT 1;',
         [decoded.uid]
       );
 
-      if (query.rows.length === 0) {
+      if (rows.length === 0) {
         return res.status(404).json({ error: 'User profile not found' });
       }
 
-      const user = query.rows[0];
+      const user = rows[0];
       return res.status(200).json({
         user: {
           uid: user.id,
@@ -233,8 +242,6 @@ export default async function handler(req, res) {
     } catch (err) {
       console.error('[Neon Auth Session Error]:', err);
       return res.status(500).json({ error: 'Erreur lors de la vérification de session.' });
-    } finally {
-      await client.end().catch(() => {});
     }
   }
 
@@ -274,7 +281,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // Ensure/refresh admin token for active admin sessions
+    // Ensure/refresh admin token for active admin sessions (fast-path, no DB)
     if (action === 'ensure-admin-token') {
       const adminEmail = (process.env.ADMIN_EMAIL || 'admin@lconq.ma').toLowerCase().trim();
       const token = signJWT({ uid: 'admin-master', email: adminEmail, role: 'admin' });
@@ -291,15 +298,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED || process.env.VITE_NEON_DATABASE_URL;
-    if (!databaseUrl) {
-      return res.status(500).json({ error: 'NEON_DATABASE_URL is not configured' });
-    }
-
-    const client = new Client(databaseUrl);
     try {
-      await client.connect();
-
       // (A) LOGIN ACTION
       if (action === 'login') {
         if (!email || !password) {
@@ -313,43 +312,39 @@ export default async function handler(req, res) {
         }
 
         // Query Neon Database for user
-        const query = await client.query(
+        const rows = await sql(
           'SELECT * FROM public.profiles WHERE LOWER(email) = $1 LIMIT 1;',
           [normalizedEmail]
         );
 
-        if (query.rows.length === 0) {
+        if (rows.length === 0) {
           return res.status(400).json({ error: 'Identifiants invalides. Utilisateur introuvable.' });
         }
 
-        const user = query.rows[0];
+        const user = rows[0];
 
         // Check password if set
         if (user.password_hash) {
           const isValid = verifyPassword(password, user.password_hash);
           if (!isValid) {
-            // [H-5] Count failed attempt
             checkRateLimit(clientIp);
-            // [M-4 FIX] Generic error — don't reveal whether user exists or password is wrong
             return res.status(400).json({ error: 'Identifiants invalides.' });
           }
-          // Re-hash with new iteration count if using legacy 10k iterations
+          // Re-hash with new iteration count if using legacy 10k iterations (silent upgrade)
           if (user.password_hash.split(':').length === 2) {
             const legacyHash = crypto.pbkdf2Sync(password, user.password_hash.split(':')[0], 10000, 64, 'sha512').toString('hex');
             if (legacyHash === user.password_hash.split(':')[1]) {
-              // Upgrade to new iterations silently
               const upgraded = hashPassword(password);
-              client.query('UPDATE public.profiles SET password_hash = $1 WHERE id = $2;', [upgraded, user.id]).catch(() => {});
+              sql('UPDATE public.profiles SET password_hash = $1 WHERE id = $2;', [upgraded, user.id]).catch(() => {});
             }
           }
         } else {
           // If no password set yet, set current password as password_hash
           const hashed = hashPassword(password);
-          await client.query('UPDATE public.profiles SET password_hash = $1 WHERE id = $2;', [hashed, user.id]);
+          await sql('UPDATE public.profiles SET password_hash = $1 WHERE id = $2;', [hashed, user.id]);
         }
-        // [H-5] Successful login — reset rate limit
-        resetRateLimit(clientIp);
 
+        resetRateLimit(clientIp);
         const token = signJWT({ uid: user.id, email: user.email, role: user.role || 'student' });
         return res.status(200).json({
           token,
@@ -384,12 +379,12 @@ export default async function handler(req, res) {
         }
 
         // Check if user already exists
-        const existing = await client.query(
+        const existing = await sql(
           'SELECT id FROM public.profiles WHERE LOWER(email) = $1 LIMIT 1;',
           [normalizedEmail]
         );
 
-        if (existing.rows.length > 0) {
+        if (existing.length > 0) {
           return res.status(400).json({ error: 'Cette adresse email est déjà enregistrée. Essayez de vous connecter.' });
         }
 
@@ -397,7 +392,7 @@ export default async function handler(req, res) {
         const passwordHash = hashPassword(password);
         const now = new Date().toISOString();
 
-        await client.query(
+        await sql(
           `INSERT INTO public.profiles 
            (id, name, email, role, tier, xp, streak, total_students, password_hash, joined, created_at, updated_at) 
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10, $10);`,
@@ -423,19 +418,10 @@ export default async function handler(req, res) {
         });
       }
 
-      // (C) ENSURE ADMIN TOKEN ACTION
-      if (action === 'ensure-admin-token') {
-        const adminPayload = { uid: 'admin-master', email: 'admin@lconq.ma', role: 'admin' };
-        const token = signJWT(adminPayload);
-        return res.status(200).json({ success: true, token, user: adminPayload });
-      }
-
       return res.status(400).json({ error: `Unknown action ${action}` });
     } catch (err) {
       console.error('[Neon Auth Error]:', err);
       return res.status(500).json({ error: 'Une erreur interne est survenue. Réessayez plus tard.' });
-    } finally {
-      await client.end().catch(() => {});
     }
   }
 

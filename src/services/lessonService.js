@@ -4,7 +4,7 @@
 
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
-import { neonSaveLesson, neonDeleteLesson, neonList, neonGet } from '../lib/neon';
+import { neonSaveLesson, neonDeleteLesson, neonList, neonGet, neonListFiltered, neonUpsert } from '../lib/neon';
 
 const STORAGE_KEY = 'lconq_lessons_db';
 
@@ -316,7 +316,6 @@ export const getActiveLessons = async (options = {}) => {
   return queryCache.fetchWithCache('lessons_active', async () => {
     // 1. Try Neon with server-side filter (fastest path — avoids full table scan return)
     try {
-      const { neonListFiltered } = await import('../lib/neon');
       const neonRes = await neonListFiltered('lessons', 'is_active', true, 500);
       if (Array.isArray(neonRes.data) && neonRes.data.length > 0) {
         const mapped = neonRes.data
@@ -559,7 +558,6 @@ export const updateLesson = async (lessonId, updates) => {
   let neonSuccess = false;
   let neonError = null;
   try {
-    const { neonUpsert } = await import('../lib/neon');
     const fullDbRecord = updatedRecord ? mapLessonToDB(updatedRecord) : {};
     const neonPayload = {
       id: lessonId,
