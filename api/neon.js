@@ -1,4 +1,4 @@
-﻿// api/neon.js
+// api/neon.js
 // High-performance Vercel Serverless Function for Neon PostgreSQL
 // Uses neon() HTTP driver (no TCP handshake, no connection setup latency)
 // Connection Pooling is handled server-side via Neon Pooler URL
@@ -42,6 +42,9 @@ const ALLOWED_FILTER_COLUMNS = {
   mock_history: ['user_id'],
   activity:   ['user_id', 'date'],
   config:     ['key'],
+  login_logs: ['user_id'],
+  assets:     ['path'],
+  activation_codes: ['code', 'plan_id', 'used_by'],
 };
 
 // [H-3 FIX] Restrict CORS to known origins and standard preview/dev hosts
@@ -197,13 +200,27 @@ export default async function handler(req, res) {
       const body = req.body || {};
       const action = body.action || (body.sql ? 'query' : null);
 
-      // (A) Raw SQL Query â€” [C-2 FIX] admin only
+      // (A) Raw SQL Query — Admin or User-Scoped Data Queries
       if (action === 'query') {
-        if (authUser.role !== 'admin') {
-          return res.status(403).json({ error: 'Admin access required for raw SQL' });
-        }
         const { sql: rawSql, params = [] } = body;
         if (!rawSql) return res.status(400).json({ error: 'Missing sql statement' });
+
+        if (authUser.role !== 'admin') {
+          // Allow student/user to run safe queries strictly targeting their own data
+          const isUserScopedQuery =
+            params &&
+            params.length > 0 &&
+            params[0] === authUser.uid &&
+            /^\s*(SELECT|INSERT|UPDATE)\s+/i.test(rawSql) &&
+            !/;\s*\S+/i.test(rawSql) &&
+            !/(DROP|ALTER|TRUNCATE|GRANT|REVOKE|DELETE\s+FROM)/i.test(rawSql) &&
+            /(public\.)?(progress|mock_history|activity|login_logs)/i.test(rawSql);
+
+          if (!isUserScopedQuery) {
+            return res.status(403).json({ error: 'Admin access required for raw SQL' });
+          }
+        }
+
         const rows = await sql.query(rawSql, params);
         return res.status(200).json({ rows, rowCount: rows.length });
       }

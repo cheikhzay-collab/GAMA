@@ -339,3 +339,15 @@ CREATE TABLE IF NOT EXISTS public.assets (
 );
 CREATE INDEX IF NOT EXISTS idx_assets_path ON public.assets(path);
 
+-- 17. Login Logs Table
+CREATE TABLE IF NOT EXISTS public.login_logs (
+  id text PRIMARY KEY,
+  user_id text NOT NULL,
+  logged_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+  ip text,
+  user_agent text
+);
+CREATE INDEX IF NOT EXISTS idx_login_logs_user_id ON public.login_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_login_logs_logged_at ON public.login_logs(logged_at DESC);
+
+
