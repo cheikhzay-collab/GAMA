@@ -56,6 +56,13 @@ export const registerStudent = async (name, email, password) => {
   return { uid: data.user.id, id: data.user.id, ...userData, needsConfirmation };
 };
 
+const isAdminEmail = (email) => {
+  if (!email) return false;
+  const normalized = email.toLowerCase().trim();
+  const configuredAdmin = (import.meta.env.VITE_ADMIN_EMAIL || 'admin@lconq.ma').toLowerCase().trim();
+  return normalized === configuredAdmin || normalized === 'admin@lconq.ma';
+};
+
 /**
  * Sign in with email and password.
  * Fetches the Supabase user profile to get role/tier/subscription.
@@ -72,14 +79,17 @@ export const loginWithEmail = async (email, password) => {
   if (!data.user) throw new Error('Échec de la connexion.');
 
   const profile = await getUserDoc(data.user.id);
+  const isAdmin = isAdminEmail(data.user.email) || 
+                  profile?.role === 'admin' || 
+                  data.user.user_metadata?.role === 'admin';
 
   return {
     uid: data.user.id,
     id: data.user.id,
-    name: profile?.name || data.user.user_metadata?.name || data.user.user_metadata?.full_name || 'Élève',
+    name: profile?.name || data.user.user_metadata?.name || data.user.user_metadata?.full_name || (isAdmin ? 'Directeur' : 'Élève'),
     email: data.user.email,
-    role: profile?.role || 'student',
-    tier: profile?.tier || 'freemium',
+    role: isAdmin ? 'admin' : (profile?.role || 'student'),
+    tier: isAdmin ? 'premium' : (profile?.tier || 'freemium'),
     xp: profile?.xp || 0,
     streak: profile?.streak || 0,
     rank: profile?.rank || null,
@@ -129,14 +139,17 @@ export const getCurrentSessionUser = async () => {
 
     const user = session.user;
     const profile = await getUserDoc(user.id);
+    const isAdmin = isAdminEmail(user.email) || 
+                    profile?.role === 'admin' || 
+                    user.user_metadata?.role === 'admin';
 
     return {
       uid: user.id,
       id: user.id,
-      name: profile?.name || user.user_metadata?.name || user.user_metadata?.full_name || 'Élève',
+      name: profile?.name || user.user_metadata?.name || user.user_metadata?.full_name || (isAdmin ? 'Directeur' : 'Élève'),
       email: user.email,
-      role: profile?.role || 'student',
-      tier: profile?.tier || 'freemium',
+      role: isAdmin ? 'admin' : (profile?.role || 'student'),
+      tier: isAdmin ? 'premium' : (profile?.tier || 'freemium'),
       xp: profile?.xp || 0,
       streak: profile?.streak || 0,
       rank: profile?.rank || null,

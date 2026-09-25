@@ -675,12 +675,34 @@ export function AuthProvider({ children }) {
 
     initializeAuthAndListen();
 
-    // Subscribe to auth token changes
+    // Subscribe to auth token changes (e.g. TOKEN_REFRESHED, USER_UPDATED)
     const unsubscribe = onAuthChange(async (event, session) => {
-      if (session?.user && active) {
-        setUser(session.user);
-      } else if (event === 'SIGNED_OUT' && active) {
+      if (event === 'SIGNED_OUT' && active) {
         clearLocalSessionData();
+      } else if (session?.user && active) {
+        try {
+          const freshUser = await getCurrentSessionUser();
+          if (freshUser && active) {
+            setUser(freshUser);
+            safeSetItem('user', JSON.stringify(freshUser));
+          } else if (active) {
+            setUser(prev => {
+              if (!prev) return null;
+              const isAdmin = session.user.email?.toLowerCase().trim() === 'admin@lconq.ma' ||
+                              session.user.user_metadata?.role === 'admin' ||
+                              prev.role === 'admin';
+              return {
+                ...prev,
+                uid: session.user.id,
+                id: session.user.id,
+                email: session.user.email,
+                role: isAdmin ? 'admin' : prev.role,
+              };
+            });
+          }
+        } catch (e) {
+          console.warn('[AuthContext] Error on auth change:', e);
+        }
       }
     });
 
