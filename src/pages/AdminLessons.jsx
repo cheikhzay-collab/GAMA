@@ -557,7 +557,7 @@ ${sectionsContentText}
                 Bibliothèque de Fiches de Cours
               </h1>
               <span 
-                title="Base de données Cloud Neon PostgreSQL & Mémorisation locale synchronisée"
+                title="Base de données Cloud Supabase & Mémorisation locale synchronisée"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -608,7 +608,7 @@ ${sectionsContentText}
             <button
               onClick={() => fetchLessonsList(true)}
               disabled={isRefreshing}
-              title="Synchroniser immédiatement avec la base de données Neon PostgreSQL"
+              title="Synchroniser immédiatement avec la base de données Supabase"
               style={{
                 display: 'flex',
                 alignItems: 'center',

@@ -7,11 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint src",
-    "preview": "vite preview",
-    "db:migrate:neon": "node scripts/migrate_to_neon.js"
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.1.0",
+    "@supabase/supabase-js": "^2.117.1",
     "dompurify": "^3.4.15",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",

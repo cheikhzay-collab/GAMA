@@ -1204,22 +1204,25 @@ export default function AdminLessonEdit() {
         localStorage.removeItem(`lconq_draft_${id}`);
       } catch (_) {}
 
-      if (syncResult?.neonSuccess && syncResult?.localDbSuccess) {
+      const isCloudSuccess = syncResult?.supabaseSuccess || syncResult?.neonSuccess;
+      const cloudError = syncResult?.supabaseError || syncResult?.neonError;
+
+      if (isCloudSuccess && syncResult?.localDbSuccess) {
         setSuccess(isArMode 
-          ? `✓ تم حفظ التعديلات والمزامنة بنجاح في قاعدة البيانات السحابية (Neon) والمحلية [${nowFormatted}]` 
-          : `✓ Fiche enregistrée et synchronisée avec la base Cloud (Neon) et locale [${nowFormatted}]`);
-      } else if (syncResult?.neonSuccess) {
+          ? `✓ تم حفظ التعديلات والمزامنة بنجاح في قاعدة البيانات السحابية والمحلية [${nowFormatted}]` 
+          : `✓ Fiche enregistrée et synchronisée avec la base Cloud et locale [${nowFormatted}]`);
+      } else if (isCloudSuccess) {
         setSuccess(isArMode 
-          ? `✓ تم الحفظ بنجاح في قاعدة البيانات السحابية (Neon) [${nowFormatted}]` 
-          : `✓ Synchronisé avec succès dans la base Cloud Neon [${nowFormatted}]`);
+          ? `✓ تم الحفظ بنجاح في قاعدة البيانات السحابية [${nowFormatted}]` 
+          : `✓ Synchronisé avec succès dans la base Cloud [${nowFormatted}]`);
       } else if (syncResult?.localDbSuccess) {
         setSuccess(isArMode 
           ? `✓ تم الحفظ في قاعدة البيانات المحلية [${nowFormatted}] (المزامنة السحابية ستكتمل تلقائياً عند عودة الاتصال)` 
           : `✓ Enregistré dans la base locale [${nowFormatted}] (Sync Cloud dès reconnexion)`);
-      } else if (syncResult?.neonError) {
+      } else if (cloudError) {
         setError(isArMode 
-          ? `تنبيه: تم حفظ التعديل محلياً فقط. تعذرت المزامنة مع Neon: ${syncResult.neonError}` 
-          : `Attention : Enregistré en local uniquement. Échec de synchronisation Neon : ${syncResult.neonError}`);
+          ? `تنبيه: تم حفظ التعديل محلياً فقط. تعذرت المزامنة السحابية: ${cloudError}` 
+          : `Attention : Enregistré en local uniquement. Échec de synchronisation Cloud : ${cloudError}`);
       } else {
         setSuccess(isArMode 
           ? `✓ تم حفظ التعديلات في الذاكرة المؤقتة [${nowFormatted}]` 

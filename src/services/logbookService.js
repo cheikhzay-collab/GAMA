@@ -1,32 +1,36 @@
 // src/services/logbookService.js
-// Logbook CRUD utilities with Neon PostgreSQL cloud persistence and localStorage caching.
-import { neonGetConfig, neonSaveConfig } from '../lib/neon';
-
+// Logbook CRUD utilities with Supabase cloud persistence and localStorage caching.
+import { supabase } from '../lib/supabase';
 
 const LOGBOOK_CONFIG_KEY = 'logbook_entries';
 
 /**
- * Get all logbook entries from Neon cloud database, falling back to local cache.
+ * Get all logbook entries from Supabase cloud database, falling back to local cache.
  * @param {string} [classId] - Optional class ID to filter by
  * @returns {Promise<Array>}
  */
 export const getLogbookEntries = async (classId) => {
   let entries = null;
 
-  // 1. Try fetching from Neon Cloud Database
-  try {
-    const remote = await neonGetConfig(LOGBOOK_CONFIG_KEY);
-    if (Array.isArray(remote)) {
-      entries = remote;
-      localStorage.setItem(LOGBOOK_CONFIG_KEY, JSON.stringify(remote));
+  // 1. Try fetching from Supabase
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('config')
+        .select('value')
+        .eq('key', LOGBOOK_CONFIG_KEY)
+        .maybeSingle();
+
+      if (!error && data?.value && Array.isArray(data.value)) {
+        entries = data.value;
+        localStorage.setItem(LOGBOOK_CONFIG_KEY, JSON.stringify(entries));
+      }
+    } catch (err) {
+      console.warn('[logbookService] Supabase fetch error, trying local cache:', err.message || err);
     }
-  } catch (err) {
-    console.warn('[logbookService] Neon fetch failed, trying fallbacks:', err.message || err);
   }
 
-
-
-  // 3. Fallback to localStorage cache
+  // 2. Fallback to localStorage cache
   if (!entries) {
     try {
       const saved = localStorage.getItem(LOGBOOK_CONFIG_KEY);
@@ -53,14 +57,20 @@ const persistLogbookEntries = async (all) => {
     localStorage.setItem(LOGBOOK_CONFIG_KEY, JSON.stringify(all));
   } catch (_) {}
 
-  // Cloud Neon
-  try {
-    await neonSaveConfig(LOGBOOK_CONFIG_KEY, all);
-  } catch (err) {
-    console.warn('[logbookService] Neon save warning:', err.message || err);
+  // Supabase Cloud
+  if (supabase) {
+    try {
+      await supabase
+        .from('config')
+        .upsert({
+          key: LOGBOOK_CONFIG_KEY,
+          value: all,
+          updated_at: new Date().toISOString()
+        });
+    } catch (err) {
+      console.warn('[logbookService] Supabase save warning:', err.message || err);
+    }
   }
-
-
 };
 
 export const addLogbookEntry = async (entryData) => {
@@ -98,7 +108,7 @@ export const updateLogbookEntry = async (entryId, updates) => {
     await persistLogbookEntries(all);
     return all[idx];
   }
-  throw new Error("Entrée non trouvée");
+  return null;
 };
 
 export const deleteLogbookEntry = async (entryId) => {
@@ -110,8 +120,7 @@ export const deleteLogbookEntry = async (entryId) => {
     all = [];
   }
 
-  all = all.filter(e => e.id !== entryId);
-  await persistLogbookEntries(all);
+  const filtered = all.filter(e => e.id !== entryId);
+  await persistLogbookEntries(filtered);
   return true;
 };
-

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { neonGet } from '../lib/neon';
+import { getExamById } from '../services/examService';
 import { generateSubjectHTML, generateCorrectionHTML } from '../utils/generateExamPDF';
 
 export default function PrintView() {
@@ -50,8 +50,7 @@ export default function PrintView() {
         setStatus('Téléchargement des données de l\'examen...');
         let examData = null;
         try {
-          const res = await neonGet('exams', examId, 'id');
-          if (res.data) examData = res.data;
+          examData = await getExamById(examId);
         } catch (_) {}
 
 

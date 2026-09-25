@@ -1,10 +1,10 @@
 // src/services/schoolService.js
-// Service for schools list and per-school branding with SWR caching.
-// Supports Neon PostgreSQL and Local Companion API with graceful network error handling.
+// Service for schools list, branding, and all app configuration with SWR caching.
+// Fully integrated with Supabase and resilient Local Companion fallback.
 
+import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
-import { neonSaveConfig, neonGetConfig } from '../lib/neon';
 
 const DEFAULT_SCHOOLS = [
   '2bac_sm',
@@ -17,36 +17,77 @@ const DEFAULT_SCHOOLS = [
 ];
 
 /**
- * Fetch schools config with SWR caching.
+ * Generic helper to fetch config from Supabase or Local Companion
  */
+async function fetchConfig(key, defaultVal) {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('config')
+        .select('value')
+        .eq('key', key)
+        .maybeSingle();
+
+      if (!error && data?.value !== undefined && data?.value !== null) {
+        return data.value;
+      }
+    } catch (err) {
+      console.warn(`[Supabase] Failed to fetch config '${key}':`, err.message || err);
+    }
+  }
+
+  try {
+    const config = await localDb.get('/config');
+    if (config && config[key] !== undefined) {
+      return config[key];
+    }
+  } catch (err) {}
+
+  return defaultVal;
+}
+
+/**
+ * Generic helper to save config to Supabase and Local Companion
+ */
+async function saveConfig(key, value) {
+  const tasks = [];
+
+  if (supabase) {
+    tasks.push(
+      supabase
+        .from('config')
+        .upsert({
+          key,
+          value,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'key' })
+        .catch(err => {
+          console.warn(`[Supabase] Network error saving config '${key}':`, err.message || err);
+        })
+    );
+  }
+
+  tasks.push(
+    localDb.post('/config', { [key]: value }).catch(() => {})
+  );
+
+  await Promise.allSettled(tasks);
+}
+
+// ─── 1. Schools & School Branding ─────────────────────────────────────────────
+
 export const getSchoolsConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_schools', async () => {
-    // 1. Try Neon
-    try {
-      const neonVal = await neonGetConfig('schools');
-      if (neonVal) {
-        return {
-          schools: neonVal.schools || DEFAULT_SCHOOLS,
-          branding: neonVal.branding || {},
-        };
-      }
-    } catch (neonErr) {
-      console.warn('[Neon] getSchoolsConfig error:', neonErr.message);
-    }
-
-
-    try {
-      const config = await localDb.get('/config');
-      const val = config['schools_config'] || {};
+    const val = await fetchConfig('schools', null);
+    if (val) {
       return {
-        schools: val.schools || config.schools || DEFAULT_SCHOOLS,
-        branding: val.branding || config.schoolBranding || {},
+        schools: val.schools || DEFAULT_SCHOOLS,
+        branding: val.branding || {},
       };
-    } catch (err) {
-      return { schools: DEFAULT_SCHOOLS, branding: {} };
     }
+    return { schools: DEFAULT_SCHOOLS, branding: {} };
   }, {
     forceRefresh,
     staleTime: 1000 * 60 * 10,
@@ -54,49 +95,18 @@ export const getSchoolsConfig = async (options = {}) => {
   });
 };
 
-/**
- * Save the full schools config.
- */
 export const saveSchoolsConfig = async (schools, branding) => {
   queryCache.invalidate('config_schools');
-
-  // 1. Sync to Neon PostgreSQL
-  try {
-    await neonSaveConfig('schools', { schools, branding });
-  } catch (err) {
-    console.warn('[Neon] Error saving schools config:', err);
-  }
-
-
-  try {
-    await localDb.post('/config', { schools_config: { schools, branding } });
-  } catch (err) {
-    console.warn('[LocalDB] Failed to save schools config locally:', err.message || err);
-  }
+  await saveConfig('schools', { schools, branding });
 };
 
-/**
- * Fetch general platform branding with SWR caching.
- */
+// ─── 2. General Branding Config ───────────────────────────────────────────────
+
 export const getBrandingConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_branding', async () => {
-    // 1. Try Neon
-    try {
-      const neonVal = await neonGetConfig('branding');
-      if (neonVal) return neonVal;
-    } catch (neonErr) {
-      console.warn('[Neon] getBrandingConfig error:', neonErr.message);
-    }
-
-
-    try {
-      const config = await localDb.get('/config');
-      return config['branding'] || null;
-    } catch (err) {
-      return null;
-    }
+    return fetchConfig('branding', {});
   }, {
     forceRefresh,
     staleTime: 1000 * 60 * 10,
@@ -104,48 +114,18 @@ export const getBrandingConfig = async (options = {}) => {
   });
 };
 
-/**
- * Save general platform branding.
- */
-export const saveBrandingConfig = async (branding) => {
+export const saveBrandingConfig = async (brandingData) => {
   queryCache.invalidate('config_branding');
-
-  // 1. Sync to Neon PostgreSQL
-  try {
-    await neonSaveConfig('branding', branding);
-  } catch (err) {
-    console.warn('[Neon] Error saving branding config:', err);
-  }
-
-
-  try {
-    await localDb.post('/config', { branding });
-  } catch (err) {
-    console.warn('[LocalDB] Failed to save branding config locally:', err.message || err);
-  }
+  await saveConfig('branding', brandingData);
 };
 
-/**
- * Fetch flashcard settings with SWR caching.
- */
+// ─── 3. Flashcard Settings ───────────────────────────────────────────────────
+
 export const getFlashcardSettingsConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_flashcard_settings', async () => {
-    // 1. Try Neon PostgreSQL
-    try {
-      const neonVal = await neonGetConfig('flashcard_settings');
-      if (neonVal !== null && neonVal !== undefined) return neonVal;
-    } catch (neonErr) {
-      console.warn('[Neon] Error fetching flashcard_settings:', neonErr.message);
-    }
-
-    try {
-      const config = await localDb.get('/config');
-      return config['flashcard_settings'] || null;
-    } catch (err) {
-      return null;
-    }
+    return fetchConfig('flashcard_settings', {});
   }, {
     forceRefresh,
     staleTime: 1000 * 60 * 10,
@@ -153,48 +133,18 @@ export const getFlashcardSettingsConfig = async (options = {}) => {
   });
 };
 
-/**
- * Save flashcard settings.
- */
 export const saveFlashcardSettingsConfig = async (settings) => {
   queryCache.invalidate('config_flashcard_settings');
-
-  // 1. Sync to Neon PostgreSQL
-  try {
-    await neonSaveConfig('flashcard_settings', settings);
-  } catch (err) {
-    console.warn('[Neon] Error saving flashcard settings:', err);
-  }
-
-
-  try {
-    await localDb.post('/config', { flashcard_settings: settings });
-  } catch (err) {
-    console.warn('[LocalDB] Failed to save flashcard settings locally:', err.message || err);
-  }
+  await saveConfig('flashcard_settings', settings);
 };
 
-/**
- * Fetch PDF styling settings with SWR caching.
- */
+// ─── 4. PDF Settings ─────────────────────────────────────────────────────────
+
 export const getPdfSettingsConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_pdf_settings', async () => {
-    // 1. Try Neon PostgreSQL
-    try {
-      const neonVal = await neonGetConfig('pdf_settings');
-      if (neonVal !== null && neonVal !== undefined) return neonVal;
-    } catch (neonErr) {
-      console.warn('[Neon] Error fetching pdf_settings:', neonErr.message);
-    }
-
-    try {
-      const config = await localDb.get('/config');
-      return config['pdf_settings'] || null;
-    } catch (err) {
-      return null;
-    }
+    return fetchConfig('pdf_settings', {});
   }, {
     forceRefresh,
     staleTime: 1000 * 60 * 10,
@@ -202,48 +152,18 @@ export const getPdfSettingsConfig = async (options = {}) => {
   });
 };
 
-/**
- * Save PDF styling settings.
- */
 export const savePdfSettingsConfig = async (settings) => {
   queryCache.invalidate('config_pdf_settings');
-
-  // 1. Sync to Neon PostgreSQL
-  try {
-    await neonSaveConfig('pdf_settings', settings);
-  } catch (err) {
-    console.warn('[Neon] Error saving PDF settings:', err);
-  }
-
-
-  try {
-    await localDb.post('/config', { pdf_settings: settings });
-  } catch (err) {
-    console.warn('[LocalDB] Failed to save PDF settings locally:', err.message || err);
-  }
+  await saveConfig('pdf_settings', settings);
 };
 
-/**
- * Fetch OMR scanner settings with SWR caching.
- */
+// ─── 5. OMR Scanner Settings ─────────────────────────────────────────────────
+
 export const getOmrScannerSettingsConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_omr_scanner_settings', async () => {
-    // 1. Try Neon PostgreSQL
-    try {
-      const neonVal = await neonGetConfig('omr_scanner_settings');
-      if (neonVal !== null && neonVal !== undefined) return neonVal;
-    } catch (neonErr) {
-      console.warn('[Neon] Error fetching omr_scanner_settings:', neonErr.message);
-    }
-
-    try {
-      const config = await localDb.get('/config');
-      return config['omr_scanner_settings'] || null;
-    } catch (err) {
-      return null;
-    }
+    return fetchConfig('omr_scanner_settings', {});
   }, {
     forceRefresh,
     staleTime: 1000 * 60 * 10,
@@ -251,48 +171,18 @@ export const getOmrScannerSettingsConfig = async (options = {}) => {
   });
 };
 
-/**
- * Save OMR scanner settings.
- */
 export const saveOmrScannerSettingsConfig = async (settings) => {
   queryCache.invalidate('config_omr_scanner_settings');
-
-  // 1. Sync to Neon PostgreSQL
-  try {
-    await neonSaveConfig('omr_scanner_settings', settings);
-  } catch (err) {
-    console.warn('[Neon] Error saving OMR scanner settings:', err);
-  }
-
-
-  try {
-    await localDb.post('/config', { omr_scanner_settings: settings });
-  } catch (err) {
-    console.warn('[LocalDB] Failed to save OMR scanner settings locally:', err.message || err);
-  }
+  await saveConfig('omr_scanner_settings', settings);
 };
 
-/**
- * Fetch WhatsApp floating button settings with SWR caching.
- */
+// ─── 6. WhatsApp Settings ────────────────────────────────────────────────────
+
 export const getWhatsAppSettingsConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_whatsapp_settings', async () => {
-    // 1. Try Neon PostgreSQL
-    try {
-      const neonVal = await neonGetConfig('whatsapp_settings');
-      if (neonVal !== null && neonVal !== undefined) return neonVal;
-    } catch (neonErr) {
-      console.warn('[Neon] Error fetching whatsapp_settings:', neonErr.message);
-    }
-
-    try {
-      const config = await localDb.get('/config');
-      return config['whatsapp_settings'] || null;
-    } catch (err) {
-      return null;
-    }
+    return fetchConfig('whatsapp_settings', {});
   }, {
     forceRefresh,
     staleTime: 1000 * 60 * 10,
@@ -300,48 +190,25 @@ export const getWhatsAppSettingsConfig = async (options = {}) => {
   });
 };
 
-/**
- * Save WhatsApp floating button settings.
- */
 export const saveWhatsAppSettingsConfig = async (settings) => {
   queryCache.invalidate('config_whatsapp_settings');
-
-  // 1. Sync to Neon PostgreSQL
-  try {
-    await neonSaveConfig('whatsapp_settings', settings);
-  } catch (err) {
-    console.warn('[Neon] Error saving WhatsApp settings:', err);
-  }
-
-
-  try {
-    await localDb.post('/config', { whatsapp_settings: settings });
-  } catch (err) {
-    console.warn('[LocalDB] Failed to save WhatsApp settings locally:', err.message || err);
-  }
+  await saveConfig('whatsapp_settings', settings);
 };
 
-/**
- * Fetch subscription plans shared by the admin dashboard and sales pages.
- */
+// ─── 7. Subscription Plans ───────────────────────────────────────────────────
+
 export const getPlansConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_plans', async () => {
-    // 1. Try Neon PostgreSQL
-    try {
-      const neonVal = await neonGetConfig('plans');
-      if (neonVal !== null && neonVal !== undefined) return neonVal;
-    } catch (neonErr) {
-      console.warn('[Neon] Error fetching plans:', neonErr.message);
+    const val = await fetchConfig('plans', null);
+    if (val && Array.isArray(val.plans)) {
+      return val.plans;
     }
-
-    try {
-      const config = await localDb.get('/config');
-      return Array.isArray(config.plans) ? config.plans : null;
-    } catch (err) {
-      return null;
-    }
+    return [
+      { id: 'free', name: 'Gratuit', price: 0, durationDays: 365, features: ['Accès limité'] },
+      { id: 'pro', name: 'Pass Concours Pro', price: 299, durationDays: 365, features: ['Accès illimité'] }
+    ];
   }, {
     forceRefresh,
     staleTime: 1000 * 60 * 10,
@@ -351,50 +218,96 @@ export const getPlansConfig = async (options = {}) => {
 
 export const getPlans = getPlansConfig;
 
-/**
- * Persist subscription plans in the active data source.
- */
 export const savePlansConfig = async (plans) => {
   queryCache.invalidate('config_plans');
-
-  // 1. Sync to Neon PostgreSQL
-  try {
-    await neonSaveConfig('plans', plans);
-  } catch (err) {
-    console.warn('[Neon] Error saving plans config:', err);
-  }
-
-
-  try {
-    await localDb.post('/config', { plans });
-  } catch (err) {
-    console.warn('[LocalDB] Failed to save plans config locally:', err.message || err);
-  }
+  await saveConfig('plans', { plans });
 };
 
 export const savePlans = savePlansConfig;
 
-/**
- * Fetch dynamic Arabic sales page config with SWR caching.
- */
+// ─── 8. Exam Themes ──────────────────────────────────────────────────────────
+
+export const getExamThemesConfig = async (options = {}) => {
+  const { forceRefresh = false } = options;
+
+  return queryCache.fetchWithCache('config_exam_themes', async () => {
+    return fetchConfig('exam_themes', {});
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 10,
+    cacheTime: 1000 * 60 * 60
+  });
+};
+
+export const saveExamThemesConfig = async (themes) => {
+  queryCache.invalidate('config_exam_themes');
+  await saveConfig('exam_themes', themes);
+};
+
+// ─── 9. Exam Settings ────────────────────────────────────────────────────────
+
+export const getExamSettingsConfig = async (options = {}) => {
+  const { forceRefresh = false } = options;
+
+  return queryCache.fetchWithCache('config_exam_settings', async () => {
+    return fetchConfig('exam_settings', {});
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 10,
+    cacheTime: 1000 * 60 * 60
+  });
+};
+
+export const saveExamSettingsConfig = async (settings) => {
+  queryCache.invalidate('config_exam_settings');
+  await saveConfig('exam_settings', settings);
+};
+
+// ─── 10. Security Settings ───────────────────────────────────────────────────
+
+export const getSecuritySettingsConfig = async (options = {}) => {
+  const { forceRefresh = false } = options;
+
+  return queryCache.fetchWithCache('config_security_settings', async () => {
+    return fetchConfig('security_settings', {});
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 10,
+    cacheTime: 1000 * 60 * 60
+  });
+};
+
+export const saveSecuritySettingsConfig = async (settings) => {
+  queryCache.invalidate('config_security_settings');
+  await saveConfig('security_settings', settings);
+};
+
+// ─── 11. Schedule / Timetable Config ──────────────────────────────────────────
+
+export const getScheduleConfig = async (options = {}) => {
+  const { forceRefresh = false } = options;
+
+  return queryCache.fetchWithCache('config_schedule', async () => {
+    return fetchConfig('schedule', {});
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 10,
+    cacheTime: 1000 * 60 * 60
+  });
+};
+
+export const saveScheduleConfig = async (scheduleData) => {
+  queryCache.invalidate('config_schedule');
+  await saveConfig('schedule', scheduleData);
+};
+
+// ─── 12. Landing AR Settings ─────────────────────────────────────────────────
+
 export const getLandingArConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_landing_ar', async () => {
-    // 1. Try Neon PostgreSQL
-    try {
-      const neonVal = await neonGetConfig('landing_ar_settings');
-      if (neonVal !== null && neonVal !== undefined) return neonVal;
-    } catch (neonErr) {
-      console.warn('[Neon] Error fetching landing_ar_settings:', neonErr.message);
-    }
-
-    try {
-      const config = await localDb.get('/config');
-      return config['landing_ar_settings'] || null;
-    } catch (err) {
-      return null;
-    }
+    return fetchConfig('landing_ar_settings', null);
   }, {
     forceRefresh,
     staleTime: 1000 * 60 * 10,
@@ -402,48 +315,18 @@ export const getLandingArConfig = async (options = {}) => {
   });
 };
 
-/**
- * Save dynamic Arabic sales page config.
- */
 export const saveLandingArConfig = async (landingConfig) => {
   queryCache.invalidate('config_landing_ar');
-
-  // 1. Sync to Neon PostgreSQL
-  try {
-    await neonSaveConfig('landing_ar_settings', landingConfig);
-  } catch (err) {
-    console.warn('[Neon] Error saving landing AR config:', err);
-  }
-
-
-  try {
-    await localDb.post('/config', { landing_ar_settings: landingConfig });
-  } catch (err) {
-    console.warn('[LocalDB] Failed to save landing AR settings locally:', err.message || err);
-  }
+  await saveConfig('landing_ar_settings', landingConfig);
 };
 
-/**
- * Fetch AI Engine & API Keys settings with SWR caching.
- */
+// ─── 13. AI Settings ─────────────────────────────────────────────────────────
+
 export const getAiSettingsConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_ai_settings', async () => {
-    // 1. Try Neon PostgreSQL
-    try {
-      const neonVal = await neonGetConfig('ai_settings');
-      if (neonVal !== null && neonVal !== undefined) return neonVal;
-    } catch (neonErr) {
-      console.warn('[Neon] Error fetching ai_settings:', neonErr.message);
-    }
-
-    try {
-      const config = await localDb.get('/config');
-      return config['ai_settings'] || null;
-    } catch (err) {
-      return null;
-    }
+    return fetchConfig('ai_settings', null);
   }, {
     forceRefresh,
     staleTime: 1000 * 60 * 10,
@@ -451,72 +334,13 @@ export const getAiSettingsConfig = async (options = {}) => {
   });
 };
 
-/**
- * Save AI Engine & API Keys settings to Neon PostgreSQL config table.
- */
 export const saveAiSettingsConfig = async (settings) => {
   queryCache.invalidate('config_ai_settings');
-
-  // 1. Sync to Neon PostgreSQL
-  try {
-    await neonSaveConfig('ai_settings', settings);
-  } catch (err) {
-    console.warn('[Neon] Error saving AI settings:', err);
-  }
-
-
-  try {
-    await localDb.post('/config', { ai_settings: settings });
-  } catch (err) {
-    console.warn('[LocalDB] Failed to save AI settings locally:', err.message || err);
-  }
+  await saveConfig('ai_settings', settings);
 };
 
-/**
- * Fetch School Holidays with Cloud DB sync & local fallback.
- */
-export const getSchoolHolidaysConfig = async (options = {}) => {
-  const { forceRefresh = false } = options;
+// ─── 14. School Holidays ─────────────────────────────────────────────────────
 
-  return queryCache.fetchWithCache('config_school_holidays', async () => {
-    // 1. Neon PostgreSQL
-    try {
-      const neonVal = await neonGetConfig('school_holidays');
-      if (Array.isArray(neonVal) && neonVal.length > 0) {
-        try { localStorage.setItem('school_holidays', JSON.stringify(neonVal)); } catch (_) {}
-        return neonVal;
-      }
-    } catch (neonErr) {
-      console.warn('[Neon] getSchoolHolidaysConfig error:', neonErr.message);
-    }
-
-
-    // 3. Companion DB (Local Database)
-    try {
-      const config = await localDb.get('/config');
-      if (config && Array.isArray(config.school_holidays) && config.school_holidays.length > 0) {
-        try { localStorage.setItem('school_holidays', JSON.stringify(config.school_holidays)); } catch (_) {}
-        return config.school_holidays;
-      }
-    } catch (_) {}
-
-    // 4. LocalStorage fallback
-    try {
-      const raw = localStorage.getItem('school_holidays');
-      return raw ? JSON.parse(raw) : [];
-    } catch (_) {
-      return [];
-    }
-  }, {
-    forceRefresh,
-    staleTime: 1000 * 60 * 10,
-    cacheTime: 1000 * 60 * 60
-  });
-};
-
-/**
- * Standard official Moroccan school holidays preset for an academic year.
- */
 export const getOfficialMoroccanHolidays = (academicYear = '2026-2027') => {
   const startYear = parseInt(String(academicYear).split(/[-/]/)[0], 10) || 2026;
   const nextYear = startYear + 1;
@@ -615,66 +439,52 @@ export const getOfficialMoroccanHolidays = (academicYear = '2026-2027') => {
   ];
 };
 
-/**
- * Save School Holidays to Cloud DB (Neon PostgreSQL) and LocalStorage.
- */
+export const getSchoolHolidaysConfig = async (options = {}) => {
+  const { forceRefresh = false } = options;
+
+  return queryCache.fetchWithCache('config_school_holidays', async () => {
+    const val = await fetchConfig('school_holidays', null);
+    if (Array.isArray(val) && val.length > 0) {
+      try { localStorage.setItem('school_holidays', JSON.stringify(val)); } catch (_) {}
+      return val;
+    }
+
+    try {
+      const raw = localStorage.getItem('school_holidays');
+      return raw ? JSON.parse(raw) : [];
+    } catch (_) {
+      return [];
+    }
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 10,
+    cacheTime: 1000 * 60 * 60
+  });
+};
+
 export const saveSchoolHolidaysConfig = async (holidays) => {
   try { localStorage.setItem('school_holidays', JSON.stringify(holidays)); } catch (_) {}
-
   try {
     await queryCache.set('config_school_holidays', holidays);
   } catch (_) {
     queryCache.invalidate('config_school_holidays');
   }
-
-  const tasks = [];
-
-  // 1. Sync to Neon PostgreSQL
-  tasks.push(
-    neonSaveConfig('school_holidays', holidays).catch(err => {
-      console.warn('[Neon] Error saving school holidays:', err);
-    })
-  );
-
-
-  // 3. Companion DB
-  tasks.push(
-    localDb.post('/config', { school_holidays: holidays }).catch(() => {})
-  );
-
-  await Promise.allSettled(tasks);
+  await saveConfig('school_holidays', holidays);
   return { success: true };
 };
 
-/**
- * Fetch Teacher Absences / Leaves (الرخص والغيابات) with Cloud DB sync.
- */
+// ─── 15. Teacher Absences / Leaves ───────────────────────────────────────────
+
 export const getTeacherAbsencesConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_teacher_absences', async () => {
-    // 1. Neon PostgreSQL
-    try {
-      const neonVal = await neonGetConfig('teacher_absences');
-      if (Array.isArray(neonVal) && neonVal.length > 0) {
-        try { localStorage.setItem('teacher_absences', JSON.stringify(neonVal)); } catch (_) {}
-        return neonVal;
-      }
-    } catch (neonErr) {
-      console.warn('[Neon] getTeacherAbsencesConfig error:', neonErr.message);
+    const val = await fetchConfig('teacher_absences', null);
+    if (Array.isArray(val) && val.length > 0) {
+      try { localStorage.setItem('teacher_absences', JSON.stringify(val)); } catch (_) {}
+      return val;
     }
 
-
-    // 3. Companion DB (Local Database)
-    try {
-      const config = await localDb.get('/config');
-      if (config && Array.isArray(config.teacher_absences) && config.teacher_absences.length > 0) {
-        try { localStorage.setItem('teacher_absences', JSON.stringify(config.teacher_absences)); } catch (_) {}
-        return config.teacher_absences;
-      }
-    } catch (_) {}
-
-    // 4. LocalStorage fallback
     try {
       const raw = localStorage.getItem('teacher_absences');
       return raw ? JSON.parse(raw) : [];
@@ -688,44 +498,22 @@ export const getTeacherAbsencesConfig = async (options = {}) => {
   });
 };
 
-/**
- * Save Teacher Absences / Leaves (الرخص والغيابات) to Cloud DB.
- */
 export const saveTeacherAbsencesConfig = async (absences) => {
   try { localStorage.setItem('teacher_absences', JSON.stringify(absences)); } catch (_) {}
-
   try {
     await queryCache.set('config_teacher_absences', absences);
   } catch (_) {
     queryCache.invalidate('config_teacher_absences');
   }
-
-  const tasks = [];
-
-  // 1. Sync to Neon PostgreSQL
-  tasks.push(
-    neonSaveConfig('teacher_absences', absences).catch(err => {
-      console.warn('[Neon] Error saving teacher absences:', err);
-    })
-  );
-
-
-  // 3. Companion DB
-  tasks.push(
-    localDb.post('/config', { teacher_absences: absences }).catch(() => {})
-  );
-
-  await Promise.allSettled(tasks);
+  await saveConfig('teacher_absences', absences);
   return { success: true };
 };
 
-/**
- * Fetch Teacher Schedule / Timetable (جدول حصص الأستاذ) with Cloud DB sync.
- */
+// ─── 16. Teacher Schedule / Timetable ────────────────────────────────────────
+
 export const getTeacherScheduleConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
-  // Check local cache & last local update timestamp
   let localSchedule = null;
   let localUpdatedAt = 0;
   try {
@@ -735,44 +523,17 @@ export const getTeacherScheduleConfig = async (options = {}) => {
   } catch (_) {}
 
   return queryCache.fetchWithCache('config_teacher_schedule', async () => {
-    let cloudVal = null;
-
-    // 1. Neon PostgreSQL
-    try {
-      const neonVal = await neonGetConfig('teacher_schedule_current');
-      if (neonVal && typeof neonVal === 'object' && Object.keys(neonVal).length > 0) {
-        cloudVal = neonVal;
-      }
-    } catch (neonErr) {
-      console.warn('[Neon] getTeacherScheduleConfig error:', neonErr.message);
-    }
-
-
-    // 3. Companion DB (Local Database)
-    if (!cloudVal) {
-      try {
-        const config = await localDb.get('/config');
-        if (config && config.teacher_schedule_current && typeof config.teacher_schedule_current === 'object' && Object.keys(config.teacher_schedule_current).length > 0) {
-          cloudVal = config.teacher_schedule_current;
-        }
-      } catch (_) {}
-    }
-
-    // Guard against race condition: if local was updated recently (< 5 mins) and not forceRefresh,
-    // preserve local changes so an in-flight or stale cloud query does not wipe them out.
     const isRecentlyUpdatedLocally = localSchedule && (Date.now() - localUpdatedAt < 1000 * 60 * 5);
     if (isRecentlyUpdatedLocally && !forceRefresh) {
       return localSchedule;
     }
 
-    if (cloudVal) {
-      try {
-        localStorage.setItem('teacher_schedule_current', JSON.stringify(cloudVal));
-      } catch (_) {}
-      return cloudVal;
+    const val = await fetchConfig('teacher_schedule_current', null);
+    if (val && typeof val === 'object' && Object.keys(val).length > 0) {
+      try { localStorage.setItem('teacher_schedule_current', JSON.stringify(val)); } catch (_) {}
+      return val;
     }
 
-    // 4. LocalStorage fallback
     return localSchedule || {};
   }, {
     forceRefresh,
@@ -781,9 +542,6 @@ export const getTeacherScheduleConfig = async (options = {}) => {
   });
 };
 
-/**
- * Save Teacher Schedule / Timetable (جدول حصص الأستاذ) to Cloud DB.
- */
 export const saveTeacherScheduleConfig = async (schedule) => {
   const now = Date.now();
   try {
@@ -791,59 +549,27 @@ export const saveTeacherScheduleConfig = async (schedule) => {
     localStorage.setItem('teacher_schedule_updated_at', String(now));
   } catch (_) {}
 
-  // Update queryCache directly with fresh data
   try {
     await queryCache.set('config_teacher_schedule', schedule);
   } catch (_) {
     queryCache.invalidate('config_teacher_schedule');
   }
 
-  const tasks = [];
-
-  // 1. Sync to Neon PostgreSQL
-  tasks.push(
-    neonSaveConfig('teacher_schedule_current', schedule).catch(err => {
-      console.warn('[Neon] Error saving teacher schedule:', err);
-    })
-  );
-
-
-  // 3. Companion DB
-  tasks.push(
-    localDb.post('/config', { teacher_schedule_current: schedule }).catch(() => {})
-  );
-
-  await Promise.allSettled(tasks);
+  await saveConfig('teacher_schedule_current', schedule);
   return { success: true };
 };
 
-/**
- * Fetch Logbook Styling & Typography Settings (إعدادات دفتر النصوص).
- */
+// ─── 17. Logbook Styling ─────────────────────────────────────────────────────
+
 export const getLogbookStyleConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_logbook_style', async () => {
-    // 1. Neon PostgreSQL
-    try {
-      const neonVal = await neonGetConfig('logbook_style_settings');
-      if (neonVal && typeof neonVal === 'object') {
-        return neonVal;
-      }
-    } catch (neonErr) {
-      console.warn('[Neon] getLogbookStyleConfig error:', neonErr.message);
+    const val = await fetchConfig('logbook_style_settings', null);
+    if (val && typeof val === 'object') {
+      return val;
     }
 
-
-    // 3. Companion DB (Local Database)
-    try {
-      const config = await localDb.get('/config');
-      if (config && config.logbook_style_settings && typeof config.logbook_style_settings === 'object') {
-        return config.logbook_style_settings;
-      }
-    } catch (_) {}
-
-    // 4. Fallback to localStorage individual keys
     try {
       return {
         arFont: localStorage.getItem('logbook_ar_font') || 'UKIJ Merdane',
@@ -865,11 +591,7 @@ export const getLogbookStyleConfig = async (options = {}) => {
   });
 };
 
-/**
- * Save Logbook Styling & Typography Settings to Cloud DB.
- */
 export const saveLogbookStyleConfig = async (settings) => {
-  // Update localStorage keys
   try {
     if (settings.arFont) localStorage.setItem('logbook_ar_font', settings.arFont);
     if (settings.frFont) localStorage.setItem('logbook_fr_font', settings.frFont);
@@ -887,44 +609,19 @@ export const saveLogbookStyleConfig = async (settings) => {
     queryCache.invalidate('config_logbook_style');
   }
 
-  const tasks = [];
-
-  // 1. Sync to Neon PostgreSQL
-  tasks.push(
-    neonSaveConfig('logbook_style_settings', settings).catch(err => {
-      console.warn('[Neon] Error saving logbook style settings:', err);
-    })
-  );
-
-
-  // 3. Companion DB
-  tasks.push(
-    localDb.post('/config', { logbook_style_settings: settings }).catch(() => {})
-  );
-
-  await Promise.allSettled(tasks);
+  await saveConfig('logbook_style_settings', settings);
   return { success: true };
 };
 
-/**
- * Fetch Classes Settings (إعدادات الأقسام).
- */
+// ─── 18. Classes Settings ────────────────────────────────────────────────────
+
 export const getClassesSettingsConfig = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('config_classes_settings', async () => {
-    // 1. Neon PostgreSQL
-    try {
-      const neonVal = await neonGetConfig('classes_settings');
-      if (neonVal && typeof neonVal === 'object') {
-        return neonVal;
-      }
-    } catch (neonErr) {
-      console.warn('[Neon] getClassesSettingsConfig error:', neonErr.message);
-    }
+    const val = await fetchConfig('classes_settings', null);
+    if (val && typeof val === 'object') return val;
 
-
-    // 3. LocalStorage fallback
     try {
       const raw = localStorage.getItem('classes_settings');
       return raw ? JSON.parse(raw) : {};
@@ -938,31 +635,14 @@ export const getClassesSettingsConfig = async (options = {}) => {
   });
 };
 
-/**
- * Save Classes Settings (إعدادات الأقسام) to Cloud DB.
- */
 export const saveClassesSettingsConfig = async (settings) => {
   queryCache.invalidate('config_classes_settings');
   try { localStorage.setItem('classes_settings', JSON.stringify(settings)); } catch (_) {}
-
-  // 1. Sync to Neon PostgreSQL
-  try {
-    await neonSaveConfig('classes_settings', settings);
-  } catch (err) {
-    console.warn('[Neon] Error saving classes settings:', err);
-  }
-
-
-  // 3. Companion DB
-  try {
-    await localDb.post('/config', { classes_settings: settings });
-  } catch (_) {}
+  await saveConfig('classes_settings', settings);
 };
 
-/**
- * Master Bidirectional Synchronization for Schedule & All System Settings
- * Synchronizes Neon PostgreSQL and LocalStorage / Companion DB in one unified operation.
- */
+// ─── 19. Master Synchronization ──────────────────────────────────────────────
+
 export const syncAllConfigsAndSchedule = async () => {
   const syncResults = {
     scheduleSlots: 0,
@@ -972,7 +652,6 @@ export const syncAllConfigsAndSchedule = async () => {
   };
 
   try {
-    // 1. Force refresh configurations from primary Cloud DB (Neon)
     const [cloudSched, cloudHols, cloudStyle, cloudAi, cloudBranding, cloudPdf, cloudFlash, cloudWa] = await Promise.allSettled([
       getTeacherScheduleConfig({ forceRefresh: true }),
       getSchoolHolidaysConfig({ forceRefresh: true }),
@@ -984,7 +663,6 @@ export const syncAllConfigsAndSchedule = async () => {
       getWhatsAppSettingsConfig({ forceRefresh: true })
     ]);
 
-    // 2. Save & mirror to Companion DB
     if (cloudSched.status === 'fulfilled' && cloudSched.value) {
       await saveTeacherScheduleConfig(cloudSched.value);
       syncResults.scheduleSlots = Object.keys(cloudSched.value).length;
@@ -1033,5 +711,3 @@ export const syncAllConfigsAndSchedule = async () => {
     return { success: false, error: err.message, ...syncResults };
   }
 };
-
-

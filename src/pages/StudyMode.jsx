@@ -41,8 +41,8 @@ function groupCardsByContext(compiledCards, questionsPool) {
 }
 
 export default function StudyMode() {
-  const { user, exams, progress: allProgress, updateCardProgress, loadExamQuestions, neonEnabled, supabaseEnabled } = useAuth();
-  const isCloudDbEnabled = neonEnabled || supabaseEnabled;
+  const { user, exams, progress: allProgress, updateCardProgress, loadExamQuestions, supabaseEnabled } = useAuth();
+  const isCloudDbEnabled = supabaseEnabled;
   const [searchParams] = useSearchParams();
   const examId = searchParams.get('exam');
   const topicId = searchParams.get('topic');

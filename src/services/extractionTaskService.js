@@ -1,25 +1,21 @@
 // src/services/extractionTaskService.js
 // Client service for Managing Asynchronous Lesson Extraction Tasks
-// Highly resilient connector supporting Vite same-origin proxy (/companion-api),
-// direct localhost:5002, 127.0.0.1:5002, and Neon Cloud API fallback
+// Supports Local Companion API (port 5002) with seamless Supabase Cloud sync & LocalStorage fallback
 
+import { supabase } from '../lib/supabase';
 
-
-// Multi-tier candidate base URLs to guarantee connection across all environments
 const getCandidateBaseUrls = () => {
-  const list = ['']; // 1. Same-origin cloud API (/api/extraction-tasks works on both Vercel and local dev)
+  const list = [''];
 
   if (typeof window !== 'undefined' && window.location) {
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const isHttp = window.location.protocol === 'http:';
 
-    // 2. Same-origin Vite proxy to companion (only active in local Vite dev server)
     if (isLocalhost) {
       list.push('/companion-api');
     }
 
     const host = window.location.hostname;
-    // 3. Direct localhost and loopback IPv4
     if (isHttp || isLocalhost) {
       if (host && host !== 'localhost' && host !== '127.0.0.1') {
         list.push(`http://${host}:5002`);
@@ -39,7 +35,7 @@ let companionOnline = null;
 let lastCheckTime = 0;
 
 /**
- * Check if the local companion server (port 5002) is running for detached offline extraction
+ * Check if the local companion server (port 5002) is running
  */
 export const isCompanionAvailable = async (forceCheck = false) => {
   const now = Date.now();
@@ -86,9 +82,6 @@ export const isCompanionAvailable = async (forceCheck = false) => {
   return false;
 };
 
-/**
- * Helper to execute a fetch request across candidate companion URLs
- */
 const fetchWithFailover = async (endpointPath, options = {}) => {
   const bases = activeBaseUrl ? [activeBaseUrl, ...getCandidateBaseUrls()] : getCandidateBaseUrls();
   const uniqueBases = Array.from(new Set(bases));
@@ -133,16 +126,45 @@ const fetchWithFailover = async (endpointPath, options = {}) => {
  * Fetch all extraction tasks metadata (sorted newest first)
  */
 export const getExtractionTasks = async () => {
+  // 1. Companion API
   try {
-    const res = await fetchWithFailover('/api/extraction-tasks', { method: 'GET', timeout: 6000 });
+    const res = await fetchWithFailover('/api/extraction-tasks', { method: 'GET', timeout: 4000 });
     if (res && res.ok) {
       return await res.json();
     }
-  } catch (err) {
-    console.warn('[ExtractionTaskService] Companion fetch error, falling back:', err.message);
+  } catch (err) {}
+
+  // 2. Supabase
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('extraction_tasks')
+        .select('id, file_name, file_type, page_count, provider, model, status, progress_percent, progress_message, error_message, created_at, updated_at, completed_at')
+        .order('created_at', { ascending: false });
+
+      if (!error && Array.isArray(data)) {
+        return data.map(r => ({
+          id: r.id,
+          fileName: r.file_name,
+          fileType: r.file_type,
+          pageCount: r.page_count,
+          provider: r.provider,
+          model: r.model,
+          status: r.status,
+          progressPercent: r.progress_percent,
+          progressMessage: r.progress_message,
+          errorMessage: r.error_message,
+          createdAt: r.created_at,
+          updatedAt: r.updated_at,
+          completedAt: r.completed_at
+        }));
+      }
+    } catch (err) {
+      console.warn('[ExtractionTasks] Supabase fetch error:', err.message);
+    }
   }
 
-  // Fallback: localStorage
+  // 3. Fallback: localStorage
   try {
     const raw = localStorage.getItem('lconq_extraction_tasks') || '[]';
     return JSON.parse(raw);
@@ -155,22 +177,51 @@ export const getExtractionTasks = async () => {
  * Fetch full detail of a task including extracted JSON result
  */
 export const getExtractionTaskById = async (id) => {
+  // 1. Companion API
   try {
-    const res = await fetchWithFailover(`/api/extraction-tasks?id=${encodeURIComponent(id)}`, { method: 'GET', timeout: 8000 });
+    const res = await fetchWithFailover(`/api/extraction-tasks?id=${encodeURIComponent(id)}`, { method: 'GET', timeout: 5000 });
     if (res && res.ok) {
       return await res.json();
     }
-  } catch (err) {
-    console.warn('[ExtractionTaskService] Companion getById error:', err.message);
+  } catch (err) {}
+
+  // 2. Supabase
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('extraction_tasks')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (!error && data) {
+        return {
+          id: data.id,
+          fileName: data.file_name,
+          fileType: data.file_type,
+          pageCount: data.page_count,
+          provider: data.provider,
+          model: data.model,
+          status: data.status,
+          progressPercent: data.progress_percent,
+          progressMessage: data.progress_message,
+          errorMessage: data.error_message,
+          resultJson: data.result_json,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at,
+          completedAt: data.completed_at
+        };
+      }
+    } catch (err) {
+      console.warn('[ExtractionTasks] Supabase single fetch error:', err.message);
+    }
   }
-
-
 
   return null;
 };
 
 /**
- * Create a new extraction task (with automatic failover across endpoints)
+ * Create a new extraction task
  */
 export const createExtractionTask = async (taskPayload) => {
   try {
@@ -183,13 +234,13 @@ export const createExtractionTask = async (taskPayload) => {
     const data = await res.json();
     return data.task;
   } catch (err) {
-    console.error('[ExtractionTaskService] Failed to create task:', err);
+    console.error('[ExtractionTaskService] Failed to create task via companion:', err);
     throw err;
   }
 };
 
 /**
- * Update task progress and result directly in DB / Companion
+ * Update task progress and result
  */
 export const updateExtractionTask = async (id, updates = {}) => {
   try {
@@ -201,7 +252,6 @@ export const updateExtractionTask = async (id, updates = {}) => {
     });
     return res.ok;
   } catch (err) {
-    console.warn('[ExtractionTaskService] updateExtractionTask failed:', err.message);
     return false;
   }
 };
@@ -228,6 +278,12 @@ export const retryExtractionTask = async (id, newApiKey = null) => {
  * Delete a task
  */
 export const deleteExtractionTask = async (id) => {
+  if (supabase) {
+    try {
+      await supabase.from('extraction_tasks').delete().eq('id', id);
+    } catch (_) {}
+  }
+
   try {
     const res = await fetchWithFailover(`/api/extraction-tasks?id=${encodeURIComponent(id)}`, {
       method: 'DELETE',

@@ -1,7 +1,4 @@
-// api/extraction-tasks.js
-// Dedicated Vercel Serverless Function & Cloud Task Queue for Lesson Extraction
-// Connects directly to Neon PostgreSQL (public.extraction_tasks)
-import { neon } from '@neondatabase/serverless';
+import { createClient } from '@supabase/supabase-js';
 
 export const config = {
   maxDuration: 60,
@@ -31,15 +28,15 @@ function setCorsHeaders(req, res) {
   );
 }
 
-const DEFAULT_DATABASE_URL = 'postgresql://neondb_owner:npg_UXp0JqHP3DnI@ep-red-hall-zaw1rhs0-pooler.c-2.eu-west-2.aws.neon.tech/neondb?sslmode=require';
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://gnokmutjfanekaxjswew.supabase.co';
+const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdub2ttdXRqZmFuZWtheGpzd2V3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNjcxMTAsImV4cCI6MjEwMzc0MzExMH0.WrUhI2idk2lBw9ChG6IFd70JiuOci-UK0sYMXKwOYqA';
 
-let _sql = null;
-function getSql() {
-  if (_sql) return _sql;
-  const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED || process.env.VITE_NEON_DATABASE_URL || DEFAULT_DATABASE_URL;
-  if (!databaseUrl) throw new Error('NEON_DATABASE_URL is not configured on server');
-  _sql = neon(databaseUrl);
-  return _sql;
+let _supabase = null;
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+  return _supabase;
 }
 
 // â”€â”€ Moroccan Curriculum System Prompt â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -397,18 +394,12 @@ export default async function handler(req, res) {
     return;
   }
 
-  let sql;
-  try {
-    sql = getSql();
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
-  }
-
+  const supabase = getSupabase();
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const id = url.searchParams.get('id') || (req.body && req.body.id) || null;
   const action = url.searchParams.get('action') || (req.body && req.body.action) || null;
 
-  // â”€â”€ 1. GET Requests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── 1. GET Requests ──────────────────────────────────────────────────────────
   if (req.method === 'GET') {
     if (action === 'ping') {
       return res.status(200).json({ status: 'online', mode: 'server' });
@@ -416,22 +407,16 @@ export default async function handler(req, res) {
 
     if (id) {
       try {
-        const rows = await sql.query(
-          `SELECT 
-             id, file_name, file_type, page_count, provider, model, status, 
-             progress_percent, progress_message, attempts, max_attempts, 
-             error_message, header_summary, result_json, 
-             created_at, updated_at, completed_at 
-           FROM public.extraction_tasks 
-           WHERE id = $1`,
-          [id]
-        );
+        const { data: row, error } = await supabase
+          .from('extraction_tasks')
+          .select('*')
+          .eq('id', id)
+          .maybeSingle();
 
-        if (!rows || rows.length === 0) {
-          return res.status(404).json({ error: 'TÃ¢che introuvable' });
+        if (error || !row) {
+          return res.status(404).json({ error: 'Tâche introuvable' });
         }
 
-        const row = rows[0];
         return res.status(200).json({
           id: row.id,
           fileName: row.file_name,
@@ -458,29 +443,13 @@ export default async function handler(req, res) {
 
     // List all tasks (newest first)
     try {
-      // Auto-reap zombie tasks stuck in 'processing' for > 2 minutes
-      await sql.query(
-        `UPDATE public.extraction_tasks 
-         SET status = 'failed', 
-             progress_percent = 0, 
-             error_message = 'Interrompu : Le traitement a dÃ©passÃ© le dÃ©lai. Veuillez relancer.', 
-             progress_message = 'Ã‰chec : DÃ©lai dÃ©passÃ©', 
-             updated_at = NOW() 
-         WHERE status = 'processing' 
-           AND updated_at < NOW() - INTERVAL '2 minutes'`
-      ).catch(() => {});
+      const { data: rows, error } = await supabase
+        .from('extraction_tasks')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
 
-      const rows = await sql.query(
-        `SELECT 
-           id, file_name, file_type, page_count, provider, model, status, 
-           progress_percent, progress_message, attempts, max_attempts, 
-           error_message, header_summary, 
-           (result_json IS NOT NULL) AS has_result,
-           created_at, updated_at, completed_at 
-         FROM public.extraction_tasks 
-         ORDER BY created_at DESC 
-         LIMIT 100`
-      );
+      if (error) throw error;
 
       const tasks = (rows || []).map(row => ({
         id: row.id,
@@ -496,7 +465,7 @@ export default async function handler(req, res) {
         maxAttempts: row.max_attempts,
         error: row.error_message,
         headerSummary: row.header_summary,
-        hasResult: Boolean(row.has_result),
+        hasResult: Boolean(row.result_json),
         createdAt: row.created_at,
         updatedAt: row.updated_at,
         completedAt: row.completed_at
@@ -508,37 +477,30 @@ export default async function handler(req, res) {
     }
   }
 
-  // â”€â”€ 2. POST Requests (Create, Update, or Retry) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── 2. POST Requests ─────────────────────────────────────────────────────────
   if (req.method === 'POST') {
     const body = req.body || {};
 
-    // (A) Update Task State (Progress, Result, Error)
+    // (A) Update Task State
     if (action === 'update_task' || body.action === 'update_task') {
       const targetId = id || body.id;
       if (!targetId) return res.status(400).json({ error: 'ID manquant' });
 
       try {
-        await sql.query(
-          `UPDATE public.extraction_tasks 
-           SET status = COALESCE($1, status),
-               progress_percent = COALESCE($2, progress_percent),
-               progress_message = COALESCE($3, progress_message),
-               result_json = COALESCE($4, result_json),
-               header_summary = COALESCE($5, header_summary),
-               error_message = $6,
-               completed_at = CASE WHEN $1 = 'completed' THEN NOW() ELSE completed_at END,
-               updated_at = NOW() 
-           WHERE id = $7`,
-          [
-            body.status || null,
-            body.progressPercent !== undefined ? body.progressPercent : null,
-            body.progressMessage || null,
-            body.result ? JSON.stringify(body.result) : null,
-            body.headerSummary ? JSON.stringify(body.headerSummary) : null,
-            body.error || null,
-            targetId
-          ]
-        );
+        const updatePayload = {
+          updated_at: new Date().toISOString()
+        };
+        if (body.status !== undefined) updatePayload.status = body.status;
+        if (body.progressPercent !== undefined) updatePayload.progress_percent = body.progressPercent;
+        if (body.progressMessage !== undefined) updatePayload.progress_message = body.progressMessage;
+        if (body.result !== undefined) updatePayload.result_json = body.result;
+        if (body.headerSummary !== undefined) updatePayload.header_summary = body.headerSummary;
+        if (body.error !== undefined) updatePayload.error_message = body.error;
+        if (body.status === 'completed') updatePayload.completed_at = new Date().toISOString();
+
+        const { error } = await supabase.from('extraction_tasks').update(updatePayload).eq('id', targetId);
+        if (error) throw error;
+
         return res.status(200).json({ success: true });
       } catch (err) {
         return res.status(500).json({ error: err.message });
@@ -551,14 +513,16 @@ export default async function handler(req, res) {
       if (!targetId) return res.status(400).json({ error: 'ID manquant' });
 
       try {
-        await sql.query(
-          `UPDATE public.extraction_tasks 
-           SET status = 'pending', attempts = 0, progress_percent = 0, 
-               progress_message = 'Nouvelle tentative programmÃ©e...', 
-               error_message = NULL, updated_at = NOW() 
-           WHERE id = $1`,
-          [targetId]
-        );
+        const { error } = await supabase.from('extraction_tasks').update({
+          status: 'pending',
+          attempts: 0,
+          progress_percent: 0,
+          progress_message: 'Nouvelle tentative programmée...',
+          error_message: null,
+          updated_at: new Date().toISOString()
+        }).eq('id', targetId);
+
+        if (error) throw error;
         return res.status(200).json({ success: true });
       } catch (err) {
         return res.status(500).json({ error: err.message });
@@ -575,20 +539,23 @@ export default async function handler(req, res) {
     const apiKey = body.apiKey || process.env.GEMINI_API_KEY || '';
 
     try {
-      await sql.query(
-        `INSERT INTO public.extraction_tasks (
-           id, file_name, file_type, page_count, provider, model, status, 
-           progress_percent, progress_message, attempts, max_attempts, 
-           created_at, updated_at
-         ) VALUES (
-           $1, $2, $3, $4, $5, $6, 'processing', 20, 
-           'Extraction par IA en cours sur le serveur...', 1, 3, NOW(), NOW()
-         )
-         ON CONFLICT (id) DO UPDATE SET
-           status = 'processing', progress_percent = 20, 
-           progress_message = 'Extraction par IA en cours sur le serveur...', updated_at = NOW()`,
-        [taskId, fileName, fileType, pageCount, provider, model]
-      );
+      const taskRow = {
+        id: taskId,
+        file_name: fileName,
+        file_type: fileType,
+        page_count: pageCount,
+        provider,
+        model,
+        status: 'processing',
+        progress_percent: 20,
+        progress_message: 'Extraction par IA en cours sur le serveur...',
+        attempts: 1,
+        max_attempts: 3,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      await supabase.from('extraction_tasks').upsert(taskRow);
 
       // Execute AI extraction on the server
       if (apiKey && (body.base64Data || body.preExtractedPdfText)) {
@@ -607,22 +574,22 @@ export default async function handler(req, res) {
           const sections = parsed?.sections || parsed?.items || parsed?.exercises || [];
           const headerSummary = {
             ficheTitle: header.fiche_title || header.title || fileName,
-            subject: header.subject || 'MathÃ©matiques',
+            subject: header.subject || 'Mathématiques',
             detectedLevel: header.detected_level || '2bac_pc_svt',
             docType: header.doc_type || 'course',
             sectionsCount: sections.length,
             extractedWithModel: usedModel
           };
 
-          await sql.query(
-            `UPDATE public.extraction_tasks 
-             SET status = 'completed', progress_percent = 100, 
-                 progress_message = 'Fiche extraite avec succÃ¨s !', 
-                 result_json = $1, header_summary = $2, 
-                 completed_at = NOW(), updated_at = NOW() 
-             WHERE id = $3`,
-            [JSON.stringify(parsed), JSON.stringify(headerSummary), taskId]
-          );
+          await supabase.from('extraction_tasks').update({
+            status: 'completed',
+            progress_percent: 100,
+            progress_message: 'Fiche extraite avec succès !',
+            result_json: parsed,
+            header_summary: headerSummary,
+            completed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }).eq('id', taskId);
 
           return res.status(201).json({
             success: true,
@@ -631,21 +598,20 @@ export default async function handler(req, res) {
               fileName,
               status: 'completed',
               progressPercent: 100,
-              progressMessage: 'Fiche extraite avec succÃ¨s !',
+              progressMessage: 'Fiche extraite avec succès !',
               headerSummary,
               hasResult: true
             }
           });
         } catch (extractErr) {
           console.error('[Server Extraction Error]:', extractErr.message);
-          await sql.query(
-            `UPDATE public.extraction_tasks 
-             SET status = 'failed', progress_percent = 0, 
-                 error_message = $1, progress_message = 'Ã‰chec de l''extraction', 
-                 updated_at = NOW() 
-             WHERE id = $2`,
-            [extractErr.message, taskId]
-          );
+          await supabase.from('extraction_tasks').update({
+            status: 'failed',
+            progress_percent: 0,
+            error_message: extractErr.message,
+            progress_message: "Échec de l'extraction",
+            updated_at: new Date().toISOString()
+          }).eq('id', taskId);
 
           return res.status(201).json({
             success: true,
@@ -659,7 +625,6 @@ export default async function handler(req, res) {
         }
       }
 
-      // Fallback if no apiKey or data provided
       return res.status(201).json({
         success: true,
         task: {
@@ -675,11 +640,11 @@ export default async function handler(req, res) {
     }
   }
 
-  // â”€â”€ 3. DELETE Requests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── 3. DELETE Requests ───────────────────────────────────────────────────────
   if (req.method === 'DELETE') {
     if (!id) return res.status(400).json({ error: 'ID manquant' });
     try {
-      await sql.query(`DELETE FROM public.extraction_tasks WHERE id = $1`, [id]);
+      await supabase.from('extraction_tasks').delete().eq('id', id);
       return res.status(200).json({ success: true });
     } catch (err) {
       return res.status(500).json({ error: err.message });

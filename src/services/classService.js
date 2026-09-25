@@ -1,10 +1,11 @@
 // src/services/classService.js
 // Service for managing school classes and student assignments with SWR caching & fail-safe persistence.
+// Supabase -> Local Companion API -> LocalStorage -> Seed Fallback.
 
+import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
 import initialClassesData from '../../data/classes.json';
-import { neonSaveClass, neonDeleteClass, neonList } from '../lib/neon';
 
 const STORAGE_KEY = 'lconq_classes_db';
 
@@ -41,16 +42,13 @@ const safeParseJSON = (val, fallback) => {
 };
 
 /**
- * Normalizes a class object from ANY source (Neon snake_case, LocalDB camelCase, or localStorage).
- * This is the single source of truth for class shape normalization.
+ * Normalizes a class object from ANY source (Supabase snake_case, LocalDB camelCase, or localStorage).
  */
 const normalizeClass = (row) => {
   if (!row) return null;
 
-  // Support both snake_case (Neon/PostgreSQL) and camelCase (LocalDB/localStorage)
   const parsedStudents = safeParseJSON(row.students, []);
   const parsedGrades = safeParseJSON(row.grades, {});
-  // competitionGrades can come as camelCase (local) or snake_case (Neon)
   const parsedCompGrades = safeParseJSON(
     row.competitionGrades ?? row.competition_grades,
     {}
@@ -61,7 +59,6 @@ const normalizeClass = (row) => {
   const parsedProgram = safeParseJSON(row.program, []);
 
   const studentsList = Array.isArray(parsedStudents) ? parsedStudents : [];
-  // Support both snake_case (Neon/PostgreSQL) and camelCase (LocalDB/localStorage)
   const count = row.student_count ?? row.studentCount ?? studentsList.length;
 
   return {
@@ -82,47 +79,46 @@ const normalizeClass = (row) => {
   };
 };
 
-// Keep mapDBToClass as an alias for database rows (pure snake_case source)
-const mapDBToClass = normalizeClass;
+// ─── Read ─────────────────────────────────────────────────────────────────────
 
 /**
- * Fetch all classes with SWR caching.
+ * Fetch ALL classes with SWR caching.
  */
 export const getAllClasses = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('classes_all', async () => {
-    // 1. Try Neon first
-    try {
-      const neonRes = await neonList('classes', 500);
-      if (Array.isArray(neonRes.data) && neonRes.data.length > 0) {
-        const mapped = neonRes.data.map(normalizeClass);
-        saveLocalStorageClasses(mapped);
-        return mapped;
+    // 1. Try Supabase
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('classes')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && Array.isArray(data) && data.length > 0) {
+          const mapped = data.map(normalizeClass);
+          saveLocalStorageClasses(mapped);
+          return mapped;
+        }
+      } catch (err) {
+        console.warn('[Supabase] Failed to fetch classes:', err);
       }
-    } catch (neonErr) {
-      console.warn('[Neon] getAllClasses error:', neonErr.message);
     }
 
-
     // 2. Try LocalDB companion server
-    // NOTE: LocalDB returns classes in camelCase (as saved), so normalizeClass handles both.
     try {
       const data = await localDb.get('/classes');
       if (Array.isArray(data) && data.length > 0) {
-        // normalizeClass handles camelCase from localDb correctly
         const mapped = data.map(normalizeClass);
         saveLocalStorageClasses(mapped);
         return mapped;
       }
-    } catch (err) {
-      console.warn('[LocalDB] Companion server offline for classes, using local storage backup.');
-    }
+    } catch (err) {}
 
     // 3. Fallback to localStorage
     const cache = getLocalStorageClasses();
     if (Array.isArray(cache) && cache.length > 0) {
-      // If cached classes have empty students, merge students from initialClassesData
       if (Array.isArray(initialClassesData)) {
         const seedMap = new Map(initialClassesData.map(c => [c.id, c]));
         let needsResave = false;
@@ -146,7 +142,7 @@ export const getAllClasses = async (options = {}) => {
       return cache;
     }
 
-    // 4. Seed fallback from bundled Moroccan classes
+    // 4. Seed fallback
     if (Array.isArray(initialClassesData) && initialClassesData.length > 0) {
       const mapped = initialClassesData.map(normalizeClass);
       saveLocalStorageClasses(mapped);
@@ -166,26 +162,57 @@ export const getAllClasses = async (options = {}) => {
  */
 export const getClassById = async (classId, options = {}) => {
   if (!classId) return null;
-  const classes = await getAllClasses(options);
-  return classes.find(c => c.id === classId) || null;
+  const { forceRefresh = false } = options;
+
+  return queryCache.fetchWithCache(`class_detail_${classId}`, async () => {
+    // 1. Supabase
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('classes')
+          .select('*')
+          .eq('id', classId)
+          .maybeSingle();
+
+        if (!error && data) {
+          return normalizeClass(data);
+        }
+      } catch (err) {
+        console.warn(`[Supabase] Failed to fetch class ${classId}:`, err);
+      }
+    }
+
+    // 2. LocalDB
+    try {
+      const data = await localDb.get(`/classes/${classId}`);
+      if (data) return normalizeClass(data);
+    } catch {}
+
+    // 3. Cached list
+    const classes = await getAllClasses(options);
+    return classes.find(c => c.id === classId) || null;
+  }, {
+    forceRefresh,
+    staleTime: 1000 * 60 * 3,
+    cacheTime: 1000 * 60 * 30
+  });
 };
 
+// ─── Write ────────────────────────────────────────────────────────────────────
+
 /**
- * Add or update a class.
+ * Add a new class.
  */
 export const addClass = async (classData) => {
-  const id = classData.id || 'CLASS-' + Math.random().toString(36).substring(2, 11).toUpperCase();
+  const id = classData.id || `class_${Date.now()}`;
   const now = new Date().toISOString();
-
-  const students = Array.isArray(classData.students) ? classData.students : [];
-  const studentCount = classData.studentCount !== undefined ? classData.studentCount : students.length;
 
   const newClass = {
     id,
     name: classData.name,
-    level: classData.level,
-    students,
-    studentCount,
+    level: classData.level || '',
+    students: classData.students || [],
+    studentCount: (classData.students || []).length,
     competitions: classData.competitions || [],
     competitionGrades: classData.competitionGrades || {},
     controls: classData.controls || [],
@@ -193,56 +220,57 @@ export const addClass = async (classData) => {
     homework: classData.homework || {},
     language: classData.language || 'fr',
     program: classData.program || [],
-    createdAt: classData.createdAt || now,
+    createdAt: now,
     updatedAt: now
   };
 
-  // 1. LocalStorage first (synchronous, always reliable)
-  // Read directly from localStorage to avoid cache race conditions
-  const rawCached = getLocalStorageClasses() || [];
-  const filteredForNew = rawCached.filter(c => c.id !== id);
-  filteredForNew.unshift(newClass);
-  saveLocalStorageClasses(filteredForNew);
-
-  // 2. Invalidate SWR Cache AFTER writing localStorage (so next read gets fresh data)
+  // 1. Invalidate cache
   queryCache.invalidate('classes_all');
+  queryCache.set(`class_detail_${id}`, newClass);
 
-  // 3. Companion API (fire-and-forget, non-blocking)
-  localDb.post('/classes', newClass).catch(err => {
-    console.warn('[LocalDB] Could not sync addClass to Companion server:', err.message);
-  });
+  // 2. Save to localStorage
+  const current = getLocalStorageClasses() || [];
+  current.unshift(newClass);
+  saveLocalStorageClasses(current);
 
-  // Sync to Neon PostgreSQL
-  neonSaveClass({
-    id,
-    name: classData.name,
-    level: classData.level,
-    student_count: newClass.studentCount,
-    students: newClass.students,
-    competitions: newClass.competitions,
-    competition_grades: newClass.competitionGrades,
-    controls: newClass.controls,
-    grades: newClass.grades,
-    homework: newClass.homework,
-    language: newClass.language,
-    program: newClass.program,
-    created_at: now,
-    updated_at: now
-  }).catch(err => console.warn('[Neon] Could not sync addClass to Neon:', err.message));
+  // 3. Companion API
+  try {
+    await localDb.post('/classes', newClass);
+  } catch (err) {}
 
-
+  // 4. Supabase
+  if (supabase) {
+    try {
+      await supabase.from('classes').upsert({
+        id,
+        name: classData.name,
+        level: classData.level,
+        student_count: newClass.studentCount,
+        students: newClass.students,
+        competitions: newClass.competitions,
+        competition_grades: newClass.competitionGrades,
+        controls: newClass.controls,
+        grades: newClass.grades,
+        homework: newClass.homework,
+        language: newClass.language,
+        program: newClass.program,
+        updated_at: now
+      });
+    } catch (err) {
+      console.warn('[Supabase] Could not sync addClass to Supabase:', err.message);
+    }
+  }
 
   return id;
 };
 
 /**
  * Update specific fields on a class.
- * Uses localStorage as primary source to avoid async race conditions.
  */
 export const updateClass = async (classId, updates) => {
   const now = new Date().toISOString();
 
-  // 1. LocalStorage — read directly (avoid cache), merge, write back
+  // 1. LocalStorage
   const rawCurrent = getLocalStorageClasses() || [];
   const idx = rawCurrent.findIndex(c => c.id === classId);
 
@@ -263,12 +291,11 @@ export const updateClass = async (classId, updates) => {
     saveLocalStorageClasses(rawCurrent);
   }
 
-  // 2. Invalidate SWR Cache AFTER writing localStorage
   queryCache.invalidate('classes_all');
+  queryCache.invalidate(`class_detail_${classId}`);
 
-  // 3. Primary Cloud Database Sync (Neon PostgreSQL) — Direct & Unconditional
+  // 2. Supabase DB Payload
   const dbUpdates = {
-    id: classId,
     updated_at: now
   };
   if (updates.name !== undefined) dbUpdates.name = updates.name;
@@ -287,111 +314,45 @@ export const updateClass = async (classId, updates) => {
   if (updates.homework !== undefined) dbUpdates.homework = updates.homework;
   if (updates.program !== undefined) dbUpdates.program = updates.program;
 
+  if (supabase) {
+    try {
+      await supabase.from('classes').update(dbUpdates).eq('id', classId);
+    } catch (err) {
+      console.warn('[Supabase] Could not sync updateClass to Supabase:', err.message);
+    }
+  }
+
+  // 3. Local Companion
   try {
-    await neonSaveClass(dbUpdates);
-  } catch (neonErr) {
-    console.warn('[Neon] Direct sync updateClass error:', neonErr.message || neonErr);
-  }
-
-  // 4. Companion API (non-blocking fallback)
-  localDb.get('/classes').then(list => {
-    if (!Array.isArray(list)) return;
-    const cls = list.find(c => c.id === classId);
-    if (!cls) return;
-
-    const updatedStudents = updates.students !== undefined ? updates.students : cls.students;
-    const studentCount = updates.studentCount !== undefined
-      ? updates.studentCount
-      : (Array.isArray(updatedStudents) ? updatedStudents.length : cls.studentCount);
-
-    const merged = { ...cls, ...updates, students: updatedStudents, studentCount, updatedAt: now };
-    localDb.post('/classes', merged).catch(err => {
-      console.warn('[LocalDB] Could not sync updateClass to Companion server:', err.message);
-    });
-  }).catch(err => {
-    console.warn('[LocalDB] Could not sync updateClass to Companion server:', err.message);
-  });
-
-
-
-  return classId;
+    const local = await localDb.get(`/classes/${classId}`);
+    if (local) {
+      const merged = { ...local, ...updates, updatedAt: now };
+      await localDb.post(`/classes/${classId}`, merged);
+    }
+  } catch (err) {}
 };
 
 /**
- * Add or update a student within a class.
- */
-export const addStudentToClass = async (classId, student) => {
-  // Read directly from localStorage to avoid cache staleness
-  const rawCurrent = getLocalStorageClasses() || [];
-  const cls = rawCurrent.find(c => c.id === classId);
-  if (!cls) return false;
-
-  const currentStudents = Array.isArray(cls.students) ? [...cls.students] : [];
-  const existingIdx = currentStudents.findIndex(s =>
-    (s.id && (s.id === student.id || s.id === student.massarCode)) ||
-    (s.massarCode && (s.massarCode === student.massarCode || s.massarCode === student.id))
-  );
-
-  if (existingIdx !== -1) {
-    currentStudents[existingIdx] = { ...currentStudents[existingIdx], ...student };
-  } else {
-    currentStudents.push(student);
-  }
-
-  await updateClass(classId, {
-    students: currentStudents,
-    studentCount: currentStudents.length
-  });
-
-  return true;
-};
-
-/**
- * Remove a student from a class.
- */
-export const removeStudentFromClass = async (classId, studentId) => {
-  // Read directly from localStorage to avoid cache staleness
-  const rawCurrent = getLocalStorageClasses() || [];
-  const cls = rawCurrent.find(c => c.id === classId);
-  if (!cls) return false;
-
-  const currentStudents = (cls.students || []).filter(s =>
-    s.id !== studentId && s.massarCode !== studentId
-  );
-
-  await updateClass(classId, {
-    students: currentStudents,
-    studentCount: currentStudents.length
-  });
-
-  return true;
-};
-
-/**
- * Delete a class by ID.
+ * Delete a class.
  */
 export const deleteClass = async (classId) => {
-  // 1. LocalStorage
-  const rawCurrent = getLocalStorageClasses() || [];
-  const filtered = rawCurrent.filter(c => c.id !== classId);
-  saveLocalStorageClasses(filtered);
-
-  // 2. Invalidate SWR Cache
   queryCache.invalidate('classes_all');
+  queryCache.invalidate(`class_detail_${classId}`);
 
-  // 3. Companion API (fire-and-forget)
-  localDb.delete('/classes', classId).catch(err => {
-    console.warn('[LocalDB] Could not sync deleteClass to Companion server:', err.message);
-  });
+  const rawCurrent = getLocalStorageClasses() || [];
+  saveLocalStorageClasses(rawCurrent.filter(c => c.id !== classId));
 
-  // Sync delete to Neon PostgreSQL
-  neonDeleteClass(classId).catch(err => {
-    console.warn('[Neon] Could not sync deleteClass to Neon:', err.message);
-  });
+  if (supabase) {
+    try {
+      await supabase.from('classes').delete().eq('id', classId);
+    } catch (err) {
+      console.warn('[Supabase] Could not sync deleteClass to Supabase:', err.message);
+    }
+  }
 
-
-
-  return true;
+  try {
+    await localDb.delete('/classes', classId);
+  } catch (err) {}
 };
 
 /**
@@ -400,7 +361,6 @@ export const deleteClass = async (classId) => {
 export const recordStudentExamGrade = async (classId, studentMassar, examName, score, totalQuestions) => {
   if (!classId || !studentMassar) return null;
 
-  // Read directly from localStorage for consistency
   const rawCurrent = getLocalStorageClasses() || [];
   const cls = rawCurrent.find(c => c.id === classId);
   if (!cls) return null;
@@ -539,3 +499,4 @@ export const updateCompetitionGrade = async (classId, studentMassar, competition
   await updateClass(classId, { competitions, competitionGrades, grades });
   return true;
 };
+

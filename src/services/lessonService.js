@@ -1,10 +1,10 @@
 // src/services/lessonService.js
 // High-performance resilient CRUD for lessons with SWR caching and direct single-lesson fetching.
-// Neon PostgreSQL -> Local Companion API -> LocalStorage -> Seed Fallback.
+// Supabase -> Local Companion API -> LocalStorage -> Seed Fallback.
 
+import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
-import { neonSaveLesson, neonDeleteLesson, neonList, neonGet, neonListFiltered, neonUpsert } from '../lib/neon';
 
 const STORAGE_KEY = 'lconq_lessons_db';
 
@@ -111,7 +111,6 @@ const getLocalStorageLessons = () => {
 const saveLocalStorageLessons = (lessons) => {
   if (!Array.isArray(lessons)) return;
   try {
-    // Store lightweight metadata for all lessons to prevent quota exceeded errors
     const lightweight = lessons.map(l => ({
       id: l.id,
       title: l.title,
@@ -128,7 +127,6 @@ const saveLocalStorageLessons = (lessons) => {
     }));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(lightweight));
   } catch (e) {
-    // Evict old drafts and stale per-lesson keys instead of truncating the list!
     try {
       for (let i = localStorage.length - 1; i >= 0; i--) {
         const key = localStorage.key(i);
@@ -155,7 +153,6 @@ export const saveSingleLessonToLocalStorage = (lesson) => {
     localStorage.setItem(`lconq_lesson_${lesson.id}`, JSON.stringify(lesson));
   } catch (_) {
     try {
-      // Evict other single lesson caches to free up space for current one
       for (let i = localStorage.length - 1; i >= 0; i--) {
         const key = localStorage.key(i);
         if (key && key.startsWith('lconq_lesson_') && key !== `lconq_lesson_${lesson.id}`) {
@@ -177,7 +174,6 @@ export const getSingleLessonFromLocalStorage = (lessonId) => {
   }
 };
 
-// Direct localStorage read (sync, no cache overhead) used by write ops
 const readRawLessons = () => getLocalStorageLessons() || [];
 
 // Helper to map lesson fields to DB columns
@@ -188,8 +184,6 @@ const mapLessonToDB = (l) => ({
   teacher: l.teacher || null,
   phone: l.phone || null,
   schools: l.schools || [],
-  // [FIX] level and doc_type must be top-level columns in the Neon `lessons` table,
-  // not only nested inside content. Without this they were always saved as null.
   level: l.level || l.content?.level || null,
   doc_type: l.docType || l.doc_type || l.content?.doc_type || 'course',
   content: {
@@ -201,8 +195,6 @@ const mapLessonToDB = (l) => ({
   updated_at: new Date().toISOString(),
 });
 
-
-// Helper to parse content JSON safely
 const parseContent = (content) => {
   if (!content) return {};
   if (typeof content === 'object') return content;
@@ -216,7 +208,6 @@ const parseContent = (content) => {
   return {};
 };
 
-// Helper to parse schools safely
 const parseSchools = (schools) => {
   if (Array.isArray(schools)) return schools;
   if (typeof schools === 'string') {
@@ -230,7 +221,6 @@ const parseSchools = (schools) => {
   return [];
 };
 
-// Helper to map DB columns to lesson fields
 const mapDBToLesson = (row) => {
   if (!row) return null;
   const parsedContent = parseContent(row.content);
@@ -252,7 +242,7 @@ const mapDBToLesson = (row) => {
   };
 };
 
-// ─── Read (Optimized with SWR & Direct Single Fetch) ──────────────────────────
+// ─── Read ─────────────────────────────────────────────────────────────────────
 
 /**
  * Fetch ALL lessons with SWR caching and fail-proof fallback sequence.
@@ -261,24 +251,25 @@ export const getAllLessons = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('lessons_all', async () => {
-    // 1. Try Neon PostgreSQL
-    try {
-      const neonRes = await neonList('lessons', 500);
-      if (Array.isArray(neonRes.data) && neonRes.data.length > 0) {
-        // Keep all valid rows returned by Neon
-        const validRows = neonRes.data.filter(r => Boolean(r && (r.id || r.title)));
-        const listToUse = validRows.length > 0 ? validRows : neonRes.data;
-        const mapped = listToUse.map(mapDBToLesson);
-        saveLocalStorageLessons(mapped);
-        return mapped;
+    // 1. Try Supabase
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('lessons')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && Array.isArray(data) && data.length > 0) {
+          const mapped = data.map(mapDBToLesson);
+          saveLocalStorageLessons(mapped);
+          return mapped;
+        }
+      } catch (err) {
+        console.warn('[Supabase] getAllLessons error:', err.message || err);
       }
-    } catch (neonErr) {
-      console.warn('[Neon] getAllLessons error:', neonErr.message);
     }
 
-
-
-    // 3. Try Local Companion DB API (port 5002)
+    // 2. Try Local Companion DB API (port 5002)
     try {
       const data = await localDb.get('/lessons');
       if (Array.isArray(data) && data.length > 0) {
@@ -286,48 +277,47 @@ export const getAllLessons = async (options = {}) => {
         saveLocalStorageLessons(mapped);
         return mapped;
       }
-    } catch (err) {
-      console.warn('[LocalDB] Companion server offline, using local storage backup.');
-    }
+    } catch (err) {}
 
-    // 4. Try LocalStorage backup
+    // 3. Try LocalStorage backup
     const localCache = getLocalStorageLessons();
     if (localCache && localCache.length > 0) {
       return localCache.map(mapDBToLesson);
     }
 
-    // 5. Default Seed Fallback
+    // 4. Default Seed Fallback
     saveLocalStorageLessons(INITIAL_SEED_LESSONS);
     return INITIAL_SEED_LESSONS.map(mapDBToLesson);
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 3, // 3 mins fresh
+    staleTime: 1000 * 60 * 3,
     cacheTime: 1000 * 60 * 30
   });
 };
 
 /**
- * Fetch only active lessons (student view) — uses server-side filtering.
- * This avoids transferring archived/inactive lessons from the DB.
+ * Fetch only active lessons (student view).
  */
 export const getActiveLessons = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('lessons_active', async () => {
-    // 1. Try Neon with server-side filter (fastest path — avoids full table scan return)
-    try {
-      const neonRes = await neonListFiltered('lessons', 'is_active', true, 500);
-      if (Array.isArray(neonRes.data) && neonRes.data.length > 0) {
-        const mapped = neonRes.data
-          .filter(r => !r.is_archived)
-          .map(mapDBToLesson);
-        return mapped;
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('lessons')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
+
+        if (!error && Array.isArray(data) && data.length > 0) {
+          return data.filter(r => !r.is_archived).map(mapDBToLesson);
+        }
+      } catch (err) {
+        console.warn('[Supabase] getActiveLessons error:', err.message || err);
       }
-    } catch (neonErr) {
-      console.warn('[Neon] getActiveLessons filtered error:', neonErr.message);
     }
 
-    // 2. Fallback: get all and filter
     const allLessons = await getAllLessons(options);
     return allLessons.filter(l => l.isActive === true);
   }, {
@@ -337,30 +327,36 @@ export const getActiveLessons = async (options = {}) => {
   });
 };
 
-
 /**
- * Fetch a single lesson by ID (Direct Single Lookup + Cached).
+ * Fetch a single lesson by ID.
  */
 export const getLessonById = async (lessonId, options = {}) => {
   if (!lessonId) return null;
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache(`lesson_detail_${lessonId}`, async () => {
-    // 1. Try direct Neon single query (Primary Cloud Database)
-    try {
-      const neonRes = await neonGet('lessons', lessonId, 'id');
-      if (neonRes && neonRes.data) {
-        const mapped = mapDBToLesson(neonRes.data);
-        if (mapped) {
-          saveSingleLessonToLocalStorage(mapped);
-          return mapped;
+    // 1. Try Supabase
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('lessons')
+          .select('*')
+          .eq('id', lessonId)
+          .maybeSingle();
+
+        if (!error && data) {
+          const mapped = mapDBToLesson(data);
+          if (mapped) {
+            saveSingleLessonToLocalStorage(mapped);
+            return mapped;
+          }
         }
+      } catch (err) {
+        console.warn(`[Supabase] Failed to fetch single lesson ${lessonId}:`, err.message || err);
       }
-    } catch (neonErr) {
-      console.warn(`[Neon] Failed to fetch single lesson ${lessonId}:`, neonErr.message);
     }
 
-    // 2. Try single lesson from local storage (dedicated key with full content)
+    // 2. Try single lesson from local storage
     const singleLocal = getSingleLessonFromLocalStorage(lessonId);
     if (singleLocal && singleLocal.content && Object.keys(singleLocal.content).length > 0) {
       return singleLocal;
@@ -390,7 +386,7 @@ export const getLessonById = async (lessonId, options = {}) => {
   });
 };
 
-// ─── Write (With Automatic Cache Invalidation) ─────────────────────────────────
+// ─── Write ────────────────────────────────────────────────────────────────────
 
 /**
  * Add a new lesson.
@@ -419,17 +415,17 @@ export const addLesson = async (lessonData) => {
     updatedAt: now
   };
 
-  // 1. LocalStorage first (sync, fastest, no await-getAllLessons penalty)
+  // 1. LocalStorage first
   const rawLessons = readRawLessons().filter(l => l.id !== id);
   rawLessons.unshift(mapped);
   saveLocalStorageLessons(rawLessons);
   saveSingleLessonToLocalStorage(mapped);
 
-  // 2. Invalidate + seed in-memory cache
+  // 2. Invalidate cache
   queryCache.invalidate('lessons_all');
   queryCache.set(`lesson_detail_${id}`, mapped);
 
-  // 3. Companion API
+  // 3. Sync to Supabase
   const dbLesson = { 
     id, 
     ...mapLessonToDB(lessonData), 
@@ -438,31 +434,30 @@ export const addLesson = async (lessonData) => {
     created_at: now 
   };
 
-  // Sync to Neon PostgreSQL
-  try {
-    await neonSaveLesson(dbLesson);
-  } catch (err) {
-    console.warn('[Neon] Error syncing addLesson:', err);
+  if (supabase) {
+    try {
+      const { error } = await supabase.from('lessons').upsert(dbLesson, { onConflict: 'id' });
+      if (error) console.warn('[Supabase] Error syncing addLesson:', error.message);
+    } catch (err) {
+      console.warn('[Supabase] Error syncing addLesson:', err.message || err);
+    }
   }
 
+  // 4. Companion API
   try {
     await localDb.post('/lessons', dbLesson);
-  } catch (err) {
-    console.warn('[LocalDB] Could not sync addLesson to companion:', err.message);
-  }
-
-
+  } catch (err) {}
 
   return id;
 };
 
 /**
- * Update dynamic fields of a lesson and persist to LocalStorage, Companion, and Neon PostgreSQL.
+ * Update dynamic fields of a lesson.
  */
 export const updateLesson = async (lessonId, updates) => {
   const now = new Date().toISOString();
   
-  // 1. LocalStorage first (direct, fast)
+  // 1. LocalStorage first
   const rawLessons = readRawLessons();
   const idx = rawLessons.findIndex(l => l.id === lessonId);
   const singleStored = getSingleLessonFromLocalStorage(lessonId);
@@ -492,7 +487,6 @@ export const updateLesson = async (lessonId, updates) => {
     rawLessons[idx] = updatedRecord;
     saveLocalStorageLessons(rawLessons);
   } else {
-    // If not in cache yet, create cached entry
     const mergedContent = updates.content !== undefined
       ? { ...fallbackContent, ...updates.content }
       : fallbackContent;
@@ -513,39 +507,27 @@ export const updateLesson = async (lessonId, updates) => {
     saveLocalStorageLessons(rawLessons);
   }
 
-  // Save full single lesson to dedicated localStorage key
   if (updatedRecord) {
     saveSingleLessonToLocalStorage(updatedRecord);
   }
 
-  // 2. Actively update in-memory cache & invalidate tags
+  // 2. Cache updates
   queryCache.set(`lesson_detail_${lessonId}`, updatedRecord);
   queryCache.invalidate(`lesson_detail_${lessonId}`);
   queryCache.invalidate('lessons_all');
   queryCache.invalidate('lessons_active');
 
-  // Synchronize table cache in real-time so other views update instantly without stale delay
-  const cachedAll = queryCache.get('lessons_all');
-  if (Array.isArray(cachedAll)) {
-    const allIdx = cachedAll.findIndex(l => l.id === lessonId);
-    if (allIdx !== -1) {
-      const nextAll = [...cachedAll];
-      nextAll[allIdx] = { ...nextAll[allIdx], ...updatedRecord };
-      queryCache.set('lessons_all', nextAll);
-    }
-  }
-
-  // 3. Build DB-shaped payload
+  // 3. Build DB payload
   const dbUpdates = { updated_at: now };
-  if (updates.title     !== undefined) dbUpdates.title          = updates.title;
-  if (updates.subject   !== undefined) dbUpdates.subject        = updates.subject;
+  if (updates.title         !== undefined) dbUpdates.title          = updates.title;
+  if (updates.subject       !== undefined) dbUpdates.subject        = updates.subject;
   if (updates.chapterNumber !== undefined) dbUpdates.chapter_number = updates.chapterNumber;
-  if (updates.teacher   !== undefined) dbUpdates.teacher        = updates.teacher;
-  if (updates.phone     !== undefined) dbUpdates.phone          = updates.phone;
-  if (updates.schools   !== undefined) dbUpdates.schools        = updates.schools;
-  if (updates.level     !== undefined) dbUpdates.level          = updates.level;
-  if (updates.docType   !== undefined) dbUpdates.doc_type       = updates.docType;
-  if (updates.isActive  !== undefined) dbUpdates.is_active      = updates.isActive;
+  if (updates.teacher       !== undefined) dbUpdates.teacher        = updates.teacher;
+  if (updates.phone         !== undefined) dbUpdates.phone          = updates.phone;
+  if (updates.schools       !== undefined) dbUpdates.schools        = updates.schools;
+  if (updates.level         !== undefined) dbUpdates.level          = updates.level;
+  if (updates.docType       !== undefined) dbUpdates.doc_type       = updates.docType;
+  if (updates.isActive      !== undefined) dbUpdates.is_active      = updates.isActive;
   if (updates.content !== undefined) {
     dbUpdates.content = {
       ...(updates.content || {}),
@@ -554,65 +536,56 @@ export const updateLesson = async (lessonId, updates) => {
     };
   }
 
-  // 3. Sync ONLY the modified fields to Neon PostgreSQL (Primary Cloud Database)
-  // CRITICAL: Ensure title is always present to satisfy Postgres NOT NULL constraints on conflict insert
-  let neonSuccess = false;
-  let neonError = null;
-  try {
-    const fullDbRecord = updatedRecord ? mapLessonToDB(updatedRecord) : {};
-    const neonPayload = {
-      id: lessonId,
-      ...fullDbRecord,
-      ...dbUpdates,
-      content: {
-        ...((fullDbRecord && fullDbRecord.content) || {}),
-        ...(dbUpdates.content || {})
+  // 4. Supabase sync
+  let supabaseSuccess = false;
+  let supabaseError = null;
+
+  if (supabase) {
+    try {
+      const fullDbRecord = updatedRecord ? mapLessonToDB(updatedRecord) : {};
+      const payload = {
+        id: lessonId,
+        ...fullDbRecord,
+        ...dbUpdates,
+        content: {
+          ...((fullDbRecord && fullDbRecord.content) || {}),
+          ...(dbUpdates.content || {})
+        }
+      };
+      if (!payload.title && updatedRecord?.title) payload.title = updatedRecord.title;
+      if (!payload.title && updates.title) payload.title = updates.title;
+
+      const { error } = await supabase.from('lessons').upsert(payload, { onConflict: 'id' });
+      if (error) {
+        supabaseError = error.message;
+        console.warn('[Supabase] Error syncing updateLesson:', error.message);
+      } else {
+        supabaseSuccess = true;
       }
-    };
-    if (!neonPayload.title && updatedRecord?.title) {
-      neonPayload.title = updatedRecord.title;
+    } catch (err) {
+      supabaseError = err.message || String(err);
+      console.warn('[Supabase] Error syncing updateLesson:', err.message || err);
     }
-    if (!neonPayload.title && updates.title) {
-      neonPayload.title = updates.title;
-    }
-    const neonRes = await neonUpsert('lessons', neonPayload, 'id');
-    if (neonRes && neonRes.error) {
-      neonError = neonRes.error?.message || String(neonRes.error);
-      console.warn('[Neon] Error syncing updateLesson:', neonRes.error);
-    } else {
-      neonSuccess = true;
-    }
-  } catch (err) {
-    neonError = err?.message || String(err);
-    console.warn('[Neon] Error syncing updateLesson:', err.message || err);
   }
 
-  // 4. Companion API (fast local persistence)
+  // 5. Companion API
   let localDbSuccess = false;
   try {
     const fullPayload = {
       id: lessonId,
       ...(updatedRecord ? mapLessonToDB(updatedRecord) : {}),
       ...dbUpdates,
-      content: {
-        ...((updatedRecord && updatedRecord.content) || {}),
-        ...(dbUpdates.content || {})
-      }
     };
     await localDb.post(`/lessons/${lessonId}`, fullPayload);
     localDbSuccess = true;
-  } catch (err) {
-    console.warn('[LocalDB] Could not sync updateLesson:', err.message);
-  }
-
-
+  } catch (err) {}
 
   return { 
     success: true, 
     id: lessonId,
-    neonSuccess,
+    supabaseSuccess,
     localDbSuccess,
-    neonError,
+    supabaseError,
     timestamp: now
   };
 };
@@ -628,27 +601,21 @@ export const toggleLessonStatus = async (lessonId, currentStatus) => {
  * Permanently delete a lesson.
  */
 export const deleteLesson = async (lessonId) => {
-  // 1. LocalStorage first (direct, no getAllLessons overhead)
   const rawLessons = readRawLessons();
   saveLocalStorageLessons(rawLessons.filter(l => l.id !== lessonId));
 
-  // 2. Invalidate cache
   queryCache.invalidate('lessons_all');
   queryCache.invalidate(`lesson_detail_${lessonId}`);
 
-  // 3. Companion API
+  if (supabase) {
+    try {
+      await supabase.from('lessons').delete().eq('id', lessonId);
+    } catch (err) {
+      console.warn('[Supabase] Error syncing deleteLesson:', err.message || err);
+    }
+  }
+
   try {
     await localDb.delete('/lessons', lessonId);
-  } catch (err) {
-    console.warn('[LocalDB] Could not sync deleteLesson:', err.message);
-  }
-
-  // Sync delete to Neon PostgreSQL
-  try {
-    await neonDeleteLesson(lessonId);
-  } catch (err) {
-    console.warn('[Neon] Error syncing deleteLesson:', err);
-  }
-
-
+  } catch (err) {}
 };

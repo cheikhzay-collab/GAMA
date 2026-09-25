@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import LconqLogo from '../components/LconqLogo';
 
 /**
- * AuthCallback page — handles the redirect from OAuth providers (Google, etc.)
- * Verifies the token in the URL or local storage, then redirects to dashboard.
+ * AuthCallback page — handles the redirect from Supabase OAuth (Google, etc.)
+ * Supabase exchanges the code/token from the URL and calls onAuthStateChange,
+ * which AuthContext already listens to. We just wait briefly then redirect.
  */
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -16,20 +18,45 @@ export default function AuthCallback() {
 
     const handleCallback = async () => {
       try {
-        const token = localStorage.getItem('gama_auth_token');
-        if (token) {
+        if (!supabase) {
+          navigate('/login', { replace: true });
+          return;
+        }
+
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError) throw sessionError;
+
+        if (session) {
           if (isMounted) {
             setStatus('Connexion réussie ! Redirection…');
             setTimeout(() => {
               const redirectTo = sessionStorage.getItem('redirect_after_auth') || '/dashboard';
               sessionStorage.removeItem('redirect_after_auth');
               navigate(redirectTo, { replace: true });
-            }, 500);
+            }, 800);
           }
         } else {
-          if (isMounted) {
-            navigate('/login', { replace: true });
-          }
+          const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
+            if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && sess) {
+              subscription.unsubscribe();
+              if (isMounted) {
+                setStatus('Connexion réussie ! Redirection…');
+                setTimeout(() => {
+                  const redirectTo = sessionStorage.getItem('redirect_after_auth') || '/dashboard';
+                  sessionStorage.removeItem('redirect_after_auth');
+                  navigate(redirectTo, { replace: true });
+                }, 800);
+              }
+            }
+          });
+
+          setTimeout(() => {
+            subscription.unsubscribe();
+            if (isMounted) {
+              navigate('/login', { replace: true });
+            }
+          }, 8000);
         }
       } catch (err) {
         console.error('[AuthCallback] Error:', err);
@@ -80,7 +107,6 @@ export default function AuthCallback() {
         </>
       ) : (
         <>
-          {/* Spinning loader */}
           <div style={{
             width: 40,
             height: 40,

@@ -63,13 +63,12 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// ── NEVER cache: Neon Cloud Database & Auth API ────────────────────────────
-// Caching Neon responses would return stale auth/data.
+// ── NEVER cache: Supabase Cloud Database & Auth API ────────────────────────────
+// Caching database responses would return stale data.
 registerRoute(
   ({ url }) =>
-    url.hostname.includes('neon.tech') ||
-    url.pathname.startsWith('/api/neon') ||
-    url.pathname.startsWith('/api/auth'),
+    url.hostname.includes('supabase.co') ||
+    url.pathname.startsWith('/auth/'),
   new NetworkOnly()
 );
 

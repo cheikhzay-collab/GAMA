@@ -2,64 +2,6 @@ import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-function neonDevApiPlugin() {
-  return {
-    name: 'neon-dev-api',
-    configureServer(server) {
-      server.middlewares.use(async (req, res, next) => {
-        const url = req.url || '';
-        if (url.startsWith('/api/neon') || url.startsWith('/api/auth') || url.startsWith('/api/assets') || url.startsWith('/api/extraction-tasks')) {
-          try {
-            let handlerModule;
-            if (url.startsWith('/api/auth')) {
-              handlerModule = await import('./api/auth.js');
-            } else if (url.startsWith('/api/assets')) {
-              handlerModule = await import('./api/assets.js');
-            } else if (url.startsWith('/api/extraction-tasks')) {
-              handlerModule = await import('./api/extraction-tasks.js');
-            } else {
-              handlerModule = await import('./api/neon.js');
-            }
-
-            const handler = handlerModule.default;
-            let body = '';
-            req.on('data', chunk => { body += chunk; });
-            req.on('end', async () => {
-              if (body) {
-                try { req.body = JSON.parse(body); } catch (_) { req.body = {}; }
-              }
-              const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-              req.query = Object.fromEntries(urlObj.searchParams.entries());
-              
-              res.status = (code) => {
-                res.statusCode = code;
-                return res;
-              };
-              res.json = (data) => {
-                res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify(data));
-                return res;
-              };
-              res.send = (data) => {
-                res.end(data);
-                return res;
-              };
-
-              await handler(req, res);
-            });
-          } catch (err) {
-            console.error('[Vite Neon Dev API Error]:', err);
-            res.statusCode = 500;
-            res.end(JSON.stringify({ error: err.message }));
-          }
-        } else {
-          next();
-        }
-      });
-    },
-  };
-}
-
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -68,7 +10,6 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
-      neonDevApiPlugin(),
     VitePWA({
       selfDestroying: true,
       strategies: 'injectManifest',

@@ -2826,7 +2826,7 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
                   boxShadow: isCompanionOnline ? '0 0 8px rgba(16, 185, 129, 0.6)' : '0 0 8px rgba(2, 132, 199, 0.6)',
                   display: 'inline-block'
                 }} />
-                {isCompanionOnline ? 'Serveur Compagnon actif (port 5002)' : 'File d\'attente Cloud active (Neon DB)'}
+                {isCompanionOnline ? 'Serveur Compagnon actif (port 5002)' : 'File d\'attente Cloud active (Supabase Cloud)'}
               </span>
             </div>
           </div>
@@ -3123,7 +3123,7 @@ ${buildExtractionUserPrompt(pageCount, solveSolutions)}`;
               }}>
                 <Sparkles size={22} style={{ color: '#10b981', flexShrink: 0 }} />
                 <div>
-                  <strong style={{ color: '#10b981' }}>Extraction en arrière-plan permanente :</strong> Les tâches sont enregistrées et traitées sur le serveur (base de données Neon). Vous pouvez quitter cette page, fermer votre navigateur ou naviguer ailleurs : à votre retour, vos fiches extraites seront conservées et prêtes avec le bouton <strong>« 👁️ Revoir & Importer »</strong> !
+                  <strong style={{ color: '#10b981' }}>Extraction en arrière-plan permanente :</strong> Les tâches sont enregistrées et traitées sur le serveur (base de données Supabase). Vous pouvez quitter cette page, fermer votre navigateur ou naviguer ailleurs : à votre retour, vos fiches extraites seront conservées et prêtes avec le bouton <strong>« 👁️ Revoir & Importer »</strong> !
                 </div>
               </div>
 

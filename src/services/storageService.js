@@ -1,8 +1,10 @@
 // src/services/storageService.js
-// Multi-tier asset storage: Neon Cloud -> Local Companion -> Inline Base64 Fallback.
+// Multi-tier asset storage: Supabase Storage -> Local Companion -> Inline Base64 Fallback.
+
+import { supabase } from '../lib/supabase';
 
 /**
- * Uploads an asset (file/blob or base64 data url) to Neon /api/assets or Companion server.
+ * Uploads an asset (file/blob or base64 data url) to Supabase Storage or Companion server.
  * @param {File|Blob|string} fileOrDataUrl - The file or base64 data URL to upload.
  * @param {string} path - The destination path (e.g. 'lessons/MOCK-1/fig1.png').
  * @param {string} [mimeType='image/png'] - MIME type.
@@ -11,39 +13,52 @@
 export const uploadAsset = async (fileOrDataUrl, path, mimeType = 'image/png') => {
   if (!fileOrDataUrl) throw new Error('No file or data provided');
 
+  let fileBlob = null;
   let base64Data = '';
+
   if (typeof fileOrDataUrl === 'string') {
     base64Data = fileOrDataUrl;
-    const match = base64Data.match(/^data:([^;]+);base64,/);
-    if (match && match[1]) mimeType = match[1];
+    const match = base64Data.match(/^data:([^;]+);base64,(.+)$/);
+    if (match && match[1]) {
+      mimeType = match[1];
+      const byteCharacters = atob(match[2]);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      fileBlob = new Blob([new Uint8Array(byteNumbers)], { type: mimeType });
+    }
   } else {
-    base64Data = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(fileOrDataUrl);
-    });
+    fileBlob = fileOrDataUrl;
     if (fileOrDataUrl.type) mimeType = fileOrDataUrl.type;
   }
 
-  // 1. Try standard /api/assets (Neon via Serverless / Vite proxy)
-  try {
-    const response = await fetch('/api/assets', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        path,
-        data: base64Data,
-        mimeType,
-      }),
-    });
+  const cleanPath = path.replace(/^\/+/, '');
 
-    if (response.ok) {
-      const json = await response.json();
-      if (json.publicUrl) return json.publicUrl;
+  // 1. Try Supabase Storage (Primary Cloud Storage)
+  if (supabase && fileBlob) {
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from('gima-assets')
+        .upload(cleanPath, fileBlob, {
+          contentType: mimeType,
+          upsert: true
+        });
+
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage
+          .from('gima-assets')
+          .getPublicUrl(cleanPath);
+
+        if (urlData?.publicUrl) {
+          return urlData.publicUrl;
+        }
+      } else {
+        console.warn('[Storage] Supabase upload failed:', uploadError.message);
+      }
+    } catch (err) {
+      console.warn('[Storage] Supabase storage exception:', err.message || err);
     }
-  } catch (err) {
-    console.warn('[Storage] Remote asset upload to /api/assets failed:', err.message);
   }
 
   // 2. Try Local Companion Server on port 5002
@@ -53,7 +68,7 @@ export const uploadAsset = async (fileOrDataUrl, path, mimeType = 'image/png') =
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        path,
+        path: cleanPath,
         data: base64Data,
         mimeType,
       }),
@@ -63,12 +78,20 @@ export const uploadAsset = async (fileOrDataUrl, path, mimeType = 'image/png') =
       const json = await compResponse.json();
       if (json.publicUrl) return json.publicUrl;
     }
-  } catch (err) {
-    console.warn('[Storage] Companion asset upload failed:', err.message);
+  } catch (err) {}
+
+  // 3. Fallback to inline Base64 Data URL if offline
+  if (base64Data) return base64Data;
+  if (fileBlob) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => resolve('');
+      reader.readAsDataURL(fileBlob);
+    });
   }
 
-  // 3. Fallback to inline Base64 Data URL if servers are unreachable
-  return base64Data;
+  return '';
 };
 
 export const uploadAssetData = uploadAsset;

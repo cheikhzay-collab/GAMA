@@ -1,29 +1,13 @@
 // src/services/userService.js
 // CRUD for user profiles, progress, mock exam history, and activity.
-// Supports Neon PostgreSQL and Local Companion API with graceful network error handling.
+// Built cleanly for Supabase with graceful Local Companion and LocalStorage fallbacks.
 
+import { supabase } from '../lib/supabase';
 import { localDb } from '../lib/localDbClient';
 import { queryCache } from './queryCache';
 import initialUsersData from '../../data/users.json';
-import { neonSaveProfile, neonGet, neonList, neonUpsert, neonListFiltered } from '../lib/neon';
 
 const STORAGE_KEY = 'lconq_users_db';
-
-/**
- * [C-2/C-3 FIX] Authenticated fetch wrapper for /api/neon POST requests.
- * Automatically attaches the JWT from localStorage.
- */
-async function neonAuthFetch(body) {
-  const token = localStorage.getItem('gama_auth_token') || sessionStorage.getItem('gama_auth_token') || '';
-  return fetch('/api/neon', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(body),
-  });
-}
 
 const getLocalStorageUsers = () => {
   try {
@@ -62,7 +46,6 @@ const mapProfileToDB = (profile) => ({
   downloads: profile.downloads,
   crm: profile.crm,
   class_id: profile.classId || profile.class_id || null,
-  class_name: profile.className || null,
 });
 
 // Helper to map snake_case DB columns to camelCase fields
@@ -99,342 +82,351 @@ const mapDBToProfile = (row) => {
 // ─── User Profile ─────────────────────────────────────────────────────────────
 
 /**
+ * Fetch a single user profile by UID.
+ */
+export const getUserDoc = async (uid) => {
+  if (!uid) return null;
+
+  // 1. Try Supabase
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', uid)
+        .maybeSingle();
+
+      if (!error && data) {
+        return mapDBToProfile(data);
+      }
+    } catch (err) {
+      console.warn('[Supabase] getUserDoc error:', err.message || err);
+    }
+  }
+
+  // 2. Try Local Companion
+  try {
+    const companionUser = await localDb.get(`/users/${uid}`);
+    if (companionUser && (companionUser.id || companionUser.uid)) {
+      return mapDBToProfile(companionUser);
+    }
+  } catch (err) {}
+
+  // 3. Fallback to LocalStorage
+  const localList = getLocalStorageUsers();
+  if (localList) {
+    const found = localList.find(u => u.id === uid || u.uid === uid);
+    if (found) return found;
+  }
+
+  return null;
+};
+
+/**
  * Create a new user profile.
  */
-export const createUserDoc = async (uid, userData) => {
-  queryCache.invalidate(`user_doc_${uid}`);
-  queryCache.invalidate('users_all');
-  queryCache.invalidate('leaderboard_all');
-
-  const now = new Date().toISOString();
+export const createUserDoc = async (uid, data) => {
   const profile = {
     id: uid,
-    uid: uid,
-    ...userData,
-    classId: userData.classId || userData.class_id || null,
-    class_id: userData.classId || userData.class_id || null,
-    createdAt: userData.joined || now,
-    updatedAt: now,
+    ...data,
+    joined: data.joined || new Date().toISOString(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   };
 
-  // 1. LocalStorage (immediate fail-safe)
-  const currentUsers = (getLocalStorageUsers() || []).filter(u => u.id !== uid && u.uid !== uid);
-  currentUsers.unshift(profile);
-  saveLocalStorageUsers(currentUsers);
-
-  // 2. Sync to Neon PostgreSQL
-  try {
-    await neonSaveProfile({
-      id: uid,
-      ...mapProfileToDB(userData),
-      created_at: userData.joined || now,
-      updated_at: now,
-    });
-  } catch (err) {
-    console.warn('[Neon] Error syncing createUserDoc:', err.message);
-  }
-
-  // 3. Local Companion
-  try {
-    const dbUser = {
-      id: uid,
-      uid: uid,
-      ...mapProfileToDB(userData),
-      created_at: userData.joined || now,
-      updated_at: now,
-    };
-    await localDb.post('/users', dbUser);
-  } catch (err) {
-    // companion offline fallback — silent
-  }
-};
-
-/**
- * Fetch a user profile by UID (Optimized with SWR Cache).
- */
-export const getUserDoc = async (uid, options = {}) => {
-  if (!uid) return null;
-  const { forceRefresh = false } = options;
-
-  return queryCache.fetchWithCache(`user_doc_${uid}`, async () => {
-    // 1. Try Neon PostgreSQL
+  // 1. Supabase
+  if (supabase) {
     try {
-      const neonRes = await neonGet('profiles', uid, 'id');
-      if (neonRes.data) {
-        return mapDBToProfile(neonRes.data);
+      const dbRow = { id: uid, ...mapProfileToDB(profile) };
+      const { error } = await supabase.from('profiles').upsert(dbRow, { onConflict: 'id' });
+      if (error) {
+        console.warn('[Supabase] createUserDoc error:', error.message);
       }
-    } catch (neonErr) {
-      console.warn('[Neon] getUserDoc error:', neonErr.message);
+    } catch (err) {
+      console.warn('[Supabase] Network error during createUserDoc:', err.message || err);
     }
+  }
 
-    // 2. Local Companion
-    try {
-      const list = await localDb.get('/users');
-      const found = list.find(u => u.id === uid || u.uid === uid);
-      if (found) return mapDBToProfile(found);
-    } catch (err) {}
+  // 2. Local Companion
+  try {
+    await localDb.post('/users', profile);
+  } catch (err) {}
 
-    // 3. LocalStorage fallback
-    const localList = getLocalStorageUsers();
-    if (localList) {
-      const found = localList.find(u => u.id === uid || u.uid === uid);
-      if (found) return found;
-    }
+  // 3. LocalStorage
+  const currentUsers = getLocalStorageUsers() || [];
+  const updatedUsers = [...currentUsers.filter(u => u.id !== uid && u.uid !== uid), profile];
+  saveLocalStorageUsers(updatedUsers);
 
-    // 4. Seed fallback
-    if (Array.isArray(initialUsersData)) {
-      const seedFound = initialUsersData.find(u => u.id === uid || u.uid === uid);
-      if (seedFound) return mapDBToProfile(seedFound);
-    }
-
-    return null;
-  }, {
-    forceRefresh,
-    staleTime: 1000 * 60 * 2,
-    cacheTime: 1000 * 60 * 30
-  });
+  return profile;
 };
 
 /**
- * Update specific fields on a user profile.
+ * Update an existing user profile (partial update).
  */
-export const updateUserDoc = async (uid, updates) => {
-  queryCache.invalidate(`user_doc_${uid}`);
-  queryCache.invalidate('users_all');
-  queryCache.invalidate('leaderboard_all');
+export const updateUserDoc = async (uid, data) => {
+  if (!uid) return null;
 
-  const now = new Date().toISOString();
-  const classId = updates.classId !== undefined ? updates.classId : updates.class_id;
+  // 1. Supabase
+  if (supabase) {
+    try {
+      const dbData = { ...mapProfileToDB(data), updated_at: new Date().toISOString() };
+      Object.keys(dbData).forEach(k => dbData[k] === undefined && delete dbData[k]);
 
-  // 1. LocalStorage (immediate fail-safe)
-  const currentUsers = getLocalStorageUsers() || (Array.isArray(initialUsersData) ? initialUsersData.map(mapDBToProfile) : []);
+      const { data: updated, error } = await supabase
+        .from('profiles')
+        .update(dbData)
+        .eq('id', uid)
+        .select()
+        .maybeSingle();
+
+      if (!error && updated) {
+        return mapDBToProfile(updated);
+      }
+    } catch (err) {
+      console.warn('[Supabase] updateUserDoc error:', err.message || err);
+    }
+  }
+
+  // 2. Local Companion
+  try {
+    await localDb.put(`/users/${uid}`, data);
+  } catch (err) {}
+
+  // 3. LocalStorage
+  const currentUsers = getLocalStorageUsers() || [];
   const idx = currentUsers.findIndex(u => u.id === uid || u.uid === uid);
   if (idx !== -1) {
-    currentUsers[idx] = {
-      ...currentUsers[idx],
-      ...updates,
-      ...(classId !== undefined ? { classId, class_id: classId } : {}),
-      updatedAt: now
-    };
+    currentUsers[idx] = { ...currentUsers[idx], ...data, updatedAt: new Date().toISOString() };
     saveLocalStorageUsers(currentUsers);
+    return currentUsers[idx];
   }
 
-  // 2. Sync to Neon PostgreSQL
-  try {
-    const dbUpdates = {
-      id: uid,
-      ...mapProfileToDB(updates),
-      ...(classId !== undefined ? { class_id: classId } : {}),
-      updated_at: now,
-    };
-    // Remove undefined values to avoid overwriting existing data with null
-    Object.keys(dbUpdates).forEach(k => dbUpdates[k] === undefined && delete dbUpdates[k]);
-    await neonSaveProfile(dbUpdates);
-  } catch (neonErr) {
-    console.warn('[Neon] updateUserDoc sync error:', neonErr.message || neonErr);
-  }
+  return null;
+};
 
-  // 3. Local Companion
-  try {
-    const list = await localDb.get('/users');
-    const cIdx = list.findIndex(u => u.id === uid || u.uid === uid);
-    if (cIdx > -1) {
-      const current = list[cIdx];
-      const dbUpdates = mapProfileToDB(updates);
-      const updated = {
-        ...current,
-        ...dbUpdates,
-        updated_at: now
-      };
-      await localDb.post('/users', updated);
+/**
+ * Update subscription for a user.
+ */
+export const setUserSubscription = async (uid, subscription) => {
+  return updateUserDoc(uid, {
+    tier: subscription?.status === 'active' ? 'premium' : 'freemium',
+    subscription
+  });
+};
+
+// ─── Question Progress (SRS) ──────────────────────────────────────────────────
+
+/**
+ * Save / upsert SRS progress for a specific question.
+ */
+export const saveQuestionProgress = async (uid, questionId, cardData) => {
+  if (!uid || !questionId) return;
+
+  const row = {
+    user_id: uid,
+    question_id: questionId,
+    difficulty: cardData.difficulty,
+    stability: cardData.stability,
+    repetitions: cardData.repetitions,
+    ease_factor: cardData.easeFactor,
+    last_review_date: cardData.lastReviewDate ? new Date(cardData.lastReviewDate).toISOString() : null,
+    next_review_date: cardData.nextReviewDate ? new Date(cardData.nextReviewDate).toISOString() : null,
+    updated_at: new Date().toISOString()
+  };
+
+  // 1. Supabase
+  if (supabase) {
+    try {
+      const { error } = await supabase.from('progress').upsert(row, { onConflict: 'user_id,question_id' });
+      if (error) console.warn('[Supabase] saveQuestionProgress error:', error.message);
+    } catch (err) {
+      console.warn('[Supabase] Network error during saveQuestionProgress:', err.message || err);
     }
-  } catch (err) {
-    // companion offline fallback
   }
-};
 
-/**
- * Activate or update a subscription on a user profile.
- */
-export const setUserSubscription = async (uid, subscription, tier = 'premium') => {
-  queryCache.invalidate(`user_doc_${uid}`);
-  queryCache.invalidate('users_all');
-
+  // 2. Local Companion
   try {
-    await updateUserDoc(uid, { subscription, tier });
-  } catch (err) {
-    console.warn('[LocalDB] Failed to set subscription locally:', err.message || err);
-  }
-};
-
-// ─── Study Progress (SRS cards) ───────────────────────────────────────────────
-
-/**
- * Save/update a single question's SRS progress.
- * Neon PostgreSQL persistence with Local fallback.
- */
-export const saveQuestionProgress = async (uid, questionId, progressData) => {
-  const now = new Date().toISOString();
-
-  // 1. Neon — progress.id is bigint (auto-increment), conflict on (user_id, question_id)
-  try {
-    const res = await neonAuthFetch({
-      action: 'query',
-      sql: `INSERT INTO public.progress
-        (user_id, question_id, difficulty, stability, repetitions, ease_factor, last_review_date, next_review_date, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        ON CONFLICT (user_id, question_id) DO UPDATE SET
-          difficulty = EXCLUDED.difficulty,
-          stability = EXCLUDED.stability,
-          repetitions = EXCLUDED.repetitions,
-          ease_factor = EXCLUDED.ease_factor,
-          last_review_date = EXCLUDED.last_review_date,
-          next_review_date = EXCLUDED.next_review_date,
-          updated_at = EXCLUDED.updated_at`,
-      params: [
-        uid, questionId,
-        progressData.difficulty, progressData.stability,
-        progressData.repetitions, progressData.easeFactor,
-        progressData.lastReviewDate, progressData.nextReviewDate,
-        now
-      ]
+    await localDb.post('/progress', {
+      user_id: uid,
+      question_id: questionId,
+      ...cardData
     });
-    if (res.ok) return;
-  } catch (neonErr) {
-    console.warn('[Neon] saveQuestionProgress error:', neonErr.message);
-  }
+  } catch (err) {}
 };
 
 /**
- * Fetch all progress cards for a user.
- * Neon PostgreSQL persistence with Local fallback.
+ * Fetch all SRS progress cards for a user.
  */
-export const getAllProgress = async (uid) => {
+export const getUserProgress = async (uid) => {
   if (!uid) return {};
 
-  const mapRow = (row) => ({
-    difficulty: row.difficulty,
-    stability: row.stability,
-    repetitions: row.repetitions,
-    easeFactor: row.ease_factor,
-    lastReviewDate: row.last_review_date,
-    nextReviewDate: row.next_review_date,
+  const mapRow = (r) => ({
+    difficulty: r.difficulty,
+    stability: r.stability,
+    repetitions: r.repetitions,
+    easeFactor: r.ease_factor,
+    lastReviewDate: r.last_review_date,
+    nextReviewDate: r.next_review_date,
+    updatedAt: r.updated_at
   });
 
-  // 1. Try Neon — single filtered GET request
-  try {
-    const neonRes = await neonListFiltered('progress', 'user_id', uid, 2000);
-    if (Array.isArray(neonRes.data) && neonRes.data.length > 0) {
-      const result = {};
-      neonRes.data.forEach(row => { result[row.question_id] = mapRow(row); });
-      return result;
+  // 1. Supabase
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('progress')
+        .select('*')
+        .eq('user_id', uid);
+
+      if (!error && Array.isArray(data)) {
+        const result = {};
+        data.forEach(r => { result[r.question_id] = mapRow(r); });
+        return result;
+      }
+    } catch (err) {
+      console.warn('[Supabase] getUserProgress error:', err.message || err);
     }
-  } catch (neonErr) {
-    console.warn('[Neon] getAllProgress error:', neonErr.message);
   }
 
-  // Safe fallback: return empty object (not undefined)
+  // 2. Local Companion
+  try {
+    const list = await localDb.get(`/progress?user_id=${uid}`);
+    if (Array.isArray(list)) {
+      const result = {};
+      list.forEach(r => { result[r.question_id] = mapRow(r); });
+      return result;
+    }
+  } catch (err) {}
+
   return {};
 };
 
-// ─── Mock Exam History ────────────────────────────────────────────────────────
+export const getAllProgress = getUserProgress;
+
+// ─── Mock Exam Results ────────────────────────────────────────────────────────
 
 /**
- * Save a mock exam result.
- * Neon PostgreSQL persistence with Local fallback.
+ * Save the result of a completed mock exam.
  */
-export const saveMockResult = async (uid, result) => {
-  const date = result.date || new Date().toISOString();
+export const saveMockResult = async (uid, resultData) => {
+  if (!uid) return;
 
-  // 1. Try Neon — mock_history.id is bigint (auto-increment) — use INSERT without id
-  try {
-    const res = await neonAuthFetch({
-      action: 'query',
-      sql: `INSERT INTO public.mock_history
-        (user_id, exam_id, exam_name, school, score, max_score, pct, correct_count, wrong_count, empty_count, mode, date)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-      params: [
-        uid, result.examId, result.examName, result.school,
-        result.score, result.maxScore, result.pct,
-        result.correctCount, result.wrongCount, result.emptyCount,
-        result.mode, date
-      ]
-    });
-    if (res.ok) return;
-  } catch (neonErr) {
-    console.warn('[Neon] saveMockResult error:', neonErr.message);
+  const row = {
+    user_id: uid,
+    exam_id: resultData.examId,
+    exam_name: resultData.examName || null,
+    school: resultData.school || null,
+    score: resultData.score,
+    max_score: resultData.maxScore,
+    pct: resultData.pct,
+    correct_count: resultData.correctCount,
+    wrong_count: resultData.wrongCount,
+    empty_count: resultData.emptyCount,
+    mode: resultData.mode || 'exam',
+    date: resultData.date ? new Date(resultData.date).toISOString() : new Date().toISOString()
+  };
+
+  // 1. Supabase
+  if (supabase) {
+    try {
+      const { error } = await supabase.from('mock_history').insert(row);
+      if (error) console.warn('[Supabase] saveMockResult error:', error.message);
+    } catch (err) {
+      console.warn('[Supabase] Network error during saveMockResult:', err.message || err);
+    }
   }
+
+  // 2. Local Companion
+  try {
+    await localDb.post('/mock_history', row);
+  } catch (err) {}
 };
 
 /**
- * Fetch all mock exam history for a user.
- * Neon PostgreSQL persistence with Local fallback.
+ * Fetch mock exam history for a user.
  */
 export const getMockHistory = async (uid) => {
   if (!uid) return [];
 
-  const mapRow = (row) => ({
-    id: row.id,
-    examId: row.exam_id,
-    examName: row.exam_name,
-    school: row.school,
-    score: row.score,
-    maxScore: row.max_score,
-    pct: row.pct,
-    correctCount: row.correct_count,
-    wrongCount: row.wrong_count,
-    emptyCount: row.empty_count,
-    mode: row.mode,
-    date: row.date,
+  const mapRow = (r) => ({
+    id: r.id,
+    examId: r.exam_id,
+    examName: r.exam_name,
+    school: r.school,
+    score: r.score,
+    maxScore: r.max_score,
+    pct: r.pct,
+    correctCount: r.correct_count,
+    wrongCount: r.wrong_count,
+    emptyCount: r.empty_count,
+    mode: r.mode,
+    date: r.date
   });
 
-  // 1. Try Neon
-  try {
-    const res = await neonAuthFetch({
-      action: 'query',
-      sql: 'SELECT * FROM public.mock_history WHERE user_id = $1 ORDER BY date DESC',
-      params: [uid]
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data.rows)) return data.rows.map(mapRow);
+  // 1. Supabase
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('mock_history')
+        .select('*')
+        .eq('user_id', uid)
+        .order('date', { ascending: false });
+
+      if (!error && Array.isArray(data)) {
+        return data.map(mapRow);
+      }
+    } catch (err) {
+      console.warn('[Supabase] getMockHistory error:', err.message || err);
     }
-  } catch (neonErr) {
-    console.warn('[Neon] getMockHistory error:', neonErr.message);
   }
 
-  // Safe fallback: return empty array
+  // 2. Local Companion
+  try {
+    const list = await localDb.get(`/mock_history?user_id=${uid}`);
+    if (Array.isArray(list)) return list.map(mapRow);
+  } catch (err) {}
+
   return [];
 };
 
 // ─── Daily Activity ───────────────────────────────────────────────────────────
 
 /**
- * Increment the daily activity counter.
- * Neon PostgreSQL persistence with Local fallback.
+ * Increment today's activity counter for a user.
  */
 export const incrementDailyActivity = async (uid) => {
   if (!uid) return;
   const today = new Date().toISOString().split('T')[0];
 
-  // 1. Try Neon — activity.id is bigint (auto-increment). Use INSERT ON CONFLICT (user_id, date)
-  try {
-    const res = await neonAuthFetch({
-      action: 'query',
-      sql: `INSERT INTO public.activity (user_id, date, count)
-        VALUES ($1, $2, 1)
-        ON CONFLICT (user_id, date) DO UPDATE SET count = public.activity.count + 1`,
-      params: [uid, today]
-    });
-    if (res.ok) return;
-  } catch (neonErr) {
-    console.warn('[Neon] incrementDailyActivity error:', neonErr.message);
+  // 1. Supabase: RPC or upsert
+  if (supabase) {
+    try {
+      // First fetch today's count
+      const { data } = await supabase
+        .from('activity')
+        .select('count')
+        .eq('user_id', uid)
+        .eq('date', today)
+        .maybeSingle();
+
+      const newCount = (data?.count || 0) + 1;
+      await supabase
+        .from('activity')
+        .upsert({ user_id: uid, date: today, count: newCount }, { onConflict: 'user_id,date' });
+      return;
+    } catch (err) {
+      console.warn('[Supabase] incrementDailyActivity error:', err.message || err);
+    }
   }
+
+  // 2. Local Companion
+  try {
+    await localDb.post('/activity/increment', { user_id: uid, date: today });
+  } catch (err) {}
 };
 
 /**
- * Fetch the last N days of activity.
- * Neon PostgreSQL persistence with Local fallback.
+ * Fetch daily activity counts for the last N days.
  */
 export const getRecentActivity = async (uid, days = 90) => {
   if (!uid) return {};
@@ -443,80 +435,104 @@ export const getRecentActivity = async (uid, days = 90) => {
   cutoffDate.setDate(cutoffDate.getDate() - days);
   const cutoffStr = cutoffDate.toISOString().split('T')[0];
 
-  // 1. Try Neon
-  try {
-    const res = await neonAuthFetch({
-      action: 'query',
-      sql: 'SELECT date, count FROM public.activity WHERE user_id = $1 AND date >= $2',
-      params: [uid, cutoffStr]
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data.rows)) {
+  // 1. Supabase
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('activity')
+        .select('date, count')
+        .eq('user_id', uid)
+        .gte('date', cutoffStr);
+
+      if (!error && Array.isArray(data)) {
         const result = {};
-        data.rows.forEach(row => { result[row.date] = row.count || 0; });
+        data.forEach(row => { result[row.date] = row.count || 0; });
         return result;
       }
+    } catch (err) {
+      console.warn('[Supabase] getRecentActivity error:', err.message || err);
     }
-  } catch (neonErr) {
-    console.warn('[Neon] getRecentActivity error:', neonErr.message);
   }
 
-  // Safe fallback: return empty object
+  // 2. Local Companion
+  try {
+    const list = await localDb.get(`/activity?user_id=${uid}&since=${cutoffStr}`);
+    if (Array.isArray(list)) {
+      const result = {};
+      list.forEach(row => { result[row.date] = row.count || 0; });
+      return result;
+    }
+  } catch (err) {}
+
   return {};
 };
 
 /**
- * Delete a user by UID (Admin only).
+ * Delete a user profile and associated data.
  */
 export const deleteUser = async (uid) => {
-  queryCache.invalidate(`user_doc_${uid}`);
-  queryCache.invalidate('users_all');
-  queryCache.invalidate('leaderboard_all');
+  if (!uid) return false;
 
   // 1. LocalStorage
-  const currentUsers = getLocalStorageUsers() || (Array.isArray(initialUsersData) ? initialUsersData.map(mapDBToProfile) : []);
+  const currentUsers = getLocalStorageUsers() || [];
   const filtered = currentUsers.filter(u => u.id !== uid && u.uid !== uid);
   saveLocalStorageUsers(filtered);
 
-  // 2. Neon delete
-  try {
-    const res = await neonAuthFetch({ action: 'delete', table: 'profiles', id: uid, keyField: 'id' });
-    if (res.ok) {
-      // Also delete from local companion
-      try { await localDb.delete('/users', uid); } catch (_) {}
-      return true;
+  // 2. Supabase
+  if (supabase) {
+    try {
+      const { error: rpcErr } = await supabase.rpc('delete_user', { uid });
+      if (!rpcErr) return true;
+
+      // Fallback direct delete
+      await supabase.from('profiles').delete().eq('id', uid);
+    } catch (err) {
+      console.warn('[Supabase] deleteUser error:', err.message || err);
     }
-  } catch (neonErr) {
-    console.warn('[Neon] deleteUser error:', neonErr.message);
   }
 
-  // 3. Local Companion fallback
+  // 3. Local Companion
   try {
     await localDb.delete('/users', uid);
-    return true;
-  } catch (err) {
-    return true; // still deleted locally
-  }
+  } catch (_) {}
+
+  return true;
 };
 
 /**
- * Fetch all registered users (Admin only) with SWR caching.
+ * Fetch all registered users for the Admin Dashboard.
  */
 export const getAllUsers = async (options = {}) => {
   const { forceRefresh = false } = options;
 
-  return queryCache.fetchWithCache('users_all', async () => {
-    // 1. Try Neon PostgreSQL
-    try {
-      const neonRes = await neonList('profiles', 1000);
-      if (Array.isArray(neonRes.data) && neonRes.data.length > 0) {
-        const mapped = neonRes.data.map(mapDBToProfile);
-        saveLocalStorageUsers(mapped);
-        return mapped;
+  return queryCache.fetchWithCache('all_users_list', async () => {
+    // 1. Supabase
+    if (supabase) {
+      try {
+        const { data: rpcData, error: rpcError } = await supabase.rpc('get_all_profiles');
+        if (!rpcError && Array.isArray(rpcData) && rpcData.length > 0) {
+          const mapped = rpcData.map(mapDBToProfile);
+          saveLocalStorageUsers(mapped);
+          return mapped;
+        }
+      } catch (rpcErr) {
+        console.warn('[Supabase] RPC get_all_profiles failed, trying direct select:', rpcErr.message || rpcErr);
       }
-    } catch (neonErr) {
-      console.warn('[Neon] getAllUsers error:', neonErr.message);
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('joined', { ascending: false });
+
+        if (!error && Array.isArray(data) && data.length > 0) {
+          const mapped = data.map(mapDBToProfile);
+          saveLocalStorageUsers(mapped);
+          return mapped;
+        }
+      } catch (err) {
+        console.warn('[Supabase] getAllUsers select error:', err.message || err);
+      }
     }
 
     // 2. Local Companion
@@ -535,7 +551,7 @@ export const getAllUsers = async (options = {}) => {
       return cache;
     }
 
-    // 4. Seed fallback from bundled Moroccan students
+    // 4. Seed fallback
     if (Array.isArray(initialUsersData) && initialUsersData.length > 0) {
       const mapped = initialUsersData.map(mapDBToProfile);
       saveLocalStorageUsers(mapped);
@@ -543,100 +559,102 @@ export const getAllUsers = async (options = {}) => {
     }
 
     return [];
-  }, {
-    forceRefresh,
-    staleTime: 1000 * 60 * 3,
-    cacheTime: 1000 * 60 * 30
-  });
+  }, { forceRefresh });
 };
 
 /**
  * Fetch the public leaderboard of top 100 students with SWR caching.
- * Now tries Neon first, then local fallbacks.
  */
 export const getLeaderboard = async (options = {}) => {
   const { forceRefresh = false } = options;
 
   return queryCache.fetchWithCache('leaderboard_all', async () => {
-    // 1. Try Neon PostgreSQL (sorted by XP server-side)
-    try {
-      const neonRes = await neonList('profiles', 100);
-      if (Array.isArray(neonRes.data) && neonRes.data.length > 0) {
-        return neonRes.data
-          .map(mapDBToProfile)
-          .filter(u => u.role !== 'admin')
-          .sort((a, b) => (b.xp || 0) - (a.xp || 0))
-          .slice(0, 100);
+    // 1. Supabase
+    if (supabase) {
+      try {
+        const { data: rpcData, error: rpcError } = await supabase.rpc('get_leaderboard');
+        if (!rpcError && rpcData && rpcData.length > 0) {
+          return rpcData;
+        }
+      } catch (err) {}
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('name, xp, streak, tier, role')
+          .neq('role', 'admin')
+          .not('name', 'ilike', 'Directeur')
+          .order('xp', { ascending: false })
+          .limit(100);
+
+        if (!error && data && data.length > 0) {
+          return data;
+        }
+      } catch (err) {
+        console.warn('[Supabase] getLeaderboard select error:', err.message || err);
       }
-    } catch (neonErr) {
-      console.warn('[Neon] getLeaderboard error:', neonErr.message);
     }
 
     // 2. Local Companion fallback
     try {
       const list = await localDb.get('/users');
-      return list
-        .filter(u => u.role !== 'admin')
-        .map(mapDBToProfile)
-        .sort((a, b) => (b.xp || 0) - (a.xp || 0))
-        .slice(0, 100);
-    } catch (err) {
-      return [];
-    }
-  }, {
-    forceRefresh,
-    staleTime: 1000 * 60 * 5,
-    cacheTime: 1000 * 60 * 30
-  });
+      if (Array.isArray(list) && list.length > 0) {
+        return list
+          .filter(u => u.role !== 'admin' && !u.name?.toLowerCase().includes('directeur'))
+          .sort((a, b) => (b.xp || 0) - (a.xp || 0))
+          .slice(0, 100)
+          .map(u => ({ name: u.name, xp: u.xp || 0, streak: u.streak || 0, tier: u.tier || 'freemium' }));
+      }
+    } catch (err) {}
+
+    return [];
+  }, { forceRefresh });
 };
 
 /**
  * Log a user login.
- * Neon PostgreSQL persistence.
  */
 export const addLoginLog = async (uid) => {
   if (!uid) return;
   const id = `ll_${uid}_${Date.now()}`;
-  // Try Neon — table login_logs with TEXT id
-  try {
-    await neonUpsert('login_logs', { id, user_id: uid, logged_at: new Date().toISOString() }, 'id');
-    return;
-  } catch (neonErr) {
-    console.warn('[Neon] addLoginLog error:', neonErr.message);
+
+  if (supabase) {
+    try {
+      await supabase.from('login_logs').insert({ id, user_id: uid, logged_at: new Date().toISOString() });
+    } catch (err) {
+      console.warn('[Supabase] addLoginLog error:', err.message || err);
+    }
   }
 };
 
 /**
  * Fetch login logs for a user.
- * Neon PostgreSQL persistence with safe fallback.
  */
 export const getLoginLogs = async (uid) => {
   if (!uid) return [];
-
   const mapRow = row => ({ id: row.id, userId: row.user_id, loggedAt: row.logged_at });
 
-  // 1. Try Neon
-  try {
-    const res = await neonAuthFetch({
-      action: 'query',
-      sql: 'SELECT * FROM public.login_logs WHERE user_id = $1 ORDER BY logged_at DESC LIMIT 100',
-      params: [uid]
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data.rows)) return data.rows.map(mapRow);
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('login_logs')
+        .select('*')
+        .eq('user_id', uid)
+        .order('logged_at', { ascending: false });
+
+      if (!error && Array.isArray(data)) {
+        return data.map(mapRow);
+      }
+    } catch (err) {
+      console.warn('[Supabase] getLoginLogs error:', err.message || err);
     }
-  } catch (neonErr) {
-    console.warn('[Neon] getLoginLogs error:', neonErr.message);
   }
 
-  // Safe fallback
   return [];
 };
 
 /**
  * Fetch progress cards deltas since a timestamp.
- * Neon PostgreSQL persistence with safe fallback.
  */
 export const getProgressDeltas = async (uid, sinceTimestamp) => {
   if (!uid) return {};
@@ -651,61 +669,66 @@ export const getProgressDeltas = async (uid, sinceTimestamp) => {
     updatedAt: row.updated_at
   });
 
-  // 1. Try Neon
-  try {
-    const sql = sinceTimestamp
-      ? 'SELECT * FROM public.progress WHERE user_id = $1 AND updated_at > $2'
-      : 'SELECT * FROM public.progress WHERE user_id = $1';
-    const params = sinceTimestamp ? [uid, sinceTimestamp] : [uid];
-    const res = await neonAuthFetch({ action: 'query', sql, params });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data.rows)) {
+  if (supabase) {
+    try {
+      let query = supabase.from('progress').select('*').eq('user_id', uid);
+      if (sinceTimestamp) query = query.gt('updated_at', sinceTimestamp);
+      const { data, error } = await query;
+      if (!error && Array.isArray(data)) {
         const result = {};
-        data.rows.forEach(row => { result[row.question_id] = mapRow(row); });
+        data.forEach(row => { result[row.question_id] = mapRow(row); });
         return result;
       }
+    } catch (err) {
+      console.warn('[Supabase] getProgressDeltas error:', err.message || err);
     }
-  } catch (neonErr) {
-    console.warn('[Neon] getProgressDeltas error:', neonErr.message);
   }
 
-  // Safe fallback
   return {};
 };
 
 /**
- * Synchronize missing auth users with Neon profiles (Admin only).
- * Neon profile synchronization stub.
+ * Synchronize missing auth users with Supabase profiles (Admin only).
  */
-export const syncStudentsWithNeon = async () => {
-  return { success: true, synchronized_count: 0, note: 'Neon-native — no sync needed' };
+export const syncStudentsWithSupabase = async () => {
+  if (!supabase) return { success: true, synchronized_count: 0 };
+  try {
+    const { data, error } = await supabase.rpc('sync_auth_users_to_profiles');
+    if (error) {
+      console.warn('[Supabase] Failed to synchronize students:', error.message || error);
+      return { success: false, synchronized_count: 0 };
+    }
+    return data || { success: true, synchronized_count: 0 };
+  } catch (err) {
+    console.warn('[Supabase] Network error during syncStudentsWithSupabase:', err.message || err);
+    return { success: false, synchronized_count: 0 };
+  }
 };
-export const syncStudentsWithSupabase = syncStudentsWithNeon;
 
 /**
  * Log a document/report download.
- * Neon PostgreSQL persistence.
  */
 export const logUserDownload = async (uid, downloadData) => {
-  if (!uid) return;
+  if (!uid || !supabase) return;
 
-  // 1. Try Neon — fetch current downloads then update
   try {
-    const res = await neonAuthFetch({
-      action: 'query',
-      sql: 'SELECT downloads FROM public.profiles WHERE id = $1 LIMIT 1',
-      params: [uid]
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const currentDownloads = Array.isArray(data.rows?.[0]?.downloads) ? data.rows[0].downloads : [];
-      const newEntry = { ...downloadData, downloadedAt: new Date().toISOString() };
-      const updatedDownloads = [newEntry, ...currentDownloads].slice(0, 100);
-      await neonSaveProfile({ id: uid, downloads: updatedDownloads });
-      return;
-    }
-  } catch (neonErr) {
-    console.warn('[Neon] logUserDownload error:', neonErr.message);
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('downloads')
+      .eq('id', uid)
+      .maybeSingle();
+
+    const currentDownloads = Array.isArray(profile?.downloads) ? profile.downloads : [];
+    const newEntry = { ...downloadData, downloadedAt: new Date().toISOString() };
+    const updatedDownloads = [newEntry, ...currentDownloads].slice(0, 100);
+
+    await supabase
+      .from('profiles')
+      .update({ downloads: updatedDownloads })
+      .eq('id', uid);
+  } catch (err) {
+    console.warn('[Supabase] logUserDownload error:', err.message || err);
   }
 };
+
+
