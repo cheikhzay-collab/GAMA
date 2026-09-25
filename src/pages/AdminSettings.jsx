@@ -124,33 +124,45 @@ export default function AdminSettings() {
 
   // Charger les paramètres IA distants depuis Supabase Cloud DB (config table) au montage
   useEffect(() => {
-    getAiSettingsConfig().then(remoteSettings => {
+    getAiSettingsConfig({ forceRefresh: true }).then(remoteSettings => {
       if (remoteSettings && typeof remoteSettings === 'object') {
-        if (remoteSettings.claudeApiKey && !apiKey) {
+        if (remoteSettings.claudeApiKey !== undefined) {
           setApiKey(remoteSettings.claudeApiKey);
           localStorage.setItem('claudeApiKey', remoteSettings.claudeApiKey);
         }
-        if (remoteSettings.claudeProxyUrl && !proxyUrl) {
+        if (remoteSettings.claudeProxyUrl !== undefined) {
           setProxyUrl(remoteSettings.claudeProxyUrl);
           localStorage.setItem('claudeProxyUrl', remoteSettings.claudeProxyUrl);
         }
-        if (remoteSettings.geminiApiKey && !geminiKey) {
+        if (remoteSettings.claude_solve_solutions !== undefined) {
+          setClaudeSolveSolutions(!!remoteSettings.claude_solve_solutions);
+          localStorage.setItem('claude_solve_solutions', String(remoteSettings.claude_solve_solutions));
+        }
+        if (remoteSettings.geminiApiKey !== undefined) {
           setGeminiKey(remoteSettings.geminiApiKey);
           localStorage.setItem('geminiApiKey', remoteSettings.geminiApiKey);
         }
-        if (remoteSettings.deepseekApiKey && !deepseekKey) {
+        if (remoteSettings.gemini_solve_solutions !== undefined) {
+          setGeminiSolveSolutions(!!remoteSettings.gemini_solve_solutions);
+          localStorage.setItem('gemini_solve_solutions', String(remoteSettings.gemini_solve_solutions));
+        }
+        if (remoteSettings.deepseekApiKey !== undefined) {
           setDeepseekKey(remoteSettings.deepseekApiKey);
           localStorage.setItem('deepseekApiKey', remoteSettings.deepseekApiKey);
         }
-        if (remoteSettings.deepseekApiUrl && !deepseekUrl) {
+        if (remoteSettings.deepseekApiUrl !== undefined) {
           setDeepseekUrl(remoteSettings.deepseekApiUrl);
           localStorage.setItem('deepseekApiUrl', remoteSettings.deepseekApiUrl);
         }
-        if (remoteSettings.groqApiKey && !groqKey) {
+        if (remoteSettings.deepseek_solve_solutions !== undefined) {
+          setDeepseekSolveSolutions(!!remoteSettings.deepseek_solve_solutions);
+          localStorage.setItem('deepseek_solve_solutions', String(remoteSettings.deepseek_solve_solutions));
+        }
+        if (remoteSettings.groqApiKey !== undefined) {
           setGroqKey(remoteSettings.groqApiKey);
           localStorage.setItem('groqApiKey', remoteSettings.groqApiKey);
         }
-        if (remoteSettings.openaiApiKey && !openaiKey) {
+        if (remoteSettings.openaiApiKey !== undefined) {
           setOpenaiKey(remoteSettings.openaiApiKey);
           localStorage.setItem('openaiApiKey', remoteSettings.openaiApiKey);
         }
@@ -346,6 +358,62 @@ export default function AdminSettings() {
   const [waTooltip, setWaTooltip] = useState('');
   const [waSaved, setWaSaved] = useState(false);
 
+  // Synchronisation directe des paramètres d'apparence, branding, flashcards et PDF depuis le Cloud (Supabase)
+  useEffect(() => {
+    getFlashcardSettingsConfig({ forceRefresh: true }).then(cfg => {
+      if (cfg && typeof cfg === 'object' && Object.keys(cfg).length > 0) {
+        if (cfg.cardRevealMode !== undefined) setCardReveal(cfg.cardRevealMode);
+        if (cfg.cardFlipEnabled !== undefined) setCardFlip(!!cfg.cardFlipEnabled);
+        if (cfg.cardSwipeEnabled !== undefined) setCardSwipe(!!cfg.cardSwipeEnabled);
+        if (cfg.cardSoundEnabled !== undefined) setCardSound(cfg.cardSoundEnabled !== false);
+        if (cfg.cardFontFamily) setCardFontFamily(cfg.cardFontFamily);
+        if (cfg.cardFontSize) setCardFontSize(cfg.cardFontSize);
+        if (cfg.cardQuestionWeight) setCardQuestionWeight(cfg.cardQuestionWeight);
+        if (cfg.cardAstuceWeight) setCardAstuceWeight(cfg.cardAstuceWeight);
+        if (cfg.cardOptionsWeight) setCardOptionsWeight(cfg.cardOptionsWeight);
+      }
+    }).catch(() => {});
+
+    getBrandingConfig({ forceRefresh: true }).then(cfg => {
+      if (cfg && typeof cfg === 'object' && Object.keys(cfg).length > 0) {
+        if (cfg.profName !== undefined) setProfName(decodeHtmlEntities(cfg.profName));
+        if (cfg.profPhone !== undefined) setProfPhone(decodeHtmlEntities(cfg.profPhone));
+        if (cfg.profSchool !== undefined) setProfSchool(decodeHtmlEntities(cfg.profSchool));
+        if (cfg.profDirection !== undefined) setProfDirection(decodeHtmlEntities(cfg.profDirection));
+        if (cfg.profAcademy !== undefined) setProfAcademy(decodeHtmlEntities(cfg.profAcademy));
+        if (cfg.profSubject !== undefined) setProfSubject(decodeHtmlEntities(cfg.profSubject));
+        if (cfg.profSOM !== undefined) setProfSOM(decodeHtmlEntities(cfg.profSOM));
+        if (cfg.profEmail !== undefined) setProfEmail(decodeHtmlEntities(cfg.profEmail));
+        if (cfg.profAcademicYear !== undefined) setProfAcademicYear(decodeHtmlEntities(cfg.profAcademicYear));
+        if (cfg.profCity !== undefined) setProfCity(decodeHtmlEntities(cfg.profCity));
+        if (cfg.profSite !== undefined) setProfSite(decodeHtmlEntities(cfg.profSite));
+        if (cfg.bankName !== undefined) setBankName(decodeHtmlEntities(cfg.bankName));
+        if (cfg.bankRIB !== undefined) setBankRIB(decodeHtmlEntities(cfg.bankRIB));
+        if (cfg.bankBeneficiary !== undefined) setBankBeneficiary(decodeHtmlEntities(cfg.bankBeneficiary));
+        if (cfg.fbPixelId !== undefined) setFbPixelId(decodeHtmlEntities(cfg.fbPixelId));
+      }
+    }).catch(() => {});
+
+    getPdfSettingsConfig({ forceRefresh: true }).then(cfg => {
+      if (cfg && typeof cfg === 'object' && Object.keys(cfg).length > 0) {
+        if (cfg.pdfPageMargins) setPdfPageMargins(cfg.pdfPageMargins);
+        if (cfg.pdfFontSize) setPdfFontSize(cfg.pdfFontSize);
+        if (cfg.pdfFontFamily) setPdfFontFamily(cfg.pdfFontFamily);
+        if (cfg.pdfTemplateStyle) setPdfTemplateStyle(cfg.pdfTemplateStyle);
+        if (cfg.pdfSeriesStyle) setPdfSeriesStyle(cfg.pdfSeriesStyle);
+        if (cfg.pdfAvoidPageBreaks !== undefined) setPdfAvoidPageBreaks(cfg.pdfAvoidPageBreaks !== false);
+        if (cfg.pdfForcePrintColors !== undefined) setPdfForcePrintColors(cfg.pdfForcePrintColors !== false);
+        if (cfg.pdfShowSidebar !== undefined) setPdfShowSidebar(cfg.pdfShowSidebar !== false);
+      }
+    }).catch(() => {});
+
+    getOmrScannerSettingsConfig({ forceRefresh: true }).then(cfg => {
+      if (cfg && typeof cfg === 'object' && cfg.scannerDirectCapture !== undefined) {
+        setScannerDirectCapture(!!cfg.scannerDirectCapture);
+      }
+    }).catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (whatsappSettings) {
       setWaEnabled(!!whatsappSettings.enabled);
@@ -370,21 +438,21 @@ export default function AdminSettings() {
 
   useEffect(() => {
     Promise.resolve().then(() => {
-      if (initialProfName !== undefined) setProfName(decodeHtmlEntities(initialProfName));
-      if (initialProfPhone !== undefined) setProfPhone(decodeHtmlEntities(initialProfPhone));
-      if (initialProfSchool !== undefined) setProfSchool(decodeHtmlEntities(initialProfSchool));
-      if (initialProfDirection !== undefined) setProfDirection(decodeHtmlEntities(initialProfDirection));
-      if (initialProfAcademy !== undefined) setProfAcademy(decodeHtmlEntities(initialProfAcademy));
-      if (initialProfSubject !== undefined) setProfSubject(decodeHtmlEntities(initialProfSubject));
-      if (initialProfSOM !== undefined) setProfSOM(decodeHtmlEntities(initialProfSOM));
-      if (initialProfEmail !== undefined) setProfEmail(decodeHtmlEntities(initialProfEmail));
-      if (initialProfAcademicYear !== undefined) setProfAcademicYear(decodeHtmlEntities(initialProfAcademicYear));
-      if (initialProfCity !== undefined) setProfCity(decodeHtmlEntities(initialProfCity));
-      if (initialProfSite !== undefined) setProfSite(decodeHtmlEntities(initialProfSite));
-      if (initialBankName !== undefined) setBankName(decodeHtmlEntities(initialBankName));
-      if (initialBankRIB !== undefined) setBankRIB(decodeHtmlEntities(initialBankRIB));
-      if (initialBankBeneficiary !== undefined) setBankBeneficiary(decodeHtmlEntities(initialBankBeneficiary));
-      if (initialFacebookPixelId !== undefined) setFbPixelId(decodeHtmlEntities(initialFacebookPixelId));
+      if (initialProfName !== undefined && initialProfName !== '') setProfName(decodeHtmlEntities(initialProfName));
+      if (initialProfPhone !== undefined && initialProfPhone !== '') setProfPhone(decodeHtmlEntities(initialProfPhone));
+      if (initialProfSchool !== undefined && initialProfSchool !== '') setProfSchool(decodeHtmlEntities(initialProfSchool));
+      if (initialProfDirection !== undefined && initialProfDirection !== '') setProfDirection(decodeHtmlEntities(initialProfDirection));
+      if (initialProfAcademy !== undefined && initialProfAcademy !== '') setProfAcademy(decodeHtmlEntities(initialProfAcademy));
+      if (initialProfSubject !== undefined && initialProfSubject !== '') setProfSubject(decodeHtmlEntities(initialProfSubject));
+      if (initialProfSOM !== undefined && initialProfSOM !== '') setProfSOM(decodeHtmlEntities(initialProfSOM));
+      if (initialProfEmail !== undefined && initialProfEmail !== '') setProfEmail(decodeHtmlEntities(initialProfEmail));
+      if (initialProfAcademicYear !== undefined && initialProfAcademicYear !== '') setProfAcademicYear(decodeHtmlEntities(initialProfAcademicYear));
+      if (initialProfCity !== undefined && initialProfCity !== '') setProfCity(decodeHtmlEntities(initialProfCity));
+      if (initialProfSite !== undefined && initialProfSite !== '') setProfSite(decodeHtmlEntities(initialProfSite));
+      if (initialBankName !== undefined && initialBankName !== '') setBankName(decodeHtmlEntities(initialBankName));
+      if (initialBankRIB !== undefined && initialBankRIB !== '') setBankRIB(decodeHtmlEntities(initialBankRIB));
+      if (initialBankBeneficiary !== undefined && initialBankBeneficiary !== '') setBankBeneficiary(decodeHtmlEntities(initialBankBeneficiary));
+      if (initialFacebookPixelId !== undefined && initialFacebookPixelId !== '') setFbPixelId(decodeHtmlEntities(initialFacebookPixelId));
     });
   }, [initialProfName, initialProfPhone, initialProfSchool, initialProfDirection, initialProfAcademy, initialProfSubject, initialProfSOM, initialProfEmail, initialProfAcademicYear, initialProfCity, initialProfSite, initialBankName, initialBankRIB, initialBankBeneficiary, initialFacebookPixelId]);
 
@@ -428,6 +496,7 @@ export default function AdminSettings() {
       pdfFontSize,
       pdfFontFamily,
       pdfTemplateStyle,
+      pdfSeriesStyle,
       pdfAvoidPageBreaks,
       pdfForcePrintColors,
       pdfShowSidebar
@@ -492,28 +561,30 @@ export default function AdminSettings() {
 
   // Fetch remote schedule, holidays, and style configuration from cloud on mount
   useEffect(() => {
-    getSchoolHolidaysConfig().then(cloudHols => {
+    getSchoolHolidaysConfig({ forceRefresh: true }).then(cloudHols => {
       if (Array.isArray(cloudHols) && cloudHols.length > 0) {
         setLogbookHolidays(cloudHols);
+        try { localStorage.setItem('school_holidays', JSON.stringify(cloudHols)); } catch (_) {}
       }
     }).catch(() => {});
 
-    getTeacherScheduleConfig().then(cloudSched => {
+    getTeacherScheduleConfig({ forceRefresh: true }).then(cloudSched => {
       if (cloudSched && typeof cloudSched === 'object' && Object.keys(cloudSched).length > 0) {
         setLogbookSchedule(cloudSched);
+        try { localStorage.setItem('teacher_schedule_current', JSON.stringify(cloudSched)); } catch (_) {}
       }
     }).catch(() => {});
 
-    getLogbookStyleConfig().then(cloudStyle => {
+    getLogbookStyleConfig({ forceRefresh: true }).then(cloudStyle => {
       if (cloudStyle && typeof cloudStyle === 'object') {
-        if (cloudStyle.arFont) setLogbookArFont(cloudStyle.arFont);
-        if (cloudStyle.frFont) setLogbookFrFont(cloudStyle.frFont);
-        if (cloudStyle.fontSize) setLogbookFontSize(cloudStyle.fontSize);
-        if (cloudStyle.lineHeight) setLogbookLineHeight(cloudStyle.lineHeight);
-        if (cloudStyle.colorInk) setLogbookColorInk(cloudStyle.colorInk);
-        if (cloudStyle.colorChapter) setLogbookColorChapter(cloudStyle.colorChapter);
-        if (cloudStyle.colorAxis) setLogbookColorAxis(cloudStyle.colorAxis);
-        if (cloudStyle.colorExercise) setLogbookColorExercise(cloudStyle.colorExercise);
+        if (cloudStyle.arFont) { setLogbookArFont(cloudStyle.arFont); localStorage.setItem('logbook_ar_font', cloudStyle.arFont); }
+        if (cloudStyle.frFont) { setLogbookFrFont(cloudStyle.frFont); localStorage.setItem('logbook_fr_font', cloudStyle.frFont); }
+        if (cloudStyle.fontSize) { setLogbookFontSize(cloudStyle.fontSize); localStorage.setItem('logbook_font_size', cloudStyle.fontSize); }
+        if (cloudStyle.lineHeight) { setLogbookLineHeight(cloudStyle.lineHeight); localStorage.setItem('logbook_line_height', String(cloudStyle.lineHeight)); }
+        if (cloudStyle.colorInk) { setLogbookColorInk(cloudStyle.colorInk); localStorage.setItem('logbook_color_ink', cloudStyle.colorInk); }
+        if (cloudStyle.colorChapter) { setLogbookColorChapter(cloudStyle.colorChapter); localStorage.setItem('logbook_color_chapter', cloudStyle.colorChapter); }
+        if (cloudStyle.colorAxis) { setLogbookColorAxis(cloudStyle.colorAxis); localStorage.setItem('logbook_color_axis', cloudStyle.colorAxis); }
+        if (cloudStyle.colorExercise) { setLogbookColorExercise(cloudStyle.colorExercise); localStorage.setItem('logbook_color_exercise', cloudStyle.colorExercise); }
       }
     }).catch(() => {});
   }, []);

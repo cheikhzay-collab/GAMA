@@ -728,10 +728,10 @@ export default function AdminLogbook() {
     const syncFromCloud = async () => {
       try {
         const [cloudSched, cloudHols, cloudAbs, cloudStyle] = await Promise.all([
-          getTeacherScheduleConfig(),
-          getSchoolHolidaysConfig(),
-          getTeacherAbsencesConfig(),
-          getLogbookStyleConfig()
+          getTeacherScheduleConfig({ forceRefresh: true }),
+          getSchoolHolidaysConfig({ forceRefresh: true }),
+          getTeacherAbsencesConfig({ forceRefresh: true }),
+          getLogbookStyleConfig({ forceRefresh: true })
         ]);
 
         if (cloudSched && typeof cloudSched === 'object' && Object.keys(cloudSched).length > 0) {

@@ -584,6 +584,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem('pdf_font_size', settings.pdfFontSize);
     localStorage.setItem('pdf_font_family', settings.pdfFontFamily);
     localStorage.setItem('pdf_template_style', settings.pdfTemplateStyle);
+    localStorage.setItem('pdf_series_style', settings.pdfSeriesStyle || 'modern_pro_2026');
     localStorage.setItem('pdf_avoid_page_breaks', String(settings.pdfAvoidPageBreaks));
     localStorage.setItem('pdf_force_print_colors', String(settings.pdfForcePrintColors));
     localStorage.setItem('pdf_show_sidebar', String(settings.pdfShowSidebar));
@@ -1694,13 +1695,13 @@ export function AuthProvider({ children }) {
           plansConfigRes,
           fbExamsRes
         ] = await Promise.allSettled([
-          getSchoolsConfig(),
-          getBrandingConfig(),
-          getFlashcardSettingsConfig(),
-          getPdfSettingsConfig(),
-          getOmrScannerSettingsConfig(),
-          getWhatsAppSettingsConfig(),
-          getPlansConfig(),
+          getSchoolsConfig({ forceRefresh: true }),
+          getBrandingConfig({ forceRefresh: true }),
+          getFlashcardSettingsConfig({ forceRefresh: true }),
+          getPdfSettingsConfig({ forceRefresh: true }),
+          getOmrScannerSettingsConfig({ forceRefresh: true }),
+          getWhatsAppSettingsConfig({ forceRefresh: true }),
+          getPlansConfig({ forceRefresh: true }),
           getAllExams()
         ]);
 
@@ -1723,6 +1724,14 @@ export function AuthProvider({ children }) {
         if (brandConfig) {
           setProfName(brandConfig.profName || '');
           setProfPhone(brandConfig.profPhone || '');
+          setProfSchool(brandConfig.profSchool || '');
+          setProfDirection(brandConfig.profDirection || '');
+          setProfAcademy(brandConfig.profAcademy || '');
+          setProfSubject(brandConfig.profSubject || 'Mathématiques');
+          setProfSOM(brandConfig.profSOM || '');
+          setProfEmail(brandConfig.profEmail || '');
+          setProfAcademicYear(brandConfig.profAcademicYear || '2025/2026');
+          setProfCity(brandConfig.profCity || '');
           setProfSite(brandConfig.profSite || 'www.lconq.ma');
           setBankName(brandConfig.bankName || 'CIH Bank (Maroc)');
           setBankRIB(brandConfig.bankRIB || '230 780 4567890123 0001 89');
@@ -1731,6 +1740,14 @@ export function AuthProvider({ children }) {
 
           localStorage.setItem('profName', brandConfig.profName || '');
           localStorage.setItem('profPhone', brandConfig.profPhone || '');
+          localStorage.setItem('profSchool', brandConfig.profSchool || '');
+          localStorage.setItem('profDirection', brandConfig.profDirection || '');
+          localStorage.setItem('profAcademy', brandConfig.profAcademy || '');
+          localStorage.setItem('profSubject', brandConfig.profSubject || 'Mathématiques');
+          localStorage.setItem('profSOM', brandConfig.profSOM || '');
+          localStorage.setItem('profEmail', brandConfig.profEmail || '');
+          localStorage.setItem('profAcademicYear', brandConfig.profAcademicYear || '2025/2026');
+          localStorage.setItem('profCity', brandConfig.profCity || '');
           localStorage.setItem('profSite', brandConfig.profSite || 'www.lconq.ma');
           localStorage.setItem('bankName', brandConfig.bankName || 'CIH Bank (Maroc)');
           localStorage.setItem('bankRIB', brandConfig.bankRIB || '230 780 4567890123 0001 89');
@@ -1761,6 +1778,7 @@ export function AuthProvider({ children }) {
           localStorage.setItem('pdf_font_size', pdfConfig.pdfFontSize || '11pt');
           localStorage.setItem('pdf_font_family', pdfConfig.pdfFontFamily || 'Computer Modern Serif');
           localStorage.setItem('pdf_template_style', pdfConfig.pdfTemplateStyle || 'classic_latex');
+          localStorage.setItem('pdf_series_style', pdfConfig.pdfSeriesStyle || 'modern_pro_2026');
           localStorage.setItem('pdf_avoid_page_breaks', String(pdfConfig.pdfAvoidPageBreaks !== false));
           localStorage.setItem('pdf_force_print_colors', String(pdfConfig.pdfForcePrintColors !== false));
           localStorage.setItem('pdf_show_sidebar', String(pdfConfig.pdfShowSidebar !== false));

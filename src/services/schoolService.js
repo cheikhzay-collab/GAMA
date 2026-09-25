@@ -50,28 +50,27 @@ async function fetchConfig(key, defaultVal) {
  * Generic helper to save config to Supabase and Local Companion
  */
 async function saveConfig(key, value) {
-  const tasks = [];
-
   if (supabase) {
-    tasks.push(
-      supabase
+    try {
+      const { error } = await supabase
         .from('config')
         .upsert({
           key,
           value,
           updated_at: new Date().toISOString(),
-        }, { onConflict: 'key' })
-        .catch(err => {
-          console.warn(`[Supabase] Network error saving config '${key}':`, err.message || err);
-        })
-    );
+        }, { onConflict: 'key' });
+
+      if (error) {
+        console.error(`[Supabase] saveConfig error '${key}':`, error);
+      }
+    } catch (err) {
+      console.warn(`[Supabase] Network exception saving config '${key}':`, err.message || err);
+    }
   }
 
-  tasks.push(
-    localDb.post('/config', { [key]: value }).catch(() => {})
-  );
-
-  await Promise.allSettled(tasks);
+  try {
+    await localDb.post('/config', { [key]: value });
+  } catch (err) {}
 }
 
 // ─── 1. Schools & School Branding ─────────────────────────────────────────────
@@ -82,15 +81,22 @@ export const getSchoolsConfig = async (options = {}) => {
   return queryCache.fetchWithCache('config_schools', async () => {
     const val = await fetchConfig('schools', null);
     if (val) {
+      if (Array.isArray(val)) {
+        const brandingVal = await fetchConfig('schoolBranding', {});
+        return {
+          schools: val,
+          branding: (brandingVal && typeof brandingVal === 'object') ? brandingVal : {},
+        };
+      }
       return {
-        schools: val.schools || DEFAULT_SCHOOLS,
+        schools: Array.isArray(val.schools) ? val.schools : DEFAULT_SCHOOLS,
         branding: val.branding || {},
       };
     }
     return { schools: DEFAULT_SCHOOLS, branding: {} };
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 60
   });
 };
@@ -98,6 +104,9 @@ export const getSchoolsConfig = async (options = {}) => {
 export const saveSchoolsConfig = async (schools, branding) => {
   queryCache.invalidate('config_schools');
   await saveConfig('schools', { schools, branding });
+  if (branding) {
+    await saveConfig('schoolBranding', branding);
+  }
 };
 
 // ─── 2. General Branding Config ───────────────────────────────────────────────
@@ -109,7 +118,7 @@ export const getBrandingConfig = async (options = {}) => {
     return fetchConfig('branding', {});
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 60
   });
 };
@@ -128,7 +137,7 @@ export const getFlashcardSettingsConfig = async (options = {}) => {
     return fetchConfig('flashcard_settings', {});
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 60
   });
 };
@@ -147,7 +156,7 @@ export const getPdfSettingsConfig = async (options = {}) => {
     return fetchConfig('pdf_settings', {});
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 60
   });
 };
@@ -166,7 +175,7 @@ export const getOmrScannerSettingsConfig = async (options = {}) => {
     return fetchConfig('omr_scanner_settings', {});
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 60
   });
 };
@@ -185,7 +194,7 @@ export const getWhatsAppSettingsConfig = async (options = {}) => {
     return fetchConfig('whatsapp_settings', {});
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 60
   });
 };
@@ -202,8 +211,9 @@ export const getPlansConfig = async (options = {}) => {
 
   return queryCache.fetchWithCache('config_plans', async () => {
     const val = await fetchConfig('plans', null);
-    if (val && Array.isArray(val.plans)) {
-      return val.plans;
+    if (val) {
+      if (Array.isArray(val.plans)) return val.plans;
+      if (Array.isArray(val)) return val;
     }
     return [
       { id: 'free', name: 'Gratuit', price: 0, durationDays: 365, features: ['Accès limité'] },
@@ -211,7 +221,7 @@ export const getPlansConfig = async (options = {}) => {
     ];
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 60
   });
 };
@@ -220,7 +230,7 @@ export const getPlans = getPlansConfig;
 
 export const savePlansConfig = async (plans) => {
   queryCache.invalidate('config_plans');
-  await saveConfig('plans', { plans });
+  await saveConfig('plans', plans);
 };
 
 export const savePlans = savePlansConfig;
@@ -234,7 +244,7 @@ export const getExamThemesConfig = async (options = {}) => {
     return fetchConfig('exam_themes', {});
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 60
   });
 };
@@ -253,7 +263,7 @@ export const getExamSettingsConfig = async (options = {}) => {
     return fetchConfig('exam_settings', {});
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 60
   });
 };
@@ -272,7 +282,7 @@ export const getSecuritySettingsConfig = async (options = {}) => {
     return fetchConfig('security_settings', {});
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 60
   });
 };
@@ -291,7 +301,7 @@ export const getScheduleConfig = async (options = {}) => {
     return fetchConfig('schedule', {});
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 60
   });
 };
@@ -310,7 +320,7 @@ export const getLandingArConfig = async (options = {}) => {
     return fetchConfig('landing_ar_settings', null);
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 60
   });
 };
@@ -329,7 +339,7 @@ export const getAiSettingsConfig = async (options = {}) => {
     return fetchConfig('ai_settings', null);
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 60
   });
 };
@@ -457,7 +467,7 @@ export const getSchoolHolidaysConfig = async (options = {}) => {
     }
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 60
   });
 };
@@ -493,7 +503,7 @@ export const getTeacherAbsencesConfig = async (options = {}) => {
     }
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 60
   });
 };
@@ -523,7 +533,7 @@ export const getTeacherScheduleConfig = async (options = {}) => {
   } catch (_) {}
 
   return queryCache.fetchWithCache('config_teacher_schedule', async () => {
-    const isRecentlyUpdatedLocally = localSchedule && (Date.now() - localUpdatedAt < 1000 * 60 * 5);
+    const isRecentlyUpdatedLocally = localSchedule && (Date.now() - localUpdatedAt < 1000 * 30);
     if (isRecentlyUpdatedLocally && !forceRefresh) {
       return localSchedule;
     }
@@ -537,7 +547,7 @@ export const getTeacherScheduleConfig = async (options = {}) => {
     return localSchedule || {};
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 30
   });
 };
@@ -586,7 +596,7 @@ export const getLogbookStyleConfig = async (options = {}) => {
     }
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 60
   });
 };
@@ -630,7 +640,7 @@ export const getClassesSettingsConfig = async (options = {}) => {
     }
   }, {
     forceRefresh,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 15,
     cacheTime: 1000 * 60 * 60
   });
 };
