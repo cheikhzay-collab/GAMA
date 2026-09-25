@@ -148,6 +148,8 @@ export default defineConfig(({ mode }) => {
       'react-dom',
       'react-router-dom',
       'lucide-react',
+      'recharts',
+      'es-toolkit/compat/get',
     ],
     exclude: [
       // These are loaded lazily — don't prebundle
@@ -155,7 +157,6 @@ export default defineConfig(({ mode }) => {
       'jspdf',
       'html2canvas',
       'pdfjs-dist',
-      'recharts',
       'xlsx',
     ],
   },
