@@ -473,16 +473,11 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
 
   <style>
-    /* A4 Portrait dimensions & base resets */
-    @page {
-      size: A4 portrait;
-      margin: 15mm 12mm 15mm 12mm;
-    }
-    
+    /* Base resets */
     * {
       box-sizing: border-box;
     }
-    
+
     body {
       margin: 0;
       padding: 0;
@@ -501,27 +496,56 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
       background: #ffffff;
     }
 
-    /* ── Screen view: remove page-break white gaps ── */
+    /* ── Screen view: continuous flowing document, no A4 page boxes ── */
     @media screen {
-      html, body {
-        background: #e5e7eb;
-        padding: 20px 0;
+      html {
+        background: #d1d5db;
+      }
+      body {
+        background: #d1d5db;
+        padding: 24px 0 48px 0;
       }
       .print-page-wrapper {
         background: #ffffff;
-        box-shadow: 0 4px 32px rgba(0,0,0,0.18);
-        border-radius: 4px;
-        padding: 20mm 15mm;
-        /* Allow content to flow naturally - no fixed A4 height on screen */
-        min-height: unset !important;
-        overflow: visible !important;
-        page-break-inside: unset !important;
-        break-inside: unset !important;
-      }
-      /* Suppress page-break visual gaps on screen */
-      .logbook-table tr {
-        page-break-inside: auto !important;
+        box-shadow: 0 4px 40px rgba(0,0,0,0.22);
+        border-radius: 6px;
+        padding: 22mm 16mm 28mm 16mm;
+        /* Fully disable all page-break behaviour on screen */
         break-inside: auto !important;
+        page-break-inside: auto !important;
+      }
+      /* Kill every page-break trigger on screen so no white gaps appear */
+      .print-page-wrapper *,
+      .logbook-table,
+      .logbook-table tr,
+      .logbook-table td,
+      .logbook-table th {
+        break-inside: auto !important;
+        page-break-inside: auto !important;
+        break-before: auto !important;
+        page-break-before: auto !important;
+        break-after: auto !important;
+        page-break-after: auto !important;
+      }
+    }
+
+    /* ── Print-only: A4 page rules and margins ── */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 15mm 12mm 15mm 12mm;
+      }
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+      }
+      #printActionBar {
+        display: none !important;
+      }
+      .logbook-table tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
       }
     }
 
@@ -750,8 +774,7 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
     }
 
     .logbook-table tr {
-      page-break-inside: avoid !important;
-      break-inside: avoid !important;
+      /* page-break rules moved to @media print only */
     }
 
     .comp-badge {
@@ -887,16 +910,7 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
       letter-spacing: 0.05em;
     }
 
-    /* Hide action bar during actual print */
-    @media print {
-      #printActionBar {
-        display: none !important;
-      }
-      body {
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-    }
+
   </style>
 </head>
 <body>
