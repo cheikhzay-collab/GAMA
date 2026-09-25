@@ -3511,9 +3511,6 @@ export default function LessonViewerPage() {
                                 className={`exercise-body-box ${hasCustomBg ? 'has-custom-bg' : ''}`}
                                 style={{
                                   ...(isArabic ? {
-                                    borderLeft: 'none',
-                                    borderRight: '4px solid #005086',
-                                    borderRadius: '8px 4px 4px 8px',
                                     textAlign: 'right',
                                     fontFamily: arabicFont,
                                     direction: 'rtl',

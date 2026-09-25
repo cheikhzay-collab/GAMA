@@ -1563,7 +1563,7 @@ export const generateLessonHTML = (lesson, settings = {}) => {
               ${sec.points ? `<span class="modern-exercise-points">${esc(formatExercisePointsBadge(sec.points, isArabic))}</span>` : ''}
               ${exeLabel ? `<span class="exercise-label modern-exercise-title" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>${esc(exeLabel)}</span>` : ''}
             </div>
-            <div class="exercise-body modern-exercise-body" style="${customBodyStyle} ${isArabic ? 'border-left:none;border-right:3.5px solid #005086;border-radius:4px;text-align:right;direction:rtl' : ''}">
+            <div class="exercise-body modern-exercise-body" style="${customBodyStyle} ${isArabic ? 'text-align:right;direction:rtl' : ''}">
               ${exerciseBeforeHtml}
               ${renderMath(sec.content)}
               ${exerciseAfterHtml}
@@ -1584,7 +1584,7 @@ export const generateLessonHTML = (lesson, settings = {}) => {
               </div>
               ${exeLabel ? `<span class="exercise-label" ${isArabic ? `style="font-family:${arabicFontFamily}"` : ''}>${esc(exeLabel)}</span>` : ''}
             </div>
-            <div class="exercise-body" style="${customBodyStyle} ${isArabic ? 'border-left:none;border-right:4px solid #005086;border-radius:6px 4px 4px 6px;text-align:right;direction:rtl' : ''}">
+            <div class="exercise-body" style="${customBodyStyle} ${isArabic ? 'text-align:right;direction:rtl' : ''}">
               ${exerciseBeforeHtml}
               ${renderMath(sec.content)}
               ${exerciseAfterHtml}
