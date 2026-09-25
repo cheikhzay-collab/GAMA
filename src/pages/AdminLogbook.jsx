@@ -1497,87 +1497,136 @@ export default function AdminLogbook() {
 
   const renderActivityContent = (content, isHeader) => {
     if (!content) return null;
-    const lines = content.split('\n');
+
+    // 1. Normalize line breaks and merge orphan continuation lines (e.g. solitary "$J$." or "." after text)
+    const rawLines = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+    const cleanedLines = [];
+
+    for (let i = 0; i < rawLines.length; i++) {
+      let cur = rawLines[i].trim();
+
+      // Skip stray dots, periods, hyphens on their own lines
+      if (/^[.\-•▪■*,;:~]+$/.test(cur)) {
+        if (cur === '.' && cleanedLines.length > 0 && !cleanedLines[cleanedLines.length - 1].endsWith('.')) {
+          cleanedLines[cleanedLines.length - 1] += '.';
+        }
+        continue;
+      }
+
+      if (!cur) {
+        cleanedLines.push('');
+        continue;
+      }
+
+      // Check if this line is an orphan short token that belongs to the preceding line
+      // e.g. "$J$." or "$E$." or single letter with dot
+      if (cleanedLines.length > 0 && /^(\$[A-Za-z0-9_\\^+\-=*<>]+\$[.,;]?|[A-Za-z][.,;])$/.test(cur)) {
+        const prevIdx = cleanedLines.length - 1;
+        if (cleanedLines[prevIdx] && !cleanedLines[prevIdx].endsWith('.')) {
+          cleanedLines[prevIdx] += ' ' + cur;
+          continue;
+        }
+      }
+
+      cleanedLines.push(rawLines[i]);
+    }
+
+    const lines = cleanedLines;
 
     const startsWithArabic = (str) => {
       if (!str) return false;
       const clean = str.trim();
       if (!clean) return false;
-      const cleanFormatting = clean.replace(/^[\*\s_#\-✏■›✏]+/, '').trim();
+      const cleanFormatting = clean.replace(/^[\*\s_#\-✏■▪›–—]+/, '').trim();
       if (!cleanFormatting) return false;
       const firstChar = cleanFormatting.charAt(0);
       return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(firstChar);
     };
 
-    // Render **bold** inline markers
-    const renderBold = (text) => {
-      if (!text.includes('**')) return text;
-      const parts = text.split(/\*\*/);
-      return parts.map((part, i) =>
-        i % 2 === 1 ? <strong key={i} style={{ fontWeight: 800 }}>{part}</strong> : part
-      );
-    };
-
     // Detect the type and styling of a single content line
-    const getLineStyle = (raw) => {
+    const getLineStyle = (raw, index) => {
       const trimmed = raw.trim();
       if (trimmed === '') return { type: 'empty', text: '' };
 
-      const line = raw.replace(/^•\s*/, '').trim();
+      // Strip leading bullets/symbols from text: •, -, *, ▪, ■, ›, –, —
+      const clean = trimmed.replace(/^[\s•\-\*▪■›–—]+\s*/, '').trim();
+      // Plain text stripped of markdown ** for robust regex matching
+      const plain = clean.replace(/\*\*/g, '').trim();
 
-      // === TITLE === (chapitre header)
-      if ((raw.startsWith('===') && raw.endsWith('===')) || (isHeader && lines.indexOf(raw) === 0)) {
-        return { type: 'chapter', text: line.replace(/===/g, '').trim() };
+      // 1. Chapter Title: === TITLE === or first line header or all-caps header
+      if (/^={2,}\s*(.*?)\s*={2,}$/.test(clean)) {
+        const m = clean.match(/^={2,}\s*(.*?)\s*={2,}$/);
+        return { type: 'chapter', text: m[1] };
+      }
+      if ((isHeader && index === 0) || (/^[A-ZÀ-ÖØ-ß\s\-_:]{5,}$/.test(plain) && index === 0)) {
+        return { type: 'chapter', text: plain };
       }
 
-      // Roman numeral axis: I., II., III. …
-      if (/^(I{1,3}|IV|V?I{0,3}|IX|X{0,3})\.\s+/i.test(line)) {
-        return { type: 'axis', text: line };
+      // 2. Exercise Title: Exercice 4..., تمرين..., etc.
+      if (/^(exercice|تمرين|devoir|contrôle|فرض)\s*n?°?\s*\d*/i.test(plain)) {
+        return { type: 'exercise', text: clean };
       }
 
-      // Numbered subsection: 1., 2. …
-      if (/^\d+\.(\d+\.)*\s+/.test(line) || /^[a-zA-Z]\.\s+/.test(line)) {
-        return { type: 'sub', text: line };
+      // 3. Series / Section / Subheader: e.g. "Série de Révision : ...", "Partie A : ..."
+      if (/^(série|serie|partie|châpitre|chapitre|axe|محور|سلسلة|جزء)\s*[:\d\-]/i.test(plain)) {
+        return { type: 'section', text: clean };
       }
 
-      // Pedagogical blocks by keyword
-      const lower = line.toLowerCase();
+      // 4. Roman numeral axis: I., II., III. …
+      if (/^(I{1,3}|IV|V?I{0,3}|IX|X{0,3})\.\s+/i.test(plain)) {
+        return { type: 'axis', text: clean };
+      }
+
+      // 5. Numbered items: 1., 2., 3., 1), a), etc. (with or without **)
+      if (/^(\*\*)?(\d+|[a-zA-Z])[.)](\*\*)?\s+/.test(clean)) {
+        return { type: 'numbered', text: clean };
+      }
+
+      // 6. Math formula block on its own line: $$ ... $$ or starting with $$
+      if (/^\$\$.*\$\$$/.test(clean) || clean.startsWith('$$') || clean.endsWith('$$')) {
+        return { type: 'formula', text: clean };
+      }
+
+      // 7. Context / Statement introduction: "Soient ...", "On considère ...", "Dans un repère ...", "لتكن ..."
+      if (/^(soient|soit|on considère|on pose|considérons|dans un|supposons|montrer que|démontrer que|déterminer|sachant que|ليكن|لتكن|نعتبر|في معلم|بين أن|أثبت أن)/i.test(plain)) {
+        return { type: 'intro_text', text: clean };
+      }
+
+      // 8. Pedagogical blocks by keyword: Définition, Propriété, Théorème, Remarque, Application, Exemple...
+      const lower = plain.toLowerCase();
       const pedagKeywords = {
-        activité: { color: '#d97706', bg: 'rgba(245,158,11,0.06)', label: '▸' },
-        نشاط:     { color: '#d97706', bg: 'rgba(245,158,11,0.06)', label: '▸' },
-        définition: { color: '#4f46e5', bg: 'rgba(79,70,229,0.06)', label: '▸' },
-        تعريف:      { color: '#4f46e5', bg: 'rgba(79,70,229,0.06)', label: '▸' },
-        propriété: { color: '#7c3aed', bg: 'rgba(124,58,237,0.06)', label: '▸' },
-        خاصية:     { color: '#7c3aed', bg: 'rgba(124,58,237,0.06)', label: '▸' },
-        théorème: { color: '#db2777', bg: 'rgba(219,39,119,0.06)', label: '▸' },
-        مبرهنة:   { color: '#db2777', bg: 'rgba(219,39,119,0.06)', label: '▸' },
-        remarque: { color: '#475569', bg: 'rgba(71,85,105,0.06)', label: '▸' },
-        ملاحظة:   { color: '#475569', bg: 'rgba(71,85,105,0.06)', label: '▸' },
-        application: { color: '#059669', bg: 'rgba(5,150,105,0.06)', label: '▸' },
-        تطبيق:       { color: '#059669', bg: 'rgba(5,150,105,0.06)', label: '▸' },
-        correction: { color: '#dc2626', bg: 'rgba(220,38,38,0.06)', label: '▸' },
-        تصحيح:      { color: '#dc2626', bg: 'rgba(220,38,38,0.06)', label: '▸' },
-        exemple: { color: '#0284c7', bg: 'rgba(2,132,199,0.06)', label: '▸' },
-        مثال:    { color: '#0284c7', bg: 'rgba(2,132,199,0.06)', label: '▸' },
+        activité:    { color: '#d97706', bg: 'rgba(245,158,11,0.06)' },
+        نشاط:        { color: '#d97706', bg: 'rgba(245,158,11,0.06)' },
+        définition:  { color: '#4f46e5', bg: 'rgba(79,70,229,0.06)' },
+        تعريف:       { color: '#4f46e5', bg: 'rgba(79,70,229,0.06)' },
+        propriété:   { color: '#7c3aed', bg: 'rgba(124,58,237,0.06)' },
+        خاصية:       { color: '#7c3aed', bg: 'rgba(124,58,237,0.06)' },
+        théorème:    { color: '#db2777', bg: 'rgba(219,39,119,0.06)' },
+        مبرهنة:      { color: '#db2777', bg: 'rgba(219,39,119,0.06)' },
+        remarque:    { color: '#475569', bg: 'rgba(71,85,105,0.06)' },
+        ملاحظة:      { color: '#475569', bg: 'rgba(71,85,105,0.06)' },
+        application: { color: '#059669', bg: 'rgba(5,150,105,0.06)' },
+        تطبيق:       { color: '#059669', bg: 'rgba(5,150,105,0.06)' },
+        correction:  { color: '#dc2626', bg: 'rgba(220,38,38,0.06)' },
+        تصحيح:       { color: '#dc2626', bg: 'rgba(220,38,38,0.06)' },
+        exemple:     { color: '#0284c7', bg: 'rgba(2,132,199,0.06)' },
+        مثال:        { color: '#0284c7', bg: 'rgba(2,132,199,0.06)' },
       };
       for (const [kw, style] of Object.entries(pedagKeywords)) {
-        if (lower.startsWith(`**${kw}`) || lower.startsWith(kw)) {
-          return { type: 'block', text: line, ...style };
+        if (lower.startsWith(kw)) {
+          return { type: 'block', text: clean, ...style };
         }
       }
 
-      // Exercise
-      if (/^(exercice|تمرين)\s*n?°?\s*\d*/i.test(line)) {
-        return { type: 'exercise', text: line };
-      }
-
-      return { type: 'bullet', text: line };
+      // 9. If the line originally had an explicit bullet marker (•, -, *, etc.), treat as bullet, otherwise normal text
+      const hadBullet = /^[\s•\-\*▪■›–—]/.test(trimmed);
+      return { type: hadBullet ? 'bullet' : 'text', text: clean };
     };
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', padding: '2px 0' }}>
         {lines.map((raw, idx) => {
-          const { type, text, color, bg } = getLineStyle(raw);
+          const { type, text, color, bg } = getLineStyle(raw, idx);
 
           if (type === 'empty') {
             return <div key={idx} style={{ minHeight: `${gridLineHeight}px`, height: `${gridLineHeight}px` }} />;
@@ -1592,24 +1641,68 @@ export default function AdminLogbook() {
             textAlign: lineTextAlign,
             boxSizing: 'border-box',
             fontFamily: `'${isArabic ? arFont : frFont}', 'Outfit', 'Cairo', sans-serif`,
-            margin: '0'
+            margin: '0',
+            lineHeight: `${gridLineHeight}px`,
+            minHeight: `${gridLineHeight}px`,
+            color: colorInk,
+            fontSize: baseFontSize
           };
 
           if (type === 'chapter') {
             return (
               <div key={idx} style={{
                 ...commonStyle,
-                fontSize: `calc(${baseFontSize} * 1.3)`,
+                fontSize: `calc(${baseFontSize} * 1.25)`,
                 fontWeight: 800,
                 color: colorChapter,
-                minHeight: `${gridLineHeight}px`,
-                lineHeight: `${gridLineHeight}px`,
-                marginBottom: '0px',
-                display: 'flex',
-                alignItems: 'flex-end',
-                justifyContent: !isArabic ? 'flex-start' : 'center',
+                letterSpacing: '-0.01em',
                 textTransform: 'uppercase',
-                transform: 'translateY(3px)'
+                borderBottom: `1.5px solid ${hexToRgba(colorChapter, 0.2)}`,
+                paddingBottom: '2px',
+                marginBottom: '4px',
+                display: 'block'
+              }}>
+                {renderWithMath(text)}
+              </div>
+            );
+          }
+
+          if (type === 'exercise') {
+            return (
+              <div key={idx} style={{
+                ...commonStyle,
+                fontSize: baseFontSize,
+                fontWeight: 700,
+                color: colorExercise,
+                background: hexToRgba(colorExercise, 0.08),
+                borderLeft: lineDirection === 'ltr' ? `3px solid ${colorExercise}` : 'none',
+                borderRight: lineDirection === 'rtl' ? `3px solid ${colorExercise}` : 'none',
+                borderRadius: '4px',
+                padding: '0 0.55rem',
+                margin: '3px 0 2px 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem'
+              }}>
+                <span style={{ fontSize: '0.85em' }}>✏️</span>
+                <span>{renderWithMath(text)}</span>
+              </div>
+            );
+          }
+
+          if (type === 'section') {
+            return (
+              <div key={idx} style={{
+                ...commonStyle,
+                fontSize: `calc(${baseFontSize} * 1.05)`,
+                fontWeight: 700,
+                color: '#4f46e5',
+                borderLeft: lineDirection === 'ltr' ? '2.5px solid #6366f1' : 'none',
+                borderRight: lineDirection === 'rtl' ? '2.5px solid #6366f1' : 'none',
+                paddingLeft: lineDirection === 'ltr' ? '0.5rem' : '0',
+                paddingRight: lineDirection === 'rtl' ? '0.5rem' : '0',
+                margin: '3px 0 1px 0',
+                display: 'block'
               }}>
                 {renderWithMath(text)}
               </div>
@@ -1625,36 +1718,56 @@ export default function AdminLogbook() {
                 color: colorAxis,
                 borderLeft: lineDirection === 'ltr' ? `3px solid ${colorAxis}` : 'none',
                 borderRight: lineDirection === 'rtl' ? `3px solid ${colorAxis}` : 'none',
-                paddingLeft: lineDirection === 'ltr' ? '0.65rem' : '0',
-                paddingRight: lineDirection === 'rtl' ? '0.65rem' : '0',
-                minHeight: `${gridLineHeight}px`,
-                lineHeight: `${gridLineHeight}px`,
-                marginBottom: '0px',
-                display: 'flex',
-                alignItems: 'flex-end',
-                transform: 'translateY(3px)'
+                paddingLeft: lineDirection === 'ltr' ? '0.55rem' : '0',
+                paddingRight: lineDirection === 'rtl' ? '0.55rem' : '0',
+                display: 'block'
               }}>
                 {renderWithMath(text)}
               </div>
             );
           }
 
-          if (type === 'sub') {
+          if (type === 'numbered') {
             return (
               <div key={idx} style={{
                 ...commonStyle,
-                fontSize: `calc(${baseFontSize} * 1.025)`,
-                fontWeight: 600,
-                color: colorInk,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                minHeight: `${gridLineHeight}px`,
-                lineHeight: `${gridLineHeight}px`,
-                transform: 'translateY(3px)'
+                fontSize: baseFontSize,
+                fontWeight: 500,
+                paddingLeft: lineDirection === 'ltr' ? '0.75rem' : '0',
+                paddingRight: lineDirection === 'rtl' ? '0.75rem' : '0',
+                display: 'block'
               }}>
-                <span style={{ color: '#3b82f6', fontWeight: 900 }}>›</span>
-                <span>{renderWithMath(text)}</span>
+                {renderWithMath(text)}
+              </div>
+            );
+          }
+
+          if (type === 'formula') {
+            return (
+              <div key={idx} style={{
+                ...commonStyle,
+                fontSize: baseFontSize,
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '2px 0',
+                margin: '2px 0'
+              }}>
+                {renderWithMath(text)}
+              </div>
+            );
+          }
+
+          if (type === 'intro_text') {
+            return (
+              <div key={idx} style={{
+                ...commonStyle,
+                fontSize: baseFontSize,
+                fontWeight: 500,
+                paddingLeft: lineDirection === 'ltr' ? '0.35rem' : '0',
+                paddingRight: lineDirection === 'rtl' ? '0.35rem' : '0',
+                display: 'block'
+              }}>
+                {renderWithMath(text)}
               </div>
             );
           }
@@ -1670,59 +1783,37 @@ export default function AdminLogbook() {
                 borderLeft: lineDirection === 'ltr' ? `2px solid ${color}` : 'none',
                 borderRight: lineDirection === 'rtl' ? `2px solid ${color}` : 'none',
                 borderRadius: '4px',
-                padding: '0 0.55rem 0 0.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.3rem',
-                minHeight: `${gridLineHeight}px`,
-                lineHeight: `${gridLineHeight}px`,
-                transform: 'translateY(3px)'
+                padding: '0 0.55rem',
+                display: 'block'
               }}>
                 {renderWithMath(text)}
               </div>
             );
           }
 
-          if (type === 'exercise') {
+          if (type === 'bullet') {
             return (
-              <div key={idx} style={{
+              <div key={idx} className="notebook-line-text" style={{ 
                 ...commonStyle,
-                fontSize: baseFontSize,
-                fontWeight: 600,
-                color: colorExercise,
-                background: hexToRgba(colorExercise, 0.05),
-                borderLeft: lineDirection === 'ltr' ? `2px solid ${colorExercise}` : 'none',
-                borderRight: lineDirection === 'rtl' ? `2px solid ${colorExercise}` : 'none',
-                borderRadius: '4px',
-                padding: '0 0.55rem 0 0.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.3rem',
-                minHeight: `${gridLineHeight}px`,
-                lineHeight: `${gridLineHeight}px`,
-                transform: 'translateY(3px)'
+                display: 'flex', 
+                alignItems: 'baseline', 
+                gap: '0.4rem',
+                paddingLeft: lineDirection === 'ltr' ? '0.4rem' : '0',
+                paddingRight: lineDirection === 'rtl' ? '0.4rem' : '0'
               }}>
-                <span style={{ fontWeight: 900 }}>✏</span>
-                <span>{renderWithMath(text)}</span>
+                <span style={{ color: '#64748b', fontSize: '0.45rem', flexShrink: 0, transform: 'translateY(-1px)' }}>■</span>
+                <span style={{ flex: 1 }}>{renderWithMath(text)}</span>
               </div>
             );
           }
 
-          // Default bullet
+          // Default text
           return (
             <div key={idx} className="notebook-line-text" style={{ 
               ...commonStyle,
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.35rem',
-              minHeight: `${gridLineHeight}px`,
-              lineHeight: `${gridLineHeight}px`,
-              color: colorInk,
-              fontSize: baseFontSize,
-              transform: 'translateY(3px)'
+              display: 'block'
             }}>
-              <span style={{ color: '#64748b', fontSize: '0.55rem', flexShrink: 0 }}>■</span>
-              <span>{renderWithMath(text)}</span>
+              {renderWithMath(text)}
             </div>
           );
         })}
@@ -1747,18 +1838,30 @@ export default function AdminLogbook() {
           min-height: 100px;
         }
 
-        /* Force KaTeX formulas in notebook cells to fit within the grid line height */
+        /* Harmonize KaTeX formulas with notebook text size and baseline alignment */
         .squared-grid-cell .katex {
-          font-size: 0.85em !important;
-          line-height: 1.1 !important;
+          font-size: 1.04em !important;
+          line-height: inherit !important;
+          font-weight: inherit !important;
+          white-space: nowrap !important;
+        }
+        .squared-grid-cell .katex-html {
+          vertical-align: -0.04em !important;
+        }
+        .squared-grid-cell .inline-math-container {
+          display: inline !important;
+          vertical-align: baseline !important;
+          white-space: nowrap !important;
         }
         .squared-grid-cell .katex-display {
-          margin: 0 !important;
-          padding: 0 !important;
-          display: inline !important;
+          margin: 4px 0 !important;
+          padding: 2px 0 !important;
+          display: block !important;
+          text-align: center !important;
         }
         .squared-grid-cell .katex-display .katex {
           display: inline-block !important;
+          font-size: 1.08em !important;
         }
 
         .notebook-line-text {
@@ -1766,7 +1869,7 @@ export default function AdminLogbook() {
           font-size: ${baseFontSize};
           line-height: ${gridLineHeight}px; /* Aligns text with grid size */
           color: ${colorInk};
-          font-weight: 600;
+          font-weight: 500;
           white-space: pre-wrap;
         }
 

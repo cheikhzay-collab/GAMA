@@ -175,64 +175,128 @@ const startsWithArabic = (str) => {
   return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(firstChar);
 };
 
-const getLineStyle = (raw, isHeader, index, totalLines, colors) => {
+const getLineStyle = (raw, isHeader, index) => {
   const trimmed = raw.trim();
   if (trimmed === '') return { type: 'empty', text: '' };
 
-  const line = raw.replace(/^•\s*/, '').trim();
+  // Strip leading bullets/symbols: •, -, *, ▪, ■, ›, –, —
+  const clean = trimmed.replace(/^[\s•\-\*▪■›–—]+\s*/, '').trim();
+  // Plain text stripped of markdown ** for robust matching
+  const plain = clean.replace(/\*\*/g, '').trim();
 
-  if ((raw.startsWith('===') && raw.endsWith('===')) || (isHeader && index === 0)) {
-    return { type: 'chapter', text: line.replace(/===/g, '').trim() };
+  // 1. Chapter Title: === TITLE === or first line header or all-caps header
+  if (/^={2,}\s*(.*?)\s*={2,}$/.test(clean)) {
+    const m = clean.match(/^={2,}\s*(.*?)\s*={2,}$/);
+    return { type: 'chapter', text: m[1] };
   }
-  if (/^(I{1,3}|IV|V?I{0,3}|IX|X{0,3})\.\s+/i.test(line)) {
-    return { type: 'axis', text: line };
-  }
-  if (/^\d+\.(\d+\.)*\s+/.test(line) || /^[a-zA-Z]\.\s+/.test(line)) {
-    return { type: 'sub', text: line };
+  if ((isHeader && index === 0) || (/^[A-ZÀ-ÖØ-ß\s\-_:]{5,}$/.test(plain) && index === 0)) {
+    return { type: 'chapter', text: plain };
   }
 
-  const lower = line.toLowerCase();
+  // 2. Exercise Title: Exercice 4..., تمرين..., etc.
+  if (/^(exercice|تمرين|devoir|contrôle|فرض)\s*n?°?\s*\d*/i.test(plain)) {
+    return { type: 'exercise', text: clean };
+  }
+
+  // 3. Series / Section / Subheader: e.g. "Série de Révision : ...", "Partie A : ..."
+  if (/^(série|serie|partie|châpitre|chapitre|axe|محور|سلسلة|جزء)\s*[:\d\-]/i.test(plain)) {
+    return { type: 'section', text: clean };
+  }
+
+  // 4. Roman numeral axis: I., II., III. …
+  if (/^(I{1,3}|IV|V?I{0,3}|IX|X{0,3})\.\s+/i.test(plain)) {
+    return { type: 'axis', text: clean };
+  }
+
+  // 5. Numbered items: 1., 2., 3., 1), a), etc. (with or without **)
+  if (/^(\*\*)?(\d+|[a-zA-Z])[.)](\*\*)?\s+/.test(clean)) {
+    return { type: 'numbered', text: clean };
+  }
+
+  // 6. Math formula block on its own line: $$ ... $$ or starting with $$
+  if (/^\$\$.*\$\$$/.test(clean) || clean.startsWith('$$') || clean.endsWith('$$')) {
+    return { type: 'formula', text: clean };
+  }
+
+  // 7. Context / Statement introduction: "Soient ...", "On considère ...", "Dans un repère ...", "لتكن ..."
+  if (/^(soient|soit|on considère|on pose|considérons|dans un|supposons|montrer que|démontrer que|déterminer|sachant que|ليكن|لتكن|نعتبر|في معلم|بين أن|أثبت أن)/i.test(plain)) {
+    return { type: 'intro_text', text: clean };
+  }
+
+  // 8. Pedagogical blocks by keyword
+  const lower = plain.toLowerCase();
   const pedagKeywords = {
-    activité: { color: '#d97706', bg: 'rgba(245,158,11,0.05)', label: '▸' },
-    نشاط:     { color: '#d97706', bg: 'rgba(245,158,11,0.05)', label: '▸' },
-    définition: { color: '#4f46e5', bg: 'rgba(79,70,229,0.05)', label: '▸' },
-    تعريف:      { color: '#4f46e5', bg: 'rgba(79,70,229,0.05)', label: '▸' },
-    propriété: { color: '#7c3aed', bg: 'rgba(124,58,237,0.05)', label: '▸' },
-    خاصية:     { color: '#7c3aed', bg: 'rgba(124,58,237,0.05)', label: '▸' },
-    théorème: { color: '#db2777', bg: 'rgba(219,39,119,0.05)', label: '▸' },
-    مبرهنة:   { color: '#db2777', bg: 'rgba(219,39,119,0.05)', label: '▸' },
-    remarque: { color: '#475569', bg: 'rgba(71,85,105,0.05)', label: '▸' },
-    ملاحظة:   { color: '#475569', bg: 'rgba(71,85,105,0.05)', label: '▸' },
-    application: { color: '#059669', bg: 'rgba(5,150,105,0.05)', label: '▸' },
-    تطبيق:       { color: '#059669', bg: 'rgba(5,150,105,0.05)', label: '▸' },
-    correction: { color: '#dc2626', bg: 'rgba(220,38,38,0.05)', label: '▸' },
-    تصحيح:      { color: '#dc2626', bg: 'rgba(220,38,38,0.05)', label: '▸' },
-    exemple: { color: '#0284c7', bg: 'rgba(2,132,199,0.05)', label: '▸' },
-    مثال:    { color: '#0284c7', bg: 'rgba(2,132,199,0.05)', label: '▸' },
+    activité:    { color: '#d97706', bg: 'rgba(245,158,11,0.06)' },
+    نشاط:        { color: '#d97706', bg: 'rgba(245,158,11,0.06)' },
+    définition:  { color: '#4f46e5', bg: 'rgba(79,70,229,0.06)' },
+    تعريف:       { color: '#4f46e5', bg: 'rgba(79,70,229,0.06)' },
+    propriété:   { color: '#7c3aed', bg: 'rgba(124,58,237,0.06)' },
+    خاصية:       { color: '#7c3aed', bg: 'rgba(124,58,237,0.06)' },
+    théorème:    { color: '#db2777', bg: 'rgba(219,39,119,0.06)' },
+    مبرهنة:      { color: '#db2777', bg: 'rgba(219,39,119,0.06)' },
+    remarque:    { color: '#475569', bg: 'rgba(71,85,105,0.06)' },
+    ملاحظة:      { color: '#475569', bg: 'rgba(71,85,105,0.06)' },
+    application: { color: '#059669', bg: 'rgba(5,150,105,0.06)' },
+    تطبيق:       { color: '#059669', bg: 'rgba(5,150,105,0.06)' },
+    correction:  { color: '#dc2626', bg: 'rgba(220,38,38,0.06)' },
+    تصحيح:       { color: '#dc2626', bg: 'rgba(220,38,38,0.06)' },
+    exemple:     { color: '#0284c7', bg: 'rgba(2,132,199,0.06)' },
+    مثال:        { color: '#0284c7', bg: 'rgba(2,132,199,0.06)' },
   };
 
   for (const [kw, style] of Object.entries(pedagKeywords)) {
-    if (lower.startsWith(`**${kw}`) || lower.startsWith(kw)) {
-      return { type: 'block', text: line, ...style };
+    if (lower.startsWith(kw)) {
+      return { type: 'block', text: clean, ...style };
     }
   }
 
-  if (/^(exercice|تمرين)\s*n?°?\s*\d*/i.test(line)) {
-    return { type: 'exercise', text: line };
-  }
-
-  return { type: 'bullet', text: line };
+  // 9. If the line originally had an explicit bullet marker (•, -, *, etc.), treat as bullet, otherwise normal text
+  const hadBullet = /^[\s•\-\*▪■›–—]/.test(trimmed);
+  return { type: hadBullet ? 'bullet' : 'text', text: clean };
 };
 
 const renderActivityCellHTML = (content, isHeader, isArMode, styleConfig) => {
   if (!content) return '';
-  const lines = content.split('\n');
+  
+  // 1. Normalize line breaks and merge orphan continuation lines
+  const rawLines = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  const cleanedLines = [];
+
+  for (let i = 0; i < rawLines.length; i++) {
+    let cur = rawLines[i].trim();
+
+    // Skip stray dots, periods, hyphens on their own lines
+    if (/^[.\-•▪■*,;:~]+$/.test(cur)) {
+      if (cur === '.' && cleanedLines.length > 0 && !cleanedLines[cleanedLines.length - 1].endsWith('.')) {
+        cleanedLines[cleanedLines.length - 1] += '.';
+      }
+      continue;
+    }
+
+    if (!cur) {
+      cleanedLines.push('');
+      continue;
+    }
+
+    // Check if this line is an orphan short token that belongs to the preceding line
+    if (cleanedLines.length > 0 && /^(\$[A-Za-z0-9_\\^+\-=*<>]+\$[.,;]?|[A-Za-z][.,;])$/.test(cur)) {
+      const prevIdx = cleanedLines.length - 1;
+      if (cleanedLines[prevIdx] && !cleanedLines[prevIdx].endsWith('.')) {
+        cleanedLines[prevIdx] += ' ' + cur;
+        continue;
+      }
+    }
+
+    cleanedLines.push(rawLines[i]);
+  }
+
+  const lines = cleanedLines;
   const gridLineHeight = styleConfig.gridLineHeight || 20;
 
-  let html = `<div class="activities-wrapper" style="display:flex;flex-direction:column;gap:0px;">`;
+  let html = `<div class="activities-wrapper" style="display:flex;flex-direction:column;gap:3px;padding:2px 0;">`;
 
   lines.forEach((raw, idx) => {
-    const { type, text, color, bg } = getLineStyle(raw, isHeader, idx, lines.length, styleConfig);
+    const { type, text, color, bg } = getLineStyle(raw, isHeader, idx);
 
     if (type === 'empty') {
       html += `<div style="min-height:${gridLineHeight}px;height:${gridLineHeight}px;"></div>`;
@@ -244,29 +308,42 @@ const renderActivityCellHTML = (content, isHeader, isArMode, styleConfig) => {
     const align = isArabic ? 'right' : 'left';
     const font = isArabic ? styleConfig.arFont : styleConfig.frFont;
 
-    const commonStyle = `direction:${direction};text-align:${align};font-family:'${font}',sans-serif;margin:0;line-height:${gridLineHeight}px;min-height:${gridLineHeight}px;box-sizing:border-box;`;
+    const commonStyle = `direction:${direction};text-align:${align};font-family:'${font}',sans-serif;margin:0;line-height:${gridLineHeight}px;min-height:${gridLineHeight}px;box-sizing:border-box;color:${styleConfig.colorInk};font-size:${styleConfig.baseFontSize};`;
 
     if (type === 'chapter') {
-      html += `<div style="${commonStyle}font-size:calc(${styleConfig.baseFontSize} * 1.35);font-weight:800;color:${styleConfig.colorChapter};text-transform:uppercase;display:flex;align-items:flex-end;justify-content:${isArabic ? 'center' : 'flex-start'};transform:translateY(3px);">${renderLineContent(text, isArabic)}</div>`;
-    } 
-    else if (type === 'axis') {
-      const borderSide = direction === 'ltr' ? 'border-left' : 'border-right';
-      html += `<div style="${commonStyle}font-size:calc(${styleConfig.baseFontSize} * 1.15);font-weight:700;color:${styleConfig.colorAxis};${borderSide}:3px solid ${styleConfig.colorAxis};padding-left:${direction === 'ltr' ? '0.65rem' : '0'};padding-right:${direction === 'rtl' ? '0.65rem' : '0'};display:flex;align-items:flex-end;transform:translateY(3px);">${renderLineContent(text, isArabic)}</div>`;
-    } 
-    else if (type === 'sub') {
-      html += `<div style="${commonStyle}font-size:calc(${styleConfig.baseFontSize} * 1.05);font-weight:600;color:${styleConfig.colorInk};display:flex;align-items:center;gap:0.35rem;transform:translateY(3px);"><span style="color:#4f46e5;font-weight:900;">›</span><span>${renderLineContent(text, isArabic)}</span></div>`;
-    } 
-    else if (type === 'block') {
-      const borderSide = direction === 'ltr' ? 'border-left' : 'border-right';
-      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};font-weight:600;color:${color};background:${bg};${borderSide}:2px solid ${color};border-radius:0px;padding:0 0.55rem;display:flex;align-items:center;gap:0.3rem;transform:translateY(3px);">${renderLineContent(text, isArabic)}</div>`;
+      html += `<div style="${commonStyle}font-size:calc(${styleConfig.baseFontSize} * 1.25);font-weight:800;color:${styleConfig.colorChapter};letter-spacing:-0.01em;text-transform:uppercase;border-bottom:1.5px solid rgba(15,23,42,0.15);padding-bottom:2px;margin-bottom:4px;display:block;">${renderLineContent(text, isArabic)}</div>`;
     } 
     else if (type === 'exercise') {
       const borderSide = direction === 'ltr' ? 'border-left' : 'border-right';
-      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};font-weight:600;color:${styleConfig.colorExercise};background:rgba(217,119,6,0.04);${borderSide}:2px solid ${styleConfig.colorExercise};border-radius:0px;padding:0 0.55rem;display:flex;align-items:center;gap:0.3rem;transform:translateY(3px);"><span style="font-weight:900;">✏</span><span>${renderLineContent(text, isArabic)}</span></div>`;
+      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};font-weight:700;color:${styleConfig.colorExercise};background:rgba(217,119,6,0.06);${borderSide}:3px solid ${styleConfig.colorExercise};border-radius:4px;padding:0 0.55rem;margin:3px 0 2px 0;display:flex;align-items:center;gap:0.4rem;"><span style="font-size:0.85em;">✏️</span><span>${renderLineContent(text, isArabic)}</span></div>`;
     } 
+    else if (type === 'section') {
+      const borderSide = direction === 'ltr' ? 'border-left' : 'border-right';
+      html += `<div style="${commonStyle}font-size:calc(${styleConfig.baseFontSize} * 1.05);font-weight:700;color:#4f46e5;${borderSide}:2.5px solid #6366f1;padding-left:${direction === 'ltr' ? '0.5rem' : '0'};padding-right:${direction === 'rtl' ? '0.5rem' : '0'};margin:3px 0 1px 0;display:block;">${renderLineContent(text, isArabic)}</div>`;
+    }
+    else if (type === 'axis') {
+      const borderSide = direction === 'ltr' ? 'border-left' : 'border-right';
+      html += `<div style="${commonStyle}font-size:calc(${styleConfig.baseFontSize} * 1.1);font-weight:700;color:${styleConfig.colorAxis};${borderSide}:3px solid ${styleConfig.colorAxis};padding-left:${direction === 'ltr' ? '0.55rem' : '0'};padding-right:${direction === 'rtl' ? '0.55rem' : '0'};display:block;">${renderLineContent(text, isArabic)}</div>`;
+    } 
+    else if (type === 'numbered') {
+      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};font-weight:500;padding-left:${direction === 'ltr' ? '0.75rem' : '0'};padding-right:${direction === 'rtl' ? '0.75rem' : '0'};display:block;">${renderLineContent(text, isArabic)}</div>`;
+    }
+    else if (type === 'formula') {
+      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};display:flex;justify-content:center;padding:2px 0;margin:2px 0;">${renderLineContent(text, isArabic)}</div>`;
+    }
+    else if (type === 'intro_text') {
+      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};font-weight:500;padding-left:${direction === 'ltr' ? '0.35rem' : '0'};padding-right:${direction === 'rtl' ? '0.35rem' : '0'};display:block;">${renderLineContent(text, isArabic)}</div>`;
+    }
+    else if (type === 'block') {
+      const borderSide = direction === 'ltr' ? 'border-left' : 'border-right';
+      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};font-weight:600;color:${color};background:${bg};${borderSide}:2px solid ${color};border-radius:4px;padding:0 0.55rem;display:block;">${renderLineContent(text, isArabic)}</div>`;
+    } 
+    else if (type === 'bullet') {
+      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};display:flex;align-items:baseline;gap:0.4rem;padding-left:${direction === 'ltr' ? '0.4rem' : '0'};padding-right:${direction === 'rtl' ? '0.4rem' : '0'};"><span style="color:#64748b;font-size:0.45rem;flex-shrink:0;transform:translateY(-1px);">■</span><span style="flex:1;">${renderLineContent(text, isArabic)}</span></div>`;
+    }
     else {
-      // Default bullet
-      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};color:${styleConfig.colorInk};display:flex;align-items:center;gap:0.35rem;transform:translateY(3px);"><span style="color:#64748b;font-size:0.55rem;flex-shrink:0;">■</span><span style="flex:1;">${renderLineContent(text, isArabic)}</span></div>`;
+      // Default clean paragraph
+      html += `<div style="${commonStyle}display:block;">${renderLineContent(text, isArabic)}</div>`;
     }
   });
 
@@ -689,6 +766,29 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
     }
     .seyes-grid-cell * {
       background: transparent !important;
+    }
+    .seyes-grid-cell .katex {
+      font-size: 1.04em !important;
+      line-height: inherit !important;
+      font-weight: inherit !important;
+      white-space: nowrap !important;
+    }
+    .seyes-grid-cell .katex-html {
+      vertical-align: -0.04em !important;
+    }
+    .seyes-grid-cell .inline-math-container {
+      display: inline !important;
+      vertical-align: baseline !important;
+      white-space: nowrap !important;
+    }
+    .seyes-grid-cell .katex-display {
+      margin: 4px 0 !important;
+      display: block !important;
+      text-align: center !important;
+    }
+    .seyes-grid-cell .katex-display .katex {
+      display: inline-block !important;
+      font-size: 1.08em !important;
     }
     
     .normal-cell {
