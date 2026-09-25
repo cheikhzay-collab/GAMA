@@ -525,35 +525,7 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
       }
     }
 
-    /* Print Hint Toast */
-    .print-hint {
-      position: fixed;
-      top: 15px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(135deg, #1e1b4b 0%, #311042 100%);
-      color: #ffffff;
-      padding: 10px 24px;
-      border-radius: 30px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-      z-index: 99999;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border: 1px solid rgba(255,255,255,0.15);
-      animation: slideDownHint 0.4s ease;
-    }
-    @media print {
-      .print-hint {
-        display: none !important;
-      }
-    }
-    @keyframes slideDownHint {
-      from { top: -50px; opacity: 0; }
-      to { top: 15px; opacity: 1; }
-    }
+
 
     /* =========================================================================
        PREMIUM OFFICIAL HEADER (رأس وثيقة رسمية رفيع المستوى)
@@ -915,30 +887,20 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
       letter-spacing: 0.05em;
     }
 
-    /* Hide elements in print dialog */
+    /* Hide action bar during actual print */
     @media print {
-      .print-hint {
+      #printActionBar {
         display: none !important;
       }
       body {
-        margin: 0;
-        padding: 0;
+        margin: 0 !important;
+        padding: 0 !important;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- Screen Top Notification -->
-  <div id="printHint" class="print-hint">
-    <span>💡</span>
-    <span>
-      ${isArMode 
-        ? "اضغط على Ctrl+P للطباعة. تأكد من تمكين 'خيارات الخلفية' (Background Graphics) للحصول على أفضل جودة للشبكة والألوان." 
-        : "Appuyez sur Ctrl+P pour lancer l'impression. Activez 'Graphismes d'arrière-plan' pour imprimer les couleurs et la grille."
-      }
-    </span>
-  </div>
 
   <div class="print-page-wrapper">
     
@@ -1082,24 +1044,66 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
 
   </div>
 
+  <div id="printActionBar" style="
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 99999;
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+    font-family: 'Outfit', 'Cairo', sans-serif;
+    gap: 12px;
+    flex-wrap: wrap;
+  ">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:1.3rem;font-weight:950;letter-spacing:-0.04em;color:#fff;">L'CONQ</span>
+      <span style="font-size:0.8rem;color:rgba(255,255,255,0.7);font-weight:600;">
+        ${isArMode ? '| معاينة دفتر النصوص — اضغط "طباعة" عند الاستعداد' : '| Aperçu du Cahier de Textes — Cliquez sur "Imprimer" quand vous êtes prêt'}
+      </span>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button onclick="window.print()" style="
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 22px;
+        font-size: 0.88rem;
+        font-weight: 800;
+        cursor: pointer;
+        letter-spacing: 0.04em;
+        box-shadow: 0 4px 14px rgba(99,102,241,0.4);
+        transition: opacity 0.2s;
+      " onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+        🖨️ ${isArMode ? 'طباعة / تحميل PDF' : 'Imprimer / PDF'}
+      </button>
+      <button onclick="window.close()" style="
+        background: rgba(255,255,255,0.12);
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+      " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+        ✕ ${isArMode ? 'إغلاق' : 'Fermer'}
+      </button>
+    </div>
+  </div>
+
   <script>
-    async function printNow() {
-      // Wait for math equations & Google Fonts to load
-      await document.fonts.ready;
-      await new Promise(r => setTimeout(r, 800));
-      
-      const hint = document.getElementById('printHint');
-      if (hint) hint.style.display = 'none';
-      
-      window.print();
-      
-      if (hint) {
-        setTimeout(() => {
-          hint.style.display = 'flex';
-        }, 1000);
-      }
-    }
-    printNow();
+    // Add top padding to body to avoid content hiding behind the action bar
+    document.body.style.paddingTop = '60px';
+    // Hide action bar during actual print
+    const bar = document.getElementById('printActionBar');
+    window.addEventListener('beforeprint', () => { if (bar) bar.style.display = 'none'; document.body.style.paddingTop = '0'; });
+    window.addEventListener('afterprint', () => { if (bar) bar.style.display = 'flex'; document.body.style.paddingTop = '60px'; });
   </script>
 </body>
 </html>
