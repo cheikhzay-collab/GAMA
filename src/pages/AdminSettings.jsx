@@ -5,6 +5,11 @@ import { getAllClasses } from '../services/classService';
 import { 
   getAiSettingsConfig, 
   saveAiSettingsConfig,
+  getBrandingConfig,
+  getFlashcardSettingsConfig,
+  getPdfSettingsConfig,
+  getOmrScannerSettingsConfig,
+  getWhatsAppSettingsConfig,
   getSchoolHolidaysConfig, 
   saveSchoolHolidaysConfig, 
   getTeacherScheduleConfig, 
