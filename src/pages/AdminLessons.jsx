@@ -11,12 +11,14 @@ import {
   CheckCircle, XCircle, Library, PlusCircle, AlertCircle, Languages,
   Edit3, CheckSquare, Square, MinusSquare, X, Check, Filter, Layers,
   CheckCheck, HelpCircle, Loader2, Calendar, ArrowUpDown,
-  LayoutGrid, List, User, ChevronRight, RotateCcw
+  LayoutGrid, List, User, ChevronRight, RotateCcw,
+  Download, FileCode, Printer
 } from 'lucide-react';
 import TranslateModal from '../components/TranslateModal';
 import LessonBulkEditModal from '../components/LessonBulkEditModal';
 import { renderWithMath } from '../utils/mathRenderer';
 import { normalizeLevel } from '../utils/levelHelpers';
+import { openLessonPrintWindow } from '../utils/generateLessonPDF';
 
 const getLevelLabel = (rawLevel) => {
   const level = normalizeLevel(rawLevel);
@@ -94,7 +96,9 @@ export default function AdminLessons() {
   const [selectedLessonIds, setSelectedLessonIds] = useState([]);
   const [showBulkEditModal, setShowBulkEditModal] = useState(false);
   const [showConfirmBulkDelete, setShowConfirmBulkDelete] = useState(false);
+  const [showBulkDownloadModal, setShowBulkDownloadModal] = useState(false);
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+  const [isBulkDownloading, setIsBulkDownloading] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'active' | 'inactive'
   const [sortOrder, setSortOrder] = useState('newest'); // 'newest' | 'oldest'
   const [viewMode, setViewMode] = useState('table'); // 'table' | 'cards'
@@ -521,6 +525,73 @@ ${sectionsContentText}
     } finally {
       setIsBulkProcessing(false);
     }
+  };
+
+  // Bulk Download Helpers
+  const fetchFullSelectedLessons = async () => {
+    setIsBulkDownloading(true);
+    try {
+      const fullList = await Promise.all(
+        selectedLessonIds.map(async (id) => {
+          const inMemory = lessons.find(l => l.id === id);
+          if (inMemory?.content?.sections && inMemory.content.sections.length > 0) {
+            return inMemory;
+          }
+          const loaded = await getLessonById(id);
+          return loaded || inMemory;
+        })
+      );
+      return fullList.filter(Boolean);
+    } catch (err) {
+      console.error('Error fetching full lessons for download:', err);
+      return lessons.filter(l => selectedLessonIds.includes(l.id));
+    } finally {
+      setIsBulkDownloading(false);
+    }
+  };
+
+  const handleBulkDownloadJSON = async () => {
+    const items = await fetchFullSelectedLessons();
+    if (!items || items.length === 0) return;
+
+    const dataStr = JSON.stringify(items, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const fileName = items.length === 1
+      ? `fiche_${(items[0].title || 'cours').replace(/[^a-zA-Z0-9_\u0600-\u06FF-]/g, '_')}_${dateStr}.json`
+      : `fiches_lconq_${items.length}_elements_${dateStr}.json`;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setShowBulkDownloadModal(false);
+    setSuccess(`✅ ${items.length} fiche(s) téléchargée(s) en format JSON avec succès.`);
+    setTimeout(() => setSuccess(''), 4000);
+  };
+
+  const handleBulkDownloadPDF = async () => {
+    const items = await fetchFullSelectedLessons();
+    if (!items || items.length === 0) return;
+
+    setShowBulkDownloadModal(false);
+
+    if (items.length === 1) {
+      openLessonPrintWindow(items[0], { layoutMode: 'standard', forceStandard: true });
+      return;
+    }
+
+    setSuccess(`Génération de ${items.length} fiches PDF en cours... Les fenêtres d'impression vont s'ouvrir.`);
+    setTimeout(() => setSuccess(''), 5000);
+
+    items.forEach((item, index) => {
+      setTimeout(() => {
+        openLessonPrintWindow(item, { layoutMode: 'standard', forceStandard: true });
+      }, index * 750);
+    });
   };
 
   // Stats
@@ -1360,6 +1431,32 @@ ${sectionsContentText}
             <span>Modifier en masse (Bulk Edit)</span>
           </button>
 
+          {/* Bulk Download Button */}
+          <button
+            type="button"
+            onClick={() => setShowBulkDownloadModal(true)}
+            disabled={isBulkProcessing || isBulkDownloading}
+            style={{
+              background: 'linear-gradient(135deg, #0284c7, #2563eb)',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '0.45rem 0.95rem',
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)',
+              transition: 'all 0.15s ease'
+            }}
+            title="Télécharger les fiches sélectionnées (JSON ou PDF)"
+          >
+            {isBulkDownloading ? <Loader2 size={14} className="spin" /> : <Download size={14} />}
+            <span>Télécharger ({selectedLessonIds.length})</span>
+          </button>
+
           {/* Bulk Activate */}
           <button
             type="button"
@@ -1447,6 +1544,170 @@ ${sectionsContentText}
           >
             <X size={16} />
           </button>
+        </div>
+      )}
+
+      {/* ── Bulk Download Modal ── */}
+      {showBulkDownloadModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', 
+          backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', 
+          justifyContent: 'center', zIndex: 99999, padding: '1rem'
+        }}>
+          <div className="glass-panel" style={{
+            maxWidth: '560px', width: '100%', padding: '1.75rem',
+            background: 'var(--bg-surface, #1e293b)',
+            borderRadius: '20px',
+            border: '1px solid rgba(255,255,255,0.15)',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
+          }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <div style={{
+                  width: '38px', height: '38px', borderRadius: '10px',
+                  background: 'rgba(59, 130, 246, 0.15)', border: '1px solid rgba(59, 130, 246, 0.3)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#60a5fa'
+                }}>
+                  <Download size={20} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main, #ffffff)' }}>
+                    Télécharger les fiches sélectionnées
+                  </h3>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted, #94a3b8)', marginTop: '0.2rem' }}>
+                    {selectedLessonIds.length} fiche{selectedLessonIds.length > 1 ? 's' : ''} sélectionnée{selectedLessonIds.length > 1 ? 's' : ''}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowBulkDownloadModal(false)}
+                disabled={isBulkDownloading}
+                style={{
+                  background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)',
+                  borderRadius: '8px', padding: '0.4rem', cursor: 'pointer', display: 'flex'
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* List preview of selected fiches */}
+            <div style={{
+              maxHeight: '140px', overflowY: 'auto', marginBottom: '1.25rem',
+              padding: '0.6rem 0.8rem', background: 'rgba(0,0,0,0.25)',
+              borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)'
+            }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-subtle, #94a3b8)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Aperçu des éléments sélectionnés :
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                {lessons
+                  .filter(l => selectedLessonIds.includes(l.id))
+                  .slice(0, 6)
+                  .map(l => (
+                    <div key={l.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+                      <span style={{ fontWeight: 600, color: 'var(--text-main, #ffffff)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '340px' }}>
+                        {l.title}
+                      </span>
+                      <span style={{ fontSize: '0.7rem', padding: '0.1rem 0.5rem', borderRadius: '12px', background: 'rgba(99,102,241,0.15)', color: '#818cf8', fontWeight: 600, flexShrink: 0 }}>
+                        {getLevelLabel(l.level)}
+                      </span>
+                    </div>
+                  ))}
+                {selectedLessonIds.length > 6 && (
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted, #94a3b8)', fontStyle: 'italic', marginTop: '0.2rem' }}>
+                    + {selectedLessonIds.length - 6} autre(s) fiche(s)...
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Download Options Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem', marginBottom: '1.25rem' }}>
+              {/* Option 1: JSON */}
+              <div style={{
+                background: 'rgba(15, 23, 42, 0.6)',
+                border: '1px solid rgba(59, 130, 246, 0.3)',
+                borderRadius: '12px', padding: '1rem',
+                display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                gap: '0.75rem'
+              }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.4rem' }}>
+                    <FileCode size={18} color="#60a5fa" />
+                    <span style={{ fontWeight: 800, fontSize: '0.9rem', color: '#60a5fa' }}>Format JSON</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '0.74rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.45 }}>
+                    Export complet des cours, exercices, formules LaTeX et solutions. Idéal pour sauvegarde et import.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleBulkDownloadJSON}
+                  disabled={isBulkDownloading}
+                  style={{
+                    background: 'linear-gradient(135deg, #0284c7, #2563eb)',
+                    color: '#ffffff', border: 'none', borderRadius: '8px',
+                    padding: '0.55rem', fontWeight: 800, fontSize: '0.8rem',
+                    cursor: isBulkDownloading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', gap: '0.4rem', opacity: isBulkDownloading ? 0.7 : 1
+                  }}
+                >
+                  {isBulkDownloading ? <Loader2 size={13} className="spin" /> : <Download size={13} />}
+                  <span>Télécharger JSON</span>
+                </button>
+              </div>
+
+              {/* Option 2: PDF */}
+              <div style={{
+                background: 'rgba(15, 23, 42, 0.6)',
+                border: '1px solid rgba(245, 158, 11, 0.3)',
+                borderRadius: '12px', padding: '1rem',
+                display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                gap: '0.75rem'
+              }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.4rem' }}>
+                    <Printer size={18} color="#f59e0b" />
+                    <span style={{ fontWeight: 800, fontSize: '0.9rem', color: '#fbbf24' }}>Format PDF</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '0.74rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.45 }}>
+                    Génération haute fidélité prête pour impression ou enregistrement PDF avec mise en page marocaine.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleBulkDownloadPDF}
+                  disabled={isBulkDownloading}
+                  style={{
+                    background: 'linear-gradient(135deg, #d97706, #b45309)',
+                    color: '#ffffff', border: 'none', borderRadius: '8px',
+                    padding: '0.55rem', fontWeight: 800, fontSize: '0.8rem',
+                    cursor: isBulkDownloading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', gap: '0.4rem', opacity: isBulkDownloading ? 0.7 : 1
+                  }}
+                >
+                  {isBulkDownloading ? <Loader2 size={13} className="spin" /> : <Printer size={13} />}
+                  <span>Imprimer / PDF</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => setShowBulkDownloadModal(false)}
+                disabled={isBulkDownloading}
+                className="btn-outline"
+                style={{ padding: '0.45rem 1rem', fontSize: '0.82rem' }}
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
