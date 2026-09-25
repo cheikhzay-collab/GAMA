@@ -1528,6 +1528,18 @@ export default function AdminLogbook() {
         }
       }
 
+      // Filter out redundant empty exercise stubs immediately followed by full exercise headers
+      // e.g. "• **Exercice 08 :**" followed by "• Exercice 08 : Étude de fonction..."
+      const curClean = cur.replace(/^(\s*(?:[•▪■›–—]|-(?!-)\s+|\*(?!\*)\s+))+/, '').replace(/\*\*/g, '').trim();
+      const isExerciseStub = /^(exercice|تمرين|devoir|contrôle|فرض)\s*n?°?\s*\d*\s*:?\s*$/i.test(curClean);
+      if (isExerciseStub && i + 1 < rawLines.length) {
+        const nextClean = rawLines[i + 1].trim().replace(/^(\s*(?:[•▪■›–—]|-(?!-)\s+|\*(?!\*)\s+))+/, '').replace(/\*\*/g, '').trim();
+        const nextIsExercise = /^(exercice|تمرين|devoir|contrôle|فرض)\s*n?°?\s*\d*/i.test(nextClean);
+        if (nextIsExercise) {
+          continue;
+        }
+      }
+
       cleanedLines.push(rawLines[i]);
     }
 
@@ -1548,15 +1560,15 @@ export default function AdminLogbook() {
       const trimmed = raw.trim();
       if (trimmed === '') return { type: 'empty', text: '' };
 
-      // Strip leading bullets/symbols from text: •, -, *, ▪, ■, ›, –, —
-      const clean = trimmed.replace(/^[\s•\-\*▪■›–—]+\s*/, '').trim();
+      // Strip true bullets (•, ▪, ■, ›, –, — or a lone - / * followed by whitespace) without touching ** bold markers
+      let clean = trimmed.replace(/^(\s*(?:[•▪■›–—]|-(?!-)\s+|\*(?!\*)\s+))+/, '').trim();
       // Plain text stripped of markdown ** for robust regex matching
       const plain = clean.replace(/\*\*/g, '').trim();
 
       // 1. Chapter Title: === TITLE === or first line header or all-caps header
       if (/^={2,}\s*(.*?)\s*={2,}$/.test(clean)) {
         const m = clean.match(/^={2,}\s*(.*?)\s*={2,}$/);
-        return { type: 'chapter', text: m[1] };
+        return { type: 'chapter', text: m[1].replace(/\*\*/g, '').trim() };
       }
       if ((isHeader && index === 0) || (/^[A-ZÀ-ÖØ-ß\s\-_:]{5,}$/.test(plain) && index === 0)) {
         return { type: 'chapter', text: plain };
@@ -1564,12 +1576,13 @@ export default function AdminLogbook() {
 
       // 2. Exercise Title: Exercice 4..., تمرين..., etc.
       if (/^(exercice|تمرين|devoir|contrôle|فرض)\s*n?°?\s*\d*/i.test(plain)) {
-        return { type: 'exercise', text: clean };
+        const exerciseText = clean.replace(/\*\*/g, '').replace(/\s*:\s*$/, ' :').trim();
+        return { type: 'exercise', text: exerciseText };
       }
 
       // 3. Series / Section / Subheader: e.g. "Série de Révision : ...", "Partie A : ..."
       if (/^(série|serie|partie|châpitre|chapitre|axe|محور|سلسلة|جزء)\s*[:\d\-]/i.test(plain)) {
-        return { type: 'section', text: clean };
+        return { type: 'section', text: clean.replace(/\*\*/g, '').trim() };
       }
 
       // 4. Roman numeral axis: I., II., III. …
@@ -1577,9 +1590,12 @@ export default function AdminLogbook() {
         return { type: 'axis', text: clean };
       }
 
-      // 5. Numbered items: 1., 2., 3., 1), a), etc. (with or without **)
-      if (/^(\*\*)?(\d+|[a-zA-Z])[.)](\*\*)?\s+/.test(clean)) {
-        return { type: 'numbered', text: clean };
+      // 5. Numbered items: 1., 2., 3., 1), a), 2.a), etc. (with or without **)
+      const numMatch = clean.match(/^(\*\*)?(\d+(?:\.[a-zA-Z0-9]+)*|[a-zA-Z])([.)])(\*\*)?\s*(.*)$/);
+      if (numMatch) {
+        const numLabel = numMatch[2] + numMatch[3];
+        const bodyText = numMatch[5].trim();
+        return { type: 'numbered', numLabel, text: bodyText };
       }
 
       // 6. Math formula block on its own line: $$ ... $$ or starting with $$
@@ -1619,14 +1635,14 @@ export default function AdminLogbook() {
       }
 
       // 9. If the line originally had an explicit bullet marker (•, -, *, etc.), treat as bullet, otherwise normal text
-      const hadBullet = /^[\s•\-\*▪■›–—]/.test(trimmed);
+      const hadBullet = /^[\s•▪■›–—]/.test(trimmed) || /^-(?!-)\s+/.test(trimmed) || /^\*(?!\*)\s+/.test(trimmed);
       return { type: hadBullet ? 'bullet' : 'text', text: clean };
     };
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', padding: '2px 0' }}>
         {lines.map((raw, idx) => {
-          const { type, text, color, bg } = getLineStyle(raw, idx);
+          const { type, text, numLabel, color, bg } = getLineStyle(raw, idx);
 
           if (type === 'empty') {
             return <div key={idx} style={{ minHeight: `${gridLineHeight}px`, height: `${gridLineHeight}px` }} />;
@@ -1735,9 +1751,12 @@ export default function AdminLogbook() {
                 fontWeight: 500,
                 paddingLeft: lineDirection === 'ltr' ? '0.75rem' : '0',
                 paddingRight: lineDirection === 'rtl' ? '0.75rem' : '0',
-                display: 'block'
+                display: 'flex',
+                alignItems: 'baseline',
+                gap: '0.45rem'
               }}>
-                {renderWithMath(text)}
+                <span style={{ fontWeight: 800, color: '#2563eb', flexShrink: 0 }}>{numLabel}</span>
+                <span style={{ flex: 1 }}>{renderWithMath(text)}</span>
               </div>
             );
           }

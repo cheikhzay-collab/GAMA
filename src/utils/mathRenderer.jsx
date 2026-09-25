@@ -416,10 +416,19 @@ function autoWrapLatex(text) {
 }
 
 function renderTextWithBold(text) {
-  if (!text.includes('**')) {
+  if (!text || !text.includes('**')) {
     return text;
   }
-  const parts = text.split('**');
+  // Guard against unmatched/odd **: strip unclosed edge **
+  const count = (text.match(/\*\*/g) || []).length;
+  let sanitized = text;
+  if (count % 2 !== 0) {
+    sanitized = sanitized.replace(/(^\*\*|\*\*$)/, '');
+  }
+  if (!sanitized.includes('**')) {
+    return sanitized;
+  }
+  const parts = sanitized.split('**');
   return parts.map((part, idx) => {
     if (idx % 2 === 1) {
       return part ? <strong key={idx} style={{ fontWeight: 800 }}>{part}</strong> : null;
