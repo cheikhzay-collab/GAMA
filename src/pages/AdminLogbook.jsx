@@ -27,6 +27,12 @@ import {
 import { renderWithMath } from '../utils/mathRenderer';
 import { openLogbookPrintWindow } from '../utils/generateLogbookPDF';
 import { normalizeLevel, getLevelDisplayName } from '../utils/levelHelpers';
+import { 
+  getMergedDaySessions, 
+  mergeConsecutiveEntries, 
+  checkTimeOverlap as checkScheduleOverlap,
+  parseTimeRange 
+} from '../utils/scheduleHelpers';
 
 // Standard Curriculum Templates for Moroccan High School levels
 const STANDARD_CURRICULA = {
@@ -308,12 +314,15 @@ const buildCombinedEntries = (rawEntries = [], holidaysList = [], absencesList =
     return d >= yearDates.startDate && d <= yearDates.endDate;
   });
 
+  // Automatically merge any two consecutive sessions on the same day for the same class into a unified 2-hour session
+  const mergedActual = mergeConsecutiveEntries(actualFiltered);
+
   // Calculate effective date cutoff:
   // Holidays & absences should NOT be inserted into the logbook table in advance.
   // They only appear once their date has arrived/passed in reality (or preceding an already recorded session).
   const todayStr = formatLocalDate(new Date());
   let maxEntryDate = '';
-  for (const e of actualFiltered) {
+  for (const e of mergedActual) {
     if (e.date && e.date > maxEntryDate) {
       maxEntryDate = e.date;
     }
@@ -391,7 +400,7 @@ const buildCombinedEntries = (rawEntries = [], holidaysList = [], absencesList =
   }).filter(Boolean);
 
   // 4. Combine and sort chronologically by date
-  return [...actualFiltered, ...holidayEntries, ...absenceEntries].sort((a, b) => {
+  return [...mergedActual, ...holidayEntries, ...absenceEntries].sort((a, b) => {
     const dComp = (a.date || '').localeCompare(b.date || '');
     if (dComp !== 0) return dComp;
     if (a.isHolidayEntry) return -1;
@@ -786,32 +795,23 @@ export default function AdminLogbook() {
       if (!dayName) return; // Sunday
 
       const currentHour = now.getHours();
-      // Find matching hour slot from schedule
-      let activeSlot = null;
-      if (currentHour >= 8 && currentHour < 9) activeSlot = '08-09';
-      else if (currentHour >= 9 && currentHour < 10) activeSlot = '09-10';
-      else if (currentHour >= 10 && currentHour < 11) activeSlot = '10-11';
-      else if (currentHour >= 11 && currentHour < 12) activeSlot = '11-12';
-      else if (currentHour >= 14 && currentHour < 15) activeSlot = '14-15';
-      else if (currentHour >= 15 && currentHour < 16) activeSlot = '15-16';
-      else if (currentHour >= 16 && currentHour < 17) activeSlot = '16-17';
-      else if (currentHour >= 17 && currentHour < 18) activeSlot = '17-18';
+      const daySessions = getMergedDaySessions(dayName, schedule, classes);
+      const activeSession = daySessions.find(s => {
+        const r = parseTimeRange(s.time);
+        if (!r) return false;
+        return currentHour >= r.start && currentHour < r.end;
+      });
 
-      if (!activeSlot) return;
-
-      const slotKey = `${dayName}-${activeSlot}`;
-      const slotData = schedule[slotKey];
-      if (slotData && slotData.classId) {
-        const matchingClass = classes.find(c => c.name === slotData.classId);
-        if (matchingClass) {
-          setActiveSessionSuggestion({
-            class: matchingClass,
-            time: `${activeSlot.replace('-', 'h - ')}h`,
-            rawSlot: activeSlot,
-            room: slotData.room || '—',
-            day: dayName
-          });
-        }
+      if (activeSession && activeSession.class) {
+        setActiveSessionSuggestion({
+          class: activeSession.class,
+          time: activeSession.displayTime.replace(/:00/g, 'h').replace('-', ' - '),
+          rawSlot: activeSession.displayTime,
+          displayTime: activeSession.displayTime,
+          room: activeSession.room || '—',
+          day: dayName,
+          isDoubleHour: activeSession.isDoubleHour
+        });
       } else {
         setActiveSessionSuggestion(null);
       }
@@ -873,33 +873,28 @@ export default function AdminLogbook() {
         });
         if (isAbsent) continue;
 
-        // Find schedule slots
-        const daySlots = Object.keys(schedule).filter(k => k.startsWith(`${dayName}-`));
+        // Find merged schedule sessions for this day
+        const daySessions = getMergedDaySessions(dayName, schedule, classes);
 
-        daySlots.forEach(slotKey => {
-          const slotData = schedule[slotKey];
-          if (slotData && slotData.classId) {
-            const slotTime = slotKey.split('-').slice(1).join('-');
-            
-            const matchingClass = classes.find(c => c.name === slotData.classId);
-            if (!matchingClass) return;
+        daySessions.forEach(session => {
+          if (!session.class) return;
 
-            const hasEntry = allEntries.some(e => {
-              if (e.classId !== matchingClass.id) return false;
-              if (e.date !== dateStr) return false;
-              return isTimeOverlapping(slotTime, e.time);
+          const hasEntry = allEntries.some(e => {
+            if (e.classId !== session.class.id) return false;
+            if (e.date !== dateStr) return false;
+            return checkTimeOverlap(session.displayTime, e.time);
+          });
+
+          if (!hasEntry) {
+            list.push({
+              id: `${dateStr}-${session.slotKey}`,
+              date: dateStr,
+              dayName,
+              time: session.displayTime,
+              class: session.class,
+              room: session.room || '—',
+              isDoubleHour: session.isDoubleHour
             });
-
-            if (!hasEntry) {
-              list.push({
-                id: `${dateStr}-${slotKey}`,
-                date: dateStr,
-                dayName,
-                time: slotTime,
-                class: matchingClass,
-                room: slotData.room || '—'
-              });
-            }
           }
         });
       }
@@ -947,33 +942,28 @@ export default function AdminLogbook() {
         });
         if (isAbsent) continue;
 
-        // Find schedule slots
-        const daySlots = Object.keys(schedule).filter(k => k.startsWith(`${dayName}-`));
+        // Find merged schedule sessions for this day
+        const daySessions = getMergedDaySessions(dayName, schedule, classes);
 
-        daySlots.forEach(slotKey => {
-          const slotData = schedule[slotKey];
-          if (slotData && slotData.classId) {
-            const slotTime = slotKey.split('-').slice(1).join('-');
-            
-            const matchingClass = classes.find(c => c.name === slotData.classId);
-            if (!matchingClass) return;
+        daySessions.forEach(session => {
+          if (!session.class) return;
 
-            const hasEntry = allEntries.some(e => {
-              if (e.classId !== matchingClass.id) return false;
-              if (e.date !== dateStr) return false;
-              return isTimeOverlapping(slotTime, e.time);
+          const hasEntry = allEntries.some(e => {
+            if (e.classId !== session.class.id) return false;
+            if (e.date !== dateStr) return false;
+            return checkTimeOverlap(session.displayTime, e.time);
+          });
+
+          if (!hasEntry) {
+            list.push({
+              id: `${dateStr}-${session.slotKey}`,
+              date: dateStr,
+              dayName,
+              time: session.displayTime,
+              class: session.class,
+              room: session.room || '—',
+              isDoubleHour: session.isDoubleHour
             });
-
-            if (!hasEntry) {
-              list.push({
-                id: `${dateStr}-${slotKey}`,
-                date: dateStr,
-                dayName,
-                time: slotTime,
-                class: matchingClass,
-                room: slotData.room || '—'
-              });
-            }
           }
         });
       }
@@ -1452,11 +1442,21 @@ export default function AdminLogbook() {
     }
   };
 
-  const handleDelete = async (entryId) => {
+  const handleDelete = async (entryIdOrEntry) => {
     const confirmMsg = isArMode ? "هل أنت متأكد من حذف هذه الحصة من دفتر النصوص؟" : "Voulez-vous supprimer cette séance du cahier de textes ?";
     if (window.confirm(confirmMsg)) {
       try {
-        await deleteLogbookEntry(entryId);
+        // Support deleting merged double-hour sessions (which may have two underlying DB records)
+        const entryToDelete = typeof entryIdOrEntry === 'object' ? entryIdOrEntry : null;
+        const realId = typeof entryIdOrEntry === 'string' || typeof entryIdOrEntry === 'number' ? entryIdOrEntry : entryIdOrEntry?.id;
+
+        if (entryToDelete?.isMergedDoubleSession && entryToDelete?.originalEntryIds?.length > 0) {
+          // Delete all underlying split records
+          await Promise.all(entryToDelete.originalEntryIds.map(id => deleteLogbookEntry(id)));
+        } else {
+          await deleteLogbookEntry(realId);
+        }
+
         const data = await getLogbookEntries(selectedClass.id);
         setEntries(buildCombinedEntries(data || [], holidays, absences, selectedClass));
         setSuccess(isArMode ? "تم حذف الحصة بنجاح." : "Séance supprimée.");
@@ -2122,7 +2122,8 @@ export default function AdminLogbook() {
               setEditingEntry(null);
               setFormData({
                 date: formatLocalDate(),
-                time: activeSessionSuggestion.rawSlot.replace('-', ' - '),
+                // Use the exact displayTime (e.g. "10:00 - 12:00") for merged 2-hour sessions
+                time: activeSessionSuggestion.displayTime || activeSessionSuggestion.rawSlot,
                 component: 'Cours',
                 subject: 'Mathématiques',
                 lessonId: '',
@@ -2290,7 +2291,7 @@ export default function AdminLogbook() {
                       {session.class.name}
                     </h5>
                     <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      {new Date(session.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} • {session.time.replace('-', 'h - ')}h
+                      {new Date(session.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} • {session.time}{session.isDoubleHour ? ' (2h)' : ''}
                     </p>
                     <span style={{ fontSize: '0.65rem', color: 'var(--text-subtle)' }}>
                       Salle / القاعة: {session.room}
@@ -2303,7 +2304,8 @@ export default function AdminLogbook() {
                       setEditingEntry(null);
                       setFormData({
                         date: session.date,
-                        time: session.time.replace('-', ' - '),
+                        // session.time already has the correct format: "10:00 - 12:00" (no replace needed)
+                        time: session.time,
                         component: 'Cours',
                         subject: 'Mathématiques',
                         lessonId: '',
@@ -2877,7 +2879,7 @@ export default function AdminLogbook() {
                             <button onClick={() => handleOpenEditModal(e)} style={{ background: 'transparent', border: 'none', color: 'var(--violet)', cursor: 'pointer', padding: '0.3rem' }} title="Modifier">
                               <Edit size={16} />
                             </button>
-                            <button onClick={() => handleDelete(e.id)} style={{ background: 'transparent', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: '0.3rem' }} title="Supprimer">
+                            <button onClick={() => handleDelete(e)} style={{ background: 'transparent', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: '0.3rem' }} title="Supprimer">
                               <Trash2 size={16} />
                             </button>
                           </div>
@@ -3010,7 +3012,7 @@ export default function AdminLogbook() {
                             <button onClick={() => handleOpenEditModal(e)} style={{ background: 'transparent', border: 'none', color: 'var(--violet)', cursor: 'pointer', padding: '0.3rem' }} title="Modifier">
                               <Edit size={16} />
                             </button>
-                            <button onClick={() => handleDelete(e.id)} style={{ background: 'transparent', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: '0.3rem' }} title="Supprimer">
+                            <button onClick={() => handleDelete(e)} style={{ background: 'transparent', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: '0.3rem' }} title="Supprimer">
                               <Trash2 size={16} />
                             </button>
                           </div>

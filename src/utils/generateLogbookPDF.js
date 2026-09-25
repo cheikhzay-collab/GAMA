@@ -1,4 +1,5 @@
 import katex from 'katex';
+import { mergeConsecutiveEntries } from './scheduleHelpers';
 
 const KATEX_OPTIONS = {
   strict: 'ignore',
@@ -1082,7 +1083,9 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
 };
 
 export const openLogbookPrintWindow = (selectedClass, entries, profName, styleConfig = {}) => {
-  const html = generateLogbookHTML(selectedClass, entries, profName, styleConfig);
+  // Merge consecutive same-day sessions (double hours) into single 2-hour rows before export
+  const mergedEntries = mergeConsecutiveEntries(entries || []);
+  const html = generateLogbookHTML(selectedClass, mergedEntries, profName, styleConfig);
   const title = `Cahier_de_textes_${selectedClass.name.replace(/\s+/g, '_')}`;
 
   const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
