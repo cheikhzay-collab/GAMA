@@ -501,6 +501,30 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
       background: #ffffff;
     }
 
+    /* ── Screen view: remove page-break white gaps ── */
+    @media screen {
+      html, body {
+        background: #e5e7eb;
+        padding: 20px 0;
+      }
+      .print-page-wrapper {
+        background: #ffffff;
+        box-shadow: 0 4px 32px rgba(0,0,0,0.18);
+        border-radius: 4px;
+        padding: 20mm 15mm;
+        /* Allow content to flow naturally - no fixed A4 height on screen */
+        min-height: unset !important;
+        overflow: visible !important;
+        page-break-inside: unset !important;
+        break-inside: unset !important;
+      }
+      /* Suppress page-break visual gaps on screen */
+      .logbook-table tr {
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+      }
+    }
+
     /* Print Hint Toast */
     .print-hint {
       position: fixed;
