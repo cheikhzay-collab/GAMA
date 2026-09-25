@@ -61,24 +61,28 @@ export const uploadAsset = async (fileOrDataUrl, path, mimeType = 'image/png') =
     }
   }
 
-  // 2. Try Local Companion Server on port 5002
-  try {
-    const host = (typeof window !== 'undefined' && window.location && window.location.hostname) ? window.location.hostname : '127.0.0.1';
-    const compResponse = await fetch(`http://${host}:5002/api/assets`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        path: cleanPath,
-        data: base64Data,
-        mimeType,
-      }),
-    });
+  // 2. Try Local Companion Server on port 5002 (local dev only)
+  const isLocal = typeof window !== 'undefined' && window.location && 
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '');
+  if (isLocal) {
+    try {
+      const host = window.location.hostname || '127.0.0.1';
+      const compResponse = await fetch(`http://${host}:5002/api/assets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          path: cleanPath,
+          data: base64Data,
+          mimeType,
+        }),
+      });
 
-    if (compResponse.ok) {
-      const json = await compResponse.json();
-      if (json.publicUrl) return json.publicUrl;
-    }
-  } catch (err) {}
+      if (compResponse.ok) {
+        const json = await compResponse.json();
+        if (json.publicUrl) return json.publicUrl;
+      }
+    } catch (err) {}
+  }
 
   // 3. Fallback to inline Base64 Data URL if offline
   if (base64Data) return base64Data;

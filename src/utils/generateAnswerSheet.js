@@ -1,4 +1,3 @@
-import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
 import { getLevelDisplayName } from './levelHelpers';
 import { decodeHtmlEntities } from './security';
@@ -395,6 +394,7 @@ export async function renderAnswerSheetPage(doc, exam, student = null, classObj 
  * @param {Object} options - { withAnswers?: boolean }
  */
 export async function generateAnswerSheet(exam, user = null, options = {}) {
+  const { jsPDF } = await import('jspdf');
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
   await renderAnswerSheetPage(doc, exam, user, null, options);
   const schoolName = sanitizeFilename(exam?.school || 'LCONQ');
@@ -413,6 +413,7 @@ export async function generateAnswerSheet(exam, user = null, options = {}) {
  * @param {Object} options      - { withAnswers?: boolean }
  */
 export async function generateBatchAnswerSheets(exam, classObj, studentsList = [], options = {}) {
+  const { jsPDF } = await import('jspdf');
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
   const list = studentsList.length > 0 ? studentsList : [{ name: '', massarCode: '' }];
 

@@ -4,30 +4,15 @@
 
 import { supabase } from '../lib/supabase';
 
+const isLocalHost = () => {
+  if (typeof window === 'undefined' || !window.location) return false;
+  const h = window.location.hostname;
+  return h === 'localhost' || h === '127.0.0.1' || h === '';
+};
+
 const getCandidateBaseUrls = () => {
-  const list = [''];
-
-  if (typeof window !== 'undefined' && window.location) {
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const isHttp = window.location.protocol === 'http:';
-
-    if (isLocalhost) {
-      list.push('/companion-api');
-    }
-
-    const host = window.location.hostname;
-    if (isHttp || isLocalhost) {
-      if (host && host !== 'localhost' && host !== '127.0.0.1') {
-        list.push(`http://${host}:5002`);
-      }
-      list.push('http://localhost:5002');
-      list.push('http://127.0.0.1:5002');
-    }
-  } else {
-    list.push('http://localhost:5002');
-    list.push('http://127.0.0.1:5002');
-  }
-  return Array.from(new Set(list));
+  if (!isLocalHost()) return [];
+  return ['/companion-api', 'http://localhost:5002', 'http://127.0.0.1:5002'];
 };
 
 let activeBaseUrl = null;
@@ -38,22 +23,17 @@ let lastCheckTime = 0;
  * Check if the local companion server (port 5002) is running
  */
 export const isCompanionAvailable = async (forceCheck = false) => {
+  if (!isLocalHost()) {
+    companionOnline = false;
+    return false;
+  }
+
   const now = Date.now();
   if (!forceCheck && companionOnline !== null && now - lastCheckTime < 5000) {
     return companionOnline;
   }
 
-  const candidateBases = [];
-  if (typeof window !== 'undefined' && window.location) {
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    if (isLocalhost) {
-      candidateBases.push('/companion-api');
-    }
-    candidateBases.push('http://localhost:5002');
-    candidateBases.push('http://127.0.0.1:5002');
-  } else {
-    candidateBases.push('http://localhost:5002');
-  }
+  const candidateBases = ['/companion-api', 'http://localhost:5002', 'http://127.0.0.1:5002'];
 
   for (const base of candidateBases) {
     try {

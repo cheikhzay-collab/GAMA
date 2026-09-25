@@ -11,6 +11,7 @@ import { getAllClasses } from '../services/classService';
 import { getAllLessons } from '../services/lessonService';
 import { getLogbookEntries } from '../services/logbookService';
 import { getAllUsers } from '../services/userService';
+import SectionErrorBoundary from '../components/SectionErrorBoundary';
 
 // ─── HOOKS ─────────────────────────────────────────────────────────────────────
 
@@ -317,6 +318,7 @@ export default function AdminOverview() {
           </div>
         </div>
 
+        <SectionErrorBoundary title="Statistiques & Activités">
         {/* ── KPI STAT CARDS ── */}
         <section className="dash-stats">
           <StatCard
@@ -717,6 +719,7 @@ export default function AdminOverview() {
 
           </div>
         </div>
+        </SectionErrorBoundary>
 
       </div>
     </div>

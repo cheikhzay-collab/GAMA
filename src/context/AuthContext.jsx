@@ -635,16 +635,16 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // ── Neon PostgreSQL Auth listener ──────────────────────────────────────────
+  // ── Supabase Cloud Auth listener ──────────────────────────────────────────
   useEffect(() => {
     let active = true;
 
     const initializeAuthAndListen = async () => {
       try {
-        // 1. Check Native Neon Auth Session first
-        const neonUser = await getCurrentSessionUser();
-        if (neonUser && active) {
-          setUser(neonUser);
+        // 1. Check Native Supabase Auth Session first
+        const supabaseUser = await getCurrentSessionUser();
+        if (supabaseUser && active) {
+          setUser(supabaseUser);
           setLoading(false);
           return;
         }
@@ -1918,9 +1918,9 @@ export function AuthProvider({ children }) {
   const syncStudentsList = useCallback(async () => {
     if (!SUPABASE_ENABLED || user?.role !== 'admin') return { success: false, synchronized_count: 0 };
     try {
-      // Reload admin users list directly from Neon
+      // Reload admin users list directly from Supabase
       await refreshAdminData();
-      return { success: true, synchronized_count: 0, note: 'Neon-native — synced from cloud database' };
+      return { success: true, synchronized_count: 0, note: 'Supabase-native — synced from cloud database' };
     } catch (e) {
       console.error('[Auth] Failed to sync students list:', e);
       throw e;

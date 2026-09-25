@@ -478,3 +478,30 @@ CREATE POLICY "Admins can manage extraction tasks." ON public.extraction_tasks
 CREATE INDEX IF NOT EXISTS idx_extraction_tasks_status ON public.extraction_tasks(status, created_at DESC);
 
 
+-- ─── 13. System Configuration & Sensitive Settings ───────────────────────────
+CREATE TABLE IF NOT EXISTS public.config (
+  key text PRIMARY KEY,
+  value jsonb NOT NULL,
+  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now())
+);
+
+ALTER TABLE public.config ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read non-sensitive configs, Admin read all" ON public.config;
+CREATE POLICY "Public read non-sensitive configs, Admin read all"
+ON public.config
+FOR SELECT
+TO public
+USING (
+  key NOT IN ('ai_settings', 'activationCodes') OR (public.is_admin())
+);
+
+DROP POLICY IF EXISTS "Admins can modify config" ON public.config;
+CREATE POLICY "Admins can modify config"
+ON public.config
+FOR ALL
+TO authenticated
+USING (public.is_admin())
+WITH CHECK (public.is_admin());
+
+

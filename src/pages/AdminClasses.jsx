@@ -4,7 +4,6 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getAllClasses, addClass, deleteClass } from '../services/classService';
 import { getAllUsers, createUserDoc, updateUserDoc } from '../services/userService';
-import * as XLSX from 'xlsx';
 import { 
   Users, UploadCloud, FolderOpen, Trash2, CheckCircle2, AlertTriangle, 
   Search, GraduationCap, Calendar, X, Plus, ArrowRight, FileSpreadsheet, ListFilter,
@@ -110,6 +109,7 @@ export default function AdminClasses() {
     setError('');
     
     try {
+      const XLSX = await import('xlsx');
       const reader = new FileReader();
       reader.onload = (e) => {
         try {

@@ -20,6 +20,7 @@ import {
   syncAllConfigsAndSchedule
 } from '../services/schoolService';
 import { decodeHtmlEntities } from '../utils/security';
+import SectionErrorBoundary from '../components/SectionErrorBoundary';
 
 const getSoftColorForClass = (className) => {
   if (!className) return { bg: 'transparent', text: 'var(--text-main)' };
@@ -1602,6 +1603,7 @@ export default function AdminSettings() {
 
         {/* Content Column */}
         <div className="settings-content">
+          <SectionErrorBoundary title={`Paramètres (${activeTab})`}>
 
           {/* ── WHATSAPP TAB ── */}
           {activeTab === 'whatsapp' && (
@@ -3468,7 +3470,7 @@ export default function AdminSettings() {
               </div>
             </div>
           )}
-
+          </SectionErrorBoundary>
         </div>
       </div>
     </div>
