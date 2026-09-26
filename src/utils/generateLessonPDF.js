@@ -2347,15 +2347,9 @@ body.hide-solutions .modern-solution-block {
 /* Inline math size: perfectly matches 10pt text size and optical weight */
 .inline-math-container .katex,
 .katex-inline .katex {
-  font-size: 0.95em !important;
+  font-size: 1em !important;
   color: #0f172a !important;
   font-weight: normal !important;
-}
-
-/* Refined academic scale for superscripts and subscripts (powers and indices) */
-.katex .msupsub .sizing.size3,
-.katex .msupsub .sizing.reset-size6.size3 {
-  font-size: 0.58em !important;
 }
 
 /* Block display-mode math: visible breathing room */
@@ -2492,13 +2486,10 @@ b .katex * {
   max-width: 100% !important;
   overflow-x: visible !important;
   overflow-y: visible !important;
-  font-size: 0.92em !important;
+  font-size: 0.95em !important;
 }
 .exercises-two-columns .katex {
-  font-size: 0.95em !important;
-}
-.exercises-two-columns .katex-html {
-  font-size: 0.95em !important;
+  font-size: 1em !important;
 }
 .exercises-two-columns .katex .base {
   white-space: nowrap !important;
@@ -2585,14 +2576,11 @@ b .katex * {
   max-width: 100% !important;
   overflow-x: visible !important;
   overflow-y: visible !important;
-  font-size: 0.82em !important;
+  font-size: 0.88em !important;
 }
 
 .exercises-three-columns .katex {
-  font-size: 0.88em !important;
-}
-.exercises-three-columns .katex-html {
-  font-size: 0.88em !important;
+  font-size: 0.92em !important;
 }
 
 .exercises-three-columns .katex .base {

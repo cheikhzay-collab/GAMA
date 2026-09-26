@@ -1882,10 +1882,6 @@ export default function AdminLogbook() {
           display: inline-block !important;
           font-size: 1.08em !important;
         }
-        .katex .msupsub .sizing.size3,
-        .katex .msupsub .sizing.reset-size6.size3 {
-          font-size: 0.58em !important;
-        }
 
         .notebook-line-text {
           font-family: '${isArMode ? arFont : frFont}', 'Outfit', 'Cairo', sans-serif;

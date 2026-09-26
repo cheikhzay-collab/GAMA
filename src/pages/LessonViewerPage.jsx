@@ -1527,7 +1527,7 @@ export default function LessonViewerPage() {
             max-width: 100% !important;
             overflow-x: auto !important;
             overflow-y: hidden !important;
-            font-size: 0.85em !important;
+            font-size: 0.95em !important;
           }
           .exercises-two-columns-layout .katex,
           .exercises-two-columns-layout .katex-html {
@@ -2097,7 +2097,7 @@ export default function LessonViewerPage() {
             max-width: 100% !important;
             overflow-x: visible !important;
             overflow-y: visible !important;
-            font-size: 0.82em !important;
+            font-size: 0.95em !important;
           }
           .exercises-two-columns-layout .katex,
           .exercises-two-columns-layout .katex-html {
@@ -2340,10 +2340,6 @@ export default function LessonViewerPage() {
             white-space: nowrap !important;
             display: inline !important;
             font-weight: normal !important;
-          }
-          .katex .msupsub .sizing.size3,
-          .katex .msupsub .sizing.reset-size6.size3 {
-            font-size: 0.58em !important;
           }
 
           /* Response/attention callouts */

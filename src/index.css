@@ -2273,19 +2273,13 @@ b .katex * {
 }
 .inline-math-container .katex {
   white-space: nowrap !important;
-  font-size: 1.08em !important; /* Academic clarity — slightly larger than body text */
+  font-size: 1.0em !important; /* Perfect 1:1 harmony with surrounding body text */
   font-weight: normal !important;
 }
 .inline-math-container .katex .base {
   white-space: nowrap !important;
   display: inline !important;
   font-weight: normal !important;
-}
-
-/* Refined academic scale for superscripts and subscripts (powers and indices) */
-.katex .msupsub .sizing.size3,
-.katex .msupsub .sizing.reset-size6.size3 {
-  font-size: 0.58em !important;
 }
 
 /* ─── BADGES & TAGS ──────────────────────────────────────────────── */

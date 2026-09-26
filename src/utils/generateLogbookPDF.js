@@ -941,10 +941,6 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
       display: inline-block !important;
       font-size: 1.08em !important;
     }
-    .katex .msupsub .sizing.size3,
-    .katex .msupsub .sizing.reset-size6.size3 {
-      font-size: 0.58em !important;
-    }
     
     .normal-cell {
       padding: 12px 14px !important;
