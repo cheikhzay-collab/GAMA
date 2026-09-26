@@ -2352,6 +2352,12 @@ body.hide-solutions .modern-solution-block {
   font-weight: normal !important;
 }
 
+/* Refined academic scale for superscripts and subscripts (powers and indices) */
+.katex .msupsub .sizing.size3,
+.katex .msupsub .sizing.reset-size6.size3 {
+  font-size: 0.58em !important;
+}
+
 /* Block display-mode math: visible breathing room */
 .katex-display {
   margin: 0.45rem 0 !important;

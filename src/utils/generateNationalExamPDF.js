@@ -176,6 +176,10 @@ export const generateNationalExamHTML = async (examData, settings = {}) => {
     .ne-q-qr { width: 85px; display: flex; align-items: center; justify-content: center; background: #fff; padding: 4px; flex-shrink: 0; }
     .ne-q-qr img { width: 75px; height: 75px; object-fit: contain; }
     .page-break { page-break-before: always; }
+    .katex .msupsub .sizing.size3,
+    .katex .msupsub .sizing.reset-size6.size3 {
+      font-size: 0.58em !important;
+    }
   </style>
 </head>
 <body>

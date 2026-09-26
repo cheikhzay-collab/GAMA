@@ -2341,6 +2341,10 @@ export default function LessonViewerPage() {
             display: inline !important;
             font-weight: normal !important;
           }
+          .katex .msupsub .sizing.size3,
+          .katex .msupsub .sizing.reset-size6.size3 {
+            font-size: 0.58em !important;
+          }
 
           /* Response/attention callouts */
           .mfc-callout-response {

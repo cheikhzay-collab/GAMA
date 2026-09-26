@@ -2282,6 +2282,12 @@ b .katex * {
   font-weight: normal !important;
 }
 
+/* Refined academic scale for superscripts and subscripts (powers and indices) */
+.katex .msupsub .sizing.size3,
+.katex .msupsub .sizing.reset-size6.size3 {
+  font-size: 0.58em !important;
+}
+
 /* ─── BADGES & TAGS ──────────────────────────────────────────────── */
 .badge {
   display: inline-flex;
