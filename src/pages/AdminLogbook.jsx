@@ -2016,12 +2016,14 @@ export default function AdminLogbook() {
             border: 1px solid #cbd5e1 !important; /* Soft gray cell borders */
             color: #000000 !important;
             border-radius: 0 !important;
+            vertical-align: top !important;
+            padding: 6px 8px !important;
           }
 
           .notebook-table tr {
             border-radius: 0 !important;
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
+            page-break-inside: auto !important;
+            break-inside: auto !important;
           }
 
           .print-page-header-row {

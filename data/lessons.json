@@ -35865,5 +35865,1374 @@
     "updated_at": "2026-09-23T15:54:48.051Z",
     "createdAt": "2026-09-23T15:54:48.786Z",
     "updatedAt": "2026-09-23T15:54:48.786Z"
+  },
+  {
+    "id": "MOCK-L-YJMUVY7ZM",
+    "title": "Limite et continuité",
+    "subject": "Mathématiques",
+    "chapter_number": "",
+    "teacher": "",
+    "phone": "",
+    "schools": [],
+    "level": "2bac_pc_svt",
+    "doc_type": "exercises",
+    "content": {
+      "level": "2bac_pc_svt",
+      "doc_type": "exercises",
+      "is_national_exam": false,
+      "national_exam_meta": null,
+      "is_summary": false,
+      "summary_meta": null,
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "Série d'exercices 1 : Limite et continuité",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Limite et continuité",
+        "chapter_number": "",
+        "teacher": "",
+        "phone": "",
+        "capacites_attendues": "",
+        "contenus": "",
+        "leContenu": ""
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Etudier la continuité en $x_0$ des fonctions suivantes :",
+              "type": "text"
+            },
+            {
+              "text": "**1)** \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = \\dfrac{1-x^2}{x-1} ; x > 1 \\\\ f(x) = x^2 - 4x + 1 ; x \\le 1 \\end{cases}$$\n\n\n\n\n\n\n\n ; en $x_0 = 1$",
+              "type": "bullet"
+            },
+            {
+              "text": "**2)** \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = -\\dfrac{\\sqrt{3}\\sin(x)}{12x} ; x > 0 \\\\ f(x) = \\dfrac{\\sqrt{2+\\cos x} - \\sqrt{3}}{x^2} ; x < 0 \\\\ f(0) = -\\dfrac{\\sqrt{3}}{12} \\end{cases}$$\n\n\n\n\n\n\n\n ; en $x_0 = 0$",
+              "type": "bullet"
+            },
+            {
+              "text": "**3)** \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = \\sin(x)\\sin\\left(\\dfrac{1}{x}\\right) ; x \\neq 0 \\\\ f(0) = 0 \\end{cases}$$\n\n\n\n\n\n\n\n ; en $x_0 = 0$",
+              "type": "bullet"
+            },
+            {
+              "text": "**4)** \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = \\dfrac{x^2-1}{|x-1|} ; x \\neq 1 \\\\ f(1) = 2 \\end{cases}$$\n\n\n\n\n\n\n\n ; en $x_0 = 1$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 01 :**",
+          "points": 0,
+          "bgColor": "transparent",
+          "content": "Etudier la continuité en $x_0$ des fonctions suivantes :\n1) \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = \\dfrac{1-x^2}{x-1} ; x > 1 \\\\ f(x) = x^2 - 4x + 1 ; x \\le 1 \\end{cases}$$\n\n\n\n\n\n\n\n ; en $x_0 = 1$\n2) \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = -\\dfrac{\\sqrt{3}\\sin(x)}{12x} ; x > 0 \\\\ f(x) = \\dfrac{\\sqrt{2+\\cos x} - \\sqrt{3}}{x^2} ; x < 0 \\\\ f(0) = -\\dfrac{\\sqrt{3}}{12} \\end{cases}$$\n\n\n\n\n\n\n\n ; en $x_0 = 0$\n3) \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = \\sin(x)\\sin\\left(\\dfrac{1}{x}\\right) ; x \\neq 0 \\\\ f(0) = 0 \\end{cases}$$\n\n\n\n\n\n\n\n ; en $x_0 = 0$\n4) \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = \\dfrac{x^2-1}{|x-1|} ; x \\neq 1 \\\\ f(1) = 2 \\end{cases}$$\n\n\n\n\n\n\n\n ; en $x_0 = 1$",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": "",
+          "section_header": "Exercice 01",
+          "section_number": "1",
+          "interactive_answers": []
+        },
+        {
+          "id": "ex-2",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "**1)** $f$ une fonction définie sur $\\mathbb{R}$ par : \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = \\dfrac{\\sin(\\pi x)}{x-1} ; x \\neq 1 \\\\ f(1) = a \\end{cases}$$\n\n\n\n\n\n\n\n<br>Déterminer la valeur du réel $a$ pour que $f$ soit continue en $1$",
+              "type": "bullet"
+            },
+            {
+              "text": "**2)** $f$ une fonction définie sur $\\mathbb{R}$ par : \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = ax + b ; x > 2 \\\\ f(x) = x^2 - b - 3a ; x < 2 \\\\ f(2) = 0 \\end{cases}$$\n\n\n\n\n\n\n\n<br>Déterminer les réels $a$ et $b$ pour que $f$ soit continue en $2$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 02 :**",
+          "points": 0,
+          "bgColor": "transparent",
+          "content": "1) $f$ une fonction définie sur $\\mathbb{R}$ par : \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = \\dfrac{\\sin(\\pi x)}{x-1} ; x \\neq 1 \\\\ f(1) = a \\end{cases}$$\n\n\n\n\n\n\n\n\\nDéterminer la valeur du réel $a$ pour que $f$ soit continue en $1$\n2) $f$ une fonction définie sur $\\mathbb{R}$ par : \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = ax + b ; x > 2 \\\\ f(x) = x^2 - b - 3a ; x < 2 \\\\ f(2) = 0 \\end{cases}$$\n\n\n\n\n\n\n\n\\nDéterminer les réels $a$ et $b$ pour que $f$ soit continue en $2$",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": "",
+          "section_header": "Exercice 02",
+          "section_number": "2",
+          "interactive_answers": []
+        },
+        {
+          "id": "ex-3",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "**1)** Montrer que la fonction $f: x \\to 2\\sqrt{x} + x^3 + 3$ est continue sur $[0; +\\infty[$",
+              "type": "bullet"
+            },
+            {
+              "text": "**2)** Montrer que la fonction $g: x \\to \\dfrac{x+1}{x^2+3}$ est continue sur $\\mathbb{R}$",
+              "type": "bullet"
+            },
+            {
+              "text": "**3)** Montrer que la fonction $f: x \\to 2\\sin x \\sqrt{x} + x^3 + 3$ est continue sur $[0; +\\infty[$",
+              "type": "bullet"
+            },
+            {
+              "text": "**4)** Montrer que la fonction $g: x \\to \\sqrt{x^2 - x + 3}$ est continue sur $\\mathbb{R}$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 03 :**",
+          "points": 0,
+          "bgColor": "transparent",
+          "content": "1) Montrer que la fonction $f: x \\to 2\\sqrt{x} + x^3 + 3$ est continue sur $[0; +\\infty[$\n2) Montrer que la fonction $g: x \\to \\dfrac{x+1}{x^2+3}$ est continue sur $\\mathbb{R}$\n3) Montrer que la fonction $f: x \\to 2\\sin x \\sqrt{x} + x^3 + 3$ est continue sur $[0; +\\infty[$\n4) Montrer que la fonction $g: x \\to \\sqrt{x^2 - x + 3}$ est continue sur $\\mathbb{R}$",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": "",
+          "section_header": "Exercice 03",
+          "section_number": "3",
+          "interactive_answers": []
+        },
+        {
+          "id": "ex-4",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "**1)** $f$ une fonction : $f(x) = x^5 + x^3 + 3x - 4$, déterminer $f(\\mathbb{R})$",
+              "type": "bullet"
+            },
+            {
+              "text": "**2)** $g$ une fonction tel que $g(x) = \\dfrac{2x+1}{x-1}$, déterminer $g(]1; +\\infty[)$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 04 :**",
+          "points": 0,
+          "bgColor": "transparent",
+          "content": "1) $f$ une fonction : $f(x) = x^5 + x^3 + 3x - 4$, déterminer $f(\\mathbb{R})$\n2) $g$ une fonction tel que $g(x) = \\dfrac{2x+1}{x-1}$, déterminer $g(]1; +\\infty[)$",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": "",
+          "section_header": "Exercice 04",
+          "section_number": "4",
+          "interactive_answers": []
+        },
+        {
+          "id": "ex-5",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "$f$ une fct définie sur $[-2; +\\infty[$ par \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = \\dfrac{3x^2 - 4x - 4}{x^2 - x - 2} ; x > 2 \\\\ f(x) = \\dfrac{\\sqrt{x^2+5}-3}{\\sqrt{x+2}-2} ; -2 < x < 2 \\\\ f(2) = \\dfrac{8}{3} \\end{cases}$$\n\n\n\n\n\n\n\n",
+              "type": "text"
+            },
+            {
+              "text": "**1)** Montrer que $f$ est continue en 2.",
+              "type": "bullet"
+            },
+            {
+              "text": "**2)** Etudier la continuité de $f$ sur $[-2; +\\infty[$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 05 :**",
+          "points": 0,
+          "bgColor": "transparent",
+          "content": "$f$ une fct définie sur $[-2; +\\infty[$ par \n\n\n\n\n\n\n\n$$\\begin{cases} f(x) = \\dfrac{3x^2 - 4x - 4}{x^2 - x - 2} ; x > 2 \\\\ f(x) = \\dfrac{\\sqrt{x^2+5}-3}{\\sqrt{x+2}-2} ; -2 < x < 2 \\\\ f(2) = \\dfrac{8}{3} \\end{cases}$$\n\n\n\n\n\n\n\n\n1) Montrer que $f$ est continue en 2.\n2) Etudier la continuité de $f$ sur $[-2; +\\infty[$",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": "",
+          "section_header": "Exercice 05",
+          "section_number": "5",
+          "interactive_answers": []
+        },
+        {
+          "id": "ex-6",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "**1)** Montrons que l’équation $x^3 - x - 5 = 0$ possède au moins une solution $\\alpha$ dans $]0; 2[$",
+              "type": "bullet"
+            },
+            {
+              "text": "**2)** Montrer que l’équation $\\sqrt{x} + x - 1 = 0$ admet une solution unique dans l’intervalle $]0; 1[$",
+              "type": "bullet"
+            },
+            {
+              "text": "**3)** Montrons que l’équation $x^5 + x^3 = 1 - x$ admet une unique solution $\\alpha$ dans $\\mathbb{R}$ puis vérifier que $0 < \\alpha < 1$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 06 :**",
+          "points": 0,
+          "bgColor": "transparent",
+          "content": "1) Montrons que l’équation $x^3 - x - 5 = 0$ possède au moins une solution $\\alpha$ dans $]0; 2[$\n2) Montrer que l’équation $\\sqrt{x} + x - 1 = 0$ admet une solution unique dans l’intervalle $]0; 1[$\n3) Montrons que l’équation $x^5 + x^3 = 1 - x$ admet une unique solution $\\alpha$ dans $\\mathbb{R}$ puis vérifier que $0 < \\alpha < 1$",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": "",
+          "section_header": "Exercice 06",
+          "section_number": "6",
+          "interactive_answers": []
+        },
+        {
+          "id": "ex-7",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "$f$ la fonction définie sur $\\mathbb{R}$ par : $f(x) = x^3 + 2x - 1$.",
+              "type": "text"
+            },
+            {
+              "text": "**1)** Montrer que l’équation $f(x) = 0$ admet une seule solution $\\alpha$ dans $\\mathbb{R}$ puis vérifier que $\\alpha \\in ]0; 2[$.",
+              "type": "bullet"
+            },
+            {
+              "text": "**2)** Etudier le signe de $f(x)$ pour tout $x$ de $\\mathbb{R}$",
+              "type": "bullet"
+            },
+            {
+              "text": "**3)** Par la méthode de dichotomie, donner un encadrement de $\\alpha$ d’amplitude $0,5$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 07 :**",
+          "points": 0,
+          "bgColor": "transparent",
+          "content": "$f$ la fonction définie sur $\\mathbb{R}$ par : $f(x) = x^3 + 2x - 1$.\n1) Montrer que l’équation $f(x) = 0$ admet une seule solution $\\alpha$ dans $\\mathbb{R}$ puis vérifier que $\\alpha \\in ]0; 2[$.\n2) Etudier le signe de $f(x)$ pour tout $x$ de $\\mathbb{R}$\n3) Par la méthode de dichotomie, donner un encadrement de $\\alpha$ d’amplitude $0,5$",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": "",
+          "section_header": "Exercice 07",
+          "section_number": "7",
+          "interactive_answers": []
+        },
+        {
+          "id": "ex-8",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "f une fonction définit par le tableau de variations, ci-contre",
+              "type": "text"
+            },
+            {
+              "rows": [
+                [
+                  "f(x)",
+                  "-1",
+                  "\\nearrow",
+                  "18",
+                  "\\searrow",
+                  "-1",
+                  "\\nearrow",
+                  "19"
+                ]
+              ],
+              "type": "table",
+              "title": "Tableau de variations de f",
+              "headers": [
+                "x",
+                "-4",
+                "-3",
+                "-1",
+                "1"
+              ],
+              "table_data": {
+                "rows": [
+                  [
+                    "f(x)",
+                    "-1",
+                    "\\nearrow",
+                    "18",
+                    "\\searrow",
+                    "-1",
+                    "\\nearrow",
+                    "19"
+                  ]
+                ],
+                "headers": [
+                  "x",
+                  "-4",
+                  "-3",
+                  "-1",
+                  "1"
+                ],
+                "alignment": []
+              }
+            },
+            {
+              "text": "Déterminer le nombre de solution des équations suivantes Puis encadrer ces solutions.",
+              "type": "text"
+            },
+            {
+              "text": "**1)** $f(x) = 18$",
+              "type": "bullet"
+            },
+            {
+              "text": "**2)** $f(x) = 0$",
+              "type": "bullet"
+            },
+            {
+              "text": "**3)** $f(x) = -3$",
+              "type": "bullet"
+            },
+            {
+              "text": "**4)** $f(x) = 3$",
+              "type": "bullet"
+            },
+            {
+              "alt": "",
+              "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAB5kAAAL7CAYAAADHxDJBAAAQAElEQVR4AezdB2BT1dvH8V86KJQ9BEUQFFFwD0SGbFD2FhkiewkqoDh4URRFHAioKCBLQZYgeyMbEZEligNwgMj4IygyCx3vTZFRmqRJe9ImN9+am9x77rnnPM8nBzB9mjRMfCGAAAIIIIAAAggggAACCCCAgN0FyA8BBBBAAAEEEEAAAQQQQAABYwKJReYEvgJQgJAQQAABBBBAAAEEEEAAAQQQQMD+AmSIAAIIIIAAAggggAACCASXgLNSnVhkdu6wIYCAlwJ0QwABBBBAAAEEEEAAAQQQQAAB+wuQIQIIIIAAAggggAACCLgVoMjsloYTCCAQbALEiwACCCCAAAIIIIAAAggggAAC9hcgQwQQQAABBBBAAIGMF6DInPHPAREggAACdhcgPwQQQAABBBBAAAEEEEAAAQQQsL8AGSKAAAIIIIBACAlQZA6hJ5tUEUAAAQQQSCrAEQIIIIAAAggggAACCCCAAAII2F+ADBFAAAEEEDAvQJHZvCkjIoAAAggggAACaRPgagQQQAABBBBAAAEEEEAAAQQQsL8AGSKAAAJBLOB1kfmrr75S79691aNHDw0cOFCvvPIKGwasAdYAa4A1wBpgDbAGWAMhtQb4f2BeA7AGWAOsAdYAa4A1wBpgDbAGWAOsAdYAa8D+a4DnmOc4FNfAq6++qn79+qlLly4aOXKkli1b5rEE7nWR+dFHH9XQoUP1wQcfJE7w8ssv62U2DFgDrAHWAGuANcAaYA2wBlgDrIGMXwM8BzwHrAHWAGuANcAaYA2wBlgDrAHWAGuANcAasP8a4Dn243P80ksvJb7R+KOPPlK3bt30yy+/pL3I7Cws//rrrx4H4iQCCCCAAAIIIIAAAggggAACSQU4QgABBBBAAAEEEEAAAQQQQACBYBTYunWrx7CTvpP5iq7Oj8guVqxY4kdkX3GKQwQQQAABBBBAAAEEEEAAAQQQCFYB4kYAAQQQQAABBBBAAAEEEEDAg0CePHk8nJU8FpknTZok3sHs0S/dTjIRAggggAACCCCAAAIIIIAAAgjYX4AMEUAAAQQQQAABBBBAAIFAEMicObPHMDwWmR0Oh8eLOYkAAoIAAQQQQAABBBBAAAEEEEAAAQTsL0CGCCCAAAIIIIAAAgiElEBCQoLHfD0Wma+66iqPF3MSAQQQCFwBIkMAAQQQQAABBBBAAAEEEEAAAfsLkCECCCCAAAIIIIBARgh4LDJnREDMiQACCCBgcwHSQwABBBBAAAEEEEAAAQQQQAAB+wuQIQIIIIAAAgjYWsBjkTmlt0HbWobkEEAAAQQQCDEB0kUAAQQQQAABBBBAAAEEEEAAAfsLkCECCCCAAAImBDwWmU1MwBgIIIAAAggggAACaRLgYgQQQAABBBBAAAEEEEAAAQQQsL8AGSKAAAJBJWCsyHz//aX06KPN9cQT3dS/f3+9/PKr6tv3Bf3f//0fGwZBuwb69u2rF198UUOHDtU777yjhx56yOs/4M6+zmuc1zrHcI7Fnwf+PmANsAZYA6wB1oCd1gC5sJ5ZA6wB1gBrgDXAGmANsAZYA6wB1gBrgDVg/zXAc8xzHNxr4IUXXtCrr76q4cOHq1+/fl7XuVLqaKTIfP/992rokMGaOHG83nvvQ6vA/LJVaO6ngQNf12uvvcaGQdCugYEDB2rAgAHq2bOnevfurbFjx6b0Z+rieWdf5zXOa51jOMfizwN/H7AGWAOsAdYAa4A1wBpIhzXA/38H7f9/8+eDPx+sAdYAa4A1wBpgDbAGWAOsAdYAa4A14PUa4PW/V6//X3/99cTicvfu3ROLzc4fGrhYzErDjpEic+6cWXXt9bmtMDJbGzcE7Ctw7bXXKmvWrCkm6Ozj7JtiRzoggAACCCCAAAIIIBBCAqSKAAIIIIAAAggggAACCCCAAAIZK2CqfuWpyOx1hsdO/6tDB/Z53Z+OCASzwMmTJ1MM35s+KQ5CBwQQQAABBBBAAAEEEEAgfQSYBQEEEEAAAQQQQAABBBBAIEQEjh07ZiRTI0Xms2dP6eyplAtvRiJmEEkgZJRAfHy811P70tfrQemIAAIIIIAAAggggAACCCAQQgKkigACCCCAAAIIIIAAAgiYFThz5oyRAY0UmSMUpagc4UYCYhAEAlkgLCyFPzKXBe9L38suYxcBBBBAAAEEEEAAAQQQQAABBAJdgPgQQAABBBBAAAEEEAhSAYfDYSRy7ytmHqaLinIoXGHiCwEEEAhUAeJCAAEEEEAAAQQQQAABBBBAAAH7C5AhAggggAACCCCAQPoIGKkMx4cnyBFupuqdPmkzCwIIIIBAgAgQBgIIIIAAAggggAACCCCAAAII2F+ADBFAAAEEEEDAZgJGiszh4RGKjODjsm22NkgHAQQQQCCkBUgeAQQQQAABBBBAAAEEEEAAAQTsL0CGCCCAAAIIpE7ASJE55mSMTsScTF0EXIUAAggggAACCCDgvQA9EUAAAQQQQAABBBBAAAEEEEDA/gJkiAACCAS4gJEi86EjB/XH3kP6fMbYAE+X8BBAAAEEEEAAAQQQ8I8AoyKAAAIIIIAAAggggAACCCCAgP0FyBABBM4LGCky/++Po/pmwxbdclfR86NyjwACCCCAAAIIIIAAAggEhgBRIIAAAggggAACCCCAAAIIIICA/QXIMJ0FjBSZT8ZK/x4/qX1/HEnn8JkOAQQQQAABBBBAAAEEEEAgOAWIGgEEEEAAAQQQQAABBBBAAAEEglXA+yKzhwzD4yRHvJSQEC6+EEAAAQQQQAABBBBAAAEEEEAgiAUIHQEEEEAAAQQQQAABBBBAAIEUBIwUmeMcUnxChOQ4J77SX4AZEUAAAQQQQAABBBBAAAEEEEDA/gJkiAACCCCAAAIIIIAAAggEioCRIrPipXMx8YqP5Z3MgfLEEkdACBAEAggggAACCCCAAAIIIIAAAgjYX4AMEUAAAQQQQAABBBAIOQEzReYEyy3hnM6dOmvtcEMAAQQCXYD4EEAAAQQQQAABBBBAAAEEEEDA/gJkiAACCCCAAAIIIOAvATNFZiu6mLMJOhsXa+1xQwABBBBAIJUCXIYAAggggAACCCCAAAIIIIAAAvYXIEMEEEAAAQQQCHoBY0XmU2dOKVa8kznoVwQJIIAAAggg4EKAJgQQQAABBBBAAAEEEEAAAQQQsL8AGSKAAAIIIOCtgLEic1zsKZ0+xTuZvYWnHwIIIIAAAgggYECAIRBAAAEEEEAAAQQQQAABBBBAwP4CZIgAAggEnICxIvPZ2DjFJ5wJuAQJCAEEEEAAAQQQQACB9BdgRgQQQAABBBBAAAEEEEAAAQQQsL8AGSIQugLGisxxZ2J17uy50JUkcwQQQAABBBBAAAEEEAh8ASJEAAEEEEAAAQQQQAABBBBAAAH7C5Ch3wWMFZljY09JsfF+D5gJEEAAAQQQQAABBBBAAAEE7CdARggggAACCCCAAAIIIIAAAgggEDwCqS0yJ8sw1iGd09lk7TQggAACCCCAAAIIIIAAAggggEDQChA4AggggAACCCCAAAIIIIAAAskEjBWZz52NUXycseGSBUqDtwL0QwABBBBAAAEEEEAAAQQQQAAB+wuQIQIIIIAAAggggAACCCCQcQLGqsIOxVlZxFobNwQQcClAIwIIIIAAAggggAACCCCAAAII2F+ADBFAAAEEEEAAAQQQCAEBY0Xm2FiHzp1zhAAZKSKAgN0EyAcBBBBAAAEEEEAAAQQQQAABBOwvQIYIIIAAAggggAAC5gSMFZkTrPpymLHRzCXISAgggAACQStA4AgggAACCCCAAAIIIIAAAgggYH8BMkQAAQQQQACBIBQwWBZOkKxbEBoQMgIIIIAAAgj4JEBnBBBAAAEEEEAAAQQQQAABBBCwvwAZIoAAAggg4F7AYJE5kzULVWYLgRsCCCCAAAIIIJAxAsyKAAIIIIAAAggggAACCCCAAAL2FyBDBBBAIAAEDBaZKTAHwPNJCAgggAACCCCAAAIBKEBICCCAAAIIIIAAAggggAACCCBgfwEyRCCUBAwWmR2h5EauCCCAAAIIIIAAAgggEPwCZIAAAggggAACCCCAAAIIIIAAAvYXIEM/CBgsMp+1wqPQbCFwQwABBBBAAAEEEEAAAQQQSJMAFyOAAAIIIIAAAggggAACCCCAQCALmCkyJ2ZIgTmRgTsEEEAAAQQQQAABBBBAAAEE7CpAXggggAACCCCAAAIIIIAAAghYAgaLzNZo3AJOgIAQQAABBBBAAAEEEEAAAQQQQMD+AmSIAAIIIIAAAggggAACCKSngNkisyMuPWNnLgSCWYDYEUAAAQQQQAABBBBAAAEEEEDA/gJkiAACCCCAAAIIIICALQXMFpkTwm2JRFIIIBBKAuSKAAIIIIAAAggggAACCCCAAAL2FyBDBBBAAAEEEEAAgbQImC0ypyUSrkUAAQQQQMCTAOcQQAABBBBAAAEEEEAAAQQQQMD+AmSIAAIIIIAAAkEhYLDInBAUCRMkAggggAACCJgVYDQEEEAAAQQQQAABBBBAAAEEELC/ABkigAACCCBwuYDBInOUNS6FZguBGwIIIIAAAgggEAgCxIAAAggggAACCCCAAAIIIIAAAvYXIEMEEEAgQwQMFpljrAQc1sYNAQQQQAABBBBAAAEE3AtwBgEEEEAAAQQQQAABBBBAAAEE7C9AhgjYW8BgkZkCs72XCtkhgAACCCCAAAIIIGBzAdJDAAEEEEAAAQQQQAABBBBAAAH7C5ChEQGDRWYrHurMFgI3BBBAAAEEEEAAAQQQQAABkwKMhQACCCCAAAIIIIAAAggggAACgSVgtsh8PjfuEUAAAQQQQAABBBBAAAEEEEDA/gJkiAACCCCAAAIIIIAAAgggEKICZovMCSGqGDRpEygCCCCAAAIIIIAAAggggAACCNhfgAwRQAABBBBAAAEEEEAAAf8KmC0y83HZ/n22GN2+AmSGAAIIIIAAAggggAACCCCAAAL2FyBDBBBAAAEEEEAAAQRsImC2yMw7mW2yLEgDAQQuCPCIAAIIIIAAAggggAACCCCAAAL2FyBDBBBAAAEEEEAAAd8EzBaZfZub3ggggAACCKRWgOsQQAABBBBAAAEEEEAAAQQQQMD+AmSIAAIIIIAAAgEqYLDIzNuYA/Q5JiwEEEAAAQTSUYCpEEAAAQQQQAABBBBAAAEEEEDA/gJkiAACCCAQ6gIGi8xRliWFZguBGwIIIIAAAgggEHgCRIQAAggggAACCCCAAAIIIIAAAvYXIEMEEEAgnQQMFpljrJAd1sYNAQQQQAABBBBAAAEEvBWgHwIIIIAAAggggAACCCCAAAII2F+ADBGwm4DBIjMFZrstDvJBAAEEEEAAAQQQQCCEBUgdAQQQQAABBBBAAAEEEEAAAQTsL0CGqRQwWGS2IqDObCFwQwABBBBAAAEEEEAAAQQQ8J8AIyOAAAIIIIAAAggggAACESL+CgAAEABJREFUCCCAQEYLmC0yu8qGNgQQQAABBBBAAAEEEEAAAQQQsL8AGSKAAAIIIIAAAggggAACCISMgNkic0LIuNkiUZJAAAEEEEAAAQQQQAABBBBAAAH7C5AhAggggAACCCCAAAIIIGBawGyRmY/LNv38MF5oCpA1AggggAACCCCAAAIIIIAAAgjYX4AMEUAAAQQQQAABBBAIWgGzRWbeyRy0C4HAEUDAGwH6IIAAAggggAACCCCAAAIIIICA/QXIEAEEEEAAAQQQQCAlAY9FZoeDtyanBMh5BBBAAIEAECAEBBBAAAEEEEAAAQQQQAABBBCwvwAZIoAAAggggEDACHgsMsfFxfkQKG9j9gGLrggggAACCISEAEkigAACCCCAAAIIIIAAAggggID9BcgQAQQQQCD0BDwWmcPDw30QibL6Umi2ELghgAACCCCAAAKBLkB8CCCAAAIIIIAAAggggAACCCBgfwEyRAABBPwm4LHInJDgS9E4xgqSj9e2ELghgAACCCCAAAIIIJBKAS5DAAEEEEAAAQQQQAABBBBAAAH7C5AhAsEv4LHI7Ft6FJh986I3AggggAACCCCAAAIIBI0AgSKAAAIIIIAAAggggAACCCCAgP0FyNBrAYNFZmtO6swWAjcEEEAAAQQQQAABBBBAAIH0EmAeBBBAAAEEEEAAAQQQQAABBBBIfwGzReaU46cHAggggAACCCCAAAIIIIAAAgjYX4AMEUAAAQQQQAABBBBAAAEEglggpV+rbLbI7MuvcA5iVHuGTlYIIIAAAggggAACCCCAAAIIIGB/ATJEAAEEEEAAAQQQQAABBFIWCA8P99jJbJGZj8v2iM1JBFIlwEUIIIAAAggggAACCCCAAAIIIGB/ATJEAAEEEEAAAQQQQCCABOLi4jxGY7bIzDuZPWJzEgEE7CVANggggAACCCCAAAIIIIAAAgggYH8BMkQAAQQQQAABBEJRwOHw/O5is0XmUBQmZwQQQACBQBMgHgQQQAABBBBAAAEEEEAAAQQQsL8AGSKAAAIIIIBABgoYLDLzNuYMfB6ZGgEEEEAAgSAQIEQEEEAAAQQQQAABBBBAAAEEELC/ABkigAACCISCgMEicybLi0KzhcANAQQQQAABBBAILgGiRQABBBBAAAEEEEAAAQQQQAAB+wuQIQIIIGBQwGCRmQKzweeFoRBAAAEEEEAAAQQQEAQIIIAAAggggAACCCCAAAIIIGB/ATJEIBgFDBaZHcGYPzEjgAACCCCAAAIIIIAAAr4K0B8BBBBAAAEEEEAAAQQQQAABBOwvQIYeBAwWmc9a01BothC4IYAAAggggAACCCCAAAIIZIgAkyKAAAIIIIAAAggggAACCCCAQHoIGCwyp6LAnB4ZMgcCCCCAAAIIIIAAAggggAACCGSsALMjgAACCCCAAAIIIIAAAgjYSsBgkdlWLiGfDAAIIIAAAggggAACCCCAAAIIIGB/ATJEAAEEEEAAAQQQQAABBFIjYLbI7IhLTQxcgwAC3gvQEwEEEEAAAQQQQAABBBBAAAEE7C9AhggggAACCCCAAAIIBLSA2SJzQnhAJ0twCCCAgP8EGBkBBBBAAAEEEEAAAQQQQAABBOwvQIYIIIAAAggggAACTgGzRWbniGwIIIAAAggEkgCxIIAAAggggAACCCCAAAIIIICA/QXIEAEEEEAAAQTSVcBgkTkhXQNnMgQQQAABBBAIbgGiRwABBBBAAAEEEEAAAQQQQAAB+wuQIQIIIICAPQUMFpmjLCEKzRYCNwQQQAABBBBAIJgFiB0BBBBAAAEEEEAAAQQQQAABBOwvQIYIIIBAmgQMFpljrEAc1sYNAQQQQAABBBBAAAEEzAswIgIIIIAAAggggAACCCCAAAII2F+ADBEIDgGDRWYKzMHxlBMlAggggAACCCCAAAIIGBVgMAQQQAABBBBAAAEEEEAAAQQQsL8AGSYRMFhktsalzmwhcEMAAQQQQAABBBBAAAEEEAgEAWJAAAEEEEAAAQQQQAABBBBAAAH/CJgtMqctRq5GAAEEEEAAAQQQQAABBBBAAAH7C5AhAggggAACCCCAAAIIIIBAkAuYLTInBLkG4bsRoBkBBBBAAAEEEEAAAQQQQAABBOwvQIYIIIAAAggggAACCCCAgHcCZovMfFy2d+r0QsCUAOMggAACCCCAAAIIZIjAtm3bNGjQIPXv318jR47UBx984HZznh9g9XvD6r/Jui5DAmZSBBBAAIHgFiB6BBBAAAEEEEAAAQQCTMBskZl3MgfY00s4CCCQUQLMiwACCCCAAAL2Fnjssdbq27evBgwYoG7duqlHjx5uN+f5/la/F6z+j7VubW8YskMAAQQQQCDEBEgXAQQQQAABBBAIVQGzReZQVSRvBBBAIAAF9uzZE4BRZXhIBIAAAggggECqBP45fuLidRMnTtV3331/8diXnR+//15jp05NvGTHjz8mPnKHAAIIIIAAAoElwOvpwHo+UhkNlyGAAAIIIICAnwUMFpl5G7OfnyuGRwABBFwK9O7dWw6HI3HLlSuXsmTJkrhft25drV692uU1NCIQeAJEhAACCASuwJJXu6pf6eyqfV0mFS9SSI891iJNwXZs0UIFCxXSPaVLJ/6b3btXrzSNx8UIIIAAAgggkDqBfta/wdn/ez2dz3o9Hcbr6dRBchUCPgnQGQEEEEDALgIGi8xRlgmFZguBGwIIIJBuAocPH9bQoUMvznfs2DGdOXMm8fj777/X/PnzE/e5QwABBFItwIUIhLrAiQOa9NEoffCTtOiPc9q9908jIgf+/FNnT5x/d/TQYcPk/DfdyMAMggACCCCAAAJeCRw9eFADrX+Dz/9rLB2xXk8n8HraKzs6IYCATQVICwEEEPBRwGCROcaa2mFt3BBAAAEE0kNg7tw5qlmzpsepTp8+7fE8JxFAAAEEgleAyNNB4OxMLX6/ntbt8/9ctWrV0rx58/w/ETMggAACCCAQogLbtm3Tq6++qtGjR2vKtGnq0L69RwleT3vk4SQCCCCAQDoKZNRU68eP1yd9+2rc0KH6cNQo9R8wQG++8Ya++uqrjAqJeQNMwGCRmQJzgD23hIMAAjYWGPPJZ2rQoKG2bNniMcv8+fN7PM9JBBBAAAEEEHAj8Mcwfdm1iRYP3azf3HRx05yq5s2bN6t+/foa/sEHqbqeixBAAAEEEEDAvcDOXbv0+OOP66WXXlLnzp3VsnlzzV60SJ6+eD3tSYdzCCCAAAJ2F9j48cdq3r692g4apA69e6t7164a0L+/nn/hBXXr1k2LFy+2O4E3+YV8H4NFZsuSOrOFwA0BBBDwt8D/NHviAH9PwvgIIIAAAgiEtMC+HT9o2nxp/OH0Zfhh27b0nTCkZiNZBBBAAIFQEbjwayj++eefxJR3fv+9z++6io+PT7yWOwQQQAABBEJB4MD+/YlpHv3338THT0aN0h+Je8nvvv322xQ/YTP5VbTYUcBskdmkEGMhgAACCCQX2PW41r1YQPuW70h+zkVLQoKLRpoQQAABBBBAIEWBL3/LrvetAvP5l9fJuxdqWl/9Zk3TjJ++1aFDhxV/6pT+/ee4/vnnqE6ciNORf8/q0O7l+nPu85r66r2KTj6Ey5Zr+RQSly402lyA9BBAAAFDAqd+GKRP3mimru1qKCIqs268sYQKFS6seo0bG5qBYRBAAAEEELCfwK5du1S9Rg05HA7dVrKk8uXOrQ83bPCYaALfePboEyonzRaZE0KFLbTzJHsEEMgogUNaP3KE5r0rfet1CHFe96QjAggggAACCFwS2Hwg96UDF3vtO3VV+4bN1OTmO5Q/fz45smRR9pzZlDNnbmXNGqY82SOVv1hVFazXXY90bKwuTa52MUryplOZMiVvpAUBBBDIIAGmRSCYBOL/nK6pn32mCeOma+aCbxV3NkZHjhzSn/v2BVMaxIoAAggggEC6C4wcOVI//PBD4rzOdzQf+eefxH13d2FhYXI4+Ghjdz6h1B5mNFnWlFFOBkPARwG6216ggJbskt46bvtESRABBBBAAIGMFzjn+sVNxzZtNXP1crW/t7Su9yrKQtLVbdSn1SPqXllyPaoufm3cu1e/XjxiBwEEEEAAAZcCNF4msOOHnXqpX1/Ve7SvBn+wTSus182XnWYXAQQQQAABBP4TWLloqn7fukwfjR2r9z4YoTlz5mjwW29pyJAh//Xw7oFfKeGdUyj0MltkTggFMnJEAAEEfBUw1//jDdl8HMzsX/M+Tk53BBBAAAEEglYgOir5i5vnnn9eoz8er0YVq6pI3rw+5Hatrmn0sIa/2Vgzenu+bN3h/+mj0ye1TXwhgAACCCCAQEoCa9asVssWzfXqwEFauGq3fvzLwxXZrXMPeP6kEqtHGm9cjgACCCCAQIAK7Jyg45smqUWTB9WlY0c91eNxNWzYUH2eey5AAyasYBDwWH1wOFL6OftgSJEYLwgcOHDgwm6Sx63btutMzOkkbRwggEBgCZw6dVKfTZ+nvYdP+BgYH7npEYyTCCCAAAIIuBFw6FCyM0WvuSZZm/cN5aXSLVWjrOffCRkTF64TcQ55/nAy8YUAAggggAAClkDFipW0fftWa8/zLe9N16ph3x5q3qqTdEO0586ctacAWSGAAAIhKnDg8DH9sWO1Rkycp8lT5mvDbyEKQdp+EfBYZI6L8+V3eSb/SX+/RGzzQXv16iWHw5G45c2bV7lz507c8lj7Dsf59g59+vis8Msvv6h27dqJ40Zlzqy8efIod5ZI5Y3Oqmpdn1WWtgN0wysztdKXp9znKLgAAQRSI7D5u59Vq2ZNPdKsfiouz5yKa7gEgYwXIAIEEEAgowUyRR5JFsLeP9P6Ox2bKNN9XZKNe3nD1dmyqVi2aBUVXwgggAACCCCQksDx4+5/n9SNrdrotQlTtPPXX/XXz/s06/n3NbbrIDUqUzulYf87z/c6/4PgAQG/CjA4Agj4T2Djxo2qV+chXXdbZT3+2gxN+9HDXDdnknJ6OM8pBFwIeCwyh4eHu7jEXVOUdYL/+bIQUn373//+p2HDhl28/ujRo/rnn38St7+t/Qsnxg0erLmXHV9o9/T44Ycfatu2bYldzsbE6Ojff+ufM7E6evqU/v56iTR1pH6bu0hfrN+b2Ic7BBAIHIGJY9/TmrXrUhlQ1lRex2UIIICASwEaEQgRgZ91+tjBZLlmz572V9xRRR6UQ5HJxr7QkCdTNt1gHRSxNm4IIIAAAggg4FkgOjpaOXLkSNapeJvWatK9m7o0qqPi119/8Xy0wnT/7fdePPa8E+75NGcRQAABewuQnQ0EZsyYoc3ffJ1yJjfnVJkOHXTVIzVT7ksPBC4T8FhkTkjwpWgcYw3rsDZuqRGYN2+eatWq5fWl3WrU0JsLF+qfkyc9XvO3VUzu16+fhgwZ4rGfdFyKiNHpTHEp9OM0Agikt0COc7+6nLJrzZx66CaXp9GvfngAABAASURBVC5rdP7dfNkhuwgggAACNhUgLXMCO6ST07Rp6cokQ5Zp101l2z6epC21BwlhDreX5siZWddaZ933sE5yQwABBBBAAIFEAecbZEaMGKEWLVuqZtWqate2rV5/d5iG9XtJfUrepHzZsif2u/wuU4TzjTKXt7jbz+buBO0IIIAAAghkoID3U+/b5/7TuKKuK6ZqNarpmaf7aNFn8zTsyVf1RFVvP0mTV6zePwv27hlmLj0WVWotx06cqvr162vLli1eD7Hf6vt8nTqaMGWK22t++eMP1apbVwMHDnTb5+KJ3DdIt1ylG/LwP9AXTdhBICAEvlSB3EeTRfJ4jSwaMfVlTR/RU57/9uUHR5Lh0YAAAggggIBHgXU6Onepfvn2Uqcaw8bqiXEfqnKh3Jcavd27ol9CfIIUf/aK1kuHuXLn0FWXDtlDAAEEEEAAgRQEWloF5smTJmnR8uUaN368XnjyKdW+8UblzeX63+1jJ46lMOKF07ku7PCIAAIIIIBAUArky5fPZdw3tW6vVyd8pC+WfqG3B7+lmndU0P1RedW+auMUvtd8YbiICzs8Xi4QgvsGi8yWnudKh9WBW3KBo5o+5vXkzV627Pra/Ucd/PbNN/p6/XrvRqp4t+6pXE63FedbWt6B0QuB9BBYrn+/nqDJUzcmmSxndBY9366NlLOgsl8TJc8/GpIpybUcIIAAAggggEBKAjcoz7UlVLdxscSOJao21MNt26tl4lHa7xzOdzE73I+TYJ3jo7Ld+5g8w1gIIIAAAqEp4HBY/9h6lXqCV73ohAACCCCAQKAKVKtWTVFRUZfCs/4NrN2xo1q2baFbM+e41P7f3rVXFVB4hDcF5Mj/ruAh1AXMFpn9p2nLkU9M66ERDfLqmzXfpTq/bC5+78yJzZv1bIUKqt+kidfj9mrbXMPaNFFl8YUAAoEi8H/PjFXOMh9p/S+XIho0eJT+OXZEhVt0shoPSXt+0hlrz/0ts/tTnEEAAQQQQAABFwI1pIpj9OTgBYo5eUqDnumiTmn/VcxJ5gkPc//vc/aDyX8XdJKLOUDA/gJkiAACCASIwKkAiYMwEEAAAQQQSJ1AgwYNdNB6jbln7179+eefijlzRn07d1b/qtVV+/5SLgeNjYt12Z60MTzpIUchK2C2yMwP+Hm9kP7+96QmffyBPpkrJf8gXK+HUYSLIvOUiRP19rp1Ou3tMJmkJvXrqYK3/ZP04wABBPwhcPTvQ3r9nSlJhs5zVQE9/3RnKSKL1X6PtR1TzKG9Omftub+5/ya2+2s4gwACCCCAAAJFrr9ZmaKzqGGtmkYxzsScUFyc+3+9K5QsaXQ+BkMAAQTMCTASAqEm4P7XW4SaBPkigAACCASvQK5cuXRd4cIqWLCgMmXKpPL33ec2mfiEeMmrOh/vZHaLGGInwozm6+2nzRidNDgHy50jXpMWS19fEX6JErfq6ad765133lHv3r116623XtEj6WFYnjxJG6yjyBzJP+bAalbXrl31xhtvJG5PPPGEs+n8Zv0/c2Geu/MWdronl+AV2DZJn/askyz+6zs+fUWbQ47YuCvarjz05uNNrryGYwQQQAABBBDwj8DX2vZZD2vo5P9+582bV8OGDdNtt99uneeGAAIIIICADwJ09ZNAjJ/GZVgEEEAAAQQCUyDM4W3J0KtKdGAmSVRGBbxdMd5NyrryzsnqFRcbrbXW45W3zz+fpsGDzxeYnYXmqVOnXdklyfGxJEfnD2Lz5z+/c9l9586dNWLECD333HOJ29ChQ1W/fv2LPXIcP31xnx0EEPCvgMfRF76pdxo8qmkTNl/WrYDUf7yKtuh5WZvzL9x4nUtIoYjsSOH8ZSOyiwACCCCAAAL+FFig+KmVtWXWJy4nWb58uZ566ilVqV7d5XkaEUAAAQQQQCC9BRxpnpABEEAAAQQQQAABOwuYLTLbWcpwbmfOxqjRw22SjNqxTRvdckvSdy7fdtut6tz54ST9Lj/Yunq1NlkNZ63NeXOWnSZ+/rlz9+KWJ08edevW7eKxcyc8PFxt27Z17qpypUo6c+J44j53CCCQsQLf/rZX8/dK6y8P4/571bxBXXW4/fKPIbH+zJ49Yf3ZPXl5zyv2M0tx/DV/BYqnQ84hgAACCCDgP4GNS/TR1DP6ZFbyKTp1f1x33nln8hO0IIAAAggggEAGCji/y5aB0zO1PwUYGwEEEEAAAQQMCBisPvA/Xr48H1mjo/XmoP/TwUNHtevnX7X/r8MaNHiwyyFGjfpM3347SHfckTvZ+TVWQblM3ry6vkQJFb/jDuWMjtaaVasu9nvxxRd15MgR3XXXXRfbLuw0atRIhw4d0uuDBunqggUvNPOIAAIZKLA/14269CdYiV/35gnX6LvzqVbi0YW7o9K//+joySMXGlw8RlttmayNGwLBLkD8CCCAQLALrNGiVev11Bxp42Wp3FTiDn2zbYs+Gv7BZa3sIoAAAggggEBgCEQFRhhEgUBICZAsAggEh0Dm4AiTKP0uYLDI7CxkUGj25RkrXqy4CuTPrRtvul7X5M2nfPnyub38jjueV+vWD7k8H3f0qPb//LN2f/edjp++9LHXzvEGDBjg8poLjfnz51fZsmUvHPKIAAIZLLDyh2PJIuhau7qyJWuNlc6cVqz1X7JTFxuySA4+3kt8IYCA/wQYGQEEvBBYJB2co7lfbNaFTx+6cFGHdi1V6s67LxzyiAACCCCAAAIBJcA30APq6SAYBBDIWAFmRyCJwOWfuJnkBAchJmCwyEyB2d9rJzr6Oq+naPZIcy1btszr/nREAIGMFTh8+Khe7t9fb7/+ysVAorNn15AhQ1W2wgMX2y7tREs5sylzpsyXmpLt5ZCyZE3WSgMCCCCAgP0FyDCdBE5t0vdfLtSokWM0/tPx2v79HO39fblWfbVQY8ZP1ohBPTTxudfVv9f7Gunif82LFr0+nQJlGgQQQAABBBDwXYDvdfpuxhUIIIAAAuktkDHznc2YaZk14AQMFpl5t5y/n91Dh8K9muLpJ7pr2tQpLj8i26sB6IQAAukqsHbjD6r14EN65YpPHvhu61b16tVTt955j4t4rCJz9nzKl/MqF+cuNFl9or37e+PCFTwigAACCCCAgJcCm4do8RvP6fEmddS1Wye1b91erTs1VK9+1VWnVh11at9Kj/f9QI+9tU4Dpp67MGiSx4MHDyY55gABBBBAAAEEAknA9b/fgRQhsSCAAAIIIJAxAvwglhfuIdHFYJHZ+ZMLFJr9uWocyuLV8OVqNfKqH50QQCAwBEoVOqjN2zYlCSY8PEw3FCuWpC3pQYR1mEmZ45y/qsDadXmLkiK8+3vD5eU0IoAAAggggIBbgSXLN2vipBVae+hSl+0bpJmTpFPJf/vFpU6X7a1evfri0U8//aSYmJiLx+yktwDzIYAAAgggcKUA30C/UoRjBBBAAAEEzgvEnX/gPuQFwswJpGOB2VzQQTXSGUcK/3ObrYSyPPGGspSvFlR5ESwCoS0wRcc2jEhGEBcXn6wtaYPzr+9wyeNfC1YBOjKlcZKOyhECCCCAAAIIpCyw7dtNGr/sB03+NeW+nnrMnDlT+fPnV5EiRVSyZEmVKVNGu3fv9nQJ5xAIPQEyRgABBDJMwPmGmgybnIkRQAABBBAIYIEzARwboaWngLNKkZ7zMVcaBLI5UvjpkC7d9VDrp1QkRxomSeOlXI4AAr4IfC19P0qbtsxIdlFUVJRiY2OTtSdtiJAjMlLu/yLPLkVaheakF3GEAAIIIIAAAmkUuOvOUpr2xbY0jnL+8sOHD2vv3r2JB9u2bdOIEcl/+CzxJHcIIIBAgAkQDgL2Fwizf4pkiAACCCCAQKoEElJ1FRfZT8Ds/y2lVAS1n1+6ZpT3pOfpnil/p964L7Nu8dyNs6EpQNaBKPD3cb366mo9MjBpcC1atNCCBQsUERGR9ESSo3DrKEIRipTr9ypbBWZZW+bMVj9uCCCAAAIIIGBS4NRJ1+9suuGG4nriiaf0zDPPqn379uratYtefPFZPf54J6+nHzJkiHXNizp+/LjX19ARAQQQQACBywTYNSbg+tW2seEZCAEEEEAAgaAVcH5vOmiDJ3CDAmaLzAksLIPPTbKhCiUkKFOy1ksNvSrfoZsvHbKHAAIBLjBx3l699Jl06rI4n+jcSZMnT1a1atUua3W16/zbIEFyOB/l4iunlDOvHNn4aAMXODQhgAACCCCQJgF3HxQyc+Z0vffeML399psaO3asRowYqQED3tSbb75pFZzbeT3na6+9pnr1amvPHj4622s0OiKAAAIIIGBcwPUPlaV+Gq5EAAEEEEDALgLW96Xtkgp5pEnAbJE5TaFwcUoCt96aW62tTlmt7cpbdLhDBXNbRaUrT3CMAAIBKRBz7B+9N3RcstgefKRNsjbXDc6fqLb+Nohy9zH61rmrohWXJcr15bSmLEAPBBBAAIGLAmvWrr64H8w7Bw4cMBJ+gvV6unnz5knGatOmje68884kbRcOsmXLrS5dOitXrmwXmlJ8XL16nbZt25diPzoggAACCCCAgL8E3P1Qt7/mY9wME2BiBBBAAAEfBRw+9qe7XQUMFpmt77TYVSlA8rrhkUJ6eaD00k3JAzrn/E5X8mZaEEAgAAXe6f28bsqVW5u2fXkpuhvr657Bi3Rt1fKX2jzuOT85wio0R0a66WW154pUQhaDf827mYlmBNJbgPkQQCC9BPbozJ4P1LFtbdWr30QORyYVKJBf+fLlC6otf/78io6OtuJ3qG7dulq7dm2aATNlyiTnu40PHTqknTt3av/+/XrnnXc8jnvXXWX099/H9fLLL3vsd/nJhg3rqlKlZ7V9+4nLm9lHAAEEEEAAgXQR4Bvo6cLMJAh4EOAUAggEqkBsoAZGXOksYLD64Hy3HIVmvz5/WSJUqHwWFauafJZzVq3pbCx/sJPL0IJAYAmcO/GvBgx9U3uvCOueZ59V/adr+viR91GKzZnlipEuHGaVcmdVZLSzGH2hjUcEEEDArwIMbiuBc1Y2szR77sca+8ki/fvPEev4nP73v8M6cuRIUG2HDx/W6dOnrfilLVu2aP78+Yn7ab0rVqyYnAXs4sWL65prrlHevHm9GrJ///6JRXqvOuuk1qx5Wx9/PN277vRCAAEEEEAAAYMCkQbHYigEEEDAVgIkE/IC/EqJkF8C/wEYLDLHWEPyE34Wgv9uf0Vo0NjTenakqyki9H1EhKsTtCEQkALHdn6pjydO0Ntvv6NRo0Zp9OjRwbV9NFLjxk/UG59O19C5q7ThL+/+YY3MJv3r4hl59K571N9qj7Y272+lFVH6Zrn8k1/kLun2Mip4jTWh9wPSEwEEEEDAlgKpSWqZVr37sj4fvik1Fwf0NX/88UeGx7dgwQJd+XHbnoI6e9ZZ5PfUg3MIIIAAAqEocGD/Xn2zeoneGz5cQ959V2PHjAmu19XW9wHGWDEPt+Jfkj3WAAAQAElEQVQfNGiQpkyZkvgJIYHzXBr8tmngJEUkCCCAAAK2Fkiv5PiVEukl7a95HA4z9VyD/7dkJiB/gdlh3MmLDqrvROlXV8mEZ9bGY65O0IZAoAkckFa9od7Pdle7x9ro2WefUdeuXdW5c+fg2rp0U4f2j+mF1s3Uu0ETtX/6NcUc/9sL7L+V00Xd99HbUvMT0iWlvDcqc1YX0xa5QZmuK6783r2pysUANCGAAAIIhLLA4VVrtGDMMa3daT+Fq666KsOTKl26tMaNG6fnn3/eq1jy5/fuh9m8GoxOCCCAAAL2EIhZoR/mD1W9WjX11BNP6OmePdWxU6fgel1tfR+gkxXzE1b8ffv2VcuWLbV69Wp7PD9kgQACCCCAgK0FDJYWbe10WXIBthsXF2ckIrMrgTqzkSfF1SDHjv2jN4daFWZXJ51tcSc0e9w0jeYTy50abIEs8PM0rV3zqZbM+TaQo/QxtqP6cfFiJWTP7fG6w/9brwULpuvYFb9W0fnLBq7Kcsrjta5PztKM2at14qSLsxs36OyP63T8TxfnaEIAAQQQQCAFgasKllDBm6UKN0kFbPSbF5y/S7lChQopZJ8+p7NkyaKiRYt6NVl8/Bmv+tHJnAAjIYAAAoEt8IeOzv1cqyYN06HzvxEisMP1Ibovv/zSh97+7mrmm6/+jpLxEUAAAQQQSH8BClHpb252xvBwM9/sMVtkNpujt6PZvt/zL7yoXLlya/vWtR5zXdK7uXrdWlqz12/32I+TCGScwDntnvW+Vn2yQ7arff7vG507HeOW9qdff1SzVp1Ut26fZH2c7006p9/ly9e/R9apZrnuerjRZNeXnZkljeqgPV+PuXj+5KlT2rdtjj6bPENvjVyglZsOXzzHDgIIIIAAAkkEbmqrXjP2avrmXfrl8J/a/7+/dejgXzpy5C/99VdwbUePHtWhQ4f0yy+/aO/evWratGmSVDPy4Pjx415Oz8s2L6HoZn8BMkQAAafAuvmaNvhDLVjjPLDXdu7cuQBKiHfTBNCTQSgIIIAAAgElYKZAGVAphVgwCQlmflDA7HcrzMQUYk+l53RPHT+mN994zXOny86e/PEbfT3r48taMnKXuRG4UuCsDh38TceOSblkr69smaMVHe7+L8ERw4Zr1Rc/uEzaedWW7VsvnluzYbq++2mtjsfsv9h25c47A+dqyVf/u7L5iuOT+v6LeYqRBa6/tHXVcE2a8rk+/XSCPhw1QVOnz72iP4cIIIAAAghcLlBYynajsuYuqGuuyqX8BfIqT568yps3uLbcuXMrf/78uuGGG1SgQIHLE8zw/WPO/ynK8CgIAAEEEDAhwBjpKfDPkX36fYdkx/fZ3nrrrelJmcJc7n+QPIULOY0AAggggIDNBRJsnp/903M4zPwwndkis5mY7P/s+ZBh9KGkRaB729XUVc7PLfQwxqnTzvdFeujAKQQyTCCryj/5oToMrKYh/R/UU107qMmj7dW2TTu1b99O7doF19axYyfVqfuQGjWorQ8+HK7wTJnl8uvwe9q9/kOXpy409nn2Nb3xTnu90L+FJk+drg/HjFTfl57Wk31b6tU3uunDj/pq+rSRWrx8noYMHabXhr594VKPj5M/mquezz2pJ/o8qb6vvq+RYyZq3qJ52rPtM/2+c4N+2P6zx+s5iQACCCCAAAL+EzD18VT+i5CREUAAAQQCUSBXgx56/O22eumZsnqx+8Nq3bGjHmndTh1cva4O8NfZHTp0UKtWrfTggw+qZ8+e6t69ewCRRwVQLISCAAIIIIBAIAlQZA6kZyM1sQTm72RmXaXmufRwzXJp74KL52/t1EDTxi3S0CmjLra52smdL5+rZtoQCAyBG7qqZJcv1O7lJRo2YoxmTByr8R+P09ix4zRuXHBto0d/pPnzFmvm7AV6zHrh7hL498baNu4p/bvX5dmLjWuX7NYLz4zXGwOmatS70zXyncka/tZUvT9oil56YaS6dxmkZs27qVb1+nq6dy/FX7wy5Z2Rb03Q8MFTtHbDPv1+9FL/r1bO1i133HypgT0EEEAAAQQQCEgBh4Of5g3IJ4agEEAAgQwTuEZFuo1Xk7fXa8DwzzRh9GhNnTBOY4LwdfWYMWP06aefasmSJRo6dKhy5syZYarpPTHzIYAAAgggELwCmYI3dCJPFDD1Q+9m38mcGBp3KQkkyJtq/G5p41R98PG0i8PddeMtKmYdVb62nJTd/VOXObObd1Na1164HTxw4MIujwgg4EeBb6fO19wx0voA/PXHx4/9pXPnzvoxe1sNTTIIIIAAAiEksPuXXwMq25gYPq4zoJ4QgkEAAQQQCBGByBDJkzSvEOAQAQQQQCBFAW9qXCkOQocMFEhIMPMcuq9U+pycmYB8njbILvhq2VJVLn6zXujwqMfID363SKWbjVGPiZe6ZTpxKvEgpzJJcdaWeJT8Lm/ePMkbL2tp1aql7ilVSq/PT/pR3Jd1YRcBBAwI7N69T5+NPaf+u+XTO48NTO31ELGxdvwtXl6nT0dbCJAEAgggYE7gXPw/6vBIFd1XsaIefm2QZkvyZ3nX2xd1R44csSLhhgACCCCAAALpK5DymzjSNx5mQyDUBcgfAQQCR8BgaTFwkiKSVAgYXAnO31NCoTml52DO9Clas3uXho6bpGMH9rrpfkpvT1ypb/YkPV3thlKJDdms+9yOCOve9W3PHvfvUv7jj32aPHmKDuzfr6nWoz+/aeY6OloRCB2Bvw/t066DeQM24ejoaEVG8pPZAfsEERgCwS5A/AgEoUDcqXEa99kq/bP/T814faAmrlsqZ6FZfvry9kOwCxcu7KcIGBYBBBBAAAEE3At4+y+1+xE4gwACCISEAEmGoEB4COZMyq4EDBaZneVK/ufLFfLlbeGZz380rVOrZesOmj93rr5evlirZo/T+gUf6su1b+iNt7tryNuzLr9MA197Ta3aXnr3c7GTJ5Kcv/zgdesbYoNef0u/7N2uuIT4xFPndFCLFixU3Wq1E4+dd99t36QFzh02BBDwi8B95cvoqYFv6/+qN9QTDz6ozh06qHX79mrTrp3aW1s7X7a2bdWuc2d16NZT7R5roZZVr1fD4lKelCLPd7s6du6iPk8/pa5dO6tt23aqW7euGjVqpBEjRigiwv0PrKQ0NOcRQAABBIJTgKjdC8Q7rrp08vRJzXyit5aMHXWpzfBejnz5PI5YoEA+9evXL3Hz2JGTCCCAAAIIIOAHAb6B7gdUhkQAAQQQSEcB/03l/pN2/TcnI5sUcDjM1HMNFpnNBGQSKRDHypIvy8WwFi7/QvUaNFCZ6rVUp1EHla/bXQ9UfEEvPPvxxT7One++3aa+//d/zt3z26lYlTi/5/I+IeGc1f853VnuTs1Y109bTr2nTn3aqHbdOtq+67tL14RHavWeHdp4qYU9BBAwLFD+yXZ6bdksvbdkiUaNGaMJY8fq43HjNNbaxvmyjR+vcaNGacyHQzXuk8ma9MWbmvVeWb3fwV3AOawT7fT0sGkaPWqk3ho8zCoqj9L48eM0b948zZw5U4899pjVhxsCCCCAAAIIXBDIEl3ywu75x207NPfVAZKfPrApQUleQ52f87L7tWvX6dVXX72shV0EEEAAAQQQSD8Bz/9Op18czIQAAggggECgCfDGpTQ+Ixl+eVxcnJEYDBaZrXj4fy8LwdPtsP49eshlh1MuW6WG7TrqtjvuTHI2NjpCLWvfrYeTtCY/OPmnNH7KOM3+dJk+Gbz0ig5hqtmypQpdlUfXXXGGQwQQCAIBRz2pSklVuN1ZTHYV77XSNYVVvERJVydpQwABBBBAAAEXAg5HPl1Z9z2yZ7+O6PynA8nk19mT2vzFQrcjhme7RsWL3+z2PCfSU4C5EEAAAQRCU8DMN19D046sEUAAAQTsLeD89bn2ztDu2YWHm/nEFrNF5kBQD9gYjlqRzVD8399bj97covXop7PVadzoZJ2dPyNSa15rjRl3v2oXSHY6ScOSEYf0apf5SdpKtuykiXuOqGvVWuoTfY2uTnKWAwQQCA6BzFLUbSqc/xY34VrfDE9I0N+nTrs5TzMCCCCAAAIIJBew/uc6IXnr7w6zL5t+HdBP/fJn08y5i5JP9l9L3Amr4P3fPg8IIOBGgGYEEEDArwIn/Do6gyOAAAIIIBC8Au7e+BS8GYVa5AlW7cBEzma/W+LiGzImgrTHGAulLYv1v19/9yqdis8/r26tGujSb1C+4rKw9srRroOqNL/+ihMpHGbKqqffHKJHr8ulBvfdm0Jns6cZDQEETApYRWRl17lM2d0Mav31Hn5OZ46fdHOeZgQQQAABBBC4UiBeWRQebv0bevkJ63DzoQOXt6Rt//hhvd9/oAYfk2I8jJT33gpatmyNhx6cQgABBAJXgMgQsIcA3+i0x/NIFggggAAC5gWsF8rmB2XEIBTwuBIcDh8//9rH7kHoleqQv31trHo2nauJ67wYIn8hla5aQ+U8ds1pnW2iEzHXWI/e3Zo1a6opSxaqQ6Fs3l1Ar1ARIM+gFDgkxe3QoYO73ERv/TmPzipHlmg352lGAAEEEEAAgSsFws5J18Q5f5DrsjPW4TOPNFHPhbP00xHnpxNdds7n3aPaMfstOUvHngrMTbq8r09Hvq4aNSr6PAMXIIAAAggg4EGAU5aAw+HtNzB5PW1xcUMAAQQQQMCFwGEXbTSFooDHIrPPv/iZH/BzuYY2fblSbw5apXd/c3k6aeP1JaQeT+m2+25P2u7yKI/+UjGXZ65s7NSxgz4a/4maV+YbVVfacIxA4Ap4isz6C2Xtam383t2nI1jfEXdEKkHWo6dhOIcAAggggAAClwTC4nXzpaOLe8dXf6V36zTWR+u/vNjm+84+aWVLrVs3WFs8XNyuTSfNGNlDNUs5f6jUQ0dOIYAAAggggECqBGJjY726LiE+s1f9zHRiFAQQQAABBIJJ4HAwBUusfhTwWGQODw/349ShM3Sp8lVU/L56yp1Cyo6St+rGJ55Q47q1VSdX1hR6nz9dqXoLRUQ4f0vz+WNX95HW+VbtOyhnND+B6cqHNgSCUuCfw1q4aKsWfO4u+s3S3m2KiuEffHdCaWrnYgQQQAABWwr89e/ferDWzSruJruZb7yhhf99Y3rD1q06F3PWTc8rm89q+8z39fGMJZo97cpzl46zRmfRk0+1u9TAHgIIIIAAAggYF0jp+2gXJgyP5vuiFyxC+pHkEUAAAQRcCGRy0UZTKAp4LDInJPjy1mRf+oYedcfJo/X799/ri2lDNP7Dznru+cZq3qWGWnRvouGjBuu3nTsU+8P32timuT6/+xbl85Lo4Sa1tO/PA9r89WotnDNCs6YM1oZ1c3Tg4J86cuSodu36VXv/+EOVypb1ckS6IYBAMAhs/e6cOr0ljTvsIdozU5X35G8eOnAKAfsJkBECCCCQFoF8ufPqqSfKq18X6QYXA+1Zv171ihRR9oIFZbuFOgAAEABJREFUrf+/Lqf7y5bW3LVzXfT8ryl+nXo80UHh4bl0Z5O31O5DafGx/84leSig/m++rxMnj+muu/n/9iQ0HCCAAAIIIGBY4JprrvFqxGvyePux2l4NRycEEDAswHAIIJCRAkUzcnLmDiABj0Vm3+KMsrpTaLYQXN4KFyygHLfeqmrNeqlus2f1bK/GatO+gVp1fFjdOz+tosVvkfPJyJ0nj8vrPTUWyJ9P95SuqFr1u6ph86d1f/n6urpAQeXJk1s33ni9rr76ak+Xcw4BBIJQYOrCb7Xfi7j3b13hRS+6IIAAAn4XYAIEgkYgqlY1PdazoUpXcR1y/P79OnHggM7GnNHWrd9qxIejdMZl1zWaNWGmPhg+TvHxp132ON8YratqtdXLz/aQFGlt3BBAAAEEEEDAnwJ//vmnV8P/uf9nr/rRCQEEEEAgiQAHQSzg7a+UkLIqNjaIEyV0YwJhnkZyOHz5ib0Yayhf+lvdQ/SWL28x5cnfSjVLd1edux4JUQXSRgCBlASOnNipRV/M0a+/rbe67tfJM79r+w+bNPitd/TWG29abSnf3nxroIYOGaYN32zQ9p+/1Y49P2rLzh+1/afd2rHjh5QHoAcCCCCAgM0FSC+5QFOpRCOF5/Luhz8XT12o7n26aPAn72jU5E81dsyH+uDtJ9Wv5yD17DU0+fBWS+EihdX5mT5q8X8fqu7zQzTitResVm4IIIAAAgggYErgh/VL9OHwD/TJmA+0YPonWjTnM61ctUzvW22DBw/2aprBg9/R++99oFVrvtCCJTM1d8kUzZg9SnNmj9T+w5u9GoNOCCCAAAIIBI5AypE4f6WEc0upZ0TEEUVEpNSL84Es4HCYqed6LDLHxcX5YGAmIB8mpCsCCCBgY4HTeua5rqrbtKEe79NMw8c+qz4vtNCdt96nPs89Y+V9ztpSvp2xuvV+upfKli6rmo1r6ckXnlCbrh3UuHVrTZ23JOUB6IEAAggggEDICTh/t1QdZc5xi9eZjxv8kfq0fUZdW7VWx07d1ePZ9zXw3cXa+4/rIabMm69Rb7+lya9107xBXdTknpzJO9KCAAIIIIAAAqkT+HK4WrdorO5P9FDbTj1Ut1lb1W74iKpWeVBPWm0nT570alxnvyef6qEqlWqobs0malCzpR5u1FUNG3VTz949tGnXNq/GoRMCCCCAAALBJJA5c+YUw82c+UCKfejgg0AGdPWt/us+QI9F5vDwcPdXujpDndmVCm0IIICAjwI/avPsFzVrzErFH5OWfP6nxo2dpBHDNvg4TtLuB344oBVTluv7lV/pl00btHbDOm34ZlPSThwhgAACCCCAgCWQV3Ua1pGhH+y1xrt0a9W+ncrffselBvaCToCAEUAAAQQCWGD9+3rrvfe1Ze8pvwY5ffoG/ZRwzq9zMDgCCCCAAAL+FNiz93cdOvQ/HT5w8OI0ixYt0okTJy4eu9s5ceKoFi1aePH03j179d2O7xKPT58+k/jIXWAL+Fz/dZOOxyJzQkLQ/45lN2nTjAACCASowMapGnfH7Xqu0Ts6dvZSjFu/urRvam/1nJnKf18pU8MxDgIIIIAAArYSaNTwee3d+4e1/a7YhOPa+f1KPd6jps85fjRhvOJj43Tq+ClrrD16Y8CrPo/BBQgg4JUAnRBAIMQFFk8brlzln9Rzn+30v0SMNOz9meq761//z8UMCCCAAAIIGBM4qrWzB6py7dtVttxtqlX+DjV+oLzuvekm3Vy8uGrXri1vv2rXrqPixW/QzTeXUNUa1VSz9oNyOBwqX6Oilny30dth6JdBAqbqvx6LzD7nRk3aZ7LQvYDMEUDAlcCupZu18rs4bXF10nRbRLgOn+Mnr02zMh4CCCCAgH0EChUqpMKFiyhc2VT81srq1rmZalTK7HWCj3RvpWaNGskRHqYs2bJYY12nQtde6/X1dEQAAQTsIUAWCKSPwJLN+3QsfaZKnOW33//S719u0+bEI+4QQAABBBAIdIG/pV+m6uPP3tDqRd/rwJ8ntfWXQ1r366/asmuXdu7e7XMCu3f/pp07f9Yvu3Zr/96Diddv/fIbjZ02NXGfO/sLmC0y83HZ9l8xZGh/ATLMUIHinbqrc4eH9UaNu/V04/p6+NFHVbdxSzVt0kRNH26pR1u0Utt2bdWmTRuvt7Zt26pVq1Zq2bKlHmneXFUrVdJDNWpoyIiRuj8yMkPzZXIEEEAAAQSCSeC229up30tD9MG7z6rPs52sf1sfU7NmLdS+fTtrv6VaNG+hzp06qtPTT+j/3nlJfXr1U85sOYMpRWJFAAEEEAglAZvl+tTj3a3XzY/ozrtLq36D+nqsQwe1a9vG+jf6/NbW2vfltXRiX+uati2t61u1VevWj6pxg0Zq2rSp+rwySK8+2UVdWlbUvTZzJB0EEEAAAXsKzH3/RdVo2F3jpqT8cdhpFZg/b5kmxqV1FK4PBoEwo0HyTmajnAyGAAIhKFCgqCqM+Uydl27R4M/n6LOJEzXv80maPmOGpn82SRMnf6rx48br448/9nobP368Pv30U02aNElTp0zR8lWrtHjpUvXq2DEEgUkZAQQQQACBtAlUrNpNjz/5pt568yPr39ZPNG3aZI0dO87an6TJUyZr1Eej9dHg9/Ra71d0b7ESaZuMqxFAAAEEEEDAa4GiRQtr+mdTtW3L15oze44+GTNG48Z/bP0bfX4bb+1/7MNr6cS+1jXjJ1nXfzpeEyZM1OezZ2r69Ol666Xn9XiNUqqUyevwfOpIZwQQQAABBEwKOP997PTqeH3xvclR3Y91+sBRzZ1kfW/bfRfO2ETAbJHZJiikgQACCCCAgA8CdEUAAQQQQAABBBBAAAEEEEAAAfsLkCECCCAQlAI1a9XRbXdUTbfYy9dvrIIFrtbV6TYjE2WUgMEiM29jzqgnkXkRQAABBBBAwJUAbQgggAACCCCAAAIIIIAAAgggYH8BMkQAAU8C2bNn19O9H9dvv/2un37crQMH9uvQoUM6ePCgkc051r4//9SeX3/VsRP/6tU2LfTuQ/eroqegOGcLAYNFZufnw1BotsWqIAkEEEAAAQQQQMCfAoyNAAIIIIAAAggggAACCCCAAAL2FyDDgBGoXbuWihYtoptLFNPVV1+j/Pnzq0CBAkY251jXFiyo666/XjmyZleVCuUCJm8C8a+AwSIzBWb/PlWMjgACCCCAAAIIIICAfwUYHQEEEEAAAQQQQAABBBBAAAEE7C9AhgiYEDBYZHaYiIcxEEAAAQQQQAABBBBAAAEEkgpwhAACCCCAAAIIIIAAAggggAAC9hcIqgwNFpnPWolTaLYQuCGAAAIIIIAAAggggAACCISEAEkigAACCCCAAAIIIIAAAgggEJoCBovMQVBgDs3nmKwRQAABBBBAAAEEEEAAAQQQCC0BskUAAQQQQAABBBBAAAEEEPCrgMEis1/jZHCbC5AeAggggAACCCCAAAIIIIAAAgjYX4AMEUAAAQQQQAABBBBAwB4CZovMjjh7qJAFAghcEOARAQQQQAABBBBAAAEEEEAAAQTsL0CGCCCAAAIIIIAAAgj4JGC2yJwQ7tPkdEYAAQQQSK0A1yGAAAIIIIAAAggggAACCCCAgP0FyBABBBBAAAEEEAhMAbNF5sDMkagQQAABBBBIPwFmQgABBBBAAAEEEEAAAQQQQAAB+wuQIQIIIIAAAiEuYLDInBDilKSPAAIIIIAAAoEsQGwIIIAAAggggAACCCCAAAIIIGB/ATJEAAEEEEgfAYNF5igrYgrNFgI3BBBAAAEEEEAAAe8F6IkAAggggAACCCCAAAIIIIAAAvYXIEMEELCZgMcis8Ph8CHdGKuvL/2t7twQQAABBBBAAAEEEEAgQAUICwEEEEAAAQQQQAABBBBAAAEE7C9AhgikTsBjkTkuLs6HUSkw+4BFVwQQQAABBBBAAAEEEEAgdQJchQACCCCAAAIIIIAAAggggAAC9hcI8Aw9FpnDw8N9C586s29e9EYAAQQQQAABBBBAAAEEELCNAIkggAACCCCAAAIIIIAAAgggYBeBhATPvybZY5E5pYuDHInwEUAAAQQQQAABBBBAAAEEEEDA/gJkiAACCCCAAAIIIIAAAggg4KNASm9G9lhk9nEuyXNB2+fhuCBUBcgbAQQQQAABBBBAAAEEEEAAAQTsL0CGCCCAAAIIIIAAAgggEKgCKf1aZbNFZj4uO1DXAXEhYEaAURBAAAEEEEAAAQQQQAABBBBAwP4CZIgAAggggAACCCAQ8gIOh+fCr9kiM+9kDvkFBwACCGSMALMigAACCCCAAAIIIIAAAggggID9BcgQAQQQQAABBBAIFAGzReZAyYo4EEAAAQQQCAwBokAAAQQQQAABBBBAAAEEEEAAAfsLkCECCCCAAAIhJ2CwyMzbmENu9ZAwAggggAACQStA4AgggAACCCCAAAIIIIAAAgggYH8BMkQAAQQQ8JeAwSJzlBUjhWYLgRsCCCCAAAIIIIBAagW4DgEEEEAAAQQQQAABBBBAAAEE7C9AhgggEPQCBovMMRaGw9q4IYAAAggggAACCCCAgN0EyAcBBBBAAAEEEEAAAQQQQAABBOwvQIYIeCtgsMhMgdlbdPohgAACCCCAAAIIIIAAAoYEGAYBBBBAAAEEEEAAAQQQQAABBOwvEHAZGiwyW7lRZ7YQuCGAAAIIIIAAAggggAACCCCAAAIIIIAAAggggAACCCCAAAL2FTBbZA5mJ2JHAAEEEEAAAQQQQAABBBBAAAH7C5AhAggggAACCCCAAAIIIIBAmgXMFpkT0hwPAyCQTIAGBBBAAAEEEEAAAQQQQAABBBCwvwAZIoAAAggggAACCCCAQPAImC0y83HZwfPMEykCaRdgBAQQQAABBBBAAAEEEEAAAQQQsL8AGSKAAAIIIIAAAgggkEzAbJGZdzInA6YBAQQQSH8BZkQAAQQQQAABBBBAAAEEEEAAAfsLkCECCCCAAAIIIJBxAmaLzBmXBzMjgAACCCAQ+AJEiAACCCCAAAIIIIAAAggggAAC9hcgQwQQQAABBEJAwGCRmbcxh8B6IUUEEEAAAQRsKUBSCCCAAAIIIIAAAggggAACCCBgfwEyRAABBBAwJ2CwyBxlRUWh2ULghgACCCCAAAIIIGBGgFEQQAABBBBAAAEEEEAAAQQQQMD+AmSIAAJBKGCwyBxjpe+wNm4IIIAAAggggAACCCBgbwGyQwABBBBAAAEEEEAAAQQQQAAB+wuQIQLuBQwWmSkwu2fmDAIIIIAAAggggAACCCCQDgJMgQACCCCAAAIIIIAAAggggAAC9hcIgAwNFpmtbKgzWwjcEEAAAQQQQAABBBBAAAEEEEgqwBECCCCAAAIIIIAAAggggAACdhIwW2S2jwyZIIAAAggggAACCCCAAAIIIICA/QXIEAEEEEAAAQQQQAABBBBAIBUCZovMCamIgEsQ8EmAzns1fDoAABAASURBVAgggAACCCCAAAIIIIAAAgggYH8BMkQAAQQQQAABBBBAAIFAFjBbZObjsgP5uSY2BPwrwOgIIIAAAggggAACCCCAAAIIIGB/ATJEAAEEEEAAAQQQQMASMFtk5p3MFik3BBBAILAEiAYBBBBAAAEEEEAAAQQQQAABBOwvQIYIIIAAAggggEB6CpgtMqdn5MyFAAIIIIBAcAsQPQIIIIAAAggggAACCCCAAAII2F+ADBFAAAEEELClgMEiM29jtuUKISkEEEAAAQRCToCEEUAAAQQQQAABBBBAAAEEEEDA/gJkiAACCCCQFgGDReZMVhwUmi0EbggggAACCCCAAAL+EGBMBBBAAAEEEEAAAQQQQAABBBCwvwAZIoBAUAgYLDJTYA6KZ5wgEUAAAQQQQAABBBAwLMBwCCCAAAIIIIAAAggggAACCCBgfwEyROByAYNFZsfl47KPAAIIIIAAAggggAACCCCQsQLMjgACCCCAAAIIIIAAAggggAAC9hfIkAwNFpnPWglQaLYQuCGAAAIIIIAAAggggAACCCDgQYBTCCCAAAIIIIAAAggggAACCAS3gMEis40LzMH9HBM9AggggAACCCCAAAIIIIAAAgh4I0AfBBBAAAEEEEAAAQQQQAABrwQMFpm9mo9OCBgVYDAEEEAAAQQQQAABBBBAAAEEELC/ABkigAACCCCAAAIIIIBAYAmYLTI74gIrO6JBAIGMEmBeBBBAAAEEEEAAAQQQQAABBBCwvwAZIoAAAggggAACCISogNkic0J4iDKSNgIIIBAsAsSJAAIIIIAAAggggAACCCCAAAL2FyBDBBBAAAEEEEDAvwJmi8z+jZXREUAAAQQQsK8AmSGAAAIIIIAAAggggAACCCCAgP0FyBABBBBAAAGbCBgsMifYhIQ0EEAAAQQQQACBSwLsIYAAAggggAACCCCAAAIIIICA/QXIEAEEEEDANwGDReYoa2YKzRYCNwQQQAABBBBAAAH/CzADAggggAACCCCAAAIIIIAAAgjYX4AMEUAgQAUMFpljrBQd1sYNAQQQQAABBBBAAAEEQleAzBFAAAEEEEAAAQQQQAABBBBAwP4CZBjqAgaLzBSYQ30xkT8CCCCAAAIIIIAAAggEsAChIYAAAggggAACCCCAAAIIIICA/QXSKUODRWYrYurMFgI3BBBAAAEEEEAAAQQQQAABBLwXoCcCCCCAAAIIIIAAAggggAACwSZgtsgcbNmnLl6uQgABBBBAAAEEEEAAAQQQQAAB+wuQIQIIIIAAAggggAACCCCAgBsBs0XmBDez0IxAuggwCQIIIIAAAggggAACCCCAAAII2F+ADBFAAAEEEEAAAQQQQCCjBcwWmR1xGZ0P8yOAQCAKEBMCCCCAAAIIIIAAAggggAACCNhfgAwRQAABBBBAAAEEQkbAbJE5ITxk4EgUAQQQsIMAOSCAAAIIIIAAAggggAACCCCAgP0FyBABBBBAAAEEEDAtYKzIHJ6QoARrMx0g4yGAAAIIIBCCAqSMAAIIIIAAAggggAACCCCAAAL2FyBDBBBAAAEEglbAWJE5PjJSCdYWtBIEjgACCCCAAAIIpChABwQQQAABBBBAAAEEEEAAAQQQsL8AGSKAAAIIpCRgrMjsfBdzJt7JnJI35xFAAAEEEEAAAQT8IcCYCCCAAAIIIIAAAggggAACCCBgfwEyRACBgBEwVmR2ZpQgh/OBDQEEEEAAAQQQQAABBBBIFOAOAQQQQAABBBBAAAEEEEAAAQTsL0CGoSdgsMjsLDDHhJ4gGSOAAAIIIIAAAggggAACwSdAxAgggAACCCCAAAIIIIAAAgggYH8Bv2VorMgcGRavhIRMfguUgRFAAAEEEEAAAQQQQAABBBCwvwAZIoAAAggggAACCCCAAAIIIBD4AsaKzIpzyBHmCPyMTUfIeAgggAACCCCAAAIIIIAAAgggYH8BMkQAAQQQQAABBBBAAAEEELgoYKzIHJYpSmFhxoa7GCA7CKRWgOsQQAABBBBAAAEEEEAAAQQQQMD+AmSIAAIIIIAAAggggAAC6S9grCocFpGgTMZGS38IZkQAgXQTYCIEEEAAAQQQQAABBBBAAAEEELC/ABkigAACCCCAAAII2FjAWFk4PDxaigi3MRWpIYAAAnYXID8EEEAAAQQQQAABBBBAAAEEELC/ABkigAACCCCAAAJpFwhL+xDnR8gcHqZMmSgyn9fgHgEEEEAAAYMCDIUAAggggAACCCCAAAIIIIAAAvYXIEMEEEAAAQSCSMBYkTlL1pzKnCVrEKVOqAgggAACCCCAQNoEuBoBBBBAAAEEEEAAAQQQQAABBOwvQIYIIIAAAskFjBWZc0RlVnSmzMlnoAUBBBBAAAEEEEAAgfQVYDYEEEAAAQQQQAABBBBAAAEEELC/ABkigEAGChgrMkdGRylLVHQGpsLUCCCAAAIIIIAAAgggENgCRIcAAggggAACCCCAAAIIIIAAAvYXIMNAFnA4HEbCM1JkjoyUsloF5qjMkUaCYhAEEEAAAQQQQAABBBBAAIF0FGAqBBBAAAEEEEAAAQQQQAABBBCwv4CVYVxcnHWf9puRInN4uJQpKkwOR0TaI2IEBBBAAAEEEEAAAQQQQAABBBBIFOAOAQQQQAABBBBAAAEEEEAAAZMC4c7CroEBwwyMkTiEwxGvzPxK5kQL7hBAAAEEEEAAAQQQQAABBBBAwNYCJIcAAggggAACCCCAAAIIBKVAQkKCkbiNFJmjoqTo6MzKnTuX+EIgMAWICgEEEEAAAQQQQAABBBBAAAEE7C9AhggggAACCCCAAAIIIJAeAkaKzPkLFNBtt92iHTv2pUfMzIEAAnYSIBcEEEAAAQQQQAABBBBAAAEEELC/ABkigAACCCCAAAII2ErASJE5X+7cKlK0sBo0aGErHJJBAAEEQlmA3BFAAAEEEEAAAQQQQAABBBBAwP4CZIgAAggggAACCKRGwEiROWu2bMqTLXtq5ucaBBBAAAEEEPBNgN4IIIAAAggggAACCCCAAAIIIGB/ATJEAAEEEEAgoAWMFJnDwsIUlsnIUAGNRXAIIIAAAggggIB7Ac4ggAACCCCAAAIIIIAAAggggID9BcgQAQQQQMApYKQyHBeXoHBHJud4bAgggAACCCCAAAIIBJYA0SCAAAIIIIAAAggggAACCCCAgP0FyBABBNJVwEiROTIsXIqLT9fAmQwBBBBAAAEEEEAAAQSCW4DoEUAAAQQQQAABBBBAAAEEEEDA/gJkaE8BI0Xms5ZNgiOzdc8NAXsLxMd7/8MUvvS1txrZIYAAAggggAACCASZAOEigAACCCCAAAIIIIAAAggggID9BdKUoZEic5bM2VXouoJpCoSLEQgGgbAw7//I+NI3GHInRgQQQAABBBBAAAEEEMhoAeZHAAEEEEAAAQQQQAABBBBAIG0CDocjbQP8d7X3FbP/LnD1UOLG6xUWUcjVqdBuI3tbCmTOnPK79r3pY0sckkIAAQQQQAABBBBAAAEEQlGAnBFAAAEEEEAAAQQQQACBIBEoUKCAkUiNFJmzRGfTgX27jATEIAikh0Bq50hISFBsbGyKlzv7OPum2JEOCCCAAAIIIIAAAggggAACCCDgNwEGRgABBBBAAAEEEEAAgaQCBw8eTNqQyiMjReYPho/W/MXLtHTpLM2fM0tz583T3Llz2TCwxRqYNWuWvvrqK61bt05PPvmk10VmZ1/nNc5rnWPwZ8KrvxNssWZ4rnmuWQOsAdYAa4A1wBpgDbAGWAOsAdYAa4A14HEN8Pqf7xuyBlgDrAHWAGuANcAaSKc1MHv2bKuGu1SbN2/WJ598opEjR6ayrJz0MiNF5r//Pa7OnbrroYcaq17DxmpQv74aNGjAhoEt1kDjxo1Vrlw5VahQQcOHD0/6J8jDkbOv8xrntc4x+DPB3wnBvQZ4/nj+WAOsAdYAa4A1wBpgDbAGWAOsAdYAa4A1YP81wHPMc8waYA2wBlgDrAG7rYFGjRpZNdyHVKpUKbVt21bevpM5pU/sNVJk9lBn4xQCCCCAAAII+FOAsRFAAAEEEEAAAQQQQAABBBBAwP4CZIgAAggggEA6C4SHh3uckSKzRx5OIoAAAggggAACqRPgKgQQQAABBBBAAAEEEEAAAQQQsL8AGSKAAAJ2FYiLi/OYGkVmjzycRAABBBBAAAEEELCZAOkggAACCCCAAAIIIIAAAggggID9BcgQAQTSKOBwODyOQJHZIw8nEUAAAQQQQAABBBBAIH0EmAUBBBBAAAEEEEAAAQQQQAABBOwvQIZ2EaDIbJdnkjwQQAABBBBAAAEEEEAAAX8IMCYCCCCAAAIIIIAAAggggAACCNhfwMcMKTL7CEZ3BBBAAAEEEEAAAQQQQAABBAJBgBgQQAABBBBAAAEEEEAAAQQQyCgBiszpJ89MCCCAAAIIIIAAAggggAACCCBgfwEyRAABBBBAAAEEEEAAAQRsL0CR2fZPMQmmLEAPBBBAAAEEEEAAAQQQQAABBBCwvwAZIoAAAggggAACCCCAgCkBvxSZS95eVMWKFVKe/NmUPXtmhWUyFS7jIOB/gcyZHSpQIJcKFM6lq67Oo2sK5tddd9+jCg+UV44cOb0OIG+ePHrowRq6797S1hhXW2Ndo2uuvla581+jzDmzKTyCPxgpYtIBAQQQQAABBBBAAAEEEEAAAQTsL0CGCCCAAAIIIIAAAuYEwqKUNUc25c53TWJt6qqC16pI0eK64577dPOtJY3NE2ZspP8G6v/Ss5rx2SRNnTZW48Z9oHffHaBXXn5avXu3U8fuLdSmdT3Va1RBD1S6USVut4p4RcKUNbdk5fvfCDwg4D8B5zqLsurE+QtKhUtk1h33FVSVWrerSYsq6tDlEfXt21lvDH1dH417T2PHjLbW8EcaYz0u/mKB1qxdp/HjR3kd3MSpU7V4yVKt+OpLfTR+gsaMnaAPx32sMWPGaeiQ9/XioEHq9dwLat2xq+o2fUQVqtXVbRWqqsht9yj3dTcq6qprpKz5pfDs1pxR1uawNm4IBIYAUSCAAAIIIIAAAggggAACCCCAgP0FyBABBBBAAAEEAkEgUgq36kSZcyk811VW6eg65St+iwrffo9uL19VlR5qpMYPP6qWnbqpx9PPqd+AV/TGO8M1atw4jRz/qT76aII+njRNi75YoTlz56tS5apGkjJaZC5TprTq1K+hW0qUU6l7H9RtN5fRw480U+OG9VSrfj01rl1TtRvXUf0G9dWwYTM1a/WYOj/WXp3at1XXzi3UqMWDqtekiho2rqhaDcqqVp07rURL6P6KxVSmsnMrbD1el7iVrXydSlUoonsrFlKpStfpznLX6K4yBRK3O8sUVCnr+L5KhXVfpUIqXdbqW/4a3Zl4/mqrj3MrYB0XTOxXyupX1hqnjLU5H0tZ4zmvP9+/gM/97rPGu8+Lee/zsh/xOZ/W22BTAAAQAElEQVTXq5M8b/eWvUblKhZW2SpFzq+DCoUSn+uyVa9TuWrFrIJtMVWtUVJVa92hWvVLq0kTay22qqau3R7W451bqVWbR9W2eWs1b9FCjRs0Vf269VXfWru1GzTRoy3rq2iR21WjQi1VLl9DtWvVV4E8V8v5Va5cFTkczj3PW0R4uKpWqJDYKVtkhOo+WEOVK5TRg1XL6bYSxfTII63UqEFj1bXmrV2nvuo1aGCt/YZq2rChWjVvqcfatFbH1h3VqUsbte/RSY1aPqoGzR9VnUYt9GDj5qpWv4mqWddXr91YVeo0UbW6jVSpVhNVrl3P2uob2hoYGsdUPFeOQ3yVa19p4ssxfjb1++/PLc8vz68vfx+Y7sv6Y/2ZXlO+jMf6Y/35sl5M92X9sf5MrylfxmP9sf58WS+m+zrXn3MzPa6p8ZyxOTdT45kexxmbczM9rqnxnLE5N1PjmR7HGZtzMz2uqfGcsTk3U+NdHOe/1/9pPXbG5tzSOo6/rnfG5tz8NX5ax3XG5tzSOo6/rnfG5tz8NX5ax3XG5tzSOo6/rnfG5tz8NX5ax3XG5tzSOo6/rnfG5tz8NX5ax3XG5tzSOk5qr6+XWNNx1nacNZ4qdRpbtR5rs2o+1Rtaj/Uaq2q9JnqoaXOrLtRK9Vu20GOP91D7Tl3UuXNHdWjbXm1btFLrli3VrHETNXy4geo2aqB6deqqTu0Gami1NX/kURUvcp2qly+lWtXLqXK5u1UwdzZFhEXp9nvvTKxfpfUuLK0DOK/PkiVSb789WOPGfaT77q3ubErcit14k7JFF9EtJSupeqVGqlX7MTVr2EUd2zyjp3sOVJ/HB6p7t1fUpdOzatako2ZOXqKZU+ZrytT5mvP5Es2YsVpzF67X0rkbtGTuV9a2xdo2J26L527WygWbtGz+Ni2b97VWL9qqVUu2J26rl2zRUut4xbytWjFvmxYv/VrLFm7V6sTz31p9nNt26/h8v5VWv8Xzt2qJtS22xltpjee8/nx/3/t5O6+3/Yhv+3/P2aXnbdnSrXI+Z4vnbDq/DhZstdaFtc3brEVzvtICa83Mm/+l5s1apdmfL9aUKcv02adfqGm9rurc/gX16vq6ej4xSM92f0s9urykx1r2VP3aHVS+9IPKm+MW3XHrXcqUJauy5ciRuJYv3OXOnVMJCReO3D/GxsUpKnPmJB1yZM+m6Kho3VS8uHJnjdQdxYuq6gNl1LxhLXV+tIX6dOug/r2fUN+eXa24uujpHm3Uo107PdakvmZOGqOpEydoxmeTNXPqRM2bOVVzpk7T7JnTNO/zaZo7w9pmT9Hcz2da2+eGthmGxjEVz5XjEN/cz6808eUYP/x8WS+m+4bi+jNpiB9/fk2uJ1/HYv2x/nxdMyb7s/5YfybXk69jsf5Yf76uGZP9g2H9BXKMzticm8nnxORYzticm8kxTY7ljM25mRzT5FjO2JybyTFNjuWMzbmZHNPkWM7YnJvJMU2O5YzNuZkc0+RYztic2+VjBtK+MzbnFkgxXR6LMzbndnlbIO07Y3NugRTT5bE4Y3Nul7cF0r4zNucWSDFdHoszNud2eVt67lu1HGdNx6rtOGs8Fzer5jN7yjQtmDXNqv1M1ZwpE/X59ImaM+kTtW5QR93bPKInO7RVnyfa67knOqnvk93Ur/fj6tmhjdq1aKrmDWqrZtWyurfkjcqXPVx33XGLcmTPoaioS/WqYkWvVVRCeJL6VWoPjBSZH7Yq6c8887RKlvSt8p3NKrpdc01Blbi5pCpVOv/W7IjIaGWOzK7I8OyKzpxTObLkVo6c+SyEq6zN+Xhpy5Y9n3Jnz6tc2a9WzhwFrC3/f1sB5baOs1nnnFvubFcrl3WcM8eF8xceL/XLYY11fsurbNZ4zusv9fe9n7fzetvvfGzO3Ikvp/Vc5s5WQNmt5zeH9bxls7bczi1HPmWPtoyyXpX4GJ0pt1XUza1MEbkVGZkt8c9IlapVVaLErSp8XWHlyZNX4Zl8+yMQGRmZOE5Kd2FhYYqNjU2pm8vzWbNmVcECBXT99cV0x23Wn40KlRL7ZY6QnFvWyAhlCY9QVusga5T1GBVu5RmpHJkild1qY4vAgXXAGmANsAZYA96vAaywYg2wBlgDrAHWAGuANcAaYA2wBlgDrAHWgP3XAM8xz3GArQFnTSc6KlJZrRrP+VqPs95jbVaczhpQtFULioqIUFS4Q86v6tWq6J5771aJm25SoUKFlS/fVcoaHe085fMWnTWHz9e4uiDMVaOvbTE64+sl9EcgKAWcxWNvAo+Pj1eE9Yffm770QQABBBBAAAEEEEguQAsCCCCAAAIIIIAAAggggAACCNhfgAzTXyAy0ouP7PUiLCNF5v/9uU8/79rmxXR0QQABBBBAAAEEEEAAAQQQCGIBQkcAAQQQQAABBBBAAAEEEEAAgSAWiI/3qsicYoZGisxnz5zT8X+PpDgZHRBAAAEEEEAAAQQQQAABBBBAwB8CjIkAAggggAACCCCAAAIIIIBA+gkYKTInxIcpPiw8/aK2w0zkgAACCCCAAAIIIIAAAggggAAC9hcgQwQQQAABBBBAAAEEEEDAhgJGisxnEs4o9sRJG/KQUigKkDMCCCCAAAIIIIAAAggggAACCNhfgAwRQAABBBBAAAEEEEAg9QJGiszH/z2ho6dO6btvv019JFyJAAIIeBbgLAIIIIAAAggggAACCCCAAAII2F+ADBFAAAEEEEAAAQSCQMBIkfnMyX/152/7VLBwniBImRARQAABBMwKMBoCCCCAAAIIIIAAAggggAACCNhfgAwRQAABBBBAAIFLAkaKzCdPxeifU0d0+O+/L43MHgIIIIAAAghkrACzI4AAAggggAACCCCAAAIIIICA/QXIEAEEEEAAgQwQMFJkjks4p7PHzyrm9D8ZkAJTIoAAAggggAACwSVAtAgggAACCCCAAAIIIIAAAgggYH8BMkQAAQTsLGCmyHzmrE6cOamYM3F2tiI3BBBAAAEEEEAAAXsLkB0CCCCAAAIIIIAAAggggAACCNhfgAwRQMCAgJEi86nYeJ0+e0YnT582EBJDIIAAAggggAACCCCAAAKXC7CPAAIIIIAAAggggAACCCCAAAL2FyDDYBIwUmSOj5VVYD6jmDNngil3YkUAAQQQQAABBBBAAAEEEEiLANcigAACCCCAAAIIIIAAAggggID9BVxkaKTIrDgpJua4Tp7hncwujGlCAAEEEEAAAQQQQAABBBBAIF0FmAwBBBBAAAEEEEAAAQQQQAABfwqYKTJbER7/97jOnDpu7XFLhQCXIIAAAggggAACCCCAAAIIIICA/QXIEAEEEEAAAQQQQAABBBCwhYCxInPMmdM6deqULVBIAoFLAuwhgAACCCCAAAIIIIAAAggggID9BcgQAQQQQAABBBBAAAEEfBEwVmQ+Fxuv8PBYX+amLwIIIJB6Aa5EAAEEEEAAAQQQQAABBBBAAAH7C5AhAggggAACCCCAQEAKGCsyRzjO6VysseECEougEEAAAQRSFqAHAggggAACCCCAAAIIIIAAAgjYX4AMEUAAAQQQQCC0BYxVhc8XmM+FtibZI4AAAgggELgCRIYAAggggAACCCCAAAIIIIAAAvYXIEMEEEAAAQTSRcBYkdmheCWcc6RL0EyCAAIIIIAAAgjYR4BMEEAAAQQQQAABBBBAAAEEEEDA/gJkiAACCNhLwFiROTbWobhwY8PZS5lsEEAAAQQQQAABBIJPgIgRQAABBBBAAAEEEEAAAQQQQMD+AmSIAAKpEjBWFU7QOSXEx6cqCC5CAAEEEEAAAQQQQAABBLwVoB8CCCCAAAIIIIAAAggggAACCNhfgAwDW8BYkVmxUpgSAjtbokMAAQQQQAABBBBAAAEEEPCXAOMigAACCCCAAAIIIIAAAggggID9BRIzNFZkPqsYxcXyTuZEVe4QQAABBBBAAAEEEEAAAQQQCBgBAkEAAQQQQAABBBBAAAEEEEDArICxInNcYly8kzmRIa13XI8AAggggAACCCCAAAIIIIAAAvYXIEMEEEAAAQQQQAABBBBAIEgFjBWZw8/F6qy1BakDYSPglQCdEEAAAQQQQAABBBBAAAEEEEDA/gJkiAACCCCAAAIIIIAAAp4FjBWZ4xwOhYXxTmbxhQACGSHAnAgggAACCCCAAAIIIIAAAgggYH8BMkQAAQQQQAABBBAIEAFjRebz+YSff+AeAQQQQACBRAHuEEAAAQQQQAABBBBAAAEEEEDA/gJkiAACCCCAAAKhJmC2yJzAO5lDbQGRLwIIIIBAkAoQNgIIIIAAAggggAACCCCAAAII2F+ADBFAAAEEEPCTgMEiMwVmPz1HDIsAAggggAACISRAqggggAACCCCAAAIIIIAAAgggYH8BMkQAAQSCXcBgkTnKsqDQbCFwQwABBBBAAAEEELCfABkhgAACCCCAAAIIIIAAAggggID9BcgQAQS8FDBYZI6xpnRYGzcEEEAAAQQQQAABBBBAIL0EmAcBBBBAAAEEEEAAAQQQQAABBOwvQIaBJmCwyEyBOdCeXOJBAAEEEEAAAQQQQAABBDJMgIkRQAABBBBAAAEEEEAAAQQQQMC2AheLzEYypM5shJFBEEAAAQQQQAABBBBAAAEEEPCXAOMigAACCCCAAAIIIIAAAgggkFYBs0XmtEbD9a4EaEMAAQQQQAABBBBAAAEEEEAAAfsLkCECCCCAAAIIIIAAAgggEDQCZovMCUGTN4EiYECAIRBAAAEEEEAAAQQQQAABBBBAwP4CZIgAAggggAACCCCAAAJXCpgtMvNx2Vf6cowAAhkhwJwIIIAAAggggAACCCCAAAIIIGB/ATJEAAEEEEAAAQQQyDABs0Vm3smcYU8kEyOAAALBIECMCCCAAAIIIIAAAggggAACCCBgfwEyRAABBBBAAAH7C5gtMtvfiwwRQAABBBCwowA5IYAAAggggAACCCCAAAIIIICA/QXIEAEEEEAAAWMCBovMvI3Z2LPCQAgggAACCCCAQKIAdwgggAACCCCAAAIIIIAAAgggYH8BMkQAAQSCT8BgkTnKyp5Cs4XADQEEEEAAAQQQQMDuAuSHAAIIIIAAAggggAACCCCAAAL2FyBDBBBwK2CwyBxjTeKwNm4IIIAAAggggAACCCCAQMYIMCsCCCCAAAIIIIAAAggggAACCNhfgAwzXsBgkZkCc8Y/nUSAAAIIIIAAAggggAACCASkAEEhgAACCCCAAAIIIIAAAggggICNBNwUmVOZIXXmVMJxGQIIIIAAAggggAACCCCAAAIZIcCcCCCAAAIIIIAAAggggAACCPguYLbI7Pv8XOGrAP0RQAABBBBAAAEEEEAAAQQQQMD+AmSIAAIIIIAAAggggAACCASwgNkic0IAZ0poCPhZgOERQAABBBBAAAEEEEAAAQQQQMD+AmSIAAIIIIAAAggggAACktkiHPEpvQAAEABJREFUswNSBBBAIOAECAgBBBBAAAEEEEAAAQQQQAABBOwvQIYIIIAAAggggAAC6ShgtsjMO5nT8aljKgQQQCDYBYgfAQQQQAABBBBAAAEEEEAAAQTsL0CGCCCAAAIIIGBHAbNFZjsKkRMCCCCAAAKhJkC+CCCAAAIIIIAAAggggAACCCBgfwEyRAABBBBAIA0CBovMvI05Dc8DlyKAAAIIIIAAAikK0AEBBBBAAAEEEEAAAQQQQAABBOwvQIYIIIBAMAgYLDJHWflSaLYQuCGAAAIIIIAAAgiElgDZIoAAAggggAACCCCAAAIIIICA/QXIEAEELhMwWGSOsYZ1WBs3BBBAAAEEEEAAAQQQQCAQBIgBAQQQQAABBBBAAAEEEEAAAQTsL0CGGSFgsMhMgTkjnkDmRAABBBBAAAEEEEAAAQSCToCAEUAAAQQQQAABBBBAAAEEEEAgqAW8KjJ7nSF1Zq+p6IgAAggggAACCCCAAAIIIIBAoAkQDwIIIIAAAggggAACCCCAAALeCJgtMnszI31MCjAWAggggAACCCCAAAIIIIAAAgjYX4AMEUAAAQQQQAABBBBAAIGAEjBbZE4IqNwIBoEMFGBqBBBAAAEEEEAAAQQQQAABBBCwvwAZIoAAAggggAACCCAQmgJmi8x8XHZoriKyRiCYBIgVAQQQQAABBIJfID5e61ev1oxZs7RkyRKtWLFCy5cvT7KtXLVci+Yv0LzF87Vj51598+3PwZ83GSCAAAIIIICA9wL0RAABBBBAINQE9qzWb1/P1sZVX2jJ8hX6/PN5mj17lvbv35+uEts3faWvN36pWbPmWK/ZF7t8ze58DT9vnhXfzJnad/RousbHZOYEzBaZzcXFSAgggAACISZAuggggAACCHgrsHDw0ypfubIebtxYNWvWVLVq1VS9evUkW9Uq1VW7Xl3Vr1VP95SuqAlf7NLc372dgX4IIIAAAggggAAC/hJgXAQQQAABPwj8Nk/PP1ZZzco00v1Vaqhm9Wpq2rS+GjVqrObNm+mnn370w6SuhtyhdQvGqsz9D6hx44bWa/ZaLl+zO1/D169vxdekiVo89pi+/uMPV4PRFuACZovMfFx2gD/dhIcAAggggIDPAlyAAAIIBI7AgZ3S74s1fMIMn2I6e2yPPvnkMy2ZtVxrdsZq188/+HQ9nRFAAAEEEEAAAQQQCAEBUkQAgSAWGP/xRM1bI21ykcPatV+qePGSLs6Ya/pmozV57Lf6Yc5cDXlzrE8Dr1uwQHuOHNERn66icyAIGCwyU2EOhCeUGBBAAAEEEEAgVATIE4HQEPjr3+OqU7emCuXNq4fq1dVd5Ztr0Y59Pid//LuJ+rB3E1W6OZfqNGigV4YO8XkMLkAAAQQQQAABBBBAAAEE0l+AGRFIKvDXX3+pTp06uurq/Lq3VDnddXcpdRgwXT8k7ZbkKCHBPzW8f4+fUt1atdWwflPdWqSsqjXtq19OJ5naq4NH7r1XtevW1dUlS+raIkX0xqBBXl1Hp4wVMFhkzmRl4p9Fag3MDQEEEEAAAQQQQACB4BAgSqMC7779lhYuWKI/jx7V0s279O3+Y2kY33ntSe36ebde7v201sXGpmEsLkUAAQQQQAABBBBAAAEEEAhpgQxK/v3339fChQv116HD2rL5K327bbM8VefCw4soIsLhl2jffut1LVi8SPutWH7Yf1oHU/syOz5eGxcs0KGfftL+vXv1Qt++Onv2rF9iZlBzAgaLzJ6WsLmAGQkBBBBAAAEEEEAAAQRCQ2DMmDF67bXXjCV75UA9H3lEU3bsuLKZYwQQQAABBBBAAAEEEEAAAQQCQmDxgpn6+qv1+mL5F/r5p12aPv0zDRgwwKfY4uLy+dTf286jR4+2XrMPdNm9UqWKatq0qWrUqKEqVaqoatWqiY/O4yZNmqhipUour7u8sUXLltqxffvlTV7v0zF9BAwWmf3zUxDpw8AsCCCAAAIIIIAAAgggECgCv//2W+IL0E6dOvk1pM0zZ6rlbbdp3qJFfp2HwVMUoAMCCCCAAAIIIIAAAggggMCVAn9v0tblC1SmXHnVqF5DJUrepGbNHrmylxfH13nRx7cuDRo0UOfOnV1eVL9+Pa1atdoqiE/X0qVLtWLFCi1fvjzx0Xk8Y8YMrV61So81bOjy+guNMz//XLfdeafmTZ54oYnHABNIRZHZXQbOt61TaHanQzsCCCCAAAIIIIAAAgh4J1Do+iJauXKld50N9Hp38GADozAEAnYUICcEEEAAAQQQQAABBBBIf4EExf64QiumLNaQoeMMTJ/TwBiXhvjii4WaO3fupYYr9p56qucVLa4PO/XoocyuTyVp/WD+6iTHHASOgMEiMwXmDH9aCQABBBBAAAEEEEAAARsIRMjzy5QcOXIk/v6pv//+Wz/++KO2bNmibdu2JT46j53tzt9P5eznDcfyFStUtGhRDR061Jvu9EEAAQQyXoAIEEAAAQQQQAABBGwn8NOu3apdt7by5MyhGx+oq3rdX9RfbrIsUu0hRd90i5uzVzZHXdmQquOD/5xVq5bNVaNGHZfX9+79hH7/fU/iJ5O57HBF4wPVqun3vXvVLYVPMVvy02E98a30zRXXc5jxAp6/e5Px8REBArYQIAkEEEAAAQQQQAAB3wTCM7l/EdynTx/VqlVLuXLlUokSJXT33XfrzjvvTHx0Hjvbneed/byddc+ePerdu7diYmK8vYR+CCCAAAIIJBOgAQEEEEAAAQQQSK3AlE8natGCRfr73xPac/S0TrkZqECZcurSq6datG3rpsflzdmsg2hrS/vtvbde1uQp01wOlC1bZr3zznsqUsS3j+YuULiwPvzoI0VERLgcN7Hx+8MaPvVrvbkp8Yi7ABIwW2R2xAVQaoSCAAIIpChABwQQQAABBBAIQIHDS99V3FnXxd4uXbqoX79+XkXt7NfFze+IcjdAQkKCu1O0I4AAAggggEDwChA5AggggAACAS+wc+dO1zFGXKX8N9+uO0uXVYMG9TXmrTf0eJ2aqljqHqX8lUuKdBaaU+7puccW7dngusDsvO7EiZLOh1RvEydOTPzhcZcDnPtKeu9FbZ39uRTr/NW9LnvRmAECYWbn9PCTBmYnYjQEEEAAAVsLkBwCCCCAQGgK/Cp930y/rHjaZfrLly/XyJEjXZ5z1zhy1CitWrXW3elk7ZkyZUrWRgMCCCCAAAIIIICAvwQYFwEEEEDggkDu3Lkv7F56jCqk58d/ppmbtmvkiBGaPXuO6laooJxWjyp33mbdp3S7SorIk1KnFM5/IC17StFHrNfsbnsW19k01H+bN2+e+Guw2rRp43qGU8t0aPJLVi68ZncNlDGtYUan5af+jXIyGAIIIIAAAgEnQEAIIICAPwWOb9RPn03Xgs/jks3SunVrr3+v05UXV6r0gB6uX/7K5mTHDodDYWFmXyKJLwQQQAABBBBAAAEEglGAmBFAIN0FypYtm2zOjs88rmrNKqt8NqnMPXcmOV84fwEvXsNaBebMWZJc5/PBwuVaNW2dNm53d2UtNajfXgkJR9x18Lq9fHn3r91P/vaDTp9x9yHiXk9BR4MCBr+DwsfKGXxeGAoBBBBAAAEEEPBJgM4I2EHgyy+Oqv3b0mu7L2WTI19+LVq4wOuPyL50ZdK9z0a11PRX7lH+pM1Jjvio7CQcHCCAAAIIIIAAAggggEAAChCSfQWcP1z9zTffaMWKFVq5coV+3LVL7RrUVHUPb95N+XWsVZ3OFZVqtOPH4tVv8nZVGSu5qjFfV6iaFs6foLcHl1BUVN5Uz3PhwmPHjl3Ydfm4N1Nml+00ZoyAwSKzc5FSaM6Yp5FZEUAAAQQQQAABBAJUgLB8EFi27S99dSbpBc8+9bRq1qqtm266KekJX4+uflRNX+qup9oXdXtlWAS//sctDicQQAABBBBAAAEEEEAAAQQ8CRg5V6pUKVWpUkWVK1dRiRtvVLn77nY7bnxCglIuMluvc3NGux0jpRPZczo0cNIvbru1f7yqatXJp+LFi7jt48uJEydOuO/uCNNvcrg/z5l0FzBYZI6xgufJtRC4IYAAAggggAACCCCAQCoEfvlzf7KrMjl/ljVZa2oaclgXtVfB68pYj85b8i0+Nlbn4pJ/VHfynrQggAACCCCAAAIIIIAAAgggkLECYQ5vanKRVpCpf4Po2RjPr5EP58pqjW/u5nB4yCkiQRFhHs67DYMT/hIwWGTmifXXk8S4CCCAAAIIIIAAAgiEgkC2iPBkae7ZszdZW1oa9keW8Hi5Iz7e43lOpoMAUyCAAAIIIIAAAggggAACCBgSiJNiU19kzhQV4TGObw//rW1Kp6/wcN7HnE7U3k6T5iJzkomoMyfh4AABBBBAAAEEEEAAAQS8F3igQtlkne+///5kbWlp+Peg+6J1hTp19Nte9+fTMi/XImAHAXJAAAEEEEAAAQQQQACBYBOIlMI8F4pTysjhcLjtEhaX+gK220HdnTgTqw1f79Gv7s7Tnu4CZovM6R4+E3oQ4BQCCCCAAAIIIIAAAkEl0KrVo9qyZYuWLVuWuDn3W7dubSiHWdKSatq7Zlzy8QoVUpfp0/XS/PkqXqxY8vO0IIAAAoEtQHQIIIAAAggggAACCLgRsIrAmcLdnPOu2dPvfb7aGuIua0uvW79XPlWrT/7VV+k1IfN4FDBbZLbWqsfZOIkAApJAQAABBBBAAAEEEHAncPfdd6t69eqJm3PfXT/f2uOkiU9oxcgV2vlt8ivr9eih3k2bqnryU7QggAACCCCQBgEuRQABBBBAAAEEMlogkxQV7rcgSnp4l7NfJl20RBteGq8FS/wyOoP6KGC2yOz+HfM+hkV3BBBAIAMEmBIBBBBAAAEEbCoQrknr/9Rrs6XNLjJMiI/XTS7aaUIAAQQQQAABmwqQFgIIIIAAAiEjkCAlWJuf8s2aPbufRnY37G5p70/6dx+/6sqdUHq2my0yp2fkzIUAAgggEDICJIoAAggggEBaBd5fllMr3QyS+88/3ZyhGQEEEEAAAQQQQCA9BZgLAQQQQMAPAvH+e4foySxZ/BCwpyEPWScPKMfRU9Yjt4wWMFtk9t8PQ2S0E/MjgAACCCCAQHIBWhBAAIGgEFjyxQp9/csxt7HWu+8+t+c4gQACCCCAAAIIIIAAAoIAAQSCWSAu1m/Rb/7qKx0wOHpCih+/HW/NFqOIYzHWI7eMFjBYZKbCnNFPJvMjgAACCCCAAALnBbhHAAGnQGxsrNq0eUw1a1RzHibburZtq71//KGH27RJdo4GBBBAAAEEEEAAAQQQQCDwBYgQgZQEzkpnUuqT+vPzP/1Utxctqlffey/1g1x2ZY78BS47crXrfFd2tBQe6eokbeksYLDIHGWFTqHZQuCGAAIIIIAAAggggIBrAVrTVWDgwIGaMGGiyzmdL4SGjx+vwoUKuTxPIwIIIIAAAggggAACCCCAABsVOUQAABAASURBVAKpFgiYC+Oks2mr3UVERHjM5siePXrpqad04lTaP8L6n30pvS86pxVLNikyvT+m25qWWzKBsGQtqW5wvjXdkeqruRABBBBAAAEEEEAAAQQQ8FZg47qV2v3jNm3b9l3iJWdjTmjT8hX6Zu1a7f3lF82cPVvOInPiySvvbiqv5z5bqXBd+mIPAQQQQAABBBBAAAEEEEAAAfsJWHW72NR/XHZcXJycnxLmjUu26Ghvurntk7B4rLbPHub2/PkTJ62H0zp7/JT1mLobV5kTMFhkthaqubgYCQEEEEAAAQQQQAABBBBwKTDx49G6v0JV3XHb3Vq9YblmLV2kjo+20X3Vq6l0xYoqcuONatKokc6dO5fs+tzNe2nEz+vU5+HKyc7REJACBIUAAggggAACCCCAAAIIIJBqAet1cRreyOwsMns1dZTz04696umy0/E+D+r9Wh319Y5j8vxl5aN/5TgT57kbZ9NFwGCR2YrXYW3cEEAAAQQQQAABBBBAAAE/CuzcOC9x9NPx0rtD39HkKZM1ccbMxLaU7jJbr3udv7npkNXxn3//te65IYBA6gS4CgEEEEAAAQQQQAABBIJCICH172T+66+/9NBDD6WcZkyMPlu/PuV+LnrErZ6pMaOXyflK/6CL80mbilmHtyvvrQWtR24ZLWC2yJzR2TC/ewHOIIAAAggggAACCCBgE4Eonb2YyW8792nGx59ePE5p58AnQ9WldE1VqVRbZapUVvVqD6nDgBl6fbP0a0oXcx4BBBAIBgFiRAABBBBAAAEEEEDgooBDik39W5kLFiyoxYsXa8qUKbr66qsvjupq55Hy5VXz0bZacNC7ovb332zR/O7t1KZyEw06Jn3hatAr27I+KnV5QtfWznflGY4zQMBskTn16zQDUmdKBAJDgCgQQAABBBBAAAEEfBFYKcVZrz59ueSKvnHfLNHBNYv085atWr5iqcb1f0evjt6gEcuu6MghAggggAACBgUYCgEEEEAAAQQQSH+Bs5IjXmn9at68ubp3757iMEsmfaJ3Xn5Nu1Lsab20/3KZ+n/4sSZZfQ9bm1e3XtVVvvd1uqGQV73p5GcBs0Vmh5+jZXgEEEAg/QSYCQEEEEAAAQQCTmCMNONNLZ2+IUlkxe4tp3vLP6RylR5Q1WpVVbVGfT30UGWVyB+hHEl6ujvYoDOjXtes6ZM0aquU9pff7uahHQEEEEAAAQQCUICQEEAAAQQQsLFArHTc2gxkGBUR4dUoK0cN1sARM/Xu2j80e+1mfbl2lTasWaNVq6zHzZu16499mjtjmp594Xlt8WrES51alimhF26S7rvUxF4GCpgtMmdgIkyNAAIIIBAqAuSJAAIIIBCaAmek0R/q4+FLtPbvSwKvjJmr7zd9qU3rFuvLVWu1/IvlWr50jiZPX6zv53yscZ2uUV2vXgfP0y+jX1TXSatVd43046Up2EMAAQQQQAABBBDIEAEmRQABBBBIu4BVYD53Nu3DWCP8vm+fde/N7aQ+ebyJela8To0qltIDFauobKVKqlLFeixVSjddV1gNHm6updbLfG9Gu7zPk2Wyqc7lDexnqIDZIjMfl52hTyaTI4AAAgggkKECTI4AAgj4VSCzYsKj5cgi3aXzXzfcVUnN2tZT5vOHSe7zZI9SeJlWalKrhtp2uUPFvXpL82/SJ9O1aNYmbTmaZDgOEEAAAQQQQAABBBBA4IIAjwggEEQCVpE5waufvE4xp9L3Zez7h8PDHLo/r6vvAKQYOh38JGCwyEyF2U/PEcMigAACCCCAAAJpEuBiBOwiENV+sdpMW6W5mxdrzfIvtGzJApUITyG7Rp+oVM/J2nn0b02fOU8Fihb1fMFfH0jDuunvNes99+MsAggggAACCCCAAAIIIBBgAoSDQHIBqwwYbhWak5/wuaVNmzba+euverZdO+Xz+WrXF4Q/NlmPfnxEC3+I0crV63XX3Xe77mi1JiRQh7QYAupmrS5T8URZA/EEWwjcEEAAAQQQQAABBBDwRoA+Pgtkk3JUUuF7HlKFqtV0Q/6sXo1Q5MZbpfBcatqornp07erFNZt0ePMiL/rRBQEEEEAAAQQQQAABBBBAAIEUBTKwQ7xk6J3MziSKX3+93hw3Tu0jpOzOhrRsVfvpyadb6Lk2eVSrZCZVrlhW7Vs0cz9imDWp+7OcyQABg0XmGCt8h7VxQwABBBBAAAEEEEAAAQQCU6B4vPUCO8XQrNfgp4950YsuCCCAAAIIIIAAAggggAACCASyQCYrOO9eB1sdvb49+dYwvVqymHredrsa1a6jIsVS+NQw58gRVyvftdereOFCqt+oiYY8939qc4d0m/Pcf1th7f5vL/lDfFys4uPikp9IUwsXp0XAYJGZAnNangiuRQABBBBAAAEEEEAAAf8LhP/5p1eTRGf36pc4ezUWnQwKMBQCCCCAAAIIIIAAAggggIAPAlaB2Q8fM31tr6f01A+7NfS77Zq5YL7Wz5+rrhXvdR9X5rIaMHyC5n65Szv3/qE5M2eo14OZdefFK45Ye4N06MfZ1qP7W7wfcnE/G2dSEjBYZLamuqLObLVwQwABBBBAAAEEEEAAAQQCRuCue+9VSyualF66HFCU1YsbAgh4K0A/BBBAAAEEEEAAAQQQCEQB69VvpP8/ZrpgidvVrEFDtb79OhVIxpBHXZ5oq3ota6hskfBkZ883jJHmz9TqL53F5vMtV95XrFNbv+3de2UzxxkoYLbInIGJMLVPAnRGAAEEEEAAAQQQQCAkBW5s106Tdu7Uez16eMz/1zPxOuqxBycRQACBoBAgSAQQQAABBBBAAIGQFoiUIq0tHQyq9O6nsfNX6avvtmjLN99o9bqvtHLll/phxw61efhe3eXhlziPeW65itbbpCk7XQR61dXqNGWKnp+/QMVvuMFFB5r8JZCQwjvHw4xOnGB0NAZDIAQFSBkBBBBAAAEEEEDA7wLFi6vH++8rMksWt1MdPCf94PYsJxBAAAEEEEirANcjgAACCCCAAALpIWCVATOlX/Eu8rrrdf1td+vuUqVUsXwZVa5cTiVvuVpl77vXbbKnz5xRp7e+0B43Per17K4+zZurlpvzNPtPIDzc3TvPz89pra7zO0buHUZGYRAEEEAg8ASICAEEEEAAAQRsJ+DpxVCBSOku8YUAAggggAACISdAwggggAACCNhKwHpxG5kpoDPKErvRis99ITwhLELFrR7c0l8gLi7O46Sevq/i8UJOIoAAAgggEAgCxIAAAggggEBqBWJOn3Z7abEoh7K5PcsJBBBAAAEEEEAAgfQWYD4EEEAAgdQIhEsRqbkuva75WzqxUVEepsuzb5+Hs5zyp4DD4fndxWFGJ3f/gwZGp2EwBBBAAAEEEAh4AQJEAAEEAlogpZcuV4d5/mndgE6O4BBAAAEEEEAAAQQQSD8BZkIAgYAWsF7bxpwL4AinauXMOYrxEOFDpUt7OMupjBQwWGRO6ds0GZkmcyOAAAIIIIAAAgicF+AegcATePnll3XLLbcoe/bsiY/OY39H6fxZ3LBM0W6niePljVsbTiCAAAIIIIAAAggggEAwCBAjAk6B/0l/nXDuBN52dIsefai/qnZf5zK2Ht066pddu9Xyscdcnqcx4wUMFpmdn+nOd2Iy/iklAgQQQAABBBBAAIGgFAjRoM+dO6tXXnlFP/74o06cOJH46Dw+c+qU30XiE866nyM83P05ziCAAAIIIIAAAggggAACCCCQWoF0ve6kdOqYFJ+uk3o12SvvzdOkpYdd9s2eOULvfzhaN9xYzOV5GgNDwGCRmQJzYDylRIEAAggggAACCCCAQPAInDnj+mO7MkdH+y+J0zs0Z1Bn6Vys2zmOHLkUl9tOnEAAAQQQQAABBBBAAAEEEEAgoAWcH0TtkAxWA02k+/GET/TyKwPcDnW8RGcd+uN3t+f9dYJxfRMwuKwcvs1MbwQQQAABBBBAAAEEEAh5gcyZsyQziIiKStZmrGHDWM2teJvm9B3tccgzZ/wYg8eZOemDAF0RQAABBBBAAAEEEEAAAQRSEnAE1ptE69Wrp3Zt2lpRu3t7dVPp6krKX7io1YdbIAsYLDI7P2rOU6E5kBmIDQEEEEAAAQQQQAABBDJC4H//+1MPPlgxydSxMTFatG5dkjZTB398u1WzNkmTPA54jcqVK+WxBycRQMCTAOcQQAABBBBAAAEEEEAgMAQipQTnr7sNjGiWLFmi+fPnewjmBumepnqgWjNRcfTAFCCnDBaZeboD5Dn1PQyuQAABBBBAAAEEEEAggwSuvbawliwZqGnTeuvyNzDXrlBBrdq2VZzhuH7PXkQfS3L+iKz1kOzWtm1P7d69Q61b10x2jgYEEEAg6AVIAAEEEEAAAQQQQCDEBK6RMuUIiJwfe6y1atZM4bX2zddr0shHtPaZgAiZIFIQMFhkTmEmTiOAgM8CXIAAAggggAACCISGwANq1uwVvfhi0yTpTv7kEw185ZUkbWk9WPWbu/Kyc+RwjRs3VMWK5XYesCGAAAIIIJBuAkyEAAIIIIAAAgj4KhAX582PZVt94iPkVVdfA/Ch/8v9+2vixE9TvOLlpvep5X0pdqNDgAiYLTI7rMUaIIkRBgIIIOBHAYZGAAEEEEAAAeMC2ZQ/f95ko/Z/+WXNnDlTmzdvTnbO14ZPJn2q195+z+VlN954oyZMGCcHH9Dk0odGBBBAAAEEQlSAtBFAAAEEEAhYgfDwcEVGRqYQ3xeKjPpWVtcU+pk//c/RQ1LMX5o0baZeGTjQzQTZpPDrlCV7ATV/pIn6933aTT+aA1HAbJFZEYGYIzEhgAACCISMAIkigAACCASzwIEDuVyG36RJE7377rsuz3nb2LhRY7V9tLXOHvtfsksefPBB7dq1S61bP5bsHA0IIIAAAggggAACgShATAgggAACToGUi8xSZNxiZ9f03Vb20TevN9GtV12lR5s3keu3UmdVybbj9crkb7X7yEFNmTpDis6XvnEyW5oEwtJ09ZUXJyRc2cIxAggggAACCCAgYYAAAgh4IRAXl81tr4kTJ2rNqlVuz3s6sWrVas2aPcttl2ee4Zc9ucXhBAIIIIAAAggggAACvgjQFwEE0k1g48aNOnXqVIrznTrzszZu/CrFfiY6HDxyXNo0TWsXLNWEUV/qB+vQ3bh31e+uRvWb6uFmuVQw0l0v2gNZwGCRmQJzID/RxIYAAggggAACCLgSoA2BgBJwxHsMp1KVKmrarLne/GCiZm3500Pf3/XTnDf00ZtPq/nDjVSlSmWXfVu2aaNfdu9WjRo1XJ6nEQEEEEAAAQQQQAABBBCwiwB5BK/AvKmTNfq9tzRn4ihNGT1EAwe8oKYNG6j8A1W9TqrqAw+oYcOGeq7/yxr80QSN/3yRPp0+X6u/+cbrMTx1/HLeBH0wdJBqPVhB+R5oroff2a5PT7i+omuX9vpl105tnPOmBjaSSrof/jU0AAAQAElEQVTuRmsQCBgsMkdZ6VJothC4IYAAAggggAACCCCQVoGQvD4iLOXXE59Pn6bne3TXiNETNG7DAZdO308epckfDVS354do2ozZLvs4GyeNH68bihVz7rIhgAACCCCAAAIIIIAAAgggkBECHuf8futafTjiPQ1581WNGDpAw98ZoH7939Dnc+Yq9txJj9defvLkuXjNmTNHbw14Ra8Mfldvvf++3rLGHT1ytH7Zs/fyrqnY/1lZzvyuHr37atuWb3UkRjrkYZQPR4zRDTcWF29e9oAUJKcMFpmtVSNHkKRNmAgggAACCCCAAAIIIBBoAif+OeZlSMe1bNxojX+7r4aN/FTfbd2kPXv2aOvW7zRm2AD1e/NtvbrwhOLdjFbspps0YexoyZGa1y/iCwEEEEAAAQQQQAABBBBAAAG/Chw/fkQjRryjlm27aPGar/XT/hNasnW/1v/s7etm9+Gd2LVFP61epO9WLtOkSZP0yfyv3Xe+7ExcXJwWLlyoGdOna9VXG7R21QqtmjJUn7z+pno91/+ynpftZopU3YYNVfKuu3Rz8eIaMmSI9VI8WF6LX5YHuy4FDBaZWRQuhWlEAAEEEEAAAQQQQAABrwQcZ8541S+x09nftG7mx+rVrbXuuOc+FS1aVPfcc4c69eqvOdvjErsku8vSWO2Hztbun39W6/Ydk52mIcgFCB8BBBBAAAEEEEAAAQQQsIHADz/8oNKly+vxx5/Rd9t/9G9GMac0a+X3+tyLWQYPHqw6dero4WbNVKVcWVWsUk1VWvZW2/8brzW/uR7gi9UbNG/WLP2wdat+2rlTvXr1ct2R1qAUMFhktvL3oc5s9eaGAAIIIIAAAggggAACCFwUuKd06Yv7xneKPqxsLevosScaGB+aARFAwLMAZxFAAAEEEEAAAQQQQMA3gXPn3PzwtG/DeNX7hpuLK+VfXiVFRTl/ba5XQyZ2erBWLVUtc0/iPnf2FDBbZLanUahlRb4IIIAAAggggAACCGSIQLO2bbV140YtW7hEX1mP69es1Kr5n2nuqIHq8kgdr2O6/6HmGvn5Zi1btV0rV32hb7Z/r7XLx+jLEe1VKdzrYeiIAAII2F2A/BBAAAEEEEAAAQQCUOCWW27R0qVLNGXyZM2YO0dr16zR6tWrE7dVq1bpy3XrtH79+lRt66xrV61eozVfLNW8+TO14etN6lC9mJp64dCzZ09t2rRJVatWctm79wsDtXPnD9q+ddvFj9XmvakuqWzTaLbI7M2POtiGjkQQSG8B5kMAAQQQQAABBOwvcNd996l6rQdVxnosW6GyKtV5WPU699XLT7ZWxXtv8wrg9cET1KXxPape6XZVrlRNpW6/VQ/ckEN3RHp1OZ0QQAABBBDIYAGmRwABBBBAAIFQF7jhhhvUvEULNalXXw9UqKCKFSsmbpUqVVK58uVVtmzZVG3lrWsrVaygCtVqqG6dRrq/9L2qX6Ws19z33nuvli9flax/oQe76p3X+6p48ZK6/a47VatWLWXPmjVZPxrsJWC2yMyPJNhrdZANAgh4J0AvBBBAAAEEEPC7wNXlHlHvp59QhzZt9VDth1T1gQoqZRWiy5UrpwoVKuqmm4qpxM3F9eqbQ1X1NqrJfn9CmAABBBBAAIFQFCBnBBBAAAEEEEgUePutt3TrHbcq3+1VVeaxFzXg6R6J7dyFloDZInNo2ZEtAggggECACxAeAggggIC9BBq06KwxH4/X4gWLtXztGn2zcaO+/PJLrVmzWj//vFs//rRT/Z7taa+kyQYBBBBAAAEEEEAgRQE6IIAAAgikr8Azffro+2+/1+Hty/XVJwPU7sFb0zcAZgsIAbNFZj4uOyCeVIJAAAEEEEAgwAUIDwEEEEAAAQQQQAABBBBAAAEE7C9AhggggAACNhYwWGSmwmzjdUJqCCCAAAIIIBASAiSJAAIIIIAAAggggAACCCCAAAL2FyBDBBBAIO0CBovMUVY0FJotBG4IIIAAAggggAACCJgVYDQEEEAAAQQQQAABBBBAAAEEELC/ABkiEEQCBovMMVbaDmvjhgACCCCAAAIIIIAAAgiEhgBZIoAAAggggAACCCCAAAIIIICA/QXIMLmAwSIzBebkvLQggAACCCCAAAIIIIAAAghkgABTIoAAAggggAACCCCAAAIIIICAHwUMFpmtKFNdZ7au5YYAAggggAACCCCAAAIIIIAAAjYXID0EEEAAAQQQQAABBBBAAAE7CJgtMttBhBySCnCEAAIIIIAAAggggAACCCCAAAL2FyBDBBBAAAEEEEAAAQQQQMAHAbNF5gQfZqYrAgikSYCLEUAAAQQQQAABBBBAAAEEEEDA/gJkiAACCCCAAAIIIIBAIAqYLTLzcdmB+BwTEwIIpK8AsyGAAAIIIIAAAggggAACCCCAgP0FyBABBBBAAAEEEAhpAbNF5pCmJHkEEEAAgcAWIDoEEEAAAQQQQAABBBBAAAEEELC/ABkigAACCCCAQHoImC0y83HZ6fGcMQcCCCCAAAL2EiAbBBBAAAEEEEAAAQQQQAABBBCwvwAZIoAAAgjYSsBgkZkKs61WBskggAACCCCAQMgLAIAAAggggAACCCCAAAIIIIAAAvYXIEMEEEAgNQIGi8xR1vwUmi0EbggggAACCCCAAAII+FOAsRFAAAEEEEAAAQQQQAABBBBAwP4CZIhAQAsYLDLHWIk6rI0bAggggAACCCCAAAIIIBCKAsGf844d32vfvn1au3aNta3V5s2btX79ei1ZskRff/118CdIBggggAACCCCAAAIIIIAAAgikWYABnAIGi8wUmJ2gbAgggAACCCCAAAIIIIBAMAp8uWGTPp8xU7fffpsqVqxkbRVVqlQplS9fXjVr1lSZMmW0aNGiYExNImoEEEAAAQQQQAABBBBAAAEEEDAqYLDIbMVlqM5sjcQNAQQQQAABBBBAAAEEEEAgnQSOHPlHC+fO09D3P9Q//xxzO+v777/v9hwnEEiNANcggAACCCCAAAIIIIAAAggEp4DZInNwGhC19wL0RAABBBBAAAEEEEAAARsKrF37pQa/86b+OXLIY3bOdzLfdtttGjZsmGJjYz325SQCCAS1AMEjgAACCCCAAAIIIICATQUcDjPvGjZbZE6wqTZpIRDwAgSIAAIIIIAAAggggEDqBXbs2KqzZ2O8GmDHjh3q1auXxowZ41V/OiGAAAIImBRgLAQQQAABBBBAAAEE0iYQFxeXtgH+u9pskdlM4fu/0HhAAAEEbCBACggggAACCLgQ2PvHfn234zstWrhIM2ZM0fLlK1z0ogmB9BP49dfffJ5s+PDhGjRokMaOHas5c+YoIYGfOvYZkQsQQAABBOwjQCYIIIAAAggggECQCISHhxuJ1GyR2UhIDIIAAggggID/BZgBAQQQyCiBn/ce0KfT5uiO2+5Q7Tq19fDDLVW9ejW9/fbbGRUS8yKgyMhInxWc72ju27evOnbsqIYNG6pBgwY+j8EFCCCAAAIIIICAvwUYHwEEEEAAAQSSCpj6IXGzRWZ+cD3ps8QRAggggAACCPgqQH8EbCtw/PQpxVjZ7f79sF565WVrL+ktIiIiaQNHCKSjQPny5dM827x587R+/fo0j8MACCCAAAIIIIAAAiEhQJIIIIAAAkEuYLDITIU5yNcC4SOAAAIIIIAAAh4EOOWrwLBhw3TLLbckbtWrVVWD2g10792l1KBOFcWd+N/F4cqUKaOvvvpKvXr1utjGDgLpLdC6dWv9+OOPatGiRZqmrly5sh5u9rBateuqrk/10frN36ZpPC5GAAEEEEAAAQQQQACB9BZgPgQQQMA7AYNF5kzWjAnWxg0BBBBAAAEEEEAAAQT69OmTWLRzFu6Wr1iplau+0I5tm60C89EkOM4Cs7PQnKTRlwP6ImBIoESJEvr000/TNNq5c+c0Y/oMTf54lEa9N1iD3no3TeNxMQIIIIAAAggggAACCCCAwH8CPCAQYAIGi8wJAZYa4SCAAAIIIIAAAggg4F+Bb7dt14oVKxLfibxhwwbt379fe/bs0bPPPqvY2FiPk1977bWaMGGCxz6cDG6BYIw+LCxMQ4YM0Q3XF1WxEiV1f+m0fYz2/M/G6ynrz8Mvu3cFIwcxI4AAAggggAACCCCAAAIIIJCiQKh2MFhkdoSqIXkjgAACCCCAAAIIhKDAoGGjddfdd6patWoqV66cypYtK2fhuGjRonr77bc9ilSpUkX79u2T8yOKPXbkJAIZIOD86PZffv1Nu3/8QRu+XqfR46emKYr3rD8PNxa/SUuXLk3TOAYvZigEEEAAAQQQQAABBBBAAAEEEEijgMEi81krFH8Umq1huSGAAAIIIIAAAgggECAC237+RT/uP6aPx45MdUTPPPNMqq/lQgTSW6Bj20dUuXK1NE87fPjwNI/BAHYXID8EEEAAAQQQQAABBBBAAIFgETBYZKbAHCxPurE4GQgBBBBAAAEEELChwN4Dh9SkcWPdfPPNKl26tCpVqqRq1aqrSuXKqlylsp5+sqdqVSynnd9v8Tn7Jk2aaMeOHapdu7bP13IBAhkpsHLlFxozenSaQpg3b54qVKig6tWrq1ixYmps/Tk7efJkmsbkYgQQSCcBpkEAAQQQQAABBBBAAAHbCDgcZmq6BovMtrElEQSCXoAEEEAAAQQQQCD1AsOGDtXMWbO0c+dOffPNN1qzZo1WrFiuVatXa/Wq1VqxdL72/PJDqiaYPn26/p+9uwCQqtrjOP7bXbobQQETVEJKurulQ7q7u0G6G6W7u7u7QRFFnoKIIiGCIL3suzOKCmzN3Lu7E1/ezM7Mvef8z/l/5r51z/xn7nz44YdO9aUTAhEt0LBRI/Xu3dvUNPbv368dO3bohx9+0Crj/2cjR440FY/OCCCAAAIIIIAAAggggICrCjAvBFxVwN/f35KpWVtk9rFmUpZkRhAEEEAAAQQQQAABjxG4ePGiVq5cqQ0bNujQoUNG8feIjh8/ZdyeNq4njetR43rMoetRo4B8xrgePXZUJ0+c0alvLmj+/MUaP8b6oleqVKk0ffp0+fhY805Rj3liXSsRZhMKgY4dO6pEiRJKliyZ/VPJtk/7h6JbkE2GDBli/H97hRQQZBN2IIAAAggggAACCCCAAAIIIGClgNfH8vPzs8TA2iKzIlkyKYIggAACCCCAAAIIIPBc4Ny5c/ailu1U02XKlFGuXLmULVsOffxxZuM2k3HNYlyzG9dsDl2zZ8umjMY1e7bsypI1ozJ/mFq1a9eQ/1Nr3zhZsGBBXbp0SQ0bNnyeErcIuK1A3LhxtWnTJv3yyy/2T/kfOXJEpUuXdjqfR48eqVKlynr73dQaO3mqfn8QWCi2IYAAAggggAACCCCAAAIIIICAVQIBAda809vaIrNtUlZlSBwEEEAAAQQQQAABBJ4LuPEngDt37vw8C24R8EiBxo0bm87r4g8XtHD5Ei1fsDy4sgAAEABJREFUOF8/XbtuOh4BwkmAYRBAAAEEEEAAAQQQQAABBLxWwMIic4DXIrpL4swTAQQQQAABBBBwRwHbdxgfP3BAI0aNUKo0ad0mBdsnr22fwi5ZsqTbzJmJIuCMwCeffKL9+/dp6ZKVWr5inQYNG+1MGB3btVNt27TS+6lT66MMGeynmHcqEJ0QQEAQIIAAAggggAACrizw8OFDVa1aVYkTJ1a0aNGUNWtWHT9+3JWnzNwQQCAQAQuLzFGN8BSaDQQuCDgqQHsEEEAAAQQQCEEgdsKE6tShk2bPW6DUWQuG0No1di9btkwffPCBa0yGWSAQxgK5c+dRlaoVVKliGfXo0l4169VzasQH9+/o/h939OVXX6lZs2ZOxaATAggg4MICTA0BBBBAAAEEDIERI0bItma+efOmbF+hc+LECS1YsMDYwwUBBNxJwMIi8yMjbx/jygUBBBDwFAHyQAABBBBwNYECH3+kdu2aqWnL9ipZqoIyfpRBOXJ8rBIlSihy5MguMd0333zT/glMHx/+NnaJJ4RJRIhA3+59Va1aVVNj+/v7q0uXLvrpp5/03XffaevWrXry5ImpmHRGAAEEEEAgcAG2IoAAAghYLWD7233nzp3at2+fjh49qm+//Va///67NmzYoD59+rwwXM6cOdWgQYMXtvEAAQRcX8DCIjMvorn+080MEUAAAQ8RIA0EEPBqgeY1q+qLiaO1ccNKnTp9RocOHdWmTZu0e/fuCHcpWLCgLl68qIYNG0b4XJgAAhEp8F7qN7V48RJ7YdjMPGyfcEiZMqXSpEmj4sWLq2LFimbC0RcBBBBAAAEE3E2A+SKAgNsKVKhQQYULF1a+fPmUPXt2+5m+EiRIoDJlyryQ08aNG3Xw4EGlT5/+he08QAAB1xewsMhsJEud2UDgggACCCCAgPcKkDkCESmQK1cuFSlaNCKnoM6dO0fo+AyOgKsJFDX+P2krDls1r/Xr12vv3r1WhSMOAggggAACCCCAgJMCdEMgOIFDhw7ZP7EcXBvbvvLly6tkyZK2u1wRQMANBawtMrshAFNGAAEEEEAAAQS8QMBrUty2ZbPmzV2omg0a6a302cMt70qVKuncuXMsjsNNnIHcSWDRokVatWqVjh8/rm+++UYtW7Y0Nf38+fOrYdPGOn/llqk4dEYAAQQQQAABBBBAwAMFwi2lBw8eqEqVKnrvvfeUI0cO2c7sVa5cOYW2cDx9+nT7OiHcJsxACCBguYC1ReYAy+dHQAQQQAABBBBAAAEEQi/g46tatWto+oxpatq2g9LlLx36viZaLlu2zH7qL8dD0AMBzxeIHz++/YWmLFmy6P3339e4ceNMJz1z6nQN6N/DdBwCIIAAAggggAACCCCAgHMCtq+2Wb58uf73v//pyJEjsn2F1bp167RmzRrduXMn2KC272T2vq+ZCpaEnQi4pYC1RWZOl+2WBwGTRgABBBBAAAEEPE0gmpFQ2fzZ1axObeNe2F1SpEgh27uvfXz4QzjslCMoMsOGmYCfn5+90JwmTRpTYyyYPkWDx0/V6h37tGHDNp05c8pUPDojgAACCCCAAAIIIIDAvwJ3Hz7Wtxe+0+FDh+xF5FOnTtnP4HXr1i3Zvkd59OjR/zZ24F716tXVv39/B3rQFIEwFiC80wLWFpmdngYdEUAAAQQQQAABBBCwVuDDd1OpUf1qihY5irWB/45mOxXY5cuXxbuv/wbhBgEHBNq0aSPb9yufPn1avfr0UcoUKULd+78Ne7ZtqgpF8qlMmWLKmDGzNm/e/N/d3EcAAQQQQAABBBBAAAEnBKYvXqFa9Rrpww/SKWeuXPbTYWfOnFlp06ZVwoQJVbp06RA/rRzYsFu3bpXt63QC28c2BBBwPwFri8yvni7b/USYMQIIIIAAAggggIDHCPz8/Xk9fPI4TPLp0qVLmMQlKALeIvDuu+/qo48+0idlyqhe/fr2F6vM5j558mSzIejvvAA9EUAAAQQQQAABBNxc4PrN69qz/5hWr1ihtUvmKcD/iWUZlS1bVkWLFrUsHoEQQCDiBYItMvv4OHLaPyrMEf90OjID2iKAAAIIIIAAAp4nMGnSJPs7q3PmzKm6dWuoSLHSlidZq1Yt+ynCSpQoYXlsAiLgjQJZP/5Y9Y0i848//qj58+ebIrB9B1y+fPlUsWIlFSyYV716ddGWLXy62RQqnT1AgBQQQAABBBBAwF0Fdu7aqaNnzmnLnqM6dupbbdi2/ZVUnjx5qos/XtLchYv0y80/dfDYWS1cs0HDJ0xWu+69VKFaVRUw/kbOkyePChcubPydXDDQq+3TyfVr11XFKmW0YfmiV8Yxs2HatGlau3atmRD0RQABFxQItsjs7+/vwJSjGm0pNBsIXBAwJ0BvBBBAAAEEEHBaoG3btvYC8OHDhzV37mJdvPi907EC6xg5UiTNmzdPH3zwQWC72YYAAk4KvPnmm4oZM6Zq1qyp3r17Oxnlr2779u3TqlUrtXv3fg0aNEK3bv321w5+IoAAAq4mwHwQQAABBBAIQeDn3/7UkmXLjQLyMk2ZO1+//PFYR769qTO/PtCB89e08+j32nTgpA6d+Fp3n/lo3OfjNeGLGRo9YoK69hmkcUMHafXSZdpj/I184MAB7dy50/g7eXeg140bN2rj5s269ev1EGbl2G7b3/eNGjVyrBOtEUDALQSCLTL7+fk5kMQjo60jn3w2mnNBAAEE3EiAqSKAAAIIuJ7A1Vt3dPfPP/XzlZ/UoUMHOfYmScfzKcanlx1HowcCDgp06tRJxYsXV7JkyZQrVy59/PHHDkZ4sXn79p20YcMGnT9//sUdPEIAAQQQQCAIATYjgAACriIQ9dkj5cyVTx++97p8nwZo+5ZNGjigs9rVr6OenVqqb89uGj7kM30+caymjRurBXMWaOXKhTpxYIt0+5cIT6NGjRrq169fhM+DCSCAQNgIBFtkDghw5JPJFJjD5ikiKgIIIIBACALsRgABLxWYOn+5yletoYRJU+iNFCk1ZsyYMJVIaBS8MpksdoXpBAmOgIcIxIkTR5s3b9Yvv/wi26ctjh49ai86O5vetWu/qkyZMho0aJCzIeiHAAIIIIAAAq4hwCwQ8DqBqlUrq3KpAipRspzeey+5ju/ZrvULZ2v35uXas36F9m9frgNbN2j/ru06c/yIfv7+az2+be0nkZ1F37p1qxYuXChf32DLUM6Gpx8CCLiAgLX/76bO7AJPKVNAAAEEEEDAVQSYBwJhJ3D22/9p1eplOrpjk578+XvYDfSfyLVr1VJxPsn8HxHuIhB+Aq1atTI9mO1U98eOHTMdhwAIIIAAAggggAACLwvwOKwFsqR9Wx9+kEYpUyYP66EsiV+uXDkVLVrUklgEQQAB1xWwtsjsunkyMwQQQAABBBBAAIHnAm5+W79ePWXJlEGbVywNt0wyZMmiHp07K0+2bOE2JgMhgMC/ArZPIn/15ZeqZ/K73AoXLqyqVasqm/H/5XTp0mnSpEn/DsI9BBBAAAEEEEAAAQRcWKB00SKaP2ee1qxZo1WrVuvkycOaMXNW8DOOgL1TpkyxzzEChmZIBBAIZwFri8yOnF07nBNlOAQQQAABBBBAAAH3F7Cd7nb2nDl6/PBBuCZTqkgRJU6cOMzHZAAEEAhaIF369Jo1bZqKlioVdKMQ9ty9e1fLli2T7RPNX3/9tdq2bRtCD3YjgAACCCCAAAIIIOA6Aq8nTy7bp4TLl/9EmTJlV4P69dS3Xz+XmWDv3r3VpEkTl5mPK0+EuSHgCQLWFpk5XbYnHBPkgAACCCCAAAIIuIzAyZMnZfs+1ps3b2rLli0aPny4w3Ozff+T7dOLBQsWVK6cOfV2mvcUOVKMUMepVq2aevbqFer2NPRIAZJyIYFORmG4et26Kl6ypMqULm1qZv7+/mrdurX+/POeNm/eaioWnRFAAAEEEEAAAQQQiAiBVi1bqlSpUkqUKJFyGmvejz76KCKmoRo1aqhfv34RMjaDImChAKEcELC2yOzAwDRFAAEEEEAAAQQQQCA4AVtROUuWLMqePbv9U8QlSpTQH3/8EVyXQPft2bNH27dv186dO3Xg4EGd/+Y7LV2zWrUbtAy0/X832vouXrxYsWLF+u9m7iOAQAQKFCtWTItmz9bmjRu1bv167du3z9RsJk6caPx/PLYWLJivlStW6czZr0zFozMCCCCAAAIIIIAAAuEpYCsub9iwQTdu3NBBY817+vRp2f5mDs852MZfuHChbG/yDs9xGQsBBCJWwNoic0iny47YXBkdAQQQQAABBBBAwI0ErPiuVFthOk+ePC9kHclHevTEX2XLlVGKtz98Yd9/HxQskF/vvff+fzdxHwEEXFDA9v9xK15Emz9/npatWqYfzn+vRwHPXDBTN5sS00UAAQQQQAABBBCIMIEOHTqE29i203fbPkkdbgMyEAIIuIyAhUVmKswu86w6MRG6IIAAAggggAACES1w6txFTZ+zSN379FGe3Lm0bt06U1OaOnWqNm3aFGiMap+U0JvvfKDkKZIFur9okRJq2rqtkiVLEuh+NiKAgGsJ2L5nefGSxVq8coOmLFymQiXKODXBxQsWqWr1KnojcRLVqVNHAQGsc52CpJNLCzA5BBBAAAEEEPB8geLFi+vWrVvq2bNnmCZrW3evWbMmTMcgOAIIuK6AhUXmqEaWLMANBC4IWClALAQQQAABBLxC4NrtB/pi+jR16zNAQwcM0IGDh0zl3atXLzVu3DjYGJnTpdJrryV+pU2unHk1auIEVatY4ZV9bEAAAdcUiBMnjqpVraZqFUqpSY3K6tpnqNMTffr0qW7+9pvmzZunwYMHOx2HjggggICDAjRHAAEEEEDAUoH48eNr4MCBihs3rqVxnwfr3bt3iOvu5225RQABzxSwsMj8yBDyMa5cEEAAAW8QIEcEEEAAASsEjh8/ru07tqtju9ZaumCZfrv8jVNhM2bMqJw5c8r2XVS203S1bds2xDh+RouE8V/9JHOKt9/UzWtXjb1cEEDAXQWK5Uyr8RMmK8Ubr5tKYdSoUdq8ebNu3rypo0eP6sSJE6bi0RkBBBBAwB0FmDMCCCDgPgIPHz7U7t27df36dT1+/Fjz58/XnTt3LE+gWrVq6t+/v+VxCYgAAu4lYGGRmQKzez31zBYBBBDwUAHSQgABtxIYP368ihYpqgVzZuj29f85NfeiRYvq1KlTOnjwoG7cuKENGzbYi82hCeYb+dU/h/2ePVXBfHlD0502CCDgwgKtWzXX5Z+uqEiRIk7P8vfff1fJkiWVOHFiZc+eXVmzZrUXnZ0OSEcEEEAAAQQQsE6ASAgg8IpA5cqVVbBgQSVNmlRRo0ZV7dq1X2ljdsPGjRu1ePFi+fhQEzJrSX8E3F3g1VfVzGTE7xQzevRFAAEEEEDAowVIDoGXBWyfCrSdjvbl7Y4+btuunaNd/mn/8MmTf+4/v1OqdOnnd/4iz5EAABAASURBVLlFAAEPEGjdurWlWUyaNMnSeARDAAEEEEAAAQQ8TYB8IkbgyNGj9jddh+XoJUqUsL8JMyzHIDYCCLiPgLVFZvfJm5kigAACCCCAAAII/CUQbj8nT54s22mtc+XKJdu7q22ntTYzeO0GDXTq5EmVLlXKqTBPjV6/fP8/4+dfl4oVK+rs2bOqWbPmXxv4iQACHiFQrlw57dy5U+vWrbP/f3zp0qX2T3U4m9z69euVKVMmzZ4719kQ9EMAAQQQQAABBBBAwLTAwtXbVLhibRUtW1lVq9dSqcKFQorp9P4YMWJo+vTp2rRpk9Mx6IgAAp4nYG2ROcDzgMgIAQQQQAABBBBAwBqBdu3a6cyZMzp06JBWrFih3377zenAGfMV19wZM5TRKPQ4G+T4l5f14+WL/3RfvnyJ0qZN+8/jiL/DDBBAwCoB2ykDy5QpY///eJUqVdSlSxdToU+fPq36detqy45dpuLQGQEEEEAAAQQQQAABZwV6fPaZdq6ar+3rV2jZkgW6de9PZ0OF2K9Hjx5q2LBhiO1o4KwA/RBwTwFri8ycLts9jwJmjQACCCCAAAIIhJHAl199rTu3f1fbtm31JJBTUzsybIlSJZS7QCmVqFxDXduaO/3t8f/9qs3b1un789/8MwUfn0j/3OcOAsEKsNPtBTp16qSyZcvI1y+q5BNZzv4bOXKE5ixarvWbN2n3rp3OhqEfAggggAACCCCAAAKhFvjlymW1btdZP57aH+o+ZhvGihXLbAj6I+CeAsw6WAFri8zBDsVOBBBAAAEEEEAAAW8SWL/7mMaOm6R48RNo/PjxplLfv3+vNm3YpP27NmjTsoWqXrG0qXgbNqzT5JmLX4jh7//shcc8QAAB9xMI7YzjxImjtWvX6e6fd7Rs7QY1bNUutF1faLfdKC7X+7SKypYspYKFCqtixQov7OcBAggggAACCCCAAAJWCnw+a5FeT5FKE8eNtDJsiLF+uXEjxDY0QAAB7xOwtsjs2OmyvU+bjBFAAAEEEEAAAS8R2LD1oDasXa5ZMz43nXGxYsWUO3de03GeB7j8y086efC4bpz7913fefNm19dffvm8CbcIIOAlAjGiRlWFkkVUqnxVla5QxXTWq1at1pEjR0zH8cAApIQAAggggAACCCBgUuD6I2nGHPNrbGemkTFDBme60QcBBDxcwMIiMxVmzzlWyAQBBBBAAAEEEHBc4NmzZ6pXr66SJk2mGjVK64sxwx0PYvRI93FujZw0Q5OmzdKiBfO1fPlyY6t1l5TJU2jb5lX2gAmSv6HZM2dq794DypApo30bPxBAwLsE/Px8VLFwTq1fuVRffXXG+P1VwxRAqVKlVKN6DeXKV0RZcxbVlFkLTcWjMwJhK0B0BBBAAAEEEHBVAdtXTlWvXk2p3/9QBYsXV/HcOXVizz6Hp9u0aVOdPHlS165d07Fjx9SlSxeF9l/t+vV17vx51ahaNbRdaIcAAl4kYGGROYrBFmBcuSCAQJgJEBgBBBBAAAEXFhg8eLDmzJmr69d/1d1bt52e6cDBg9SxRQO1aFRP1T+tqdixYzsdK7CO9+7e04M//jrVV7XyZVTXWDRLfoE1ZRsCCHiZQLp0GYzfY3NMZX3r1i0tXrJYh/bt0InD29WpUw9T8eiMAAJeKkDaCCCAAAJeLzB8+HAtWbJUF85/o91bt+r0icNOmYwdO1aZMmVSkiRJlDVrVg0ZMkSRI0cOVaypkybpg9SpQ9WWRggg4H0CFhaZKTB73+FDxggg8FyAWwQQQMAbBb788ksdPXpUt2/f1lZjwTtq1ChTDCneeF1jJkzUO8mTmYoTUudYsWMpesw49mbp0/LpZTsEPxBA4B8B2wtu/fv3V8qUKfXmm2+qRIkS8vV1ful879aPata8tX6+8tM/Y3AHAQQQQMB9BZg5AgggEFYC31++rHPfXdCdO7e1efNmjRw50tRQr732mr744gtFixbthTi2v21t1xc2vvQgRYoU+vzzzxUtevSX9vAQAQQQ+FfA+ZXyvzH+vufz9y03CCCAAAIIuIwAE0EAgTASsBWVP/roI2XPnl3x48dX8eLF7cVmZ4crUqSILv90Re1atVS6D8P2XdJ3795VoWJlFOO1t5TkjTecnTL9EEDAgwX69OmjH3/8URcvXtSmTZu0Z88eU9lO+WKi3kiRUrt27TIVh84IIIAAAgggEKQAOxBwa4HjX51T3kIllTZNasWLF18lS5Y0tcYuWLCgrl69KtupsgODefToUWCb7dtq1aqly0bBu1mzZvbH/EAAAQSCErCwyPzYGINCs4HABQEEEEAAAQRCFKCBuwtMnDjR0hRat25tabzggtlOv52zYGFVqVZNH2XMGlxT9iGAAAJ2gTx58tjfTGN/YOLH+PHjTfSmKwIIIIAAAggg4I4CzDk0AjNmz9DV78+Fpmmo2rRr1y7IdgEBwZ+VNmfOnEH2ZQcCCCDwXwELi8wUmP8Ly30EEEAAAQQQQMAtBUKY9Px5C5UlS2atW7cuhJZB744SJYoWLlyoc+fO2eNs27ZN5cqVC7pDGOzp2bqBPmvfQu+mTBoG0QmJAAKeKGA7ZeG0qTOUI5fzL7qtXr3aXqwuW7as3n//fVWvXl1PnjzxRC5yQgABBBBAAAEEEAiFwLxFi5QxQxZ9MXp0KFoH3sTRNbaPz9+1nMDD6cqVK0HsYTMCCCDwooCFReYXA/MIAQQQQAABBBBAwLMETp2/qNp1aurkyVOmEuvUubNq1KihDz74QGXKlJHtVNmmAjrZOWWqFE72jJhujIoAAhEv0KhxA40YNkofZXP+LAi2rxtYv369zp8/ryVLlmj48OERnxgzQAABBBBAAAEEEAh3gQu/P1adT2vrzFcnTY3dqVMnS9fYIX3S2dRk6RwqARoh4C4C1haZffzdJW/miQACCCCAAAIIIBAKgV07d+rg8ePatf+Qxo0cFIoewTcp90k59ezaNfhG7EXAvQSYrZcJ5MmTU+1btFLbdm1VoVo1ffjBB6YEhg0bps2bNtpjrNuw2X7LDwQQQAABBBBAAAHPFNixZ7fOfH1eB7++pJF9expJmquplC//iXr2tMUxQllwqVixklq0aGFBJEIg4JECJPWSgLVFZkV6KTwPEUAAAQQQQAABBNxVoHz58ipUuLByf/yxCuXNpTnTZziVStqs+dV38Ej9ePmq1qxeoxixY4t/CCCAQNgLhN0IdevW1dgxY7Vy8WJ9fe6cSpYs6fRgd+/eVclSpRUzdmwtWLFGk+csdjoWHRFAAAEEEEAAAQRcV8C2xi5SoKAypntfudO9pakTRjo12TivpVS7Dt30vx8uaNWq1YoRI4ZTcV7utGPHTq1YsVwpUnDWr5dteIwAAoELWFtkDuEL4wOfwt9buUEAAQQQQAABBBBwGYGjhw5pzZo1pueTPnMuVaxUSTXqNFLKFK+ZjkcABBBAwBUFmjdvbnpa9+/d05JZX2jNqhXasvOgnjx6YDqmywZgYggggAACCCCAgJcJHLJojZ3q3ffUoF5dla9RQ++89a4JRZ8X+saJm0iFChV8YRsPEEAAgZAELCwyB4Q0FvvdVIBpI4AAAggggIDnC1y++ruGjZmq7r37qHad2ipQuLCppGvVrKkTX57RsSP7VLdyaaV5Pa6peHRGAAEEXFmgbNmy2rlzp1avWqVTZ89q0aJF8okSxakpb12zXCUK51a+/AU1b948p2LQCQFnBeiHAAIIIIAAAtYIrN+0VYvWbtHAwWNVq14dFS5UyFTgWrVq6czpUzr39TkVyJFV+bNmMBXPx+fFes6DJ+ZO221qMnRGAAG3FbCwyBzVQHjxF5OxgQsCCISdAJERQAABBBCwRiAgQJ9PmapuvXtp6MABmj9vvh48MPcJumnTpytz+gyKGslX77z7tjXzJAoCCCDgwgIFCxbUJ+XLK2PatKpevbq6dOpkaraHjxxR06ZNTcWgMwIIeIwAiSCAAAIIuJnATzf/UI8e/dW7Z3stmDNPDx4+NJXBtGnTlOGjjIoRJZI++aScqVjy95fxMsALMT5Il1a7d+99YRsPEEAAgZAELCwyPzLGevEUC8YGLggggIAXCpAyAggg4D4Cly5e1pCRIzRx0ufSnzecmriPj48KFy6sVKlS6bXXXtNnn32maNGiORWLTggggICnCPQzfhdWqVzZVDq2N/z07NlTN2/e1JUrV7Rnzx5T8eiMAAIIIGC1APEQQACBFwV+vHRRw4aN1ujhw3Tp60Mv7gzlI19jjW07u9ibYbTGfvJShblYuSrq1q2DChTIF8oZ0gwBBBD4S8DCIjMF5r9I+YkAAggg4LICTAwBBF4Q2Llzm956O5V6dOmqezd/fGGfIw/27t2r7du369KlS7p69ap69+7tSHfaIoAAAh4pEM3PT0uXLdPmzZtN5Td48GAlTpxYKVKkMF74K6Dy5cubikdnBBBAAAEEvEKAJBGIAIFt27bpzbfeNgq2HfW/s8ednsEOY429y1hjXwyjNfbTJ0/+mVv+PPm0Zc1S1ahQ4Z9t3EEAAQRCK2BhkTm0Q9IOAQQQQAABBBB4UYBHESMwbtwk0wOXKFFCefLkMR2HAAgggICnChQpUkTFihWzLL01a9bo4MGDlsUjEAIIIIAAAgggEJ4CnjzWpEkWrLGLF1eBsF5j+/5bFipSsrgnPyXkhgACYSzw72+TQAby8XHw08kONg9kSDYhgAACCCCAAAIIhIHAkydPVK1aNaVPn17lypVT0aJFtXbtmpBGCnL/68mTy7aA3rRpU5Bt2IEAAgggIPn5+Wnu3LlasGCB9u/frzNnzqhx48amaHLnzq1mzZvpzDc/iH8IIIAAAggggAAC4S8Q2Brb9mZAMzOZOHGiNpk8C05oxo8eNariJUlibxo7Thz7rSRuEUDAiwR8fHwsyTbYIrO/v79jgwQ41pzWCCCAAAIIIIAAAuEjMHz4cC1dulRnz57VunXrZDu9tZmRR4wZoxYtWpgJQV9TAnRGAAF3EkiaNKk+/fRT2YrDGTJkkO0FRLPzn/LFFPXq213X7puNRH8EEEAAAQQQQAABRwWsXmN3795dLVu2dHQaTrW/ee2aMmfKpCgxY+q11193KgadwlOAsRCwXsDh+m8QUwi2yGx7x3UQ/QLfbE3hO/DYbEUAAQQQQAABBBBwSmDDhvUaOnSoU32fd0qXNq0KFimiQgULqlvv3nrrzTef7+IWAQT+K8B9BEIhECVKFI0YNEipUqaQ/KLKL1asUPR6tcn6ZUs1asRQzV2yWqs3bdW335x7tRFbEEAAAQQQQAABBCwVWL9unek1dsaMGZU1a1bFjx9fhQsXVufOnS2dY3DBEiVNqhaNG2vggAGKGyNGcE3ZhwACwQm48T6H679B5BpskTkggI8mB+HmEZt/vvKt1m1cpAs/fO8R+ZAEAggggAACCPwr8OP13zVizES9kyaNypQpq3v37v2708GavhyJAAAQAElEQVR7tgXvV2fPaue2bdqxc6eGfPaZcmTL5mAUmiOAAAIRK+Bqo3fq0UPbjd+pV6/f1LLlq1WwXGWnpjiiX3fVrV5BFUoV1wcfptWOHTucikMnBBBAAAEEEEAAgaAFNu3crbnLVipt2owqW66cqTV2iRIldOrUKR07dky3bt2yn2nMVmwOenTr91SqVEmd27dXieLFrQ9ORAQQcHkBq+q/wRaZHVawribt8NB0CJ3Ateu/6uHdb3XowGwdOb5NN27/qpOndmr/6d164P9Qp776KnSBaIUAAggggAACLivww+VftWbZKi1avFg/fPed6Xm2adPGdAwCIIAAAgi8KvDuO+/qtQSx9E7Kt1S/bk0lT2X+LBG278t/dSSX3sLkEEAAAQQQQAABlxa4/sefevinv+bMmadz586YnmuzZs1MxyAAAggg4AoCwRaZfXx8HJgjFWYHsMK96Z3v1qtOrVoqXLikPsxYSNU+7ajGDTqqef0OatCwrWpWrKvs2bKrQa0a+jjLR5o4akQQc2QzAggggAACCLiqwJw5c5QjRw59/NEH6ti5vU4dPeDUVDt1761Zsxdo+qyZ2r5tm8qVK+dUHDohgAACCIROIMMHb6t2xfI6e/qsZsyYHrpOQbRatWqVihcvrkqVKyl9ztyqWa+J/INoy2YEghdgLwIIIIAAAt4tMGf2bGXLnk3pPkitenVraueG1U6B1GvRRkNHT9K4L6Zo544d+uSTT5yKQycEEEDA1QSCLTI79sXPUY3cKDQbCC542aihw/pr3oIF+vrsaV384ap+unxLt35/osePpft3Hujyxcv66uSXOv3l1zpu3Lbt0kWP/Z+4YC5MKUgBdiCAAAIIeL1A8+bNdeTIEd26fVtPH/zhlEfVKtU0YvBnxgL6UzWsV1+FixRxKg6dEEAAAQQcF4gfL6YaNGiobt26Od75Pz22bt2qlStW6uzhg1o4Z5qGjhj3n73cRQABtxcgAQQQQACBcBFo3qKFjh09phu//KI/fr/m1Jh5S5RVr36D1LV9C7Vp2kQFCxVyKg6dEEAAAVcUCLbI7NgXPz8y8nPkk89Gcy5hJnD27AUd3bVIP+4ZpOXjjRcVZh53aKxnz6RHjygyO4RGYwSCEGAzAgggEBYCtu9OOXjwoC5fvqzr16+rf//+evDggamhylaqpG59epqKQWcEEEAAAfMCHTt2VJEiRWT7br6PP/5YadOmNRW0/2f9tX3bVv185YqpOHRGAAEEEAhegL0IIOC+AmGxxi5frrx6d+uudxLHcl8YZo4AAggEIxBskdn2izWYvi/tosD8EkiEPdy5c6fSp0+t7IU+1ZsFeqlKWydO4xElnSLHiBFhOTAwAgggEA4CDIGAWwvYTq+VO3dupUqVSkmTJlW/fv1M5bN561atXb5cmdKlNxWHzggggAAC5gUSJUqkbdu26datWzp69KjOnj2rwoULOx34yb3fVbRYcXXv00e/3/vT6Th0RAABBBBAwE0FmDYCIQpYvcbesmWLVq1ZpaL5c4Y4Ng0QQAABdxUItsjsrkl5+7zHjBljkiChijWtq6iPbZ9ONxmK7ggggAACCDgsQIeQBPbt26d169aF1CzU+22n6ypqongR6oFoiAACCCDgtEDr1q2d7vu847xZs/TVybPPH3KLAAIIIIAAAghEsIBrDG/5GrtgQftZaVwjO2aBAAIIhJ1AsEVmHx8HP53sYPOwS8s7I2/YsEGZMmXS+vXrAwWYOXOOfvzxjC5dWq5585orSpRAmsV7W7M3r1O36nnlEyVqIA3YhAACCCCAAAIRJXDl5h9q3qqF8uXLZ2oKTZs21bFjx7R3714tXLhQixctkq+vb8gxaYEAAgggEGECtk/X7N93WO06dVOSN95zeh6lypVQpU9rKEeePMqSObOmTp3qdCw6IoAAAggggAAC7ixw/fe7ah0Wa+zFi91/je3OTyxzRwCBcBMI9tVEf39/xyYS4FhzWlsrULFiRZ0+fTrQoH369FH9+nWUMmUGpUpVSbVqTVb37qVeadu7TQ3VLZ5TBXNlf2UfGxBAAAEEEEAg4gTOXvxVg4YO1xeTPjc9CdtZT7Jmzaq8efOqRo0aSpIkiemYBIhYAUZHAAHvEMidJ7uGfNZXbTt3VvL3MjmV9J93bmvlosU6cuCATp46pXbt2jkVh04IIIAAAggggIA7C1z9/Z4GDhyoiayx3flp9Mq5kzQCriQQbJHZz8/PsbnySWbHvCxqff36dbVo0UKPHz8ONGKFCuWNgnKfV/a1bdtP5UqX+Hd7rMjKW6jAv4+5hwACCCCAAAIRKvDtN19r6+4D2r7/tPYfPKIvRg0yNZ/EiRNryJAhih49uqk4dEYAgVAL0BABywWiRY+m+rVrqnWrxmrRpqOKlShmaowHDx6oa9euunnjpj3OV+c4nbYdgh8IIIAAAggg4HEC35w7p50H9mnPoZPauGWzJoweYSrHJIkSatSoUayxTSnSGQGPEfDKRIItMgcE8NFkVz8qFixcraRJk+rzzwP/VNOWLVu0cuUqRYv26hsG4sf/WGvWb9IPt6+r++ejVKV1GyVO+4Grp8z8EEAAAQQQ8AqBHTt26IMP06l4wTwqmjeTmtcq71TeCRMkUJfOnbVz507Z3pjWrVs3p+LQCQEEEPAsAffOJln8GOrWprkmjRupLZu2aNeuXaYSGj58uBInSax302fVmNkrtef4N6bi0RkBBBBAAAEEEHA1Adsa+8O0aVU4Tz4VyJVFjWpUMaboTP3DR1VqNNXyjRt17cZNdejQwYjDBQEEEPBOgWCLzA6TOPM7OTSD0CZIgYN7lwe5L1q06CpWLOR3tb8VN7HyfJhFpZtUVcZErwcZjx0IIIAAAgggEH4CkyZNMj1YtKhR1aR5c5UsU0YFCxY0HY8ACCCAAAKuKZAvXz5Lfs9/f/aEZs+eq0VLF+vnm7ciJllGRQABBBBAAAEEwkDAijW25Kvy1eupWOWKqlSyZBjMkpAIIICAewkEW2T28fFxIBsqzA5gWdY0abygF/4PHz4I9Til8uVX3Tezhbr984bcIoAAAggggIB5gQsXLmjAgAGqWrWq6tSpo5LGYnXVqlWmAk+fPl03f/tNRQsXVgGj+GAqGJ0RQAABBFxawNfXV0uXLNScBQu0bssObd59TNVqNnBqzgE3vteUEZ8p/Xtp1LhRQ6di0MkzBcgKAQQQQAABdxLYsXOfJk+epB69eqlQoUIyu8aeNWO6Ll/5SXPnzlSjiiF/sMudrJgrAggg4KxAsEVmf39/B+JGNdpSaDYQwvFyUFF97gQ73oM/A/+e5mA7sdMTBMgBAQQQQMCNBM6cOaM+ffpo2bJlmjdvnjZv3mxq9t27d1fDhg0VM2ZMSz7ZZmoydEYAAQQQCBeBRIlfU51PP1WZYoVUPH9WDRozztS4v9++qekzZmrQoEGm4tAZAQTCXIABEEAAAQReEvj2u4saP3GsWrZspSHG3zJmv1rEtsau16ChUryeXLEjvzQYDxFAAAEvFgi2yOzn9+r3+AZt9cjY5cgnn43mXEwILNKXs0Zr/bSDgceI8Zpq9h2p6DGjBL6frQggEEECDIsAAgj8K3D9+nVt27ZNPXv2/HejE/fSp0+vTJkyKX78+CpQoIA6duzoRBS6IIAAAgh4ksA7iWNp9JiJSpQwgam0xo4dq927d+vevXs6ffq0bG+MMhWQzggggIDXCJAoAgiEt8APP/ygvXv2qF+/Hlq7aqXTw7PGdpqOjggg4CYCPj7W1HODLTIHBAQ4wGHNhBwY0GubPjKeluElR6tygxXa/9urDNGKf6pBF66qVz9eYH5Vhy0IIIBAEAJsRiACBDp37qxixYrpu+++c3r0IkWK6Msvv9TJkyd169Yt2d6hnTBhQqfj0REBBBBAwHME2rdrqRs3f1PevHmdTurmzZv2s2LEjh3b/oamjBkzaseOHU7HoyMCCCCAAAIRLsAEPFagf//+yl+ggJYsWux0jqyxnaajIwIIuJGAY2eyDjqxYIvMQXdjT0QKRH36RGs3H9eFICaRK2dulU8uvR/EfjYjgAACCCDgTgKeOtfDhw9r7ty5ptNr2bKl6RgEQAABBBDwbIEOHTpYmuDEiRMtjUcwBBBAAAEEEEDAJmDmyhrbjB59EUDA2wQcO5N10DrWFpn5MHPQ0lbu8fHV18HESxbZXx8Gs59dCCCAAAIIIBD+AtOnT1e2bNnsp7OuVauWKlasaGoSNWvW0KFDh1S+fHlTcUx0pisCCCCAgJsI2P5bsWnTJi1fvtx+5otFixbJx8f5Bfzq1auVO3duTZ48WZcuXnYTBaaJAAIIIIAAAp4kYPUau3rNmjp86CBr7MAPErYigICHCTh2Juugk7e2yBwQ9EDssU4gIJKf/ogU9FP37qOb1g1GJAQQQAABBBCwRKBNmzY6duyY9uzZowULFujq1atOx82ZN7fmz1+oHDlyOB2Djp4sQG4IIIDAqwIlSpRQpUqV7Ke8rl69urp27fpqIwe2HDx4ULazaYyfNEHfnP/egZ40RQABBBBAAAEEzAtYucZOlzOvFs2fr+w5cpqfGBEQCFcBBkMgYgWCrlQ6My/n3wjtzGhe28fG/OzpsyDzj+Jn7dMa5EDsQAABBBBAAIEgBW7+dsO+78b128YL+V304MED+2NnfxQtWkQ5c+RTqbKl1bpFW2fD0A8BBCJSgLERcCGBTp06qVixooocKbISJUoiRYni1OxmzZihieMnauLEyTp27KhOnDjhVBw6IYAAAggggAACIQmcOnVGjx4+UOfOnU2vsQsWLazMOQsoX+kKat+6fUhDsx8BBBBwTMBLWlONdMcnOiD4j4w/CX63O2bMnBFAAAEEEHArgW9/+F4jx8xQrlz5lCRpfA0fPsLU/Pfu26etW7fp4KE92rB2vWpUr2IqHp0RQAABBF4U8MZHCRMm1JYtW/X4yWN9+e2PWrdhm2LGjOcwxe3bv2vy5LFq3bqlsmXLrgkTxjscgw4IIIAAAggggEBwAuf/d0nz12zV8DHjFS16DI0cOTK45iHu27N3r3Zu3a4TB3dpz/qValCjQoh9aIAAAggg8KqAtUXmgFcHCIMthAzhu7N8fGyfdYYJAQQQQAABBCJC4PatP7Ro4XItXbVYhw7tMz2FwoULK0fWrKbjEAABBBBAAIGgBJIljKZEceKoe9++QTUJ9fY5c+bq8OHDoW4fQkN2I4AAAggggICXC9hKDqfOfafVK1Zq8byZpjUKFS6kPLn56inTkARAAAEEDAFf42rRxfbr3qJQhAlRIHr06EG2SZw4cZD7wnYH0RFAAAEEEPBugWbNmip1mvf1We9uunjujFMY+YsV0xdzFmvW3EWaO2+uFi5YoMjRojkVi04IIIAAAgiEViBHtoxqXL+evv7qS33yySeh7RZou4oVK6pWrVoqUKCAsmXLpunTpwfajo3uLMDcEUAAgvGhrAAAEABJREFUAQQQCHuBxo0bK2WK5Kpdo5JWzJvi1IC58hfShOlzNW3WPM2dO1tLFy6Sr29kp2LRCQEEEEDgRQHfFx+aeWT7/iYKzWYEHenr7x9061u3bgW9kz3eKUDWCCCAAAJhLjBw4EBNmTJVN25eNTVW789GqGmdaqpXu7pq16qtJEmTmopHZwQQQAABBEIrkCRRPH2YLr3mz58f2i6Btrt69aoWLFigPXv26NixY2rTpk2g7diIAAJhIEBIBBBAwEMEbGts2xvVrly5qqf37zmdVe+BQ9SqYW01qldLtWvXVcIkSZyORUcEEEAAgRcFLCwyU2B+kTZsHv1+7Zq6duupx48fBDnA0qVLtXv3bt2/f18//fSTvv76a508eVLHjx/Xo0ePguzHDgQQCH8BRkQAAfcVOHfunM6ePWv/7+2uXbs0ceJEU8kkSphQI0aNUOHsGUzFoTMCCCCAAAJmBWLFiqVevXrJdpas119/Xfnz5zcV8sGDB2rXtq1u/HbTVBw6I4AAAu4swNwRQCB4AcvX2IkSaeToUSqeO1vwA7MXAQQQQMBpAQuLzE7PgY6hFNi9vb8SvPaahg8bHGyPL7/8UgULFlTMmDGVMmVKpUuXTlmyZNHHH3+sChUr6ueffw62PzsRQAABBAQBAsEK7NixQ2nTplX69Ont/70tVKiQrl27Fmyf4Hbmy5dPN27eVKcOnYJrxj4EEEAAAQTCTWDAgAH69ddfdeXKFfubmPft22dq7HHjxytJosSauniNqTh0RgABBBBAwGIBwrmAQJissW/cUMf2HeTj4wIJMgUEEEDAQwUsLDLz2zpsj5FdGj92qekhNm3cyGk3TSsSAAEEEEAg4gRcY+QJJj+1/HIWbdu2fXkTjxFAAAEEEIhwAV/ff18yyJUrlwoXLmx6TrOmTtZvpqMQAAEEEEAAAQQ8SSDwM4M5nyFrbOft6IkAAgg4IvDvitGRXoG2fWxspdBsIFhyuXp1l2rVrqOPM32oCqXTKn/eBlq14ZwlsR8/tj1XloQiCAIIIIAAAl4lsHDxcuXKlVNrVq92Om/bC/Zz5szRqVOntHz5cm3evFkVK1Z0Op7LdGQiCCCAAAIeLWD779f69ev1xRdf6JNy5ZQgcSKn8j28a6tK5MyvYmUrKm3mLKpbt4709KlTseiEAAIIIIAAAu4tsGjhImONnUurV692OhHb3yissZ3mc64jvRBAAIG/BXz/vrXghgKzBYj/hJg6dbgWzJ+n46e/0eqN57R3/6V/9pm9EzNGDLMh6I8AAggggIDXCWzefUw1a1TRoUOHTeXepUsX1alTRxkzZlSlSpVUvHhxU/HojEBIAuxHAAEErBKIFi2amjZtqikzpqt+vSZ68823nAp9/PBebVu/SudOndTcufM0aPhwp+LQCQEEEEAAAQTcV2D7/p36tOanxhr7kKkkWGOb4qOzhwmQDgLhLWBhkdmYuo+/8YOLFQLffGPNp5Zfnkv5uo10/eaNlzfzGAEEEEAAAQReEti7d4/OnD6jLbsOavHqTRo7ZthLLRx/WKJEcXXqxPcuOy5HDwQ8UoCkEHBbgaSJEqte7U/VuXNn1a9vKzanMpXLmNGjtXPnTumZdP+pvy7+cNFUPDojgAACCCCAgOsJ7N27V6dPn9buXbu0fNUqjRs+zvQkS5Ysoa5du5qOQwAEEEAgjAU8Nry1RWZF8lio8E4sStTkLwz5VpoXHob4IGVCKepLrUr16KPirTorifGCwEu7eIgAAggggAACLwnMnDlTGTNlVIlCuVWjQiltWbvipRahe9iybRetXL9N9x881qZNm5UwofEf6dB1pRUCCCCAQIQIMGhoBNKlT6sWLZpr5swpunjxkooWLRqaboG2+e2331S4cGH5+PkofYYsGjp2gp4E2pKNCCCAAAIIIOCuArY1dqZMmVSwUCFVqVhR69etdSqVouVqaNbC5frl5k1t3LhJ8eLFcyoOnRBAAAEEzAtYW2QOCDA/I0cjeGj73FlL/JPZp7VTqG7tnIqb5J9Ngd+xPZt54yhb1RyqWq6SapTMJlsX2+ayTT9V8bpN1DRL6sD7shUBBBBAAAEE/hE4ceKQ5syZ+89jZ+98Uq6Kylasogqliyh6tMjOhqEfAggggAACLi/QrFkzS+b4wzdnNHXBIs2ft0D37/75YkweIYAAAggggIBbCpw4edJYY88xPffceQurXoO6iholspLxBm7TngRAAAEEzArY6o9mY/zdnwLz3xCW3FSo3kJr1qzXtm2btWDuaTVrNkEFs+cNNnbLEZ/p+OpT2rZkqwaOn6px0xZo076NOmRcx4+crDapX5dPOH51drCTZScCCCCAAAIuJLBx2z5Vb9RUNeo2Uf169VWqVHlTs6tcoYIOHz6kFWuWqni+rKZi0RkBBBBAAAF3EKhYsaLWrVunxYsX6+jRo5o3b57z0771qxrUqaUSn5TRmtWrnY9Dz3ATYCAEEEAAAQT+KzBn/nJlK1RIRUuUVe2GDVSuZMn/7nb4fpUqVXT8yGFt3rFV1UoVUo1K5RyOQQcEEEAAAesFLCwy207OTKHZqqcoSeLEKleutIoUKW6ETKCkCbPow/QFjfuBX6JE8dO4dr2VJcHbiqPYihorgeK8/q4y5ympbMb1zVhxA+/IVm8UIGcEEEAAgZcEeg8coCUzpmrx3GmaPWe2rl+//lILxx7ONl5Yz549h/wc60ZrBBBAAAEE3FqgTJkyqlatmj7++GPVqlVL3bp1M5XPvl27Vb1GDVMx6IyAlwuQPgIIIBAhAi06t9axXbu0fct6zZ85S7+YXGPPmjVLWbJlV6zIvvKLzFnCIuRJZVAEEEAgEAELi8yPjPB8TNZACLNLokQJgoxt+4Syn4XPZpADsQMBBMJQgNAIIBDeAr/dvKXuPXro5N5tpobOnz+/kiZNar/26tVLMWPGNBWPzggggAACCHiCQJ8+fVS+fHlTqTx8+FD9+/fXzZs3de3aNZ07d067jBetTQWlMwIIIBDhAkwAAc8UuPP772rTuaPu//qrqQRZY5viozMCCCAQbgIWliUpMIf1s/bHnbtBDvH4sX+Q+9iBAAIIIGBSgO4eKWB7gTpR4oQaOmSIqfz27t2r3bt361djEX3x4kUNGDDAVDw6I4AAAggg4CkC0aNH16pVq7RhwwZTKfXr10+JEyfWa6+9prRp02r27Nmm4tEZAQQQQACBIAXY4bTApt0HFC9BAk0YOdrpGLaOrLFtClwRQAAB9xCwsMjsHgm78yyf+TwIcvoBAbbTlQe5mx0IIIAAAgh4pICZpCZPnmymu71vkSJFlDt3bvt92w/bi+m2W64IIIAAAggg8K9AwYIFVbhw4X83mLw3d+5cHTx40GQUuiOAAAIIIICAlQITx40xHS64Nbbp4ARAAAEEELBcwNoiMx9mtvwJ+m9AH587/3340v14emw7Y/lLW3mIAAIIIIAAAn8J1K9fX5kzZ1bVqlVVtmxZLV++/K8dTvx8970PNWrCeG3bulW+vtb+OeXEdFyxC3NCAAEEEEDgHwHbm7Bsnz62fZ/i9u3bdejQIdWrV++f/c7cKVy4kFo2a6XVm7fp6gNnItAHAQQQQAABBMwI2NfYWbKobOWqKlmmrDauXuF0uHQffqhx48ZpK2tspw0jsCNDI4CAFwtY+6pogBdLhkPqz579EswoH8o/UjC72YUAAggggIAXCwwcNEi2F7dPnTqlZcuWaf369U5r+MZLoGGjhqlDq9aSD++wE//cTIDpIoAAAhEj8MYbb9gLy4ULF1aOHDk0YcIEUxN5+PCRJk+ZpKZN2mv2rCW6eMtUODojgAACCCCAgAMCAwcO/GuNffKk1q9Yps0bnF9jJ0uRQsPHjlWbNm2MJTZrbAeeBpoiEIIAuxEIewFri8z8NyAMn7EfFcv/SeDx41ZXjb69FN0v8N1sRQABBBBAwCsF/n7z27Zt2zR22DBTBKnfe1cFC5dQhaqfqkeXzsqV9WNT8eiMAAIIvCLABgS8TCBWrFjq06ePkiV7TdGjRFPS5K87JXD9p6+1cOFMDR3STzPnLNJPly85FYdOCCCAAAIIIBC8wJ79e+0Ndu7YobFGUdj+wMkf7777roqVKKE6deqoXceOKpw3r5OR6IYAAgi4oYAHTdnaIrMHwbheKufk9/DHV6YVvXwNDfhxkXr1K/TKPjYggAACCCDgrQJ7T3yp7gOH6a233laxYsX02927TlMUKVJE57+7oJ3bN2nlkgUa0L2bXkuW1Ol4dEQAAQQQcC8BZht2Av3799fefft1/9ED7dl3RB269HBqsLMHtmrqyP5qWO9TpUz1lnbu3OlUHDohgAACCCCAQOACE6bP0RfT5ytu3EQqbKyRf/vtt8AbhmKrbY194cIFbdm0SXPmzFGXtm0VJVq0UPSkCQIIIICAqwlYW2T++xNDEZikhw69T/p9m3769qtX8suZO4cqxZU+fGUPGxBAAAEEEPBOgVNff6stazdo9uwpunTpommE5s2bm45BAAQQQAABBBAIXODdd96x70jz9uuq/ml1fZAug/1xKH4E2eTzzz8Pch87EEAAAQQQQMAxge079mjVqlVaPGea/vjD+eLy81FZYz+X4BYBBBBwfwELi8xUmMPscFg1QctajtG2QL7aIrnPE30QZgNbGZhYCCCAAAIIhK3AihWLlT9fPhXMl1eDP+uhX39wrsA8fNxELVy4TJ9Pn6YN69erYsWKYTtxoiOAAAIIIICAXeDjj9Jr/8H9GmfyFJzLly9X2bJlVaVKFfv3P9erV88enx/hJcA4CCCAAAKeIGArLBcskF/FShTVro1rnE5p1PjJWrhilabPmKH1GzeyxnZako4IIICA6wlYWGSOamRHodlAsPRy+88nmj11mSYvks4FEjnFbedP/xlIODZ5owA5I4AAAh4iUKtWA+3dt093bt10OqMmrVqraJHCqlGjspo1bKRSpUs7HYuOCCCAAAIIIOC4QILYsdWmbVt1797d8c7/6bF+/XrZis1Hjhyxn4pz0KBB/9nLXQS8VIC0EUAAAQcEatSood179irg6RMHer3YtHnbdqpdu6ZqVCyvhg0aqHTJki824BECCCCAgEsLBAQEX/e1sMj8yIDwMa5crBSIFzNAW45KuxX4v9iRg3+CA+/FVgQQcAcB5ogAAkEL2L5r8fz58/r11191584dDR48WA8fPgi6Qyj2lC1TWu3atFXGD98PRWuaIIAAAggggEBYCnTo0EG5cuVSbKPonCFDBqVJk8bUcLYi8969e3XlyhVTceiMAAIIhIUAMRGIaAHbGvvbb7/9Z41t++/mo0e21/udn1mZ0qXVvlV7JY4Xx/kg9EQAAQQQiFABPz+/YMe3sMhMgTlYaad3RtHe+0F3fizcg9ZhDwIIIBAmAgR1AYHZs2fr/fffV7JkyRQvXjz17NnT1Kw2bdqktevW64P33jEVh84IIPLomYkAABAASURBVIAAAgggYI1AokSJdODAAf3xxx86c+aMbC98Fy5cxOngDx48UP78+dWxY0enY9AR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",
+              "type": "image",
+              "align": "center",
+              "position": "after",
+              "width_pct": 100
+            }
+          ],
+          "title": "**Exercice 08 :**",
+          "points": 0,
+          "bgColor": "transparent",
+          "content": "f une fonction définit par le tableau de variations, ci-contre\\nDéterminer le nombre de solution des équations suivantes Puis encadrer ces solutions.\n1) $f(x) = 18$ ; 2) $f(x) = 0$\n3) $f(x) = -3$ ; 4) $f(x) = 3$",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": "",
+          "section_header": "Exercice 08",
+          "section_number": "8",
+          "interactive_answers": []
+        },
+        {
+          "id": "ex-9",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "f une fonction définit sur $I = [1; +\\infty[$ par : $f(x) = x^2 - 2x + 5$",
+              "type": "text"
+            },
+            {
+              "text": "**1)** Montrons que f admet une fonction réciproque $f^{-1}$ définit sur $J$ que l’on déterminera",
+              "type": "bullet"
+            },
+            {
+              "text": "**2)** Déterminer la fonction $f^{-1}$ pour tout x dans $J$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 09 :**",
+          "points": 0,
+          "bgColor": "transparent",
+          "content": "f une fonction définit sur $I = [1; +\\infty[$ par : $f(x) = x^2 - 2x + 5$\n1) Montrons que f admet une fonction réciproque $f^{-1}$ définit sur $J$ que l’on déterminera\n2) Déterminer la fonction $f^{-1}$ pour tout x dans $J$",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": "",
+          "section_header": "Exercice 09",
+          "section_number": "9",
+          "interactive_answers": []
+        },
+        {
+          "id": "ex-10",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit f la fonction définit sur $[0; +\\infty[$ par : $f(x) = x - \\sqrt{x}$",
+              "type": "text"
+            },
+            {
+              "text": "**1)** Calculer $\\lim_{x \\to +\\infty} f(x)$ puis étudier le sens des variations de f",
+              "type": "bullet"
+            },
+            {
+              "text": "**2)** Soit g la restriction de f sur $I = [\\dfrac{1}{4}; +\\infty[$",
+              "type": "bullet"
+            },
+            {
+              "text": "**a)** Montrer que g admet une fonction réciproque $g^{-1}$ définit sur $J$ que l’on déterminera",
+              "type": "bullet"
+            },
+            {
+              "text": "**b)** Déterminer la fonction $g^{-1}$ la fonction réciproque de g",
+              "type": "bullet"
+            },
+            {
+              "text": "**c)** Résoudre dans $I = [\\dfrac{1}{4}; +\\infty[$, l’équation (E) : $g(x) = 6$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 10 :**",
+          "points": 0,
+          "bgColor": "transparent",
+          "content": "Soit f la fonction définit sur $[0; +\\infty[$ par : $f(x) = x - \\sqrt{x}$\n1) Calculer $\\lim_{x \\to +\\infty} f(x)$ puis étudier le sens des variations de f\n2) Soit g la restriction de f sur $I = [\\dfrac{1}{4}; +\\infty[$\\na) Montrer que g admet une fonction réciproque $g^{-1}$ définit sur $J$ que l’on déterminera\\nb) Déterminer la fonction $g^{-1}$ la fonction réciproque de g\\nc) Résoudre dans $I = [\\dfrac{1}{4}; +\\infty[$, l’équation (E) : $g(x) = 6$",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": "",
+          "section_header": "Exercice 10",
+          "section_number": "10",
+          "interactive_answers": []
+        },
+        {
+          "id": "ex-11",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "**1)** Résoudre dans $\\mathbb{R}$ les équations suivantes :<br>$(E_1) : \\sqrt[5]{(x+2)^2} - 4\\sqrt[5]{x+2} + 3 = 0$ ; $(E_2) : \\sqrt[3]{1-2x} = \\sqrt{x+1}$",
+              "type": "bullet"
+            },
+            {
+              "text": "**2) a)** Comparer $\\sqrt[5]{3}$ et $\\sqrt[3]{4}$",
+              "type": "bullet"
+            },
+            {
+              "text": "**b)** Mettre les nombres en ordre croissant : $\\sqrt{2}$ ; $\\sqrt[3]{3}$ ; $\\sqrt[4]{4}$ et $\\sqrt[6]{6}$",
+              "type": "bullet"
+            },
+            {
+              "text": "**3)** Résoudre dans $\\mathbb{R}$ les inéquations $(x-4)^3 - 8 < 0$ ; $\\sqrt[3]{4-2x} > \\sqrt[3]{x+1}$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 11 :**",
+          "points": 0,
+          "bgColor": "transparent",
+          "content": "1) Résoudre dans $\\mathbb{R}$ les équations suivantes :\n$(E_1) : \\sqrt[5]{(x+2)^2} - 4\\sqrt[5]{x+2} + 3 = 0$ ; $(E_2) : \\sqrt[3]{1-2x} = \\sqrt{x+1}$\n2) a) Comparer $\\sqrt[5]{3}$ et $\\sqrt[3]{4}$\\nb) Mettre les nombres en ordre croissant : $\\sqrt{2}$ ; $\\sqrt[3]{3}$ ; $\\sqrt[4]{4}$ et $\\sqrt[6]{6}$\n3) Résoudre dans $\\mathbb{R}$ les inéquations $(x-4)^3 - 8 < 0$ ; $\\sqrt[3]{4-2x} > \\sqrt[3]{x+1}$",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": "",
+          "section_header": "Exercice 11",
+          "section_number": "11",
+          "interactive_answers": []
+        },
+        {
+          "id": "ex-12",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Calculer les limites suivantes :",
+              "type": "text"
+            },
+            {
+              "text": "**1)** $\\lim_{x \\to 9} \\dfrac{\\sqrt[3]{x-1}-2}{x-9}$",
+              "type": "bullet"
+            },
+            {
+              "text": "**2)** $\\lim_{x \\to +\\infty} \\dfrac{\\sqrt{x+1}}{\\sqrt[3]{x^2+3}}$",
+              "type": "bullet"
+            },
+            {
+              "text": "**3)** $\\lim_{x \\to 1} \\dfrac{\\sqrt[3]{x^2}-1}{x-1}$",
+              "type": "bullet"
+            },
+            {
+              "text": "**4)** $\\lim_{x \\to +\\infty} \\sqrt{x^3 + x^3} - 8x$",
+              "type": "bullet"
+            },
+            {
+              "text": "**5)** $\\lim_{x \\to 2^+} \\dfrac{\\sqrt[3]{x-1}-2}{x-2}$",
+              "type": "bullet"
+            },
+            {
+              "text": "**6)** $\\lim_{x \\to +\\infty} \\dfrac{\\sqrt[4]{x} + \\sqrt[5]{x} + 1}{\\sqrt[3]{x} + \\sqrt[5]{x} + 1}$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 12 :**",
+          "points": 0,
+          "bgColor": "transparent",
+          "content": "Calculer les limites suivantes :\n1) $\\lim_{x \\to 9} \\dfrac{\\sqrt[3]{x-1}-2}{x-9}$ ; 2) $\\lim_{x \\to +\\infty} \\dfrac{\\sqrt{x+1}}{\\sqrt[3]{x^2+3}}$ ; 3) $\\lim_{x \\to 1} \\dfrac{\\sqrt[3]{x^2}-1}{x-1}$\n4) $\\lim_{x \\to +\\infty} \\sqrt{x^3 + x^3} - 8x$ ; 5) $\\lim_{x \\to 2^+} \\dfrac{\\sqrt[3]{x-1}-2}{x-2}$ ; 6) $\\lim_{x \\to +\\infty} \\dfrac{\\sqrt[4]{x} + \\sqrt[5]{x} + 1}{\\sqrt[3]{x} + \\sqrt[5]{x} + 1}$",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": "",
+          "section_header": "Exercice 12",
+          "section_number": "12",
+          "interactive_answers": []
+        },
+        {
+          "id": "ex-13",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Montrer que : $\\dfrac{\\sqrt[3]{10^5} \\times \\sqrt[3]{6^2}}{\\sqrt[3]{15^2} \\times \\sqrt[3]{2^4}} = 10$ et que : $\\dfrac{\\sqrt[3]{2} \\times \\sqrt{\\sqrt[4]{4^2}} \\times \\sqrt{8^{\\frac{1}{2}}}}{\\sqrt[3]{\\sqrt{32^3}^4}} = \\dfrac{1}{2\\sqrt[3]{2}}$",
+              "type": "text"
+            }
+          ],
+          "title": "**Exercice 13 :**",
+          "points": 0,
+          "bgColor": "transparent",
+          "content": "Montrer que : $\\dfrac{\\sqrt[3]{10^5} \\times \\sqrt[3]{6^2}}{\\sqrt[3]{15^2} \\times \\sqrt[3]{2^4}} = 10$ et que : $\\dfrac{\\sqrt[3]{2} \\times \\sqrt{\\sqrt[4]{4^2}} \\times \\sqrt{8^{\\frac{1}{2}}}}{\\sqrt[3]{\\sqrt{32^3}^4}} = \\dfrac{1}{2\\sqrt[3]{2}}$",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": "",
+          "section_header": "Exercice 13",
+          "section_number": "13",
+          "interactive_answers": []
+        },
+        {
+          "id": "ex-14",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit $f$ une fonction définit par : $f(x) = 2 - \\sqrt[3]{x^2 - 1}$",
+              "type": "text"
+            },
+            {
+              "text": "**1)** Déterminer $D_f$ puis calculer $\\lim_{x \\to +\\infty} f(x)$",
+              "type": "bullet"
+            },
+            {
+              "text": "**2)** Soit $g$ la restriction de la fonction $f$ sur $I = [1; +\\infty[$",
+              "type": "bullet"
+            },
+            {
+              "text": "**a)** Etudier le sens de variations de $g$ sur $I$",
+              "type": "bullet"
+            },
+            {
+              "text": "**b)** Montrer que $g$ admet une fonction réciproque $g^{-1}$ sur $J$ que l’on déterminera",
+              "type": "bullet"
+            },
+            {
+              "text": "**c)** Déterminer $g^{-1}(x)$ pour tous $x \\in J$",
+              "type": "bullet"
+            },
+            {
+              "text": "**3) a)** Montrer que l’équation $g(x) = x$ admet une unique solution $\\alpha$ tel que : $1 < \\alpha < 2$",
+              "type": "bullet"
+            },
+            {
+              "text": "**b)** En utilisant la méthode de dichotomie trouver un encadrement de $\\alpha$ d’amplitude $0.5$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 14 :**",
+          "points": 0,
+          "bgColor": "transparent",
+          "content": "Soit $f$ une fonction définit par : $f(x) = 2 - \\sqrt[3]{x^2 - 1}$\n1) Déterminer $D_f$ puis calculer $\\lim_{x \\to +\\infty} f(x)$\n2) Soit $g$ la restriction de la fonction $f$ sur $I = [1; +\\infty[$\\na) Etudier le sens de variations de $g$ sur $I$\\nb) Montrer que $g$ admet une fonction réciproque $g^{-1}$ sur $J$ que l’on déterminera\\nc) Déterminer $g^{-1}(x)$ pour tous $x \\in J$\n3) a) Montrer que l’équation $g(x) = x$ admet une unique solution $\\alpha$ tel que : $1 < \\alpha < 2$\\nb) En utilisant la méthode de dichotomie trouver un encadrement de $\\alpha$ d’amplitude $0.5$",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": "",
+          "section_header": "Exercice 14",
+          "section_number": "14",
+          "interactive_answers": []
+        },
+        {
+          "id": "ex-15",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Montrer que l’équation $(E) : \\sqrt[3]{x-1} + \\sqrt[3]{x+2} = 5 - x$ admet une unique solution dans l’intervalle $[1; 5]$",
+              "type": "text"
+            }
+          ],
+          "title": "**Exercice 15 :**",
+          "points": 0,
+          "bgColor": "transparent",
+          "content": "Montrer que l’équation $(E) : \\sqrt[3]{x-1} + \\sqrt[3]{x+2} = 5 - x$ admet une unique solution dans l’intervalle $[1; 5]$",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": "",
+          "section_header": "Exercice 15",
+          "section_number": "15",
+          "interactive_answers": []
+        },
+        {
+          "id": "ex-16",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit $h$ une fonction définie sur $]-1; 1[$ par : $h(x) = \\dfrac{2x}{1-x^2}$",
+              "type": "text"
+            },
+            {
+              "text": "**1)** Calculer $\\lim_{x \\to -1^+} h(x)$ et $\\lim_{x \\to 1^-} h(x)$ puis Etudier les variations de $h$",
+              "type": "bullet"
+            },
+            {
+              "text": "**2)** Montrer que $h$ admet une fonction réciproque $h^{-1}$ sur $J$ (à dét)",
+              "type": "bullet"
+            },
+            {
+              "text": "**3)** Déterminer $h^{-1}(x)$ pour tout $x \\in J$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 16 :**",
+          "points": 0,
+          "bgColor": "transparent",
+          "content": "Soit $h$ une fonction définie sur $]-1; 1[$ par : $h(x) = \\dfrac{2x}{1-x^2}$\n1) Calculer $\\lim_{x \\to -1^+} h(x)$ et $\\lim_{x \\to 1^-} h(x)$ puis Etudier les variations de $h$\n2) Montrer que $h$ admet une fonction réciproque $h^{-1}$ sur $J$ (à dét)\n3) Déterminer $h^{-1}(x)$ pour tout $x \\in J$",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": "",
+          "section_header": "Exercice 16",
+          "section_number": "16",
+          "interactive_answers": []
+        },
+        {
+          "id": "ex-17",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit f la fonction définie sur $\\mathbb{R}$ par : $f(x) = x^3 - x^2 + 3x + 1$",
+              "type": "text"
+            },
+            {
+              "text": "**1)** Montrer que f est strictement croissante sur $\\mathbb{R}$<br>Montrer que f admet une fonction réciproque $f^{-1}$ définie sur un intervalle J a déterminer",
+              "type": "bullet"
+            },
+            {
+              "text": "**2) a)** Montrer que l’équation $f(x) = 0$ admet une unique solution $\\alpha$ tel que $-\\dfrac{1}{2} < \\alpha < 0$",
+              "type": "bullet"
+            },
+            {
+              "text": "**b)** Calculer $f\\left(-\\dfrac{1}{4}\\right)$ puis en déduire un encadrement de $\\alpha$ d’amplitude $0,25$",
+              "type": "bullet"
+            },
+            {
+              "text": "**c)** Montrer que $\\sqrt{\\alpha + 1} = \\dfrac{-2\\alpha}{\\alpha+1}$",
+              "type": "bullet"
+            },
+            {
+              "text": "**3)** Etudier le signe de f sur $\\mathbb{R}$",
+              "type": "bullet"
+            },
+            {
+              "text": "**4)** Résoudre dans $\\mathbb{R}$ l’équation $(E) : x^{12} - x^8 + 3x^4 + 1 = 0$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 17 :**",
+          "points": 0,
+          "bgColor": "transparent",
+          "content": "Soit f la fonction définie sur $\\mathbb{R}$ par : $f(x) = x^3 - x^2 + 3x + 1$\n1) Montrer que f est strictement croissante sur $\\mathbb{R}$\\nMontrer que f admet une fonction réciproque $f^{-1}$ définie sur un intervalle J a déterminer\n2) a) Montrer que l’équation $f(x) = 0$ admet une unique solution $\\alpha$ tel que $-\\dfrac{1}{2} < \\alpha < 0$\\nb) Calculer $f\\left(-\\dfrac{1}{4}\\right)$ puis en déduire un encadrement de $\\alpha$ d’amplitude $0,25$\\nc) Montrer que $\\sqrt{\\alpha + 1} = \\dfrac{-2\\alpha}{\\alpha+1}$\n3) Etudier le signe de f sur $\\mathbb{R}$\n4) Résoudre dans $\\mathbb{R}$ l’équation $(E) : x^{12} - x^8 + 3x^4 + 1 = 0$",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "language": "fr",
+          "solution": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": "",
+          "section_header": "Exercice 17",
+          "section_number": "17"
+        }
+      ],
+      "columns_count": 2
+    },
+    "is_active": true,
+    "updated_at": "2026-09-26T17:05:58.046Z",
+    "created_at": "2026-09-26T16:58:29.833Z",
+    "createdAt": "2026-09-26T16:58:30.414Z",
+    "updatedAt": "2026-09-26T17:05:58.470Z"
+  },
+  {
+    "id": "MOCK-L-UK97IZCN5",
+    "title": "Série d'exercices 1 : Limite et continuité",
+    "subject": "Mathématiques",
+    "chapter_number": "",
+    "teacher": "",
+    "phone": "",
+    "schools": [],
+    "level": "2bac_pc_svt",
+    "doc_type": "exercises",
+    "content": {
+      "level": "2bac_pc_svt",
+      "doc_type": "exercises",
+      "is_national_exam": false,
+      "national_exam_meta": null,
+      "is_summary": false,
+      "summary_meta": null,
+      "metadata": {
+        "language": "fr"
+      },
+      "header": {
+        "prep_title": "Série d’exercices 1 : Limite et continuité",
+        "schools": [],
+        "subject": "Mathématiques",
+        "fiche_title": "Série d'exercices 1 : Limite et continuité",
+        "chapter_number": "",
+        "teacher": "",
+        "phone": "",
+        "capacites_attendues": "",
+        "contenus": "",
+        "leContenu": ""
+      },
+      "sections": [
+        {
+          "id": "ex-1",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Etudier la continuité en $x_0$ des fonctions suivantes :",
+              "type": "text"
+            },
+            {
+              "text": "1) \n\n\n\n$$\\begin{cases} f(x) = \\dfrac{1-x^2}{x-1} ; x > 1 \\\\ f(x) = x^2 - 4x + 1 ; x \\le 1 \\end{cases}$$\n\n\n\n ; en $x_0 = 1$",
+              "type": "bullet"
+            },
+            {
+              "text": "2) \n\n\n\n$$\\begin{cases} f(x) = -\\dfrac{\\sqrt{3}\\sin(x)}{12x} ; x > 0 \\\\ f(x) = \\dfrac{\\sqrt{2+\\cos x}-\\sqrt{3}}{x^2} ; x < 0 \\\\ f(0) = -\\dfrac{\\sqrt{3}}{12} \\end{cases}$$\n\n\n\n ; en $x_0 = 0$",
+              "type": "bullet"
+            },
+            {
+              "text": "3) \n\n\n\n$$\\begin{cases} f(x) = \\sin(x)\\sin\\left(\\dfrac{1}{x}\\right) ; x \\neq 0 \\\\ f(0) = 0 \\end{cases}$$\n\n\n\n ; en $x_0 = 0$",
+              "type": "bullet"
+            },
+            {
+              "text": "4) \n\n\n\n$$\\begin{cases} f(x) = \\dfrac{x^2-1}{|x-1|} ; x \\neq 1 \\\\ f(1) = 2 \\end{cases}$$\n\n\n\n ; en $x_0 = 1$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 01 :**",
+          "points": 0,
+          "content": "Etudier la continuité en $x_0$ des fonctions suivantes :\n1) \n\n\n\n$$\\begin{cases} f(x) = \\dfrac{1-x^2}{x-1} ; x > 1 \\\\ f(x) = x^2 - 4x + 1 ; x \\le 1 \\end{cases}$$\n\n\n\n ; en $x_0 = 1$\n2) \n\n\n\n$$\\begin{cases} f(x) = -\\dfrac{\\sqrt{3}\\sin(x)}{12x} ; x > 0 \\\\ f(x) = \\dfrac{\\sqrt{2+\\cos x}-\\sqrt{3}}{x^2} ; x < 0 \\\\ f(0) = -\\dfrac{\\sqrt{3}}{12} \\end{cases}$$\n\n\n\n ; en $x_0 = 0$\n3) \n\n\n\n$$\\begin{cases} f(x) = \\sin(x)\\sin\\left(\\dfrac{1}{x}\\right) ; x \\neq 0 \\\\ f(0) = 0 \\end{cases}$$\n\n\n\n ; en $x_0 = 0$\n4) \n\n\n\n$$\\begin{cases} f(x) = \\dfrac{x^2-1}{|x-1|} ; x \\neq 1 \\\\ f(1) = 2 \\end{cases}$$\n\n\n\n ; en $x_0 = 1$",
+          "language": "fr",
+          "solution": "",
+          "section_header": "Exercice 01",
+          "section_number": "1",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-2",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "1) $f$ une fonction définie sur $\\mathbb{R}$ par : \n\n\n\n$$\\begin{cases} f(x) = \\dfrac{\\sin(\\pi x)}{x-1} ; x \\neq 1 \\\\ f(1) = a \\end{cases}$$\n\n\n\n\\nDéterminer la valeur du réel $a$ pour que $f$ soit continue en $1$",
+              "type": "bullet"
+            },
+            {
+              "text": "2) $f$ une fonction définie sur $\\mathbb{R}$ par : \n\n\n\n$$\\begin{cases} f(x) = ax + b ; x > 2 \\\\ f(x) = x^2 - b - 3a ; x < 2 \\\\ f(2) = 0 \\end{cases}$$\n\n\n\n\\nDéterminer les réels $a$ et $b$ pour que $f$ soit continue en $2$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 02 :**",
+          "points": 0,
+          "content": "1) $f$ une fonction définie sur $\\mathbb{R}$ par : \n\n\n\n$$\\begin{cases} f(x) = \\dfrac{\\sin(\\pi x)}{x-1} ; x \\neq 1 \\\\ f(1) = a \\end{cases}$$\n\n\n\n\\nDéterminer la valeur du réel $a$ pour que $f$ soit continue en $1$\n2) $f$ une fonction définie sur $\\mathbb{R}$ par : \n\n\n\n$$\\begin{cases} f(x) = ax + b ; x > 2 \\\\ f(x) = x^2 - b - 3a ; x < 2 \\\\ f(2) = 0 \\end{cases}$$\n\n\n\n\\nDéterminer les réels $a$ et $b$ pour que $f$ soit continue en $2$",
+          "language": "fr",
+          "solution": "",
+          "section_header": "Exercice 02",
+          "section_number": "2",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-3",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "1) Montrer que la fonction $f : x \\to 2\\sqrt{x} + x^3 + 3$ est continue sur $[0; +\\infty[$",
+              "type": "bullet"
+            },
+            {
+              "text": "2) Montrer que la fonction $g : x \\to \\dfrac{x+1}{x^2+3}$ est continue sur $\\mathbb{R}$",
+              "type": "bullet"
+            },
+            {
+              "text": "3) Montrer que la fonction $f : x \\to 2\\sin x \\sqrt{x} + x^3 + 3$ est continue sur $[0; +\\infty[$",
+              "type": "bullet"
+            },
+            {
+              "text": "4) Montrer que la fonction $g : x \\to \\sqrt{x^2 - x + 3}$ est continue sur $\\mathbb{R}$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 03 :**",
+          "points": 0,
+          "content": "1) Montrer que la fonction $f : x \\to 2\\sqrt{x} + x^3 + 3$ est continue sur $[0; +\\infty[$\n2) Montrer que la fonction $g : x \\to \\dfrac{x+1}{x^2+3}$ est continue sur $\\mathbb{R}$\n3) Montrer que la fonction $f : x \\to 2\\sin x \\sqrt{x} + x^3 + 3$ est continue sur $[0; +\\infty[$\n4) Montrer que la fonction $g : x \\to \\sqrt{x^2 - x + 3}$ est continue sur $\\mathbb{R}$",
+          "language": "fr",
+          "solution": "",
+          "section_header": "Exercice 03",
+          "section_number": "3",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-4",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "1) $f$ une fonction : $f(x) = x^5 + x^3 + 3x - 4$, déterminer $f(\\mathbb{R})$",
+              "type": "bullet"
+            },
+            {
+              "text": "2) $g$ une fonction telle que $g(x) = \\dfrac{2x+1}{x-1}$, déterminer $g(]1; +\\infty[)$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 04 :**",
+          "points": 0,
+          "content": "1) $f$ une fonction : $f(x) = x^5 + x^3 + 3x - 4$, déterminer $f(\\mathbb{R})$\n2) $g$ une fonction telle que $g(x) = \\dfrac{2x+1}{x-1}$, déterminer $g(]1; +\\infty[)$",
+          "language": "fr",
+          "solution": "",
+          "section_header": "Exercice 04",
+          "section_number": "4",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-5",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "$f$ une fonction définie sur $[-2; +\\infty[$ par :\n\n\n\n\n$$\\begin{cases} f(x) = \\dfrac{3x^2-4x-4}{x^2-x-2} ; x > 2 \\\\ f(x) = \\dfrac{\\sqrt{x^2+5}-3}{\\sqrt{x+2}-2} ; -2 < x < 2 \\\\ f(2) = \\dfrac{8}{3} \\end{cases}$$\n\n\n\n",
+              "type": "text"
+            },
+            {
+              "text": "1) Montrer que $f$ est continue en $2$.",
+              "type": "bullet"
+            },
+            {
+              "text": "2) Etudier la continuité de $f$ sur $[-2; +\\infty[$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 05 :**",
+          "points": 0,
+          "content": "$f$ une fonction définie sur $[-2; +\\infty[$ par :\n\n\n\n\n$$\\begin{cases} f(x) = \\dfrac{3x^2-4x-4}{x^2-x-2} ; x > 2 \\\\ f(x) = \\dfrac{\\sqrt{x^2+5}-3}{\\sqrt{x+2}-2} ; -2 < x < 2 \\\\ f(2) = \\dfrac{8}{3} \\end{cases}$$\n\n\n\n\n1) Montrer que $f$ est continue en $2$.\n2) Etudier la continuité de $f$ sur $[-2; +\\infty[$",
+          "language": "fr",
+          "solution": "",
+          "section_header": "Exercice 05",
+          "section_number": "5",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-6",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "1) Montrons que l’équation $x^3 - x - 5 = 0$ possède au moins une solution $\\alpha$ dans $]0; 2[$",
+              "type": "bullet"
+            },
+            {
+              "text": "2) Montrer que l’équation $\\sqrt{x} + x - 1 = 0$ admet une solution unique dans l’intervalle $]0; 1[$",
+              "type": "bullet"
+            },
+            {
+              "text": "3) Montrons que l’équation $x^5 + x^3 = 1 - x$ admet une unique solution $\\alpha$ dans $\\mathbb{R}$ puis vérifier que $0 < \\alpha < 1$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 06 :**",
+          "points": 0,
+          "content": "1) Montrons que l’équation $x^3 - x - 5 = 0$ possède au moins une solution $\\alpha$ dans $]0; 2[$\n2) Montrer que l’équation $\\sqrt{x} + x - 1 = 0$ admet une solution unique dans l’intervalle $]0; 1[$\n3) Montrons que l’équation $x^5 + x^3 = 1 - x$ admet une unique solution $\\alpha$ dans $\\mathbb{R}$ puis vérifier que $0 < \\alpha < 1$",
+          "language": "fr",
+          "solution": "",
+          "section_header": "Exercice 06",
+          "section_number": "6",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-7",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "$f$ la fonction définie sur $\\mathbb{R}$ par : $f(x) = x^3 + 2x - 1$.",
+              "type": "text"
+            },
+            {
+              "text": "1) Montrer que l’équation $f(x) = 0$ admet une seule solution $\\alpha$ dans $\\mathbb{R}$ puis vérifier que $\\alpha \\in ]0; 2[$.",
+              "type": "bullet"
+            },
+            {
+              "text": "2) Etudier le signe de $f(x)$ pour tout $x$ de $\\mathbb{R}$",
+              "type": "bullet"
+            },
+            {
+              "text": "3) Par la méthode de dichotomie, donner un encadrement de $\\alpha$ d’amplitude $0,5$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 07 :**",
+          "points": 0,
+          "content": "$f$ la fonction définie sur $\\mathbb{R}$ par : $f(x) = x^3 + 2x - 1$.\n1) Montrer que l’équation $f(x) = 0$ admet une seule solution $\\alpha$ dans $\\mathbb{R}$ puis vérifier que $\\alpha \\in ]0; 2[$.\n2) Etudier le signe de $f(x)$ pour tout $x$ de $\\mathbb{R}$\n3) Par la méthode de dichotomie, donner un encadrement de $\\alpha$ d’amplitude $0,5$",
+          "language": "fr",
+          "solution": "",
+          "section_header": "Exercice 07",
+          "section_number": "7",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-8",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "$f$ une fonction définie par le tableau de variations, ci-contre\\nDéterminer le nombre de solutions des équations suivantes Puis encadrer ces solutions.",
+              "type": "text"
+            },
+            {
+              "alt": "Tableau de variations",
+              "type": "image",
+              "align": "center",
+              "width_pct": 50,
+              "figure_bbox": {
+                "page": 1,
+                "xmax": 970,
+                "xmin": 700,
+                "ymax": 940,
+                "ymin": 845
+              },
+              "url": "data:image/png;base64,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"
+            },
+            {
+              "text": "1) $f(x) = 18$",
+              "type": "bullet"
+            },
+            {
+              "text": "2) $f(x) = 0$",
+              "type": "bullet"
+            },
+            {
+              "text": "3) $f(x) = -3$",
+              "type": "bullet"
+            },
+            {
+              "text": "4) $f(x) = 3$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 08 :**",
+          "points": 0,
+          "content": "$f$ une fonction définie par le tableau de variations, ci-contre\\nDéterminer le nombre de solutions des équations suivantes Puis encadrer ces solutions.\n1) $f(x) = 18$ ; 2) $f(x) = 0$\n3) $f(x) = -3$ ; 4) $f(x) = 3$",
+          "language": "fr",
+          "solution": "",
+          "section_header": "Exercice 08",
+          "section_number": "8",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-9",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "$f$ une fonction définie sur $I = [1; +\\infty[$ par : $f(x) = x^2 - 2x + 5$",
+              "type": "text"
+            },
+            {
+              "text": "1) Montrons que $f$ admet une fonction réciproque $f^{-1}$ définie sur $J$ que l’on déterminera",
+              "type": "bullet"
+            },
+            {
+              "text": "2) Déterminer la fonction $f^{-1}$ pour tout $x$ dans $J$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 09 :**",
+          "points": 0,
+          "content": "$f$ une fonction définie sur $I = [1; +\\infty[$ par : $f(x) = x^2 - 2x + 5$\n1) Montrons que $f$ admet une fonction réciproque $f^{-1}$ définie sur $J$ que l’on déterminera\n2) Déterminer la fonction $f^{-1}$ pour tout $x$ dans $J$",
+          "language": "fr",
+          "solution": "",
+          "section_header": "Exercice 09",
+          "section_number": "9",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-10",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit $f$ la fonction définie sur $[0; +\\infty[$ par : $f(x) = x - \\sqrt{x}$",
+              "type": "text"
+            },
+            {
+              "text": "1) Calculer $\\lim_{x \\to +\\infty} f(x)$ puis étudier le sens des variations de $f$",
+              "type": "bullet"
+            },
+            {
+              "text": "2) Soit $g$ la restriction de $f$ sur $I = [\\dfrac{1}{4}; +\\infty[$",
+              "type": "bullet"
+            },
+            {
+              "text": "a) Montrer que $g$ admet une fonction réciproque $g^{-1}$ définie sur $J$ que l’on déterminera",
+              "type": "bullet"
+            },
+            {
+              "text": "b) Déterminer la fonction $g^{-1}$, la fonction réciproque de $g$",
+              "type": "bullet"
+            },
+            {
+              "text": "c) Résoudre dans $I = [\\dfrac{1}{4}; +\\infty[$, l’équation $(E) : g(x) = 6$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 10 :**",
+          "points": 0,
+          "content": "Soit $f$ la fonction définie sur $[0; +\\infty[$ par : $f(x) = x - \\sqrt{x}$\n1) Calculer $\\lim_{x \\to +\\infty} f(x)$ puis étudier le sens des variations de $f$\n2) Soit $g$ la restriction de $f$ sur $I = [\\dfrac{1}{4}; +\\infty[$\\na) Montrer que $g$ admet une fonction réciproque $g^{-1}$ définie sur $J$ que l’on déterminera\\nb) Déterminer la fonction $g^{-1}$, la fonction réciproque de $g$\\nc) Résoudre dans $I = [\\dfrac{1}{4}; +\\infty[$, l’équation $(E) : g(x) = 6$",
+          "language": "fr",
+          "solution": "",
+          "section_header": "Exercice 10",
+          "section_number": "10",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-11",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "1) Résoudre dans $\\mathbb{R}$ les équations suivantes :\n$(E_1) : \\sqrt[5]{(x + 2)^2} - 4\\sqrt[5]{x + 2} + 3 = 0$ ; $(E_2) : \\sqrt[3]{1 - 2x} = \\sqrt{x + 1}$",
+              "type": "bullet"
+            },
+            {
+              "text": "2) a) Comparer $\\sqrt[5]{3}$ et $\\sqrt[3]{4}$",
+              "type": "bullet"
+            },
+            {
+              "text": "b) Mettre les nombres en ordre croissant : $\\sqrt{2}$ ; $\\sqrt[3]{3}$ ; $\\sqrt[4]{4}$ et $\\sqrt[6]{6}$",
+              "type": "bullet"
+            },
+            {
+              "text": "3) Résoudre dans $\\mathbb{R}$ les inéquations $(x - 4)^3 - 8 < 0$ ; $\\sqrt[3]{4 - 2x} > \\sqrt[3]{x + 1}$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 11 :**",
+          "points": 0,
+          "content": "1) Résoudre dans $\\mathbb{R}$ les équations suivantes :\n$(E_1) : \\sqrt[5]{(x + 2)^2} - 4\\sqrt[5]{x + 2} + 3 = 0$ ; $(E_2) : \\sqrt[3]{1 - 2x} = \\sqrt{x + 1}$\n2) a) Comparer $\\sqrt[5]{3}$ et $\\sqrt[3]{4}$\\nb) Mettre les nombres en ordre croissant : $\\sqrt{2}$ ; $\\sqrt[3]{3}$ ; $\\sqrt[4]{4}$ et $\\sqrt[6]{6}$\n3) Résoudre dans $\\mathbb{R}$ les inéquations $(x - 4)^3 - 8 < 0$ ; $\\sqrt[3]{4 - 2x} > \\sqrt[3]{x + 1}$",
+          "language": "fr",
+          "solution": "",
+          "section_header": "Exercice 11",
+          "section_number": "11",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-12",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Calculer les limites suivantes :",
+              "type": "text"
+            },
+            {
+              "text": "1) $\\lim_{x \\to 9} \\dfrac{\\sqrt[3]{x - 1} - 2}{x - 9}$",
+              "type": "bullet"
+            },
+            {
+              "text": "2) $\\lim_{x \\to +\\infty} \\dfrac{\\sqrt{x + 1}}{\\sqrt[3]{x^2 + 3}}$",
+              "type": "bullet"
+            },
+            {
+              "text": "3) $\\lim_{x \\to 1} \\dfrac{\\sqrt[3]{x^2} - 1}{x - 1}$",
+              "type": "bullet"
+            },
+            {
+              "text": "4) $\\lim_{x \\to +\\infty} \\sqrt{x^3 + x^3} - 8x$",
+              "type": "bullet"
+            },
+            {
+              "text": "5) $\\lim_{x \\to 2^+} \\dfrac{\\sqrt[3]{x - 1} - 2}{x - 2}$",
+              "type": "bullet"
+            },
+            {
+              "text": "6) $\\lim_{x \\to +\\infty} \\dfrac{\\sqrt[4]{x} + \\sqrt[5]{x} + 1}{\\sqrt[3]{x} + \\sqrt[5]{x} + 1}$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 12 :**",
+          "points": 0,
+          "content": "Calculer les limites suivantes :\n1) $\\lim_{x \\to 9} \\dfrac{\\sqrt[3]{x - 1} - 2}{x - 9}$ ; 2) $\\lim_{x \\to +\\infty} \\dfrac{\\sqrt{x + 1}}{\\sqrt[3]{x^2 + 3}}$ ; 3) $\\lim_{x \\to 1} \\dfrac{\\sqrt[3]{x^2} - 1}{x - 1}$\n4) $\\lim_{x \\to +\\infty} \\sqrt{x^3 + x^3} - 8x$ ; 5) $\\lim_{x \\to 2^+} \\dfrac{\\sqrt[3]{x - 1} - 2}{x - 2}$ ; 6) $\\lim_{x \\to +\\infty} \\dfrac{\\sqrt[4]{x} + \\sqrt[5]{x} + 1}{\\sqrt[3]{x} + \\sqrt[5]{x} + 1}$",
+          "language": "fr",
+          "solution": "",
+          "section_header": "Exercice 12",
+          "section_number": "12",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-13",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Montrer que : $\\dfrac{\\sqrt[3]{10^5} \\times \\sqrt[3]{6^2}}{\\sqrt[3]{15^2} \\times \\sqrt[3]{2^4}} = 10$ et que : $\\dfrac{\\sqrt[3]{2} \\times \\sqrt{\\sqrt[4]{4^2}} \\times \\sqrt[3]{8^{\\frac{1}{2}}}}{\\sqrt{\\sqrt[3]{32}^3}^4} = \\dfrac{1}{2\\sqrt[3]{2}}$",
+              "type": "text"
+            }
+          ],
+          "title": "**Exercice 13 :**",
+          "points": 0,
+          "content": "Montrer que : $\\dfrac{\\sqrt[3]{10^5} \\times \\sqrt[3]{6^2}}{\\sqrt[3]{15^2} \\times \\sqrt[3]{2^4}} = 10$ et que : $\\dfrac{\\sqrt[3]{2} \\times \\sqrt{\\sqrt[4]{4^2}} \\times \\sqrt[3]{8^{\\frac{1}{2}}}}{\\sqrt{\\sqrt[3]{32}^3}^4} = \\dfrac{1}{2\\sqrt[3]{2}}$",
+          "language": "fr",
+          "solution": "",
+          "section_header": "Exercice 13",
+          "section_number": "13",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-14",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit $f$ une fonction définie par : $f(x) = 2 - \\sqrt[3]{x^2 - 1}$",
+              "type": "text"
+            },
+            {
+              "text": "1) Déterminer $D_f$ puis calculer $\\lim_{x \\to +\\infty} f(x)$",
+              "type": "bullet"
+            },
+            {
+              "text": "2) Soit $g$ la restriction de la fonction $f$ sur $I = [1; +\\infty[$",
+              "type": "bullet"
+            },
+            {
+              "text": "a) Etudier le sens de variations de $g$ sur $I$",
+              "type": "bullet"
+            },
+            {
+              "text": "b) Montrer que $g$ admet une fonction réciproque $g^{-1}$ sur $J$ que l’on déterminera",
+              "type": "bullet"
+            },
+            {
+              "text": "c) Déterminer $g^{-1}(x)$ pour tous $x \\in J$",
+              "type": "bullet"
+            },
+            {
+              "text": "3) a) Montrer que l’équation $g(x) = x$ admet une unique solution $\\alpha$ tel que : $1 < \\alpha < 2$",
+              "type": "bullet"
+            },
+            {
+              "text": "b) En utilisant la méthode de dichotomie trouver un encadrement de $\\alpha$ d’amplitude $0.5$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 14 :**",
+          "points": 0,
+          "content": "Soit $f$ une fonction définie par : $f(x) = 2 - \\sqrt[3]{x^2 - 1}$\n1) Déterminer $D_f$ puis calculer $\\lim_{x \\to +\\infty} f(x)$\n2) Soit $g$ la restriction de la fonction $f$ sur $I = [1; +\\infty[$\\na) Etudier le sens de variations de $g$ sur $I$\\nb) Montrer que $g$ admet une fonction réciproque $g^{-1}$ sur $J$ que l’on déterminera\\nc) Déterminer $g^{-1}(x)$ pour tous $x \\in J$\n3) a) Montrer que l’équation $g(x) = x$ admet une unique solution $\\alpha$ tel que : $1 < \\alpha < 2$\\nb) En utilisant la méthode de dichotomie trouver un encadrement de $\\alpha$ d’amplitude $0.5$",
+          "language": "fr",
+          "solution": "",
+          "section_header": "Exercice 14",
+          "section_number": "14",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-15",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Montrer que l’équation $(E) : \\sqrt[3]{x - 1} + \\sqrt[3]{x + 2} = 5 - x$ admet une unique solution dans l’intervalle $[1; 5]$",
+              "type": "text"
+            }
+          ],
+          "title": "**Exercice 15 :**",
+          "points": 0,
+          "content": "Montrer que l’équation $(E) : \\sqrt[3]{x - 1} + \\sqrt[3]{x + 2} = 5 - x$ admet une unique solution dans l’intervalle $[1; 5]$",
+          "language": "fr",
+          "solution": "",
+          "section_header": "Exercice 15",
+          "section_number": "15",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-16",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit $h$ une fonction définie sur $]-1; 1[$ par : $h(x) = \\dfrac{2x}{1 - x^2}$",
+              "type": "text"
+            },
+            {
+              "text": "1) Calculer $\\lim_{x \\to -1^+} h(x)$ et $\\lim_{x \\to 1^-} h(x)$ puis étudier les variations de $h$",
+              "type": "bullet"
+            },
+            {
+              "text": "2) Montrer que $h$ admet une fonction réciproque $h^{-1}$ sur $J$ (à dét)",
+              "type": "bullet"
+            },
+            {
+              "text": "3) Déterminer $h^{-1}(x)$ pour tout $x \\in J$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 16 :**",
+          "points": 0,
+          "content": "Soit $h$ une fonction définie sur $]-1; 1[$ par : $h(x) = \\dfrac{2x}{1 - x^2}$\n1) Calculer $\\lim_{x \\to -1^+} h(x)$ et $\\lim_{x \\to 1^-} h(x)$ puis étudier les variations de $h$\n2) Montrer que $h$ admet une fonction réciproque $h^{-1}$ sur $J$ (à dét)\n3) Déterminer $h^{-1}(x)$ pour tout $x \\in J$",
+          "language": "fr",
+          "solution": "",
+          "section_header": "Exercice 16",
+          "section_number": "16",
+          "interactive_answers": [],
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        },
+        {
+          "id": "ex-17",
+          "type": "exercise",
+          "items": [
+            {
+              "text": "Soit $f$ la fonction définie sur $\\mathbb{R}$ par : $f(x) = x^3 - x^2 + 3x + 1$",
+              "type": "text"
+            },
+            {
+              "text": "1) Montrer que $f$ est strictement croissante sur $\\mathbb{R}$. Montrer que $f$ admet une fonction réciproque $f^{-1}$ définie sur un intervalle $J$ à déterminer",
+              "type": "bullet"
+            },
+            {
+              "text": "2) a) Montrer que l’équation $f(x) = 0$ admet une unique solution $\\alpha$ tel que $-\\dfrac{1}{2} < \\alpha < 0$",
+              "type": "bullet"
+            }
+          ],
+          "title": "**Exercice 17 :**",
+          "points": 0,
+          "content": "Soit $f$ la fonction définie sur $\\mathbb{R}$ par : $f(x) = x^3 - x^2 + 3x + 1$\n1) Montrer que $f$ est strictement croissante sur $\\mathbb{R}$. Montrer que $f$ admet une fonction réciproque $f^{-1}$ définie sur un intervalle $J$ à déterminer\n2) a) Montrer que l’équation $f(x) = 0$ admet une unique solution $\\alpha$ tel que $-\\dfrac{1}{2} < \\alpha < 0$\\nb) Calculer $f\\left(-\\dfrac{1}{4}\\right)$ puis en déduire un encadrement de $\\alpha$ d’amplitude $0,25$\\nc) Montrer que $\\sqrt{\\alpha + 1} = \\dfrac{-2\\alpha}{\\alpha + 1}$\n3) Etudier le signe de $f$ sur $\\mathbb{R}$\n4) Résoudre dans $\\mathbb{R}$ l’équation $(E) : x^{12} - x^8 + 3x^4 + 1 = 0$",
+          "language": "fr",
+          "solution": "",
+          "section_header": "Exercice 17",
+          "section_number": "17",
+          "bgColor": "transparent",
+          "bg_color": "transparent",
+          "fontSize": "",
+          "font_size": "",
+          "lineHeight": "",
+          "line_height": ""
+        }
+      ],
+      "columns_count": 2
+    },
+    "is_active": true,
+    "updated_at": "2026-09-26T18:17:17.426Z",
+    "created_at": "2026-09-26T17:35:56.210Z",
+    "createdAt": "2026-09-26T17:35:57.046Z",
+    "updatedAt": "2026-09-26T18:17:18.185Z"
   }
 ]

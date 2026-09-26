@@ -1,5 +1,5 @@
 import katex from 'katex';
-import { mergeConsecutiveEntries } from './scheduleHelpers';
+import { mergeConsecutiveEntries } from './scheduleHelpers.js';
 
 const KATEX_OPTIONS = {
   strict: 'ignore',
@@ -313,13 +313,13 @@ const renderActivityCellHTML = (content, isHeader, isArMode, styleConfig) => {
   const lines = cleanedLines;
   const gridLineHeight = styleConfig.gridLineHeight || 20;
 
-  let html = `<div class="activities-wrapper" style="display:flex;flex-direction:column;gap:3px;padding:2px 0;">`;
+  let html = `<div class="activities-wrapper" style="display:block;padding:0;">`;
 
   lines.forEach((raw, idx) => {
     const { type, text, numLabel, color, bg } = getLineStyle(raw, isHeader, idx);
 
     if (type === 'empty') {
-      html += `<div style="min-height:${gridLineHeight}px;height:${gridLineHeight}px;"></div>`;
+      html += `<div style="height:3px;"></div>`;
       return;
     }
 
@@ -331,44 +331,96 @@ const renderActivityCellHTML = (content, isHeader, isArMode, styleConfig) => {
     const commonStyle = `direction:${direction};text-align:${align};font-family:'${font}',sans-serif;margin:0;line-height:${gridLineHeight}px;min-height:${gridLineHeight}px;box-sizing:border-box;color:${styleConfig.colorInk};font-size:${styleConfig.baseFontSize};`;
 
     if (type === 'chapter') {
-      html += `<div style="${commonStyle}font-size:calc(${styleConfig.baseFontSize} * 1.25);font-weight:800;color:${styleConfig.colorChapter};letter-spacing:-0.01em;text-transform:uppercase;border-bottom:1.5px solid rgba(15,23,42,0.15);padding-bottom:2px;margin-bottom:4px;display:block;">${renderLineContent(text, isArabic)}</div>`;
+      html += `<div style="${commonStyle}font-size:calc(${styleConfig.baseFontSize} * 1.25);font-weight:800;color:${styleConfig.colorChapter};letter-spacing:-0.01em;text-transform:uppercase;border-bottom:1.5px solid rgba(15,23,42,0.15);padding-bottom:1px;margin-bottom:3px;display:block;">${renderLineContent(text, isArabic)}</div>`;
     } 
     else if (type === 'exercise') {
       const borderSide = direction === 'ltr' ? 'border-left' : 'border-right';
-      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};font-weight:700;color:${styleConfig.colorExercise};background:rgba(217,119,6,0.06);${borderSide}:3px solid ${styleConfig.colorExercise};border-radius:4px;padding:0 0.55rem;margin:3px 0 2px 0;display:flex;align-items:center;gap:0.4rem;"><span style="font-size:0.85em;">✏️</span><span>${renderLineContent(text, isArabic)}</span></div>`;
+      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};font-weight:700;color:${styleConfig.colorExercise};background:rgba(217,119,6,0.06);${borderSide}:3px solid ${styleConfig.colorExercise};border-radius:4px;padding:1px 0.5rem;margin:2px 0;display:block;"><span style="display:inline-block;margin-${direction === 'ltr' ? 'right' : 'left'}:4px;">✏️</span><span>${renderLineContent(text, isArabic)}</span></div>`;
     } 
     else if (type === 'section') {
       const borderSide = direction === 'ltr' ? 'border-left' : 'border-right';
-      html += `<div style="${commonStyle}font-size:calc(${styleConfig.baseFontSize} * 1.05);font-weight:700;color:#4f46e5;${borderSide}:2.5px solid #6366f1;padding-left:${direction === 'ltr' ? '0.5rem' : '0'};padding-right:${direction === 'rtl' ? '0.5rem' : '0'};margin:3px 0 1px 0;display:block;">${renderLineContent(text, isArabic)}</div>`;
+      html += `<div style="${commonStyle}font-size:calc(${styleConfig.baseFontSize} * 1.05);font-weight:700;color:#4f46e5;${borderSide}:2.5px solid #6366f1;padding-left:${direction === 'ltr' ? '0.5rem' : '0'};padding-right:${direction === 'rtl' ? '0.5rem' : '0'};margin:2px 0 1px 0;display:block;">${renderLineContent(text, isArabic)}</div>`;
     }
     else if (type === 'axis') {
       const borderSide = direction === 'ltr' ? 'border-left' : 'border-right';
-      html += `<div style="${commonStyle}font-size:calc(${styleConfig.baseFontSize} * 1.1);font-weight:700;color:${styleConfig.colorAxis};${borderSide}:3px solid ${styleConfig.colorAxis};padding-left:${direction === 'ltr' ? '0.55rem' : '0'};padding-right:${direction === 'rtl' ? '0.55rem' : '0'};display:block;">${renderLineContent(text, isArabic)}</div>`;
+      html += `<div style="${commonStyle}font-size:calc(${styleConfig.baseFontSize} * 1.1);font-weight:700;color:${styleConfig.colorAxis};${borderSide}:3px solid ${styleConfig.colorAxis};padding-left:${direction === 'ltr' ? '0.55rem' : '0'};padding-right:${direction === 'rtl' ? '0.55rem' : '0'};margin:2px 0;display:block;">${renderLineContent(text, isArabic)}</div>`;
     } 
     else if (type === 'numbered') {
-      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};font-weight:500;padding-left:${direction === 'ltr' ? '0.75rem' : '0'};padding-right:${direction === 'rtl' ? '0.75rem' : '0'};display:flex;align-items:baseline;gap:0.45rem;"><span style="font-weight:800;color:#2563eb;flex-shrink:0;">${esc(numLabel)}</span><span style="flex:1;">${renderLineContent(text, isArabic)}</span></div>`;
+      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};font-weight:500;padding-${direction === 'ltr' ? 'left' : 'right'}:0.4rem;margin:1px 0;display:block;"><span style="font-weight:800;color:#2563eb;display:inline-block;min-width:18px;">${esc(numLabel)}</span> <span>${renderLineContent(text, isArabic)}</span></div>`;
     }
     else if (type === 'formula') {
-      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};display:flex;justify-content:center;padding:2px 0;margin:2px 0;">${renderLineContent(text, isArabic)}</div>`;
+      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};text-align:center;padding:1px 0;margin:1px 0;display:block;">${renderLineContent(text, isArabic)}</div>`;
     }
     else if (type === 'intro_text') {
-      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};font-weight:500;padding-left:${direction === 'ltr' ? '0.35rem' : '0'};padding-right:${direction === 'rtl' ? '0.35rem' : '0'};display:block;">${renderLineContent(text, isArabic)}</div>`;
+      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};font-weight:500;padding-left:${direction === 'ltr' ? '0.35rem' : '0'};padding-right:${direction === 'rtl' ? '0.35rem' : '0'};margin:1px 0;display:block;">${renderLineContent(text, isArabic)}</div>`;
     }
     else if (type === 'block') {
       const borderSide = direction === 'ltr' ? 'border-left' : 'border-right';
-      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};font-weight:600;color:${color};background:${bg};${borderSide}:2px solid ${color};border-radius:4px;padding:0 0.55rem;display:block;">${renderLineContent(text, isArabic)}</div>`;
+      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};font-weight:600;color:${color};background:${bg};${borderSide}:2px solid ${color};border-radius:4px;padding:1px 0.55rem;margin:1px 0;display:block;">${renderLineContent(text, isArabic)}</div>`;
     } 
     else if (type === 'bullet') {
-      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};display:flex;align-items:baseline;gap:0.4rem;padding-left:${direction === 'ltr' ? '0.4rem' : '0'};padding-right:${direction === 'rtl' ? '0.4rem' : '0'};"><span style="color:#64748b;font-size:0.45rem;flex-shrink:0;transform:translateY(-1px);">■</span><span style="flex:1;">${renderLineContent(text, isArabic)}</span></div>`;
+      html += `<div style="${commonStyle}font-size:${styleConfig.baseFontSize};padding-${direction === 'ltr' ? 'left' : 'right'}:0.4rem;margin:1px 0;display:block;"><span style="color:#64748b;font-size:0.5rem;display:inline-block;vertical-align:middle;margin-${direction === 'ltr' ? 'right' : 'left'}:4px;">■</span> <span>${renderLineContent(text, isArabic)}</span></div>`;
     }
     else {
       // Default clean paragraph
-      html += `<div style="${commonStyle}display:block;">${renderLineContent(text, isArabic)}</div>`;
+      html += `<div style="${commonStyle}margin:1px 0;display:block;">${renderLineContent(text, isArabic)}</div>`;
     }
   });
 
   html += `</div>`;
   return html;
+};
+
+// Splits a long multi-exercise session into compact logical chunks
+// to prevent massive whitespace gaps before page breaks in print
+const chunkActivityContent = (content) => {
+  if (!content || !content.trim()) return [''];
+  const rawLines = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+
+  const cleaned = [];
+  let prevWasEmpty = false;
+  for (const line of rawLines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      if (!prevWasEmpty) cleaned.push('');
+      prevWasEmpty = true;
+    } else {
+      cleaned.push(line);
+      prevWasEmpty = false;
+    }
+  }
+
+  const chunks = [];
+  let curChunk = [];
+
+  for (let i = 0; i < cleaned.length; i++) {
+    const line = cleaned[i];
+    const trimmed = line.trim();
+    const plain = trimmed.replace(/[*#_~`]/g, '').trim();
+
+    const isExerciseHeader = /^(?:•|-)?\s*(?:exercice|تمرين|devoir|contrôle|فرض)\s*n?°?\s*\d*/i.test(plain);
+    const isSectionHeader = /^(?:•|-)?\s*(?:série|serie|partie|châpitre|chapitre|axe|محور|سلسلة|جزء)\s*[:\d\-]/i.test(plain);
+    const isChapterHeader = /^={2,}\s*(.*?)\s*={2,}$/.test(trimmed);
+    const isQuestionLine = /^\d+[.)]/.test(plain) || /^[a-zA-Z][.)]/.test(plain);
+
+    // If chunk already has content and we hit an exercise or section header:
+    const isHeaderBreak = curChunk.length >= 2 && (isExerciseHeader || isSectionHeader || (isChapterHeader && i > 0));
+    // If chunk has >= 5 lines and we hit a question line, bullet or empty line:
+    const isSizeBreak = curChunk.length >= 5 && (isQuestionLine || trimmed.startsWith('•') || !trimmed);
+
+    if (curChunk.length > 0 && (isHeaderBreak || isSizeBreak)) {
+      chunks.push(curChunk.join('\n'));
+      curChunk = [];
+    }
+
+    curChunk.push(line);
+  }
+
+  if (curChunk.length > 0) {
+    chunks.push(curChunk.join('\n'));
+  }
+
+  return chunks.length > 0 ? chunks : [content];
 };
 
 const getTranslatedComponent = (comp, isAr) => {
@@ -417,8 +469,8 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
   
   const gridLineHeight = styleConfig.gridLineHeight || 20;
 
-  // Build rows HTML
-  const rowsHtml = entries.map(e => {
+  // Build rows HTML (automatically chunk multi-exercise/long sessions into compact sub-rows to prevent whitespace gaps in print)
+  const rowsHtml = entries.flatMap(e => {
     const isHolidayOrAbsence = e.isHolidayEntry || e.isAbsenceEntry;
     
     // Determine cell borders and background for grid
@@ -431,30 +483,72 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
       ? (e.displayDate.includes('من') || e.displayDate.includes('Du') 
           ? esc(e.displayDate) 
           : new Date(e.date).toLocaleDateString('fr-FR'))
-      : new Date(e.date).toLocaleDateString('fr-FR');
+      : (e.date ? new Date(e.date).toLocaleDateString('fr-FR') : '');
 
-    return `
-      <tr>
-        <td style="width:11%;text-align:center;font-weight:800;color:#0f172a;border:1px solid #cbd5e1;padding:8px 6px;font-size:0.8rem;">
-          ${dateText}
-        </td>
-        <td style="width:11%;text-align:center;font-weight:600;color:#475569;border:1px solid #cbd5e1;padding:8px 6px;font-size:0.8rem;">
-          ${esc(e.time || '—')}
-        </td>
-        <td style="width:12%;text-align:center;font-weight:700;color:#1e3a8a;border:1px solid #cbd5e1;padding:8px 6px;font-size:0.82rem;">
-          <span class="comp-badge ${e.component.toLowerCase().includes('contrôle') ? 'contrôle' : (isHolidayOrAbsence ? 'holiday' : '')}">${esc(componentText)}</span>
-        </td>
-        <td class="${cellClass}" style="width:54%;border:1px solid #cbd5e1;vertical-align:middle;position:relative;text-align:${alignment};">
-          ${isHolidayOrAbsence 
-            ? `<div class="holiday-absence-banner ${e.isHolidayEntry ? 'holiday' : 'absence'}">${esc(e.customContent.replace(/===/g, '').trim())}</div>`
-            : renderActivityCellHTML(e.customContent, e.isHeaderSéance, isArMode, styleConfig)
-          }
-        </td>
-        <td style="width:12%;text-align:center;border:1px solid #cbd5e1;vertical-align:middle;padding:8px 6px;${signatureStyle}">
-          ${signatureText}
-        </td>
-      </tr>
-    `;
+    if (isHolidayOrAbsence) {
+      return `
+        <tr>
+          <td style="width:11%;text-align:center;font-weight:800;color:#0f172a;border:1px solid #cbd5e1;padding:6px 4px;font-size:0.8rem;vertical-align:middle;">
+            ${dateText}
+          </td>
+          <td style="width:11%;text-align:center;font-weight:600;color:#475569;border:1px solid #cbd5e1;padding:6px 4px;font-size:0.8rem;vertical-align:middle;">
+            ${esc(e.time || '—')}
+          </td>
+          <td style="width:12%;text-align:center;font-weight:700;color:#1e3a8a;border:1px solid #cbd5e1;padding:6px 4px;font-size:0.82rem;vertical-align:middle;">
+            <span class="comp-badge holiday">${esc(componentText)}</span>
+          </td>
+          <td class="${cellClass}" style="width:54%;border:1px solid #cbd5e1;vertical-align:middle;position:relative;text-align:${alignment};padding:6px 10px;">
+            <div class="holiday-absence-banner ${e.isHolidayEntry ? 'holiday' : 'absence'}">${esc(e.customContent.replace(/===/g, '').trim())}</div>
+          </td>
+          <td style="width:12%;text-align:center;border:1px solid #cbd5e1;vertical-align:middle;padding:6px 4px;${signatureStyle}">
+            ${signatureText}
+          </td>
+        </tr>
+      `;
+    }
+
+    const chunks = chunkActivityContent(e.customContent);
+    return chunks.map((chunk, chunkIdx) => {
+      const isFirst = chunkIdx === 0;
+      const borderTopStyle = isFirst ? '' : 'border-top:1px dashed rgba(186, 230, 253, 0.8) !important;';
+      const rowClass = isFirst ? '' : 'logbook-subrow';
+
+      const cellDateHtml = isFirst 
+        ? dateText 
+        : `<span style="color:#64748b;font-size:0.75rem;font-weight:600;">↳ ${isArMode ? 'تتمة' : 'suite'}</span>`;
+
+      const cellTimeHtml = isFirst 
+        ? esc(e.time || '—') 
+        : `<span style="color:#94a3b8;font-size:0.75rem;">—</span>`;
+
+      const cellCompHtml = isFirst 
+        ? `<span class="comp-badge ${e.component && e.component.toLowerCase().includes('contrôle') ? 'contrôle' : ''}">${esc(componentText)}</span>`
+        : `<span class="comp-badge" style="opacity:0.65;font-size:0.72rem;">${esc(componentText)}</span>`;
+
+      const cellSigHtml = isFirst 
+        ? signatureText 
+        : `<span style="color:#94a3b8;font-size:0.75rem;">—</span>`;
+
+      return `
+        <tr class="${rowClass}">
+          <td style="width:11%;text-align:center;font-weight:800;color:#0f172a;border:1px solid #cbd5e1;padding:6px 4px;font-size:0.8rem;vertical-align:top;${borderTopStyle}">
+            ${cellDateHtml}
+          </td>
+          <td style="width:11%;text-align:center;font-weight:600;color:#475569;border:1px solid #cbd5e1;padding:6px 4px;font-size:0.8rem;vertical-align:top;${borderTopStyle}">
+            ${cellTimeHtml}
+          </td>
+          <td style="width:12%;text-align:center;font-weight:700;color:#1e3a8a;border:1px solid #cbd5e1;padding:6px 4px;font-size:0.82rem;vertical-align:top;${borderTopStyle}">
+            ${cellCompHtml}
+          </td>
+          <td class="${cellClass}" style="width:54%;border:1px solid #cbd5e1;vertical-align:top;position:relative;text-align:${alignment};padding:5px 10px;${borderTopStyle}">
+            ${renderActivityCellHTML(chunk, isFirst ? e.isHeaderSéance : false, isArMode, styleConfig)}
+          </td>
+          <td style="width:12%;text-align:center;border:1px solid #cbd5e1;vertical-align:top;padding:6px 4px;${signatureStyle}${borderTopStyle}">
+            ${cellSigHtml}
+          </td>
+        </tr>
+      `;
+    });
   }).join('');
 
   return `
@@ -533,7 +627,7 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
     @media print {
       @page {
         size: A4 portrait;
-        margin: 15mm 12mm 15mm 12mm;
+        margin: 12mm 10mm 12mm 10mm;
       }
       body {
         margin: 0 !important;
@@ -543,9 +637,27 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
       #printActionBar {
         display: none !important;
       }
+      .print-page-wrapper {
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+      .logbook-table {
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+      }
       .logbook-table tr {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
+      }
+      .logbook-subrow {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+      .logbook-table td {
+        vertical-align: top !important;
       }
     }
 
@@ -708,8 +820,8 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
-      margin-top: 12px;
-      margin-bottom: 22px;
+      margin-top: 8px;
+      margin-bottom: 12px;
       font-size: 11px;
       direction: ${dir};
     }
@@ -717,7 +829,7 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
       background: #ffffff;
       border: 1.5px solid #e2e8f0;
       border-radius: 8px;
-      padding: 8px 12px;
+      padding: 5px 8px;
       text-align: center;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
@@ -728,10 +840,10 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
       display: block;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
     }
     .coords-badge-val {
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 900;
       color: #0f172a;
     }
@@ -798,7 +910,7 @@ export const generateLogbookHTML = (selectedClass, entries, profName, styleConfi
       background-image: 
         linear-gradient(rgba(186, 230, 253, 0.5) 1px, transparent 1px);
       background-size: 100% ${gridLineHeight}px;
-      padding: ${gridLineHeight}px 12px !important;
+      padding: 5px 10px !important;
       line-height: ${gridLineHeight}px !important;
       vertical-align: top;
       position: relative;

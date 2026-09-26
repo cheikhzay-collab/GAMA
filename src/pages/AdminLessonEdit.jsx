@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getLessonById, updateLesson } from '../services/lessonService';
 import { getAllClasses } from '../services/classService';
 import { 
-  ArrowLeft, Save, Trash2, Plus, AlertCircle, 
+  ArrowLeft, Save, Trash2, Plus, AlertCircle, AlertTriangle,
   CheckCircle, Loader2, ChevronUp, ChevronDown, Crop,
   FileText, Eye, EyeOff, Bold, Italic, 
   Underline, AlignLeft, AlignCenter, AlignRight,
@@ -18,10 +18,12 @@ import PdfFigureCropperModal from '../components/PdfFigureCropperModal';
 import AiFigureEnhancerModal from '../components/AiFigureEnhancerModal';
 import ImageDropZone from '../components/ImageDropZone';
 import FloatingLatexPalette from '../components/FloatingLatexPalette';
+import SmartTableRenderer from '../components/SmartTableRenderer';
 import { solveExerciseWithAI, filterBaremeByDocType } from '../utils/aiExerciseSolver';
 import { renderWithMath, autoRepairMathText } from '../utils/mathRenderer';
 import { normalizeLevel, getLevelDisplayName } from '../utils/levelHelpers';
 import { uploadAsset } from '../services/storageService';
+import { validateExercisePoints } from '../utils/scoreBalancingValidator';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
@@ -135,6 +137,22 @@ export default function AdminLessonEdit() {
 
   const [activeRibbonTab, setActiveRibbonTab] = useState('home'); // 'home' | 'math' | 'insert' | 'settings'
 
+  // View mode: 'document' (Page A4 / WYSIWYG) | 'structured' (Blocs Structurés / Formulaire)
+  const [editViewMode, setEditViewMode] = useState(() => {
+    try {
+      return localStorage.getItem('lesson_edit_view_mode') || 'document';
+    } catch (_) {
+      return 'document';
+    }
+  });
+
+  const handleSetEditViewMode = (mode) => {
+    setEditViewMode(mode);
+    try {
+      localStorage.setItem('lesson_edit_view_mode', mode);
+    } catch (_) {}
+  };
+
   // Header metadata
   const [ficheTitle, setFicheTitle] = useState('');
   const [subject, setSubject] = useState('Mathématiques');
@@ -199,9 +217,18 @@ export default function AdminLessonEdit() {
         content: sec.content || '',
         solution: sec.solution || '',
         type: sec.type || '',
+        section_number: sec.section_number || '',
+        points: sec.points !== undefined && sec.points !== null ? sec.points : '',
+        section_header: sec.section_header || '',
+        accent_text: sec.accent_text || '',
         bgColor: sec.bgColor || sec.bg_color || '',
         fontSize: sec.fontSize || sec.font_size || '',
         lineHeight: sec.lineHeight || sec.line_height || '',
+        interactive_answers: (sec.interactive_answers || []).map(a => ({
+          question_idx: a.question_idx,
+          label: a.label || '',
+          expected_answer: a.expected_answer || ''
+        })),
         items: (sec.items || []).map(it => ({
           type: it.type || '',
           text: it.text || it.content || '',
@@ -514,10 +541,13 @@ export default function AdminLessonEdit() {
       title: titles[type] || 'Nouvelle Section',
       type: type,
       section_number: '',
+      points: type === 'exercise' ? '0' : '',
       section_header: '',
+      accent_text: '',
       content: '',
       solution: '',
       items: [],
+      interactive_answers: [],
       language: docLanguage
     };
     setSections([...sections, newSec]);
@@ -837,6 +867,51 @@ export default function AdminLessonEdit() {
     newItems[targetIdx] = temp;
     
     setSections(sections.map((s, i) => i === secIndex ? { ...s, items: newItems } : s));
+  };
+
+  const handleAddInteractiveAnswer = (secIndex) => {
+    setSections(sections.map((sec, i) => {
+      if (i === secIndex) {
+        const nextIdx = (sec.interactive_answers?.length || 0) + 1;
+        return {
+          ...sec,
+          interactive_answers: [...(sec.interactive_answers || []), { question_idx: nextIdx, label: '', expected_answer: '' }]
+        };
+      }
+      return sec;
+    }));
+  };
+
+  const handleRemoveInteractiveAnswer = (secIndex, ansIndex) => {
+    setSections(sections.map((sec, i) => {
+      if (i === secIndex) {
+        return {
+          ...sec,
+          interactive_answers: (sec.interactive_answers || []).filter((_, idx) => idx !== ansIndex)
+        };
+      }
+      return sec;
+    }));
+  };
+
+  const handleUpdateInteractiveAnswer = (secIndex, ansIndex, field, value) => {
+    setSections(sections.map((sec, i) => {
+      if (i === secIndex) {
+        const newAns = (sec.interactive_answers || []).map((ans, idx) => {
+          if (idx === ansIndex) {
+            return { ...ans, [field]: value };
+          }
+          return ans;
+        });
+        return { ...sec, interactive_answers: newAns };
+      }
+      return sec;
+    }));
+  };
+
+  const handleOpenCropperModal = (secIdx, itemIdx = null) => {
+    setCropperTarget({ secIdx, itemIdx });
+    setIsCropperOpen(true);
   };
 
   // Smart cursor-aware LaTeX / Text insertion
@@ -2810,6 +2885,701 @@ export default function AdminLessonEdit() {
     );
   };
 
+  // ── RENDER STRUCTURED IMAGE ITEM (For Structured Block Mode) ──
+  const renderStructuredImageItem = (item, secIdx, itemIdx) => {
+    const hasUrl = Boolean(item.url || item.src);
+    const imageUrl = item.url || item.src;
+
+    return (
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.75rem',
+        background: hasUrl ? 'rgba(16,185,129,0.04)' : 'rgba(99,102,241,0.04)',
+        padding: '0.85rem',
+        borderRadius: '10px',
+        border: `1.5px dashed ${hasUrl ? 'rgba(16,185,129,0.4)' : 'rgba(99,102,241,0.35)'}`
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            fontSize: '0.72rem',
+            fontWeight: 800,
+            padding: '0.2rem 0.6rem',
+            borderRadius: '99px',
+            background: hasUrl ? 'rgba(16,185,129,0.15)' : 'rgba(99,102,241,0.15)',
+            color: hasUrl ? '#10b981' : 'var(--violet)',
+            border: `1px solid ${hasUrl ? 'rgba(16,185,129,0.3)' : 'rgba(99,102,241,0.25)'}`
+          }}>
+            {hasUrl ? '✅ Figure renseignée' : '🖼️ Emplacement de figure / forme géométrique'}
+          </span>
+          <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+            {hasUrl && (
+              <button
+                type="button"
+                onClick={() => handleOpenAiEnhancer(secIdx, itemIdx, item)}
+                className="btn-outline"
+                style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem', color: '#8b5cf6', borderColor: 'rgba(139,92,246,0.3)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                title="Régénérer ou améliorer par IA"
+              >
+                <Sparkles size={11} /> IA HD
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => handleOpenCropperModal(secIdx, itemIdx)}
+              className="btn-outline"
+              style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem', color: 'var(--emerald)', borderColor: 'rgba(16,185,129,0.3)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+              title="قص / استخراج شكل من ملف PDF"
+            >
+              <Crop size={11} /> ✂️ قص من PDF
+            </button>
+          </div>
+        </div>
+
+        {hasUrl ? (
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+            <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)', background: '#fff', flexShrink: 0 }}>
+              <img
+                src={imageUrl}
+                alt={item.alt || 'Figure'}
+                style={{ display: 'block', maxWidth: '140px', maxHeight: '110px', objectFit: 'contain' }}
+              />
+            </div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.45rem', width: '100%' }}>
+              <input
+                type="text"
+                className="input-control"
+                value={item.alt || ''}
+                onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'alt', e.target.value)}
+                placeholder="Légende / Titre de la figure..."
+                style={{ padding: '0.35rem 0.6rem', fontSize: '0.8rem' }}
+              />
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Alignement :</span>
+                {['left', 'center', 'right'].map(align => (
+                  <button
+                    key={align}
+                    type="button"
+                    onClick={() => handleUpdateContentItem(secIdx, itemIdx, 'align', align)}
+                    className="btn-outline"
+                    style={{
+                      padding: '0.2rem 0.5rem',
+                      fontSize: '0.72rem',
+                      background: (item.align || 'center') === align ? 'var(--violet)' : 'transparent',
+                      color: (item.align || 'center') === align ? '#fff' : 'var(--text-main)',
+                      borderColor: (item.align || 'center') === align ? 'var(--violet)' : 'var(--border)'
+                    }}
+                  >
+                    {align === 'left' ? 'Gauche' : align === 'center' ? 'Centré' : 'Droite'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+            <button
+              type="button"
+              onClick={() => handleOpenCropperModal(secIdx, itemIdx)}
+              className="btn"
+              style={{
+                flex: 1,
+                padding: '0.55rem 0.75rem',
+                fontSize: '0.8rem',
+                fontWeight: 800,
+                background: 'linear-gradient(135deg, var(--violet), #8b5cf6)',
+                justifyContent: 'center',
+                gap: '0.4rem',
+                display: 'inline-flex',
+                alignItems: 'center'
+              }}
+            >
+              <Crop size={14} /> ✂️ قص شكل من مستند الـ PDF
+            </button>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.4rem',
+                padding: '0.5rem 0.75rem',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                borderRadius: '8px',
+                border: '1px solid var(--border)',
+                background: 'rgba(255,255,255,0.04)',
+                color: 'var(--text-main)'
+              }}
+            >
+              <ImageIcon size={14} /> 📁 رفع صورة من الجهاز
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = ev => handleUpdateContentItem(secIdx, itemIdx, 'url', ev.target.result);
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+            </label>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ── RENDER STRUCTURED BLOCKS EDITOR (Mode Blocs Structurés / Formulaire) ──
+  const renderStructuredBlocksEditor = () => {
+    return (
+      <div className="glass-panel" style={{ padding: isMobile ? '1rem' : '2rem', borderRadius: '16px', background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+        {/* Header: Title + Action buttons */}
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-main)' }}>
+            📝 Sections du Cours / Exercices
+          </h2>
+          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '0.5rem' }}>
+            <button
+              type="button"
+              onClick={() => handleAddSection('content')}
+              className="btn-outline"
+              style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem', justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+            >
+              <Plus size={14} /> + Section Théorique
+            </button>
+            <button
+              type="button"
+              onClick={() => handleAddSection('exercise')}
+              className="btn-outline"
+              style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem', justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+            >
+              <Plus size={14} /> + Exercice
+            </button>
+          </div>
+        </div>
+
+        {/* Sections List */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          {sections.map((sec, secIdx) => {
+            const isExercise = sec.type === 'exercise';
+            const scoreBalance = isExercise ? validateExercisePoints(sec) : null;
+
+            return (
+              <div
+                key={sec.id || secIdx}
+                className={docLanguage === 'ar' ? 'rtl-section' : 'ltr-section'}
+                style={{
+                  border: '1px solid var(--border)',
+                  borderRadius: '12px',
+                  padding: isMobile ? '1rem' : '1.5rem',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  position: 'relative'
+                }}
+              >
+                {/* Delete Button & Quick Crop Header */}
+                <div style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', display: 'flex', gap: '0.5rem', alignItems: 'center', zIndex: 5 }}>
+                  <button
+                    type="button"
+                    onClick={() => handleMoveSection(secIdx, 'up')}
+                    disabled={secIdx === 0}
+                    className="btn-outline"
+                    style={{ padding: '0.3rem 0.4rem', opacity: secIdx === 0 ? 0.3 : 1 }}
+                    title="Monter"
+                  >
+                    <ChevronUp size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleMoveSection(secIdx, 'down')}
+                    disabled={secIdx === sections.length - 1}
+                    className="btn-outline"
+                    style={{ padding: '0.3rem 0.4rem', opacity: secIdx === sections.length - 1 ? 0.3 : 1 }}
+                    title="Descendre"
+                  >
+                    <ChevronDown size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenCropperModal(secIdx)}
+                    className="btn-outline"
+                    style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', color: 'var(--emerald)', borderColor: 'rgba(16,185,129,0.3)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                    title="قص شكل هندسي من الـ PDF وربطه بهذا القسم"
+                  >
+                    <Crop size={13} /> ✂️ قص شكل من الـ PDF
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveSection(secIdx)}
+                    style={{
+                      background: 'rgba(239, 68, 68, 0.1)',
+                      color: 'var(--danger)',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '0.4rem',
+                      cursor: 'pointer'
+                    }}
+                    title="Supprimer la section"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+
+                {/* Section Title & Score Balance Badge */}
+                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1rem', width: '100%', marginBottom: '1.25rem', alignItems: 'flex-start', paddingRight: isMobile ? 0 : '240px' }}>
+                  <div style={{ flex: 1, width: '100%' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.3rem', flexWrap: 'wrap' }}>
+                      <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)' }}>Titre du Bloc</label>
+                      {isExercise && scoreBalance && (
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          padding: '0.15rem 0.5rem',
+                          borderRadius: 99,
+                          fontSize: '0.7rem',
+                          fontWeight: 800,
+                          background: scoreBalance.isBalanced ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+                          color: scoreBalance.isBalanced ? '#10b981' : '#f59e0b',
+                          border: `1px solid ${scoreBalance.isBalanced ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`
+                        }}>
+                          {scoreBalance.isBalanced ? (
+                            <><CheckCircle size={12} /> {scoreBalance.declaredPoints || scoreBalance.calculatedSum} ن متوازنة</>
+                          ) : (
+                            <><AlertTriangle size={12} /> مجموع الأسئلة: {scoreBalance.calculatedSum} ن / المصرّح به: {scoreBalance.declaredPoints} ن</>
+                          )}
+                        </span>
+                      )}
+                    </div>
+                    <input 
+                      type="text" 
+                      className="input-control" 
+                      value={sec.title || ''} 
+                      onChange={e => handleUpdateSection(secIdx, 'title', e.target.value)}
+                      style={{ fontWeight: 800, fontSize: '1rem', width: '100%' }}
+                    />
+                  </div>
+                  <div style={{ width: isMobile ? '100%' : '170px' }}>
+                    <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', display: 'block', marginBottom: '0.3rem' }}>Type</label>
+                    <select 
+                      className="input-control"
+                      value={sec.type}
+                      onChange={e => handleUpdateSection(secIdx, 'type', e.target.value)}
+                      style={{ width: '100%', fontWeight: 700 }}
+                    >
+                      <option value="content">Théorie (Général)</option>
+                      <option value="definition">Définition</option>
+                      <option value="property">Propriété</option>
+                      <option value="theorem">Théorème</option>
+                      <option value="corollary">Corollaire</option>
+                      <option value="example">Exemple</option>
+                      <option value="remark">Remarque</option>
+                      <option value="activity">Activité / Application</option>
+                      <option value="exercise">Exercice / Corrigé</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Section Metadata Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '80px 100px 1.5fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+                  <div>
+                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>N° Section</label>
+                    <input 
+                      type="text" 
+                      className="input-control" 
+                      value={sec.section_number || ''} 
+                      onChange={e => handleUpdateSection(secIdx, 'section_number', e.target.value)}
+                      placeholder="Ex: 1"
+                      style={{ padding: '0.35rem', fontSize: '0.85rem' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '0.75rem', color: 'var(--amber)', fontWeight: 800 }}>⭐ Points</label>
+                    <input 
+                      type="text" 
+                      className="input-control" 
+                      value={sec.points !== undefined && sec.points !== null ? sec.points : ''} 
+                      onChange={e => handleUpdateSection(secIdx, 'points', e.target.value)}
+                      placeholder="Ex: 3.5"
+                      style={{ padding: '0.35rem', fontSize: '0.85rem', borderColor: 'var(--amber)', fontWeight: 800 }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>En-tête de Section Pill (ex: Résumé : Suites Numériques)</label>
+                    <input 
+                      type="text" 
+                      className="input-control" 
+                      value={sec.section_header || ''} 
+                      onChange={e => handleUpdateSection(secIdx, 'section_header', e.target.value)}
+                      placeholder="Laisse vide pour continuer la section précédente"
+                      style={{ padding: '0.35rem', fontSize: '0.85rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sous-titre Accent Vert (ex: Définitions-Notations-Vocabulaire)</label>
+                    <input 
+                      type="text" 
+                      className="input-control" 
+                      value={sec.accent_text || ''} 
+                      onChange={e => handleUpdateSection(secIdx, 'accent_text', e.target.value)}
+                      placeholder="Optionnel"
+                      style={{ padding: '0.35rem', fontSize: '0.85rem' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Type 1: Content Block Editor */}
+                {sec.type !== 'exercise' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--violet)' }}>Éléments de texte</span>
+                      <button type="button" onClick={() => handleAddItemToContentSection(secIdx)} className="btn-outline" style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <Plus size={12} /> Ajouter un point
+                      </button>
+                    </div>
+
+                    {sec.items?.map((item, itemIdx) => (
+                      <div key={itemIdx} style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '0.75rem', alignItems: isMobile ? 'stretch' : 'flex-start', width: '100%' }}>
+                        <select
+                          className="input-control"
+                          value={item.type}
+                          onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'type', e.target.value)}
+                          style={{ width: isMobile ? '100%' : '160px', flexShrink: 0, padding: '0.4rem' }}
+                        >
+                          <option value="text">Texte Standard</option>
+                          <option value="bullet">Puce (Bullet)</option>
+                          <option value="highlight_box">Formule (Encadré)</option>
+                          <option value="notation_grid">Grille de Notations</option>
+                          <option value="table">Tableau Comparatif</option>
+                          <option value="image">🖼️ Figure / Image (شكل/مبيان)</option>
+                        </select>
+
+                        {item.type === 'notation_grid' ? (
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(255,255,255,0.01)', padding: '0.75rem', borderRadius: '8px', border: '1px dashed var(--border)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <strong style={{ fontSize: '0.8rem' }}>Colonnes de Notations :</strong>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const cols = item.notation_columns || [];
+                                  handleUpdateContentItem(secIdx, itemIdx, 'notation_columns', [...cols, { title: '', math_blocks: [''] }]);
+                                }}
+                                className="btn-outline"
+                                style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                              >
+                                + Ajouter Colonne
+                              </button>
+                            </div>
+                            {item.notation_columns?.map((col, colIdx) => (
+                              <div key={colIdx} style={{ border: '1px solid var(--border)', padding: '0.5rem', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                  <input
+                                    type="text"
+                                    className="input-control"
+                                    placeholder="Titre de colonne (ex: • Notation fonctionnelle)"
+                                    value={col.title || ''}
+                                    onChange={e => {
+                                      const newCols = item.notation_columns.map((c, ci) => ci === colIdx ? { ...c, title: e.target.value } : c);
+                                      handleUpdateContentItem(secIdx, itemIdx, 'notation_columns', newCols);
+                                    }}
+                                    style={{ flex: 1, padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const newCols = item.notation_columns.filter((_, ci) => ci !== colIdx);
+                                      handleUpdateContentItem(secIdx, itemIdx, 'notation_columns', newCols);
+                                    }}
+                                    style={{ background: 'transparent', color: 'var(--danger)', border: 'none', cursor: 'pointer' }}
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                                <textarea
+                                  className="input-control"
+                                  placeholder="Blocs mathématiques (un par ligne, ex: u : E \\rightarrow \\mathbb{R})"
+                                  value={col.math_blocks?.join('\n') || ''}
+                                  onChange={e => {
+                                    const lines = e.target.value.split('\n');
+                                    const newCols = item.notation_columns.map((c, ci) => ci === colIdx ? { ...c, math_blocks: lines } : c);
+                                    handleUpdateContentItem(secIdx, itemIdx, 'notation_columns', newCols);
+                                  }}
+                                  rows={2}
+                                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        ) : item.type === 'table' ? (
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(255,255,255,0.01)', padding: '0.75rem', borderRadius: '8px', border: '1px dashed var(--border)' }}>
+                            <div>
+                              <label style={{ fontSize: '0.75rem', fontWeight: 800 }}>En-têtes du Tableau (séparés par | )</label>
+                              <input
+                                type="text"
+                                className="input-control"
+                                placeholder="ex: Concept | une suite arithmétique | une suite géométrique"
+                                value={item.table_data?.headers?.join(' | ') || (Array.isArray(item.headers) ? item.headers.join(' | ') : '')}
+                                onChange={e => {
+                                  const headers = e.target.value.split('|').map(s => s.trim());
+                                  const rows = item.table_data?.rows || item.rows || [[]];
+                                  handleUpdateContentItem(secIdx, itemIdx, 'table_data', { headers, rows });
+                                  handleUpdateContentItem(secIdx, itemIdx, 'headers', headers);
+                                }}
+                                style={{ padding: '0.35rem', fontSize: '0.8rem' }}
+                              />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: '0.75rem', fontWeight: 800 }}>Lignes du Tableau (une ligne par rangée, cellules séparées par | )</label>
+                              <textarea
+                                className="input-control"
+                                placeholder="ex: Définition | U_{n+1} = U_n + r | U_{n+1} = qU_n"
+                                value={(item.table_data?.rows || item.rows || []).map(r => Array.isArray(r) ? r.join(' | ') : String(r)).join('\n')}
+                                onChange={e => {
+                                  const rows = e.target.value.split('\n').map(line => line.split('|').map(s => s.trim()));
+                                  const headers = item.table_data?.headers || item.headers || [];
+                                  handleUpdateContentItem(secIdx, itemIdx, 'table_data', { headers, rows });
+                                  handleUpdateContentItem(secIdx, itemIdx, 'rows', rows);
+                                }}
+                                rows={3}
+                                style={{ padding: '0.35rem', fontSize: '0.8rem' }}
+                              />
+                            </div>
+                            <div style={{ marginTop: '0.4rem' }}>
+                              <SmartTableRenderer table={item.table_data || item} />
+                            </div>
+                          </div>
+                        ) : item.type === 'image' ? (
+                          renderStructuredImageItem(item, secIdx, itemIdx)
+                        ) : (
+                          <textarea
+                            className="input-control"
+                            value={item.text || item.content || ''}
+                            onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'text', e.target.value)}
+                            placeholder="Entrez le contenu (LaTeX supporté avec $ ... $)"
+                            rows={2}
+                            style={{ flex: 1, padding: '0.4rem' }}
+                          />
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItemFromContentSection(secIdx, itemIdx)}
+                          style={{ background: 'transparent', color: 'var(--text-muted)', border: 'none', cursor: 'pointer', marginTop: '0.5rem' }}
+                          title="Supprimer l'élément"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Type 2: Exercise Block Editor */}
+                {sec.type === 'exercise' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div className="input-group">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                        <label style={{ fontWeight: 800 }}>Énoncé de l'Exercice</label>
+                        <button
+                          type="button"
+                          onClick={() => handleAiSolveExercise(secIdx)}
+                          disabled={solvingSecIdx === secIdx || saving}
+                          className="btn-outline"
+                          style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem', color: 'var(--violet)', borderColor: 'rgba(99,102,241,0.3)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                        >
+                          {solvingSecIdx === secIdx ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                          <span>{isArMode ? 'حل التمرين بـ IA' : 'Résoudre par IA'}</span>
+                        </button>
+                      </div>
+                      <textarea
+                        className="input-control"
+                        value={sec.content || ''}
+                        onChange={e => handleUpdateSection(secIdx, 'content', e.target.value)}
+                        placeholder="Entrez l'énoncé de l'exercice..."
+                        rows={4}
+                      />
+                    </div>
+
+                    {/* Sub-items & Attached Images Editor for Exercises */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', border: '1px dashed var(--border)', borderRadius: '8px', padding: '0.75rem', background: 'rgba(255,255,255,0.01)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--violet)' }}>
+                          🖼️ عناصر وإشكال التمرين والأسئلة (Éléments & Figures d'exercice)
+                        </span>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenCropperModal(secIdx)}
+                            className="btn-outline"
+                            style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', color: 'var(--emerald)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                            title="قص شكل من مستند الـ PDF وإدراجه في هذا التمرين"
+                          >
+                            <Crop size={12} /> ✂️ قص شكل من الـ PDF
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleAddItemToContentSection(secIdx)}
+                            className="btn-outline"
+                            style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                          >
+                            <Plus size={12} /> + إضافة سؤال / شكل صورة
+                          </button>
+                        </div>
+                      </div>
+
+                      {sec.items?.map((item, itemIdx) => (
+                        <div key={itemIdx} style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '0.75rem', alignItems: isMobile ? 'stretch' : 'flex-start', width: '100%' }}>
+                          <select
+                            className="input-control"
+                            value={item.type}
+                            onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'type', e.target.value)}
+                            style={{ width: isMobile ? '100%' : '160px', flexShrink: 0, padding: '0.4rem' }}
+                          >
+                            <option value="text">Texte Standard</option>
+                            <option value="bullet">Puce / Question</option>
+                            <option value="highlight_box">Formule (Encadré)</option>
+                            <option value="table">📊 Tableau (جدول/تغيرات)</option>
+                            <option value="image">🖼️ Figure / Image (شكل/مبيان)</option>
+                          </select>
+
+                          {item.type === 'table' ? (
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.6rem', background: 'rgba(255,255,255,0.01)', padding: '0.75rem', borderRadius: '8px', border: '1px dashed var(--border)' }}>
+                              <div>
+                                <label style={{ fontSize: '0.75rem', fontWeight: 800 }}>En-têtes du Tableau (séparés par | )</label>
+                                <input
+                                  type="text"
+                                  className="input-control"
+                                  placeholder="ex: x | -\\infty | 0 | +\\infty"
+                                  value={(item.table_data?.headers || item.headers || []).join(' | ')}
+                                  onChange={e => {
+                                    const headers = e.target.value.split('|').map(s => s.trim());
+                                    const rows = item.table_data?.rows || item.rows || [[]];
+                                    handleUpdateContentItem(secIdx, itemIdx, 'table_data', { headers, rows });
+                                    handleUpdateContentItem(secIdx, itemIdx, 'headers', headers);
+                                    handleUpdateContentItem(secIdx, itemIdx, 'rows', rows);
+                                  }}
+                                  style={{ padding: '0.35rem', fontSize: '0.8rem' }}
+                                />
+                              </div>
+                              <div>
+                                <label style={{ fontSize: '0.75rem', fontWeight: 800 }}>Lignes du Tableau (une ligne par rangée, cellules séparées par | )</label>
+                                <textarea
+                                  className="input-control"
+                                  placeholder="ex: f'(x) | - | 0 | +&#10;f(x) | +\\infty | \\searrow -2 | \\nearrow +\\infty"
+                                  value={(item.table_data?.rows || item.rows || []).map(r => Array.isArray(r) ? r.join(' | ') : String(r)).join('\n')}
+                                  onChange={e => {
+                                    const rows = e.target.value.split('\n').map(line => line.split('|').map(s => s.trim()));
+                                    const headers = item.table_data?.headers || item.headers || [];
+                                    handleUpdateContentItem(secIdx, itemIdx, 'table_data', { headers, rows });
+                                    handleUpdateContentItem(secIdx, itemIdx, 'headers', headers);
+                                    handleUpdateContentItem(secIdx, itemIdx, 'rows', rows);
+                                  }}
+                                  rows={3}
+                                  style={{ padding: '0.35rem', fontSize: '0.8rem' }}
+                                />
+                              </div>
+                              <div style={{ marginTop: '0.4rem' }}>
+                                <SmartTableRenderer table={item.table_data || item} />
+                              </div>
+                            </div>
+                          ) : item.type === 'image' ? (
+                            renderStructuredImageItem(item, secIdx, itemIdx)
+                          ) : (
+                            <textarea
+                              className="input-control"
+                              value={item.text || item.content || ''}
+                              onChange={e => handleUpdateContentItem(secIdx, itemIdx, 'text', e.target.value)}
+                              placeholder="نص السؤال (LaTeX supporté مع $ ... $)"
+                              rows={2}
+                              style={{ flex: 1, padding: '0.4rem' }}
+                            />
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveItemFromContentSection(secIdx, itemIdx)}
+                            style={{ background: 'transparent', color: 'var(--text-muted)', border: 'none', cursor: 'pointer', marginTop: '0.5rem' }}
+                            title="Supprimer la question / élément"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="input-group">
+                      <label style={{ fontWeight: 800 }}>Solution Détaillée</label>
+                      <textarea
+                        className="input-control"
+                        value={sec.solution || ''}
+                        onChange={e => handleUpdateSection(secIdx, 'solution', e.target.value)}
+                        placeholder="Entrez la correction rédigée..."
+                        rows={6}
+                      />
+                    </div>
+
+                    {/* Interactive Verification Checks */}
+                    <div style={{ marginTop: '0.5rem', borderTop: '1px dashed var(--border)', paddingTop: '1rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)' }}>
+                          Champs de vérification interactive (Optionnel - Pour s'entraîner)
+                        </span>
+                        <button type="button" onClick={() => handleAddInteractiveAnswer(secIdx)} className="btn-outline" style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <Plus size={12} /> Ajouter une question interactive
+                        </button>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {sec.interactive_answers?.map((ans, ansIdx) => (
+                          <div key={ansIdx} style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '0.75rem', alignItems: isMobile ? 'stretch' : 'center', width: '100%' }}>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 900, minWidth: '40px' }}>Q{ans.question_idx} :</span>
+                            <input
+                              type="text"
+                              className="input-control"
+                              value={ans.label || ''}
+                              onChange={e => handleUpdateInteractiveAnswer(secIdx, ansIdx, 'label', e.target.value)}
+                              placeholder="Libellé (ex: Entrez la valeur de x)"
+                              style={{ flex: 1, padding: '0.4rem' }}
+                            />
+                            <input
+                              type="text"
+                              className="input-control"
+                              value={ans.expected_answer || ''}
+                              onChange={e => handleUpdateInteractiveAnswer(secIdx, ansIdx, 'expected_answer', e.target.value)}
+                              placeholder="Réponse exacte attendue"
+                              style={{ width: isMobile ? '100%' : '180px', padding: '0.4rem' }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveInteractiveAnswer(secIdx, ansIdx)}
+                              style={{ background: 'transparent', color: 'var(--text-muted)', border: 'none', cursor: 'pointer' }}
+                              title="Supprimer la question interactive"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   const exerciseCount = sections.filter(s => s.type === 'exercise').length;
   const ModeIcon = currentModeInfo.icon;
 
@@ -3225,6 +3995,89 @@ export default function AdminLessonEdit() {
 
       </header>
 
+      {/* ── View Mode Switcher (Document A4 Canvas vs Structured Blocks) ── */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '0.85rem',
+        marginBottom: '1rem',
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border)',
+        borderRadius: '14px',
+        padding: '0.55rem 0.95rem',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
+      }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+            <Layers size={15} style={{ color: 'var(--violet)' }} />
+            {isArMode ? 'نمط التحرير والعرض :' : 'Mode d\'édition :'}
+          </span>
+          <div style={{
+            display: 'inline-flex',
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid var(--border)',
+            borderRadius: '10px',
+            padding: '3px',
+            gap: '3px'
+          }}>
+            <button
+              type="button"
+              onClick={() => handleSetEditViewMode('document')}
+              className="mode-pill-btn"
+              style={{
+                padding: '0.45rem 1rem',
+                borderRadius: '8px',
+                fontSize: '0.83rem',
+                fontWeight: 800,
+                border: 'none',
+                background: editViewMode === 'document' ? 'var(--violet)' : 'transparent',
+                color: editViewMode === 'document' ? '#fff' : 'var(--text-muted)',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                boxShadow: editViewMode === 'document' ? '0 2px 8px rgba(99, 102, 241, 0.35)' : 'none'
+              }}
+              title={isArMode ? 'معاينة وتحرير مباشر كصفحة A4' : 'Aperçu et édition directe sur la page A4'}
+            >
+              <FileText size={15} />
+              <span>{isArMode ? 'معاينة وتحرير الصفحة (A4)' : 'Mode Document (Page A4)'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSetEditViewMode('structured')}
+              className="mode-pill-btn"
+              style={{
+                padding: '0.45rem 1rem',
+                borderRadius: '8px',
+                fontSize: '0.83rem',
+                fontWeight: 800,
+                border: 'none',
+                background: editViewMode === 'structured' ? 'var(--violet)' : 'transparent',
+                color: editViewMode === 'structured' ? '#fff' : 'var(--text-muted)',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                boxShadow: editViewMode === 'structured' ? '0 2px 8px rgba(99, 102, 241, 0.35)' : 'none'
+              }}
+              title={isArMode ? 'تحرير بالفقرات والبطاقات وقص أشكال PDF وموازنة النقط' : 'Édition par blocs structurés avec découpage de figures PDF'}
+            >
+              <Layers size={15} />
+              <span>{isArMode ? 'التحرير بالفقرات والبطاقات' : 'Mode Blocs Structurés'}</span>
+            </button>
+          </div>
+        </div>
+
+        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+          {editViewMode === 'structured'
+            ? (isArMode ? '🧱 وضع بطاقات الأقسام والتمارين مع موازنة النقط وقص الأشكال' : '🧱 Mode formulaire par blocs avec barème et recadrage PDF')
+            : (isArMode ? '📄 وضع صفحة A4 الحية للطباعة والتنسيق المباشر' : '📄 Canevas A4 en direct avec aperçu d\'impression')}
+        </div>
+      </div>
+
       {/* ── Status Alerts ── */}
       {error && (
         <div className="lesson-status-alert" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid var(--danger)', borderRadius: '12px', padding: '0.85rem 1.25rem', color: 'var(--danger)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -3391,12 +4244,17 @@ export default function AdminLessonEdit() {
         </button>
       </div>
 
-      {/* ── MAIN WORKSPACE CONTENT (Live Document Canvas) ── */}
+      {/* ── MAIN WORKSPACE CONTENT ── */}
       <ImageDropZone onImageInsert={(dataUrl, alt) => handleDirectImageInsert(dataUrl, alt)}>
         <div className="lesson-edit-workspace" style={{ maxWidth: '1050px', margin: '0 auto' }}>
-          {/* General Info Panel in Word Mode */}
+          {/* General Info Panel */}
           {renderGeneralInfoPanel(true)}
-          {renderLiveWordDocument()}
+
+          {editViewMode === 'document' ? (
+            renderLiveWordDocument()
+          ) : (
+            renderStructuredBlocksEditor()
+          )}
         </div>
       </ImageDropZone>
 
