@@ -2352,6 +2352,14 @@ body.hide-solutions .modern-solution-block {
   font-weight: normal !important;
 }
 
+/* Targeted refined scale for superscripts / powers only (leaves subscripts untouched) */
+.katex .msupsub .vlist-t:not(.vlist-t2) .sizing.size3,
+.katex .msupsub .vlist-t:not(.vlist-t2) .sizing.reset-size6.size3,
+.katex .msupsub .vlist-t.vlist-t2 span[style*="top:-3"] .sizing.size3,
+.katex .msupsub .vlist-t.vlist-t2 span[style*="top:-3"] .sizing.reset-size6.size3 {
+  font-size: 0.63em !important;
+}
+
 /* Block display-mode math: visible breathing room */
 .katex-display {
   margin: 0.45rem 0 !important;

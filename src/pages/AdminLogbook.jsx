@@ -1882,6 +1882,12 @@ export default function AdminLogbook() {
           display: inline-block !important;
           font-size: 1.08em !important;
         }
+        .katex .msupsub .vlist-t:not(.vlist-t2) .sizing.size3,
+        .katex .msupsub .vlist-t:not(.vlist-t2) .sizing.reset-size6.size3,
+        .katex .msupsub .vlist-t.vlist-t2 span[style*="top:-3"] .sizing.size3,
+        .katex .msupsub .vlist-t.vlist-t2 span[style*="top:-3"] .sizing.reset-size6.size3 {
+          font-size: 0.63em !important;
+        }
 
         .notebook-line-text {
           font-family: '${isArMode ? arFont : frFont}', 'Outfit', 'Cairo', sans-serif;

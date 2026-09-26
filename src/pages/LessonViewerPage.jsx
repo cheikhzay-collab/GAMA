@@ -2341,6 +2341,13 @@ export default function LessonViewerPage() {
             display: inline !important;
             font-weight: normal !important;
           }
+          /* Targeted refined scale for superscripts / powers only (leaves subscripts untouched) */
+          .katex .msupsub .vlist-t:not(.vlist-t2) .sizing.size3,
+          .katex .msupsub .vlist-t:not(.vlist-t2) .sizing.reset-size6.size3,
+          .katex .msupsub .vlist-t.vlist-t2 span[style*="top:-3"] .sizing.size3,
+          .katex .msupsub .vlist-t.vlist-t2 span[style*="top:-3"] .sizing.reset-size6.size3 {
+            font-size: 0.63em !important;
+          }
 
           /* Response/attention callouts */
           .mfc-callout-response {
